@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2017 George Belden
+
+This file is part of Zenith.
+
+Zenith is free software: you can redistribute it and/or modify it under the terms	of the GNU General Public License as published by the Free Software Foundation,	either version 3 of the License, or (at your option) any later version.
+	
+Zenith is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+	
+You should have received a copy of the GNU General Public License along with Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       		http://www.springframework.org/schema/beans/spring-beans.xsd
+       		http://www.springframework.org/schema/context
+       		http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>classpath:model.properties</value>
+		</property>
+	</bean>
+
+	<bean id="xmlCorpusTransformer" class="com.ciphertool.zenith.etl.transformers.XmlCorpusTransformer">
+		<property name="taskExecutor" ref="taskExecutor" />
+		<property name="corpusDirectory" value="${corpus.xml.input.directory}" />
+		<property name="outputDirectory" value="${corpus.output.directory}" />
+	</bean>
+
+	<bean id="textCorpusTransformer" class="com.ciphertool.zenith.etl.transformers.TextCorpusTransformer">
+		<property name="taskExecutor" ref="taskExecutor" />
+		<property name="corpusDirectory" value="${corpus.text.input.directory}" />
+		<property name="outputDirectory" value="${corpus.output.directory}" />
+	</bean>
+
+	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="${taskExecutor.corePoolSize}" />
+		<property name="maxPoolSize" value="${taskExecutor.maxPoolSize}" />
+		<!-- queueCapacity should be the same as populationSize, or we will get 
+			rejected execution exceptions -->
+		<property name="queueCapacity" value="${taskExecutor.queueCapacity}" />
+		<property name="keepAliveSeconds" value="5" />
+		<property name="allowCoreThreadTimeOut" value="true" />
+	</bean>
+</beans>

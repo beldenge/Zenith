@@ -28,6 +28,7 @@ You should have received a copy of the GNU General Public License along with Zen
 	<modules>
 		<module>Zenith-LanguageModel</module>
 		<module>Zenith-Inference</module>
+		<module>Zenith-Math</module>
 	</modules>
 
 	<build>
