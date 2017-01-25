@@ -11,23 +11,11 @@ Zenith is distributed in the hope that it will be useful, but WITHOUT ANY WARRAN
 You should have received a copy of the GNU General Public License along with Zenith. If not, see <http://www.gnu.org/licenses/>.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
-       		http://www.springframework.org/schema/beans/spring-beans.xsd
-       		http://www.springframework.org/schema/context
-       		http://www.springframework.org/schema/context/spring-context.xsd
-     		http://www.springframework.org/schema/data/mongo
-            http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
+       		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<import resource="classpath*:importManagerContext.xml" />
-
-	<mongo:mongo host="${mongodb.host}" port="${mongodb.port}" />
-	<mongo:db-factory dbname="${mongodb.database}" />
-
-	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
-	</bean>
 
 	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="location">
