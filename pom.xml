@@ -15,14 +15,20 @@ You should have received a copy of the GNU General Public License along with Zen
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ciphertool.zenith</groupId>
 	<artifactId>Zenith</artifactId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Zenith</name>
 	<url>http://www.ciphertool.com</url>
+
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
+
+	<modules>
+		<module>Zenith-LanguageModel</module>
+		<module>Zenith-Inference</module>
+	</modules>
 
 	<build>
 		<plugins>
@@ -37,14 +43,6 @@ You should have received a copy of the GNU General Public License along with Zen
 			</plugin>
 		</plugins>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>jboss-public-repository-group</id>
-			<name>JBoss Public Maven Repository Group</name>
-			<url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>

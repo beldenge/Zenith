@@ -1,0 +1,1 @@
+This module encompasses the algorithm which performs inference on the language model.
