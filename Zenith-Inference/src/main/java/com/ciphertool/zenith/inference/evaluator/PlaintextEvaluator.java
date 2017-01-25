@@ -43,13 +43,8 @@ public class PlaintextEvaluator {
 	private Logger		log							= LoggerFactory.getLogger(getClass());
 
 	private MarkovModel	letterMarkovModel;
-	private MarkovModel	wordMarkovModel;
-
-	private double		letterNGramWeight;
-	private double		wordNGramWeight;
 
 	private BigDecimal	unknownLetterNGramProbability;
-	private BigDecimal	unknownWordProbability;
 
 	private BigDecimal	indexOfCoincidenceEnglish	= BigDecimal.ZERO;
 
@@ -57,23 +52,10 @@ public class PlaintextEvaluator {
 
 	@PostConstruct
 	public void init() {
-		BigDecimal weightTotal = BigDecimal.valueOf(letterNGramWeight).add(BigDecimal.valueOf(wordNGramWeight), MathConstants.PREC_10_HALF_UP);
-
-		if (BigDecimal.ONE.subtract(weightTotal, MathConstants.PREC_10_HALF_UP).abs().compareTo(BigDecimal.ZERO) > 0) {
-			throw new IllegalArgumentException(
-					"The sum of letterNGramWeight, wordNGramWeight, and frequencyWeight must equal exactly 1.0, but letterNGramWeight="
-							+ letterNGramWeight + " and wordNGramWeight=" + wordNGramWeight + " sums to "
-							+ weightTotal);
-		}
-
 		unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(letterMarkovModel.getRootNode().getTerminalInfo().getCount()
 				+ 1), MathConstants.PREC_10_HALF_UP);
 
-		unknownWordProbability = BigDecimal.valueOf(wordMarkovModel.getNumWithCountOfOne()).divide(BigDecimal.valueOf(wordMarkovModel.getRootNode().getTerminalInfo().getCount()
-				+ 1), MathConstants.PREC_10_HALF_UP);
-
 		log.info("unknownLetterNGramProbability: {}", unknownLetterNGramProbability);
-		log.info("unknownWordProbability: {}", unknownWordProbability);
 
 		BigDecimal occurences = null;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
@@ -98,22 +80,11 @@ public class PlaintextEvaluator {
 		long startLetter = System.currentTimeMillis();
 		EvaluationResults letterNGramResults = evaluateLetterNGrams(ciphertextKey, includeCiphertextParameterOnly, solution);
 		log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
-		long startWord = System.currentTimeMillis();
-		// EvaluationResults wordNGramResults = evaluateWords(ciphertextKey, includeCiphertextParameterOnly, solution);
-		log.debug("Word N-Grams took {}ms.", (System.currentTimeMillis() - startWord));
 
 		long startRemaining = System.currentTimeMillis();
 
-		interpolatedProbability = ((letterNGramWeight == 0.0) ? BigDecimal.ZERO : BigDecimal.valueOf(letterNGramWeight).multiply(letterNGramResults.getProbability(), MathConstants.PREC_10_HALF_UP));
-		// interpolatedProbability = interpolatedProbability.add((wordNGramWeight == 0.0) ? BigDecimal.ZERO :
-		// BigDecimal.valueOf(wordNGramWeight).multiply(wordNGramResults.getProbability(),
-		// MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-
-		// TODO: The math behind these interpolated log probabilities needs to be reviewed at some point
-		interpolatedLogProbability = (letterNGramWeight == 0.0) ? BigDecimal.ZERO : BigDecimal.valueOf(letterNGramWeight).multiply(letterNGramResults.getLogProbability(), MathConstants.PREC_10_HALF_UP);
-		// interpolatedLogProbability = interpolatedLogProbability.add((wordNGramWeight == 0.0) ? BigDecimal.ZERO :
-		// BigDecimal.valueOf(wordNGramWeight).multiply(wordNGramResults.getLogProbability(),
-		// MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
+		interpolatedProbability = letterNGramResults.getProbability();
+		interpolatedLogProbability = letterNGramResults.getLogProbability();
 
 		EvaluationResults iocResults = evaluateIndexOfCoincidence(solution);
 		BigDecimal difference = BigDecimal.ONE.subtract(iocResults.getProbability().subtract(indexOfCoincidenceEnglish).abs());
@@ -159,35 +130,6 @@ public class PlaintextEvaluator {
 		}
 
 		return new EvaluationResults(nGramProbability, nGramLogProbability);
-	}
-
-	public EvaluationResults evaluateWords(String ciphertextKey, boolean includeCiphertextParameterOnly, CipherSolution solution) {
-		List<WordProbability> words = transformToWordList(ciphertextKey, includeCiphertextParameterOnly, solution);
-
-		NGramIndexNode match = null;
-		BigDecimal probability = null;
-		BigDecimal wordProbability = BigDecimal.ONE;
-		BigDecimal wordLogProbability = BigDecimal.ZERO;
-
-		for (WordProbability word : words) {
-			match = wordMarkovModel.find(word.getValue());
-
-			if (match != null) {
-				probability = match.getTerminalInfo().getProbability();
-				log.debug("Word Match={}, Probability={}", match.getCumulativeStringValue(), probability);
-			} else {
-				// Penalize long sequences with an exponential weight as a function of the length of the sequence
-				probability = unknownWordProbability.divide(BigDecimal.valueOf(20.0).pow(word.getValue().length()
-						- 2, MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-
-				log.debug("No Word Match");
-			}
-
-			wordProbability = wordProbability.multiply(probability, MathConstants.PREC_10_HALF_UP);
-			wordLogProbability = wordLogProbability.add(bigDecimalFunctions.log(probability), MathConstants.PREC_10_HALF_UP);
-		}
-
-		return new EvaluationResults(wordProbability, wordLogProbability);
 	}
 
 	public EvaluationResults evaluateIndexOfCoincidence(CipherSolution solution) {
@@ -266,33 +208,6 @@ public class PlaintextEvaluator {
 	@Required
 	public void setLetterMarkovModel(MarkovModel letterMarkovModel) {
 		this.letterMarkovModel = letterMarkovModel;
-	}
-
-	/**
-	 * @param wordMarkovModel
-	 *            the wordMarkovModel to set
-	 */
-	@Required
-	public void setWordMarkovModel(MarkovModel wordMarkovModel) {
-		this.wordMarkovModel = wordMarkovModel;
-	}
-
-	/**
-	 * @param letterNGramWeight
-	 *            the letterNGramWeight to set
-	 */
-	@Required
-	public void setLetterNGramWeight(double letterNGramWeight) {
-		this.letterNGramWeight = letterNGramWeight;
-	}
-
-	/**
-	 * @param wordNGramWeight
-	 *            the wordNGramWeight to set
-	 */
-	@Required
-	public void setWordNGramWeight(double wordNGramWeight) {
-		this.wordNGramWeight = wordNGramWeight;
 	}
 
 	/**

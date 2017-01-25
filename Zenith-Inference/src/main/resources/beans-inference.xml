@@ -51,9 +51,6 @@ You should have received a copy of the GNU General Public License along with Zen
 
 	<bean class="com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator" id="plaintextEvaluator">
 		<property name="letterMarkovModel" ref="letterMarkovModel" />
-		<property name="wordMarkovModel" ref="wordMarkovModel" />
-		<property name="letterNGramWeight" value="${bayes.letterNGram.weight}" />
-		<property name="wordNGramWeight" value="${bayes.wordNGram.weight}" />
 		<property name="bigDecimalFunctions" ref="bigDecimalFunctions" />
 	</bean>
 </beans>

@@ -34,7 +34,7 @@ import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
-	private static Logger						log			= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
+	private static Logger						log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
 
 	private static LetterNGramMarkovImporter	letterNGramMarkovImporter;
 	private static MarkovModel					letterMarkovModel;
@@ -42,8 +42,8 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	private static PlaintextEvaluator			plaintextEvaluator;
 
 	private static CipherSolution				actualSolution	= new CipherSolution();
-	private static CipherSolution				solution2	= new CipherSolution();
-	private static CipherSolution				solution3	= new CipherSolution();
+	private static CipherSolution				solution2		= new CipherSolution();
+	private static CipherSolution				solution3		= new CipherSolution();
 
 	static {
 		int lastRowBegin = (zodiac408.getColumns() * (zodiac408.getRows() - 1));
@@ -248,8 +248,6 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 		plaintextEvaluator = new PlaintextEvaluator();
 		plaintextEvaluator.setLetterMarkovModel(letterMarkovModel);
-		plaintextEvaluator.setLetterNGramWeight(1.0);
-		plaintextEvaluator.setWordNGramWeight(0.0);
 		plaintextEvaluator.setBigDecimalFunctions(new BigDecimalFunctions());
 		plaintextEvaluator.init();
 	}
