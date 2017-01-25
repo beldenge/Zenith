@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -42,14 +41,12 @@ import org.springframework.core.task.TaskExecutor;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.BoundaryProbability;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
-import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
@@ -67,25 +64,16 @@ public class BayesianDecipherManager {
 	private Cipher							cipher;
 	private MarkovModel						letterMarkovModel;
 	private int								samplerIterations;
-	private double							sourceModelPrior;
-	private BigDecimal						alphaHyperparameter;
-	private double							channelModelPrior;
-	private BigDecimal						betaHyperparameter;
 	private int								annealingTemperatureMax;
 	private int								annealingTemperatureMin;
 	private int								cipherKeySize;
 	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>();
-	private BigDecimal						ciphertextProbability;
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
 	private TaskExecutor					taskExecutor;
-	private MathCache						bigDecimalFunctions;
 	private Double							percentToReallocate;
 
 	@PostConstruct
 	public void setUp() {
-		alphaHyperparameter = BigDecimal.valueOf(sourceModelPrior);
-		betaHyperparameter = BigDecimal.valueOf(channelModelPrior);
-
 		this.cipher = cipherDao.findByCipherName(cipherName);
 		int totalCharacters = this.cipher.getCiphertextCharacters().size();
 		int lastRowBegin = (this.cipher.getColumns() * (this.cipher.getRows() - 1));
@@ -96,8 +84,6 @@ public class BayesianDecipherManager {
 		}
 
 		cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
-		// Use a uniform distribution for ciphertext probabilities
-		ciphertextProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(cipherKeySize), MathConstants.PREC_10_HALF_UP);
 
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			letterUnigramProbabilities.add(new LetterProbability(entry.getKey(),
@@ -127,14 +113,11 @@ public class BayesianDecipherManager {
 		// }
 		// }
 
-		PartialDerivation initialDerivation = computePartialDerivationProbability(null, 0, cipher.getCiphertextCharacters().size(), initialSolution);
 		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(initialSolution);
-		initialSolution.setGenerativeModelProbability(initialDerivation.getProductOfProbabilities());
-		initialSolution.setGenerativeModelLogProbability(initialDerivation.getSumOfProbabilities());
 		initialSolution.setLanguageModelProbability(initialPlaintextResults.getProbability());
 		initialSolution.setLanguageModelLogProbability(initialPlaintextResults.getLogProbability());
-		initialSolution.setProbability(initialDerivation.getProductOfProbabilities().multiply(initialSolution.getLanguageModelProbability(), MathConstants.PREC_10_HALF_UP));
-		initialSolution.setLogProbability(initialDerivation.getSumOfProbabilities().add(initialSolution.getLanguageModelLogProbability(), MathConstants.PREC_10_HALF_UP));
+		initialSolution.setProbability(initialSolution.getLanguageModelProbability());
+		initialSolution.setLogProbability(initialSolution.getLanguageModelLogProbability());
 		log.info(initialSolution.toString());
 
 		BigDecimal maxTemp = BigDecimal.valueOf(annealingTemperatureMax);
@@ -237,11 +220,8 @@ public class BayesianDecipherManager {
 	 * A concurrent task for computing the letter probability during Gibbs sampling.
 	 */
 	protected class LetterProbabilityTask implements Callable<CipherSolution> {
-		private CipherSolution		originalSolution;
 		private Character			letter;
-		private PartialDerivation	partialDerivation;
 		private EvaluationResults	partialPlaintextResults;
-		private int					affectedCount;
 		private String				ciphertextKey;
 		private CipherSolution		conditionalSolution;
 
@@ -250,27 +230,19 @@ public class BayesianDecipherManager {
 		 *            the original unmodified solution
 		 * @param letter
 		 *            the letter to sample for
-		 * @param partialDerivation
-		 *            the partial derivation
 		 * @param partialPlaintextResults
 		 *            the partial plaintext results
-		 * @param affectedCount
-		 *            the affected count
 		 * @param ciphertextKey
 		 *            the ciphertext key
 		 * @param modified
 		 *            the modified solution
 		 */
-		public LetterProbabilityTask(CipherSolution originalSolution, Character letter,
-				PartialDerivation partialDerivation, EvaluationResults partialPlaintextResults, int affectedCount,
-				String ciphertextKey, CipherSolution modified) {
-			this.originalSolution = originalSolution;
+		public LetterProbabilityTask(CipherSolution conditionalSolution, Character letter,
+				EvaluationResults partialPlaintextResults, String ciphertextKey) {
 			this.letter = letter;
-			this.partialDerivation = partialDerivation;
 			this.partialPlaintextResults = partialPlaintextResults;
-			this.affectedCount = affectedCount;
 			this.ciphertextKey = ciphertextKey;
-			this.conditionalSolution = modified;
+			this.conditionalSolution = conditionalSolution;
 		}
 
 		@Override
@@ -282,29 +254,14 @@ public class BayesianDecipherManager {
 
 			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
 
-			int start = conditionalSolution.getCipher().getCiphertextCharacters().size() - affectedCount;
-			long startDerivation = System.currentTimeMillis();
-			// PartialDerivation derivationProbability = computePartialDerivationProbability(partialDerivation, start,
-			// conditionalSolution.getCipher().getCiphertextCharacters().size(), conditionalSolution);
-			PartialDerivation derivationProbability = new PartialDerivation(BigDecimal.ONE, BigDecimal.ZERO);
-			log.debug("Partial derivation took {}ms.", (System.currentTimeMillis() - startDerivation));
-
-			/*
-			 * We can't use the modified clone since its ciphertext was moved around, and we need to preserve word
-			 * boundaries
-			 */
-			originalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
-
 			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(ciphertextKey, true, originalSolution);
+			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(ciphertextKey, true, conditionalSolution);
 			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
 
-			conditionalSolution.setGenerativeModelProbability(derivationProbability.getProductOfProbabilities());
-			conditionalSolution.setGenerativeModelLogProbability(derivationProbability.getSumOfProbabilities());
 			conditionalSolution.setLanguageModelProbability(partialPlaintextResults.getProbability().multiply(remainingPlaintextResults.getProbability(), MathConstants.PREC_10_HALF_UP));
 			conditionalSolution.setLanguageModelLogProbability(partialPlaintextResults.getLogProbability().add(remainingPlaintextResults.getLogProbability(), MathConstants.PREC_10_HALF_UP));
-			conditionalSolution.setProbability(derivationProbability.getProductOfProbabilities().multiply(conditionalSolution.getLanguageModelProbability(), MathConstants.PREC_10_HALF_UP));
-			conditionalSolution.setLogProbability(derivationProbability.getSumOfProbabilities().add(conditionalSolution.getLanguageModelLogProbability(), MathConstants.PREC_10_HALF_UP));
+			conditionalSolution.setProbability(conditionalSolution.getLanguageModelProbability());
+			conditionalSolution.setLogProbability(conditionalSolution.getLanguageModelLogProbability());
 
 			return conditionalSolution;
 		}
@@ -316,20 +273,13 @@ public class BayesianDecipherManager {
 
 		EvaluationResults partialPlaintextResults = plaintextEvaluator.evaluate(ciphertextKey, false, solution);
 
-		CipherSolution modified = solution.clone();
-		int affectedCount = moveAffectedWindowsToEnd(ciphertextKey, modified);
-
-		int end = solution.getCipher().getCiphertextCharacters().size() - affectedCount;
-		// PartialDerivation partialDerivation = computePartialDerivationProbability(null, 0, end, modified);
-		PartialDerivation partialDerivation = new PartialDerivation(BigDecimal.ONE, BigDecimal.ZERO);
-
 		List<FutureTask<CipherSolution>> futures = new ArrayList<FutureTask<CipherSolution>>(26);
 		FutureTask<CipherSolution> task;
 
 		// Calculate the full conditional probability for each possible plaintext substitution
 		for (Character letter : LOWERCASE_LETTERS) {
-			task = new FutureTask<CipherSolution>(new LetterProbabilityTask(solution.clone(), letter, partialDerivation,
-					partialPlaintextResults, affectedCount, ciphertextKey, modified.clone()));
+			task = new FutureTask<CipherSolution>(new LetterProbabilityTask(solution.clone(), letter,
+					partialPlaintextResults, ciphertextKey));
 			futures.add(task);
 			this.taskExecutor.execute(task);
 		}
@@ -361,97 +311,6 @@ public class BayesianDecipherManager {
 		return plaintextDistribution;
 	}
 
-	protected PartialDerivation computePartialDerivationProbability(PartialDerivation partialDerivation, int start, int end, CipherSolution derivation) {
-		BigDecimal productOfProbabilities = (partialDerivation == null ? BigDecimal.ONE : partialDerivation.getProductOfProbabilities());
-		BigDecimal sumOfProbabilities = (partialDerivation == null ? BigDecimal.ZERO : partialDerivation.getSumOfProbabilities());
-		Map<String, Integer> unigramCounts = (partialDerivation == null ? new HashMap<>() : new HashMap<>(
-				partialDerivation.getUnigramCounts()));
-		Map<String, Integer> bigramCounts = (partialDerivation == null ? new HashMap<>() : new HashMap<>(
-				partialDerivation.getBigramCounts()));
-		Map<CiphertextMapping, Integer> ciphertextMappingCounts = (partialDerivation == null ? new HashMap<>() : new HashMap<>(
-				partialDerivation.getCiphertextMappingCounts()));
-		String lastCharacter = (partialDerivation == null ? null : partialDerivation.getLastCharacter());
-		String ciphertext = null;
-		EvaluationResults partialProbabilities;
-
-		for (int i = start; i < end; i++) {
-			ciphertext = derivation.getCipher().getCiphertextCharacters().get(i).getValue();
-
-			partialProbabilities = computePosition(productOfProbabilities, sumOfProbabilities, unigramCounts, bigramCounts, ciphertextMappingCounts, lastCharacter, ciphertext, derivation);
-
-			productOfProbabilities = partialProbabilities.getProbability();
-			sumOfProbabilities = partialProbabilities.getLogProbability();
-
-			lastCharacter = derivation.getMappings().get(ciphertext).getValue();
-		}
-
-		return new PartialDerivation(productOfProbabilities, sumOfProbabilities, unigramCounts, bigramCounts,
-				ciphertextMappingCounts, lastCharacter);
-	}
-
-	protected EvaluationResults computePosition(BigDecimal productOfProbabilities, BigDecimal sumOfProbabilities, Map<String, Integer> unigramCounts, Map<String, Integer> bigramCounts, Map<CiphertextMapping, Integer> ciphertextMappingCounts, String lastCharacter, String ciphertext, CipherSolution derivation) {
-		String currentCharacter = derivation.getMappings().get(ciphertext).getValue();
-
-		CiphertextMapping ciphertextMapping = new CiphertextMapping(ciphertext, new Plaintext(currentCharacter));
-
-		if (lastCharacter == null) {
-			productOfProbabilities = productOfProbabilities.multiply(letterUnigramProbabilities.get(letterUnigramProbabilities.indexOf(new LetterProbability(
-					currentCharacter.charAt(0),
-					BigDecimal.ZERO))).getProbability(), MathConstants.PREC_10_HALF_UP).multiply(ciphertextProbability, MathConstants.PREC_10_HALF_UP);
-
-			sumOfProbabilities = sumOfProbabilities.add(bigDecimalFunctions.log(letterUnigramProbabilities.get(letterUnigramProbabilities.indexOf(new LetterProbability(
-					currentCharacter.charAt(0),
-					BigDecimal.ZERO))).getProbability()), MathConstants.PREC_10_HALF_UP).add(ciphertextProbability, MathConstants.PREC_10_HALF_UP);
-		} else {
-			BigDecimal nGramPriorProbability = letterMarkovModel.findLongest(lastCharacter
-					+ currentCharacter).getTerminalInfo().getConditionalProbability();
-			// Any sufficient corpus should contain every possible bigram, so no need to check for unknowns
-			BigDecimal unigramCount = unigramCounts.get(lastCharacter) == null ? BigDecimal.ZERO : BigDecimal.valueOf(unigramCounts.get(lastCharacter));
-			BigDecimal nGramCount = bigramCounts.get(lastCharacter
-					+ currentCharacter) == null ? BigDecimal.ZERO : BigDecimal.valueOf(bigramCounts.get(lastCharacter
-							+ currentCharacter));
-
-			BigDecimal numerator = alphaHyperparameter.multiply(nGramPriorProbability, MathConstants.PREC_10_HALF_UP).add(nGramCount, MathConstants.PREC_10_HALF_UP);
-			BigDecimal denominator = alphaHyperparameter.add(unigramCount, MathConstants.PREC_10_HALF_UP);
-			BigDecimal sourcePart = numerator.divide(denominator, MathConstants.PREC_10_HALF_UP);
-
-			// Multiply by the source model probability
-			productOfProbabilities = productOfProbabilities.multiply(sourcePart, MathConstants.PREC_10_HALF_UP);
-			sumOfProbabilities = sumOfProbabilities.add(bigDecimalFunctions.log(sourcePart), MathConstants.PREC_10_HALF_UP);
-
-			BigDecimal ciphertextMappingCount = ciphertextMappingCounts.get(ciphertextMapping) == null ? BigDecimal.ZERO : BigDecimal.valueOf(ciphertextMappingCounts.get(ciphertextMapping));
-			unigramCount = unigramCounts.get(currentCharacter) == null ? BigDecimal.ZERO : BigDecimal.valueOf(unigramCounts.get(currentCharacter));
-
-			numerator = betaHyperparameter.multiply(ciphertextProbability, MathConstants.PREC_10_HALF_UP).add(ciphertextMappingCount, MathConstants.PREC_10_HALF_UP);
-			denominator = betaHyperparameter.add(unigramCount, MathConstants.PREC_10_HALF_UP);
-			BigDecimal channelPart = numerator.divide(denominator, MathConstants.PREC_10_HALF_UP);
-
-			// Multiply by the channel model probability
-			productOfProbabilities = productOfProbabilities.multiply(channelPart, MathConstants.PREC_10_HALF_UP);
-			sumOfProbabilities = sumOfProbabilities.add(bigDecimalFunctions.log(channelPart), MathConstants.PREC_10_HALF_UP);
-
-			if (bigramCounts.get(lastCharacter + currentCharacter) == null) {
-				bigramCounts.put(lastCharacter + currentCharacter, 0);
-			}
-
-			bigramCounts.put(lastCharacter + currentCharacter, bigramCounts.get(lastCharacter + currentCharacter) + 1);
-		}
-
-		if (ciphertextMappingCounts.get(ciphertextMapping) == null) {
-			ciphertextMappingCounts.put(ciphertextMapping, 0);
-		}
-
-		ciphertextMappingCounts.put(ciphertextMapping, ciphertextMappingCounts.get(ciphertextMapping) + 1);
-
-		if (unigramCounts.get(currentCharacter) == null) {
-			unigramCounts.put(currentCharacter, 0);
-		}
-
-		unigramCounts.put(currentCharacter, unigramCounts.get(currentCharacter) + 1);
-
-		return new EvaluationResults(productOfProbabilities, sumOfProbabilities);
-	}
-
 	protected CipherSolution runGibbsWordBoundarySampler(BigDecimal temperature, CipherSolution solution) {
 		int nextBoundary;
 		BigDecimal sumOfProbabilities = null;
@@ -475,8 +334,8 @@ public class BayesianDecipherManager {
 				addPlaintextResults = plaintextEvaluator.evaluate(addProposal);
 				addProposal.setLanguageModelProbability(addPlaintextResults.getProbability());
 				addProposal.setLanguageModelLogProbability(addPlaintextResults.getLogProbability());
-				addProposal.setProbability(addProposal.getGenerativeModelProbability().multiply(addProposal.getLanguageModelProbability(), MathConstants.PREC_10_HALF_UP));
-				addProposal.setLogProbability(addProposal.getGenerativeModelLogProbability().add(addProposal.getLanguageModelLogProbability(), MathConstants.PREC_10_HALF_UP));
+				addProposal.setProbability(addProposal.getLanguageModelProbability());
+				addProposal.setLogProbability(addProposal.getLanguageModelLogProbability());
 			}
 
 			removeProposal = solution.clone();
@@ -485,8 +344,8 @@ public class BayesianDecipherManager {
 				removePlaintextResults = plaintextEvaluator.evaluate(removeProposal);
 				removeProposal.setLanguageModelProbability(removePlaintextResults.getProbability());
 				removeProposal.setLanguageModelLogProbability(removePlaintextResults.getLogProbability());
-				removeProposal.setProbability(removeProposal.getGenerativeModelProbability().multiply(removeProposal.getLanguageModelProbability(), MathConstants.PREC_10_HALF_UP));
-				removeProposal.setLogProbability(removeProposal.getGenerativeModelLogProbability().add(removeProposal.getLanguageModelLogProbability(), MathConstants.PREC_10_HALF_UP));
+				removeProposal.setProbability(removeProposal.getLanguageModelProbability());
+				removeProposal.setLogProbability(removeProposal.getLanguageModelLogProbability());
 			}
 
 			sumOfProbabilities = addProposal.getProbability().add(removeProposal.getProbability());
@@ -539,54 +398,6 @@ public class BayesianDecipherManager {
 		return solution;
 	}
 
-	protected int moveAffectedWindowsToEnd(String ciphertextKey, CipherSolution solution) {
-		Cipher cloned = cipher.clone();
-		solution.setCipher(cloned);
-
-		if (ciphertextKey == null) {
-			// Nothing to do
-			return 0;
-		}
-
-		List<Ciphertext> allWindows = new ArrayList<>();
-
-		Integer begin = 0;
-		boolean affected = false;
-
-		for (int i = 0; i < cloned.getCiphertextCharacters().size(); i++) {
-			if (ciphertextKey.equals(cloned.getCiphertextCharacters().get(i).getValue())) {
-				affected = true;
-			}
-
-			if (solution.getWordBoundaries().contains(i)) {
-				if (affected) {
-					for (int j = begin; j <= i; j++) {
-						allWindows.add(cloned.getCiphertextCharacters().get(j));
-					}
-				}
-
-				begin = i + 1;
-				affected = false;
-			}
-		}
-
-		if (affected) {
-			for (int j = begin; j < cloned.getCiphertextCharacters().size(); j++) {
-				allWindows.add(cloned.getCiphertextCharacters().get(j));
-			}
-		}
-
-		for (int i = 0; i < allWindows.size(); i++) {
-			// Remove it
-			cloned.removeCiphertextCharacter(allWindows.get(i));
-
-			// And add it to the end of the List
-			cloned.addCiphertextCharacter(allWindows.get(i));
-		}
-
-		return allWindows.size();
-	}
-
 	/**
 	 * @param plaintextEvaluator
 	 *            the plaintextEvaluator to set
@@ -633,24 +444,6 @@ public class BayesianDecipherManager {
 	}
 
 	/**
-	 * @param sourceModelPrior
-	 *            the sourceModelPrior to set
-	 */
-	@Required
-	public void setSourceModelPrior(double sourceModelPrior) {
-		this.sourceModelPrior = sourceModelPrior;
-	}
-
-	/**
-	 * @param channelModelPrior
-	 *            the channelModelPrior to set
-	 */
-	@Required
-	public void setChannelModelPrior(double channelModelPrior) {
-		this.channelModelPrior = channelModelPrior;
-	}
-
-	/**
 	 * @param annealingTemperatureMax
 	 *            the annealingTemperatureMax to set
 	 */
@@ -675,15 +468,6 @@ public class BayesianDecipherManager {
 	@Required
 	public void setTaskExecutor(TaskExecutor taskExecutor) {
 		this.taskExecutor = taskExecutor;
-	}
-
-	/**
-	 * @param bigDecimalFunctions
-	 *            the bigDecimalFunctions to set
-	 */
-	@Required
-	public void setBigDecimalFunctions(MathCache bigDecimalFunctions) {
-		this.bigDecimalFunctions = bigDecimalFunctions;
 	}
 
 	/**

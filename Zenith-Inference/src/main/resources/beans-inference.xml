@@ -38,14 +38,11 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="cipherName" value="${cipher.name}" />
 		<property name="cipherDao" ref="cipherDao" />
 		<property name="letterMarkovModel" ref="letterMarkovModel" />
-		<property name="sourceModelPrior" value="${bayes.source.model.prior}" />
-		<property name="channelModelPrior" value="${bayes.channel.model.prior}" />
 		<property name="samplerIterations" value="${bayes.sampler.iterations}" />
 		<property name="annealingTemperatureMax" value="${bayes.annealing.temperature.max}" />
 		<property name="annealingTemperatureMin" value="${bayes.annealing.temperature.min}" />
 		<property name="knownPlaintextEvaluator" ref="knownPlaintextEvaluator" />
 		<property name="taskExecutor" ref="taskExecutor" />
-		<property name="bigDecimalFunctions" ref="bigDecimalFunctions" />
 		<property name="percentToReallocate" value="${bayes.percent.to.reallocate}" />
 	</bean>
 

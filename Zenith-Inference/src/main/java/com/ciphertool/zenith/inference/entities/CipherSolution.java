@@ -30,17 +30,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CipherSolution {
-	private static Logger			log								= LoggerFactory.getLogger(CipherSolution.class);
+	private static Logger			log							= LoggerFactory.getLogger(CipherSolution.class);
 
 	protected Cipher				cipher;
 
-	private BigDecimal				probability						= null;
-	private BigDecimal				logProbability					= null;
-	private BigDecimal				generativeModelProbability		= null;
-	private BigDecimal				generativeModelLogProbability	= null;
-	private BigDecimal				languageModelProbability		= null;
-	private BigDecimal				languageModelLogProbability		= null;
-	private BigDecimal				knownSolutionProximity			= null;
+	private BigDecimal				probability					= null;
+	private BigDecimal				logProbability				= null;
+	private BigDecimal				languageModelProbability	= null;
+	private BigDecimal				languageModelLogProbability	= null;
+	private BigDecimal				knownSolutionProximity		= null;
 
 	private Map<String, Plaintext>	mappings;
 	private Set<Integer>			wordBoundaries;
@@ -100,36 +98,6 @@ public class CipherSolution {
 	 */
 	public void setLogProbability(BigDecimal logProbability) {
 		this.logProbability = logProbability;
-	}
-
-	/**
-	 * @return the generativeModelProbability
-	 */
-	public BigDecimal getGenerativeModelProbability() {
-		return generativeModelProbability;
-	}
-
-	/**
-	 * @param generativeModelProbability
-	 *            the generativeModelProbability to set
-	 */
-	public void setGenerativeModelProbability(BigDecimal generativeModelProbability) {
-		this.generativeModelProbability = generativeModelProbability;
-	}
-
-	/**
-	 * @return the generativeModelLogProbability
-	 */
-	public BigDecimal getGenerativeModelLogProbability() {
-		return generativeModelLogProbability;
-	}
-
-	/**
-	 * @param generativeModelLogProbability
-	 *            the generativeModelLogProbability to set
-	 */
-	public void setGenerativeModelLogProbability(BigDecimal generativeModelLogProbability) {
-		this.generativeModelLogProbability = generativeModelLogProbability;
 	}
 
 	/**
@@ -263,8 +231,6 @@ public class CipherSolution {
 		// We need to set these values last to maintain whether evaluation is needed on the clone
 		copySolution.setProbability(this.probability);
 		copySolution.setLogProbability(this.logProbability);
-		copySolution.setGenerativeModelProbability(this.generativeModelProbability);
-		copySolution.setGenerativeModelLogProbability(this.generativeModelLogProbability);
 		copySolution.setLanguageModelProbability(this.languageModelProbability);
 		copySolution.setLanguageModelLogProbability(this.languageModelLogProbability);
 
@@ -279,9 +245,6 @@ public class CipherSolution {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((cipher == null) ? 0 : cipher.hashCode());
-		result = prime * result
-				+ ((generativeModelLogProbability == null) ? 0 : generativeModelLogProbability.hashCode());
-		result = prime * result + ((generativeModelProbability == null) ? 0 : generativeModelProbability.hashCode());
 		result = prime * result + ((knownSolutionProximity == null) ? 0 : knownSolutionProximity.hashCode());
 		result = prime * result + ((languageModelLogProbability == null) ? 0 : languageModelLogProbability.hashCode());
 		result = prime * result + ((languageModelProbability == null) ? 0 : languageModelProbability.hashCode());
@@ -312,20 +275,6 @@ public class CipherSolution {
 				return false;
 			}
 		} else if (!cipher.equals(other.cipher)) {
-			return false;
-		}
-		if (generativeModelLogProbability == null) {
-			if (other.generativeModelLogProbability != null) {
-				return false;
-			}
-		} else if (!generativeModelLogProbability.equals(other.generativeModelLogProbability)) {
-			return false;
-		}
-		if (generativeModelProbability == null) {
-			if (other.generativeModelProbability != null) {
-				return false;
-			}
-		} else if (!generativeModelProbability.equals(other.generativeModelProbability)) {
 			return false;
 		}
 		if (knownSolutionProximity == null) {
@@ -408,9 +357,8 @@ public class CipherSolution {
 		sb.append("Solution [probability=" + probability + ", logProbability=" + logProbability
 				+ (knownSolutionProximity != null ? ", proximity="
 						+ String.format("%1$,.2f", knownSolutionProximity.doubleValue() * 100.0) + "%" : "")
-				+ ", generativeModelProbability=" + generativeModelProbability + ", generativeModelLogProbability="
-				+ generativeModelLogProbability + ", languageModelProbability=" + languageModelProbability
-				+ ", languageModelLogProbability=" + languageModelLogProbability + "]\n");
+				+ ", languageModelProbability=" + languageModelProbability + ", languageModelLogProbability="
+				+ languageModelLogProbability + "]\n");
 
 		if (this.cipher != null) {
 			String nextPlaintext = null;
