@@ -37,8 +37,6 @@ You should have received a copy of the GNU General Public License along with Zen
 		</property>
 	</bean>
 	
-	<import resource="classpath:beans-dao.xml" />
-
 	<mongo:mongo host="${mongodb.host}" port="${mongodb.port}" />
 	<mongo:db-factory dbname="${mongodb.database}" />
 
@@ -57,5 +55,6 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="allowCoreThreadTimeOut" value="true" />
 	</bean>
 
-	<import resource="classpath:inferenceContext.xml" />
+	<import resource="classpath:beans-dao.xml" />
+	<import resource="classpath:beans-inference.xml" />
 </beans>

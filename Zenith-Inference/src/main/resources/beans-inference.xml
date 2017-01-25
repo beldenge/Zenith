@@ -25,7 +25,7 @@ You should have received a copy of the GNU General Public License along with Zen
 	</bean>
 
 	<bean id="ehcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-		<property name="configLocation" value="classpath:bayesian/ehcache.xml"/>
+		<property name="configLocation" value="classpath:ehcache.xml"/>
 		<property name="shared" value="true" />
 	</bean>
 
