@@ -73,6 +73,7 @@ public class BayesianDecipherManager {
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
 	private TaskExecutor					taskExecutor;
 	private Double							percentToReallocate;
+	private Boolean							includeWordBoundaries;
 
 	@PostConstruct
 	public void setUp() {
@@ -87,9 +88,20 @@ public class BayesianDecipherManager {
 
 		cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
+		long total = 0;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
-			letterUnigramProbabilities.add(new LetterProbability(entry.getKey(),
-					entry.getValue().getTerminalInfo().getConditionalProbability()));
+			if (!entry.getKey().equals(' ')) {
+				total += entry.getValue().getTerminalInfo().getCount();
+			}
+		}
+
+		BigDecimal probability;
+		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
+			if (!entry.getKey().equals(' ')) {
+				probability = BigDecimal.valueOf(entry.getValue().getTerminalInfo().getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
+
+				letterUnigramProbabilities.add(new LetterProbability(entry.getKey(), probability));
+			}
 		}
 	}
 
@@ -109,11 +121,13 @@ public class BayesianDecipherManager {
 			initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
 		});
 
-		// for (int i = 0; i < cipher.getCiphertextCharacters().size() - 1; i++) {
-		// if (ThreadLocalRandom.current().nextDouble() < wordBoundaryProbability) {
-		// initialSolution.addWordBoundary(i);
-		// }
-		// }
+		if (includeWordBoundaries) {
+			for (int i = 0; i < cipher.getCiphertextCharacters().size() - 1; i++) {
+				if (ThreadLocalRandom.current().nextDouble() < wordBoundaryProbability) {
+					initialSolution.addWordBoundary(i);
+				}
+			}
+		}
 
 		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(initialSolution);
 		initialSolution.setLanguageModelProbability(initialPlaintextResults.getProbability());
@@ -156,7 +170,9 @@ public class BayesianDecipherManager {
 			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
 
 			startWordSampling = System.currentTimeMillis();
-			// next = runGibbsWordBoundarySampler(temperature, next);
+			if (includeWordBoundaries) {
+				next = runGibbsWordBoundarySampler(temperature, next);
+			}
 			wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
 
 			if (knownPlaintextEvaluator != null) {
@@ -476,5 +492,14 @@ public class BayesianDecipherManager {
 	@Required
 	public void setPercentToReallocate(Double percentToReallocate) {
 		this.percentToReallocate = percentToReallocate;
+	}
+
+	/**
+	 * @param includeWordBoundaries
+	 *            the includeWordBoundaries to set
+	 */
+	@Required
+	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
+		this.includeWordBoundaries = includeWordBoundaries;
 	}
 }

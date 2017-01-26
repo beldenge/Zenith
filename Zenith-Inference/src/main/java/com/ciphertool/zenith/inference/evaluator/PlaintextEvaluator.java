@@ -50,6 +50,8 @@ public class PlaintextEvaluator {
 
 	private MathCache	bigDecimalFunctions;
 
+	private Boolean		includeWordBoundaries;
+
 	@PostConstruct
 	public void init() {
 		unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(letterMarkovModel.getRootNode().getTerminalInfo().getCount()
@@ -73,8 +75,10 @@ public class PlaintextEvaluator {
 		BigDecimal interpolatedProbability = BigDecimal.ONE;
 		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
 
+		int order = letterMarkovModel.getOrder();
+
 		long startLetter = System.currentTimeMillis();
-		EvaluationResults letterNGramResults = evaluateLetterNGrams(solution);
+		EvaluationResults letterNGramResults = evaluateLetterNGrams(solution, order);
 		log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
 
 		long startRemaining = System.currentTimeMillis();
@@ -95,10 +99,13 @@ public class PlaintextEvaluator {
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterNGrams(CipherSolution solution) {
+	public EvaluationResults evaluateLetterNGrams(CipherSolution solution, int order) {
 		List<WordProbability> words = transformToWordList(solution);
 
-		int order = letterMarkovModel.getOrder();
+		if (words == null || words.isEmpty()) {
+			throw new IllegalStateException(
+					"Unable to evaluate n-grams because the list of words to concatenate is empty.");
+		}
 
 		BigDecimal probability = null;
 		BigDecimal nGramProbability = BigDecimal.ONE;
@@ -106,11 +113,24 @@ public class PlaintextEvaluator {
 		NGramIndexNode match = null;
 
 		StringBuilder sb = new StringBuilder();
+
+		if (includeWordBoundaries) {
+			sb.append(" ");
+		}
+
 		for (WordProbability word : words) {
 			sb.append(word.getValue());
+
+			if (includeWordBoundaries) {
+				sb.append(" ");
+			}
 		}
 
 		for (int i = 0; i < sb.length() - order; i++) {
+			if (i > 0 && sb.charAt(i) == ' ') {
+				continue;
+			}
+
 			match = letterMarkovModel.findLongest(sb.substring(i, i + order));
 
 			if (match != null && match.getTerminalInfo().getLevel() == order) {
@@ -197,5 +217,14 @@ public class PlaintextEvaluator {
 	@Required
 	public void setBigDecimalFunctions(MathCache bigDecimalFunctions) {
 		this.bigDecimalFunctions = bigDecimalFunctions;
+	}
+
+	/**
+	 * @param includeWordBoundaries
+	 *            the includeWordBoundaries to set
+	 */
+	@Required
+	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
+		this.includeWordBoundaries = includeWordBoundaries;
 	}
 }

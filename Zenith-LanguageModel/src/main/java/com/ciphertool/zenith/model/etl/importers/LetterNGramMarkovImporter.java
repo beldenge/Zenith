@@ -46,11 +46,13 @@ import com.ciphertool.zenith.model.markov.NGramIndexNode;
 import com.ciphertool.zenith.model.markov.TerminalInfo;
 
 public class LetterNGramMarkovImporter implements MarkovImporter {
-	private static Logger		log			= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
+	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
 
-	private static final String	EXTENSION	= ".txt";
-	private static final String	NON_ALPHA	= "[^a-zA-Z]";
+	private static final String	EXTENSION			= ".txt";
+	private static final String	NON_ALPHA			= "[^a-zA-Z]";
+	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
 
+	private Boolean				includeWordBoundaries;
 	private String				corpusDirectory;
 	private TaskExecutor		taskExecutor;
 	private MarkovModel			letterMarkovModel;
@@ -252,7 +254,8 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 				String[] sentences = content.split("(\n|\r|\r\n)+");
 
 				for (int i = 0; i < sentences.length; i++) {
-					sentence = sentences[i].replaceAll(NON_ALPHA, "").toLowerCase();
+					sentence = (" " + sentences[i].replaceAll("\\s+", " ").trim()
+							+ " ").replaceAll((includeWordBoundaries ? NON_ALPHA_OR_SPACE : NON_ALPHA), "").toLowerCase();
 
 					for (int j = 0; j < sentence.length(); j++) {
 						String nGramString = sentence.substring(j, j + Math.min(order, sentence.length() - j));
@@ -329,5 +332,14 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	@Required
 	public void setLetterMarkovModel(MarkovModel letterMarkovModel) {
 		this.letterMarkovModel = letterMarkovModel;
+	}
+
+	/**
+	 * @param includeWordBoundaries
+	 *            the includeWordBoundaries to set
+	 */
+	@Required
+	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
+		this.includeWordBoundaries = includeWordBoundaries;
 	}
 }

@@ -44,10 +44,12 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="knownPlaintextEvaluator" ref="knownPlaintextEvaluator" />
 		<property name="taskExecutor" ref="taskExecutor" />
 		<property name="percentToReallocate" value="${bayes.percent.to.reallocate}" />
+		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
 	</bean>
 
 	<bean class="com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator" id="plaintextEvaluator">
 		<property name="letterMarkovModel" ref="letterMarkovModel" />
 		<property name="bigDecimalFunctions" ref="bigDecimalFunctions" />
+		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
 	</bean>
 </beans>

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class NGramIndexNode {
-	private static final Pattern			LOWERCASE_LETTERS	= Pattern.compile("[a-z]");
+	private static final Pattern			LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z ]");
 	private Map<Character, NGramIndexNode>	transitions;
 	private TerminalInfo					terminalInfo;
 	private NGramIndexNode					parent;
@@ -71,10 +71,10 @@ public class NGramIndexNode {
 	}
 
 	public void putChild(Character c, NGramIndexNode child) {
-		if (!LOWERCASE_LETTERS.matcher(c.toString()).matches()) {
+		if (!LOWERCASE_LETTERS_AND_SPACE.matcher(c.toString()).matches()) {
 			throw new IllegalArgumentException(
 					"Attempted to add a character to the Markov Model which is outside the range of "
-							+ LOWERCASE_LETTERS);
+							+ LOWERCASE_LETTERS_AND_SPACE);
 		}
 
 		this.getTransitions().put(c, child);
@@ -108,7 +108,7 @@ public class NGramIndexNode {
 
 	public String getCumulativeStringValue() {
 		if (this.parent != null) {
-			for (Map.Entry<Character, NGramIndexNode> entry : this.parent.transitions.entrySet()) {
+			for (Map.Entry<Character, NGramIndexNode> entry : this.parent.getTransitions().entrySet()) {
 				if (entry.getValue() == this) {
 					return this.parent.getCumulativeStringValue() + "" + entry.getKey().toString();
 				}

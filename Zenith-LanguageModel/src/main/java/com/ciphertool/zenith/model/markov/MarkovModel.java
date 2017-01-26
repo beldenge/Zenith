@@ -34,20 +34,25 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class MarkovModel {
-	private static Logger					log					= LoggerFactory.getLogger(MarkovModel.class);
+	private static Logger					log							= LoggerFactory.getLogger(MarkovModel.class);
 
-	private static final List<Character>	LOWERCASE_LETTERS	= Arrays.asList(new Character[] { 'a', 'b', 'c', 'd',
-			'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y',
-			'z' });
+	private static final List<Character>	LOWERCASE_LETTERS			= Arrays.asList(new Character[] { 'a', 'b', 'c',
+			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+			'y', 'z' });
+	private static final List<Character>	LOWERCASE_LETTERS_AND_SPACE	= new ArrayList<>(LOWERCASE_LETTERS);
 
-	private NGramIndexNode					rootNode			= new NGramIndexNode(null);
-	private boolean							postProcessed		= false;
-	private Integer							order;
-	private TaskExecutor					taskExecutor;
-	private Long							numWithCountOfOne;
+	static {
+		LOWERCASE_LETTERS_AND_SPACE.add(' ');
+	}
+
+	private Boolean			includeWordBoundaries;
+	private NGramIndexNode	rootNode		= new NGramIndexNode(null);
+	private boolean			postProcessed	= false;
+	private Integer			order;
+	private TaskExecutor	taskExecutor;
+	private Long			numWithCountOfOne;
 
 	/**
 	 * A concurrent task for normalizing a Markov model node.
@@ -105,10 +110,6 @@ public class MarkovModel {
 		return populateLetterNode(rootNode, nGramString, 1);
 	}
 
-	public boolean addWordTransition(String nGramString, int level) {
-		return populateWordNode(rootNode, nGramString, level);
-	}
-
 	protected boolean populateLetterNode(NGramIndexNode currentNode, String nGramString, Integer level) {
 		Character firstLetter = nGramString.charAt(0);
 
@@ -119,18 +120,6 @@ public class MarkovModel {
 		}
 
 		return isNew && level == this.order;
-	}
-
-	protected boolean populateWordNode(NGramIndexNode currentNode, String nGramString, Integer level) {
-		Character firstLetter = nGramString.charAt(0);
-
-		boolean isNew = currentNode.addOrIncrementChildAsync(firstLetter, level, nGramString.length() == 1);
-
-		if (nGramString.length() > 1) {
-			return populateWordNode(currentNode.getChild(firstLetter), nGramString.substring(1), level);
-		}
-
-		return isNew;
 	}
 
 	public void postProcess(boolean normalize, boolean linkChildren) {
@@ -213,7 +202,7 @@ public class MarkovModel {
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
 		if (nGram.length() == order) {
-			for (Character letter : LOWERCASE_LETTERS) {
+			for (Character letter : (includeWordBoundaries ? LOWERCASE_LETTERS_AND_SPACE : LOWERCASE_LETTERS)) {
 				NGramIndexNode match = this.findLongest(nGram.substring(1) + letter.toString());
 
 				if (match != null) {
@@ -391,5 +380,14 @@ public class MarkovModel {
 	@Required
 	public void setTaskExecutor(TaskExecutor taskExecutor) {
 		this.taskExecutor = taskExecutor;
+	}
+
+	/**
+	 * @param includeWordBoundaries
+	 *            the includeWordBoundaries to set
+	 */
+	@Required
+	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
+		this.includeWordBoundaries = includeWordBoundaries;
 	}
 }
