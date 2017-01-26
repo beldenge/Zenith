@@ -242,7 +242,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 		letterNGramMarkovImporter = new LetterNGramMarkovImporter();
 		letterNGramMarkovImporter.setLetterMarkovModel(letterMarkovModel);
-		letterNGramMarkovImporter.setCorpusDirectory("/Users/george/Desktop/sherlock-transformed");
+		letterNGramMarkovImporter.setCorpusDirectory("/Users/george/Desktop/zenith-transformed");
 		letterNGramMarkovImporter.setTaskExecutor(taskExecutorSpy);
 		letterNGramMarkovImporter.importCorpus();
 
