@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
+import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
@@ -47,6 +48,7 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.BoundaryProbability;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
+import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
@@ -220,27 +222,20 @@ public class BayesianDecipherManager {
 	 * A concurrent task for computing the letter probability during Gibbs sampling.
 	 */
 	protected class LetterProbabilityTask implements Callable<CipherSolution> {
-		private Character			letter;
-		private EvaluationResults	partialPlaintextResults;
-		private String				ciphertextKey;
-		private CipherSolution		conditionalSolution;
+		private Character		letter;
+		private String			ciphertextKey;
+		private CipherSolution	conditionalSolution;
 
 		/**
 		 * @param originalSolution
 		 *            the original unmodified solution
 		 * @param letter
 		 *            the letter to sample for
-		 * @param partialPlaintextResults
-		 *            the partial plaintext results
 		 * @param ciphertextKey
 		 *            the ciphertext key
-		 * @param modified
-		 *            the modified solution
 		 */
-		public LetterProbabilityTask(CipherSolution conditionalSolution, Character letter,
-				EvaluationResults partialPlaintextResults, String ciphertextKey) {
+		public LetterProbabilityTask(CipherSolution conditionalSolution, Character letter, String ciphertextKey) {
 			this.letter = letter;
-			this.partialPlaintextResults = partialPlaintextResults;
 			this.ciphertextKey = ciphertextKey;
 			this.conditionalSolution = conditionalSolution;
 		}
@@ -255,11 +250,11 @@ public class BayesianDecipherManager {
 			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
 
 			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(ciphertextKey, true, conditionalSolution);
+			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(conditionalSolution);
 			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
 
-			conditionalSolution.setLanguageModelProbability(partialPlaintextResults.getProbability().multiply(remainingPlaintextResults.getProbability(), MathConstants.PREC_10_HALF_UP));
-			conditionalSolution.setLanguageModelLogProbability(partialPlaintextResults.getLogProbability().add(remainingPlaintextResults.getLogProbability(), MathConstants.PREC_10_HALF_UP));
+			conditionalSolution.setLanguageModelProbability(remainingPlaintextResults.getProbability());
+			conditionalSolution.setLanguageModelLogProbability(remainingPlaintextResults.getLogProbability());
 			conditionalSolution.setProbability(conditionalSolution.getLanguageModelProbability());
 			conditionalSolution.setLogProbability(conditionalSolution.getLanguageModelLogProbability());
 
@@ -271,15 +266,12 @@ public class BayesianDecipherManager {
 		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
 		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
 
-		EvaluationResults partialPlaintextResults = plaintextEvaluator.evaluate(ciphertextKey, false, solution);
-
 		List<FutureTask<CipherSolution>> futures = new ArrayList<FutureTask<CipherSolution>>(26);
 		FutureTask<CipherSolution> task;
 
 		// Calculate the full conditional probability for each possible plaintext substitution
 		for (Character letter : LOWERCASE_LETTERS) {
-			task = new FutureTask<CipherSolution>(new LetterProbabilityTask(solution.clone(), letter,
-					partialPlaintextResults, ciphertextKey));
+			task = new FutureTask<CipherSolution>(new LetterProbabilityTask(solution.clone(), letter, ciphertextKey));
 			futures.add(task);
 			this.taskExecutor.execute(task);
 		}
@@ -289,9 +281,6 @@ public class BayesianDecipherManager {
 		for (FutureTask<CipherSolution> future : futures) {
 			try {
 				next = future.get();
-
-				// Reset to the original cipher, since it was modified by moveAffectedWindowsToEnd()
-				next.setCipher(cipher);
 
 				plaintextDistribution.add(new SolutionProbability(next, next.getProbability()));
 				sumOfProbabilities = sumOfProbabilities.add(next.getProbability(), MathConstants.PREC_10_HALF_UP);

@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference;
+package com.ciphertool.zenith.inference.dto;
 
 import java.math.BigDecimal;
 

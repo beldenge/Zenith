@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference;
+package com.ciphertool.zenith.inference.selection;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -28,8 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ciphertool.zenith.inference.probability.Probability;
-import com.ciphertool.zenith.inference.selection.BinaryRouletteNode;
-import com.ciphertool.zenith.inference.selection.BinaryRouletteTree;
 import com.ciphertool.zenith.math.MathConstants;
 
 public class RouletteSampler<T extends Probability<?>> {

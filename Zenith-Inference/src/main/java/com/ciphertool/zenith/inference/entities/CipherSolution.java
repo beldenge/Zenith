@@ -338,7 +338,7 @@ public class CipherSolution {
 		}
 
 		for (Ciphertext ciphertext : this.getCipher().getCiphertextCharacters()) {
-			sb.append(ciphertext.getValue());
+			sb.append(this.mappings.get(ciphertext.getValue()).getValue());
 		}
 
 		return sb.toString();

@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
-import com.ciphertool.zenith.inference.EvaluationResults;
+import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.WordProbability;
 import com.ciphertool.zenith.math.MathCache;
@@ -70,15 +70,11 @@ public class PlaintextEvaluator {
 	}
 
 	public EvaluationResults evaluate(CipherSolution solution) {
-		return evaluate(null, false, solution);
-	}
-
-	public EvaluationResults evaluate(String ciphertextKey, boolean includeCiphertextParameterOnly, CipherSolution solution) {
 		BigDecimal interpolatedProbability = BigDecimal.ONE;
 		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
 
 		long startLetter = System.currentTimeMillis();
-		EvaluationResults letterNGramResults = evaluateLetterNGrams(ciphertextKey, includeCiphertextParameterOnly, solution);
+		EvaluationResults letterNGramResults = evaluateLetterNGrams(solution);
 		log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
 
 		long startRemaining = System.currentTimeMillis();
@@ -99,8 +95,8 @@ public class PlaintextEvaluator {
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterNGrams(String ciphertextKey, boolean includeCiphertextParameterOnly, CipherSolution solution) {
-		List<WordProbability> words = transformToWordList(ciphertextKey, includeCiphertextParameterOnly, solution);
+	public EvaluationResults evaluateLetterNGrams(CipherSolution solution) {
+		List<WordProbability> words = transformToWordList(solution);
 
 		int order = letterMarkovModel.getOrder();
 
@@ -164,39 +160,23 @@ public class PlaintextEvaluator {
 		return new EvaluationResults(indexOfCoincidenceCipher, bigDecimalFunctions.log(indexOfCoincidenceCipher));
 	}
 
-	protected List<WordProbability> transformToWordList(String ciphertextKey, boolean includeCiphertextParameterOnly, CipherSolution solution) {
+	protected List<WordProbability> transformToWordList(CipherSolution solution) {
 		String currentSolutionString = solution.asSingleLineString().substring(0, solution.getCipher().getCiphertextCharacters().size());
 
 		List<WordProbability> words = new ArrayList<>();
 		Integer begin = null;
-		boolean add = (ciphertextKey == null) ? false : !includeCiphertextParameterOnly;
 
 		for (int i = 0; i < currentSolutionString.length(); i++) {
-			if (ciphertextKey == null) {
-				add = true;
-			} else if (includeCiphertextParameterOnly) {
-				if (ciphertextKey.equals(solution.getCipher().getCiphertextCharacters().get(i).getValue())) {
-					add = true;
-				}
-			} else if (ciphertextKey.equals(solution.getCipher().getCiphertextCharacters().get(i).getValue())) {
-				add = false;
-			}
-
 			if (i < (currentSolutionString.length() - 1) && solution.getWordBoundaries().contains(i)) {
-				if (add) {
-					words.add(new WordProbability(begin, i, currentSolutionString.substring((begin == null ? 0 : begin
-							+ 1), i + 1)));
-				}
+				words.add(new WordProbability(begin, i, currentSolutionString.substring((begin == null ? 0 : begin
+						+ 1), i + 1)));
 
 				begin = i;
-				add = (ciphertextKey == null) ? false : !includeCiphertextParameterOnly;
 			}
 		}
 
-		if (add) {
-			words.add(new WordProbability(begin, null, currentSolutionString.substring((begin == null ? 0 : begin
-					+ 1), currentSolutionString.length())));
-		}
+		words.add(new WordProbability(begin, null, currentSolutionString.substring((begin == null ? 0 : begin
+				+ 1), currentSolutionString.length())));
 
 		return words;
 	}

@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.ciphertool.zenith.inference.RouletteSampler;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
