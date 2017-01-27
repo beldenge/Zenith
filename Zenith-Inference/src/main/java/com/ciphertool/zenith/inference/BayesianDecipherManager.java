@@ -134,6 +134,11 @@ public class BayesianDecipherManager {
 		initialSolution.setLanguageModelLogProbability(initialPlaintextResults.getLogProbability());
 		initialSolution.setProbability(initialSolution.getLanguageModelProbability());
 		initialSolution.setLogProbability(initialSolution.getLanguageModelLogProbability());
+
+		if (knownPlaintextEvaluator != null) {
+			initialSolution.setKnownSolutionProximity(BigDecimal.valueOf(knownPlaintextEvaluator.evaluate(initialSolution)));
+		}
+
 		log.info(initialSolution.toString());
 
 		BigDecimal maxTemp = BigDecimal.valueOf(annealingTemperatureMax);
