@@ -130,5 +130,17 @@ You should have received a copy of the GNU General Public License along with Zen
 			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- Support for MongoDB -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>1.9.4.RELEASE</version>
+		</dependency>
 	</dependencies>
 </project>

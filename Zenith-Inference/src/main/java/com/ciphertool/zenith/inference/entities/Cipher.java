@@ -20,11 +20,11 @@
 package com.ciphertool.zenith.inference.entities;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,7 +34,7 @@ public class Cipher implements Serializable {
 	private static final long	serialVersionUID		= 3417112220260206089L;
 
 	@Id
-	private BigInteger			id;
+	private ObjectId			id;
 
 	@Indexed(background = true)
 	private String				name;
@@ -56,11 +56,11 @@ public class Cipher implements Serializable {
 		this.columns = columns;
 	}
 
-	public BigInteger getId() {
+	public ObjectId getId() {
 		return id;
 	}
 
-	public void setId(BigInteger id) {
+	public void setId(ObjectId id) {
 		this.id = id;
 	}
 

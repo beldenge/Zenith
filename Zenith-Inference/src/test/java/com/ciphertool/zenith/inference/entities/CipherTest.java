@@ -25,9 +25,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.math.BigInteger;
 import java.util.List;
 
+import org.bson.types.ObjectId;
 import org.junit.Test;
 
 public class CipherTest {
@@ -46,7 +46,7 @@ public class CipherTest {
 	@Test
 	public void testSetId() {
 		Cipher cipher = new Cipher();
-		BigInteger idToSet = new BigInteger("999");
+		ObjectId idToSet = new ObjectId("999999999999999999999999");
 		cipher.setId(idToSet);
 
 		assertSame(idToSet, cipher.getId());
@@ -155,7 +155,7 @@ public class CipherTest {
 
 	@Test
 	public void testEquals() {
-		BigInteger baseId = new BigInteger("123");
+		ObjectId baseId = new ObjectId("999999999999999999999999");
 		String baseName = "baseName";
 		int baseRows = 10;
 		int baseColumns = 5;
@@ -204,7 +204,7 @@ public class CipherTest {
 		assertFalse(base.equals(cipherWithDifferentColumns));
 
 		Cipher cipherWithDifferentId = new Cipher(baseName, baseRows, baseColumns);
-		cipherWithDifferentId.setId(new BigInteger("321"));
+		cipherWithDifferentId.setId(new ObjectId("111111111111111111111111"));
 		cipherWithDifferentId.setHasKnownSolution(baseHasKnownSolution);
 		cipherWithDifferentId.addCiphertextCharacter(ciphertext1);
 		cipherWithDifferentId.addCiphertextCharacter(ciphertext2);

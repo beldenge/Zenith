@@ -91,14 +91,14 @@ public class BayesianDecipherManager {
 		long total = 0;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			if (!entry.getKey().equals(' ')) {
-				total += entry.getValue().getTerminalInfo().getCount();
+				total += entry.getValue().getCount();
 			}
 		}
 
 		BigDecimal probability;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			if (!entry.getKey().equals(' ')) {
-				probability = BigDecimal.valueOf(entry.getValue().getTerminalInfo().getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
+				probability = BigDecimal.valueOf(entry.getValue().getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
 
 				letterUnigramProbabilities.add(new LetterProbability(entry.getKey(), probability));
 			}

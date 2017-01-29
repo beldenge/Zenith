@@ -43,7 +43,6 @@ import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.dto.ParseResults;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
-import com.ciphertool.zenith.model.markov.TerminalInfo;
 
 public class LetterNGramMarkovImporter implements MarkovImporter {
 	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
@@ -86,13 +85,13 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		log.info("Imported " + unique + " distinct letter N-Grams out of " + total + " total in "
 				+ (System.currentTimeMillis() - start) + "ms");
 
-		this.letterMarkovModel.getRootNode().setTerminalInfo(new TerminalInfo(0, total));
+		this.letterMarkovModel.getRootNode().setCount(total);
 
 		this.letterMarkovModel.postProcess(true, false);
 
 		for (Map.Entry<Character, NGramIndexNode> entry : this.letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			log.info(entry.getKey().toString() + ": "
-					+ entry.getValue().getTerminalInfo().getConditionalProbability().toString().substring(0, Math.min(7, entry.getValue().getTerminalInfo().getConditionalProbability().toString().length())));
+					+ entry.getValue().getConditionalProbability().toString().substring(0, Math.min(7, entry.getValue().getConditionalProbability().toString().length())));
 		}
 
 		normalize(this.letterMarkovModel, orderTotal);
@@ -106,16 +105,16 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
 		List<Character> keysToRemove = new ArrayList<Character>();
-		TerminalInfo terminalInfo;
+		NGramIndexNode terminalInfo;
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
 			if (entry.getValue() == null) {
 				continue;
 			}
 
-			terminalInfo = entry.getValue().getTerminalInfo();
+			terminalInfo = entry.getValue();
 
-			if (terminalInfo != null && terminalInfo.getCount() < minCount) {
+			if (terminalInfo.getCount() < minCount) {
 				keysToRemove.add(entry.getKey());
 
 				continue;
@@ -156,8 +155,8 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	}
 
 	protected void normalizeTerminal(NGramIndexNode node, long total) {
-		if (node.getTerminalInfo() != null && node.getTerminalInfo().getLevel() == this.letterMarkovModel.getOrder()) {
-			node.getTerminalInfo().setProbability(BigDecimal.valueOf(node.getTerminalInfo().getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
+		if (node.getLevel() == this.letterMarkovModel.getOrder()) {
+			node.setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
 
 			return;
 		}
@@ -201,24 +200,30 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		long total = 0L;
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
-		TerminalInfo terminalInfo;
+		NGramIndexNode terminalInfo;
+
+		List<Character> toRemove = new ArrayList<>();
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
 			if (entry.getValue() == null) {
 				continue;
 			}
 
-			terminalInfo = entry.getValue().getTerminalInfo();
+			terminalInfo = entry.getValue();
 
-			if (terminalInfo != null && terminalInfo.getCount() == 1) {
-				log.debug(entry.getValue().getCumulativeStringValue());
+			if (terminalInfo.getCount() == 1L) {
+				log.debug(entry.getValue().getCumulativeString());
 
-				entry.getValue().setTerminalInfo(null);
+				toRemove.add(entry.getKey());
 
 				removedCount++;
 			}
 
 			total += removeCountOfOne(entry.getValue());
+		}
+
+		for (Character toBeRemoved : toRemove) {
+			transitions.remove(toBeRemoved);
 		}
 
 		return total + removedCount;

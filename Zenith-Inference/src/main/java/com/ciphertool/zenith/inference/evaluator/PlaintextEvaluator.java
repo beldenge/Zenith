@@ -54,18 +54,18 @@ public class PlaintextEvaluator {
 
 	@PostConstruct
 	public void init() {
-		unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(letterMarkovModel.getRootNode().getTerminalInfo().getCount()
+		unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(letterMarkovModel.getRootNode().getCount()
 				+ 1), MathConstants.PREC_10_HALF_UP);
 
 		log.info("unknownLetterNGramProbability: {}", unknownLetterNGramProbability);
 
 		BigDecimal occurences = null;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
-			occurences = BigDecimal.valueOf(entry.getValue().getTerminalInfo().getCount());
+			occurences = BigDecimal.valueOf(entry.getValue().getCount());
 			indexOfCoincidenceEnglish = indexOfCoincidenceEnglish.add(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP));
 		}
 
-		occurences = BigDecimal.valueOf(letterMarkovModel.getRootNode().getTerminalInfo().getCount());
+		occurences = BigDecimal.valueOf(letterMarkovModel.getRootNode().getCount());
 		indexOfCoincidenceEnglish = indexOfCoincidenceEnglish.divide(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
 
 		log.info("Index of coincidence for English: {}", indexOfCoincidenceEnglish);
@@ -133,9 +133,9 @@ public class PlaintextEvaluator {
 
 			match = letterMarkovModel.findLongest(sb.substring(i, i + order));
 
-			if (match != null && match.getTerminalInfo().getLevel() == order) {
-				probability = match.getTerminalInfo().getProbability();
-				log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeStringValue(), probability);
+			if (match != null && match.getLevel() == order) {
+				probability = match.getProbability();
+				log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 			} else {
 				probability = unknownLetterNGramProbability;
 				log.debug("No Letter N-Gram Match");

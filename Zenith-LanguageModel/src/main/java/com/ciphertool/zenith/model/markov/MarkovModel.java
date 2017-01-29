@@ -48,7 +48,7 @@ public class MarkovModel {
 	}
 
 	private Boolean			includeWordBoundaries;
-	private NGramIndexNode	rootNode		= new NGramIndexNode(null);
+	private NGramIndexNode	rootNode		= new NGramIndexNode(null, "", 0);
 	private boolean			postProcessed	= false;
 	private Integer			order;
 	private TaskExecutor	taskExecutor;
@@ -111,12 +111,10 @@ public class MarkovModel {
 	}
 
 	protected boolean populateLetterNode(NGramIndexNode currentNode, String nGramString, Integer level) {
-		Character firstLetter = nGramString.charAt(0);
+		boolean isNew = currentNode.addOrIncrementChildAsync(nGramString, level);
 
-		boolean isNew = currentNode.addOrIncrementChildAsync(firstLetter, level, true);
-
-		if (nGramString.length() > 1) {
-			return populateLetterNode(currentNode.getChild(firstLetter), nGramString.substring(1), level + 1);
+		if (level < nGramString.length()) {
+			return populateLetterNode(currentNode.getChild(nGramString.charAt(level - 1)), nGramString, level + 1);
 		}
 
 		return isNew && level == this.order;
@@ -139,8 +137,7 @@ public class MarkovModel {
 		if (normalize) {
 			for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
 				if (entry.getValue() != null) {
-					task = new FutureTask<Void>(new NormalizeTask(entry.getValue(),
-							rootNode.getTerminalInfo().getCount()));
+					task = new FutureTask<Void>(new NormalizeTask(entry.getValue(), rootNode.getCount()));
 					futures.add(task);
 					this.taskExecutor.execute(task);
 				}
@@ -185,7 +182,7 @@ public class MarkovModel {
 	}
 
 	protected void normalize(NGramIndexNode node, long parentCount) {
-		node.getTerminalInfo().setConditionalProbability(BigDecimal.valueOf(node.getTerminalInfo().getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
+		node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
 
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
@@ -194,7 +191,7 @@ public class MarkovModel {
 		}
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			normalize(entry.getValue(), node.getTerminalInfo().getCount());
+			normalize(entry.getValue(), node.getCount());
 		}
 	}
 
@@ -239,11 +236,7 @@ public class MarkovModel {
 		}
 
 		if (nGramString.length() == 1) {
-			if (nextNode.getTerminalInfo() != null) {
-				return nextNode;
-			}
-
-			return null;
+			return nextNode;
 		}
 
 		return findMatch(nextNode, nGramString.substring(1));
@@ -265,42 +258,13 @@ public class MarkovModel {
 			return longestMatch;
 		}
 
-		if (nextNode.getTerminalInfo() != null) {
-			longestMatch = nextNode;
-		}
+		longestMatch = nextNode;
 
 		if (nGramString.length() == 1) {
 			return longestMatch;
 		}
 
 		return findLongestMatch(nextNode, nGramString.substring(1), longestMatch);
-	}
-
-	/**
-	 * @param nGram
-	 *            the N-gram String to search by
-	 * @return the longest matching String
-	 */
-	public String findLongestAsString(String nGram) {
-		return findLongestMatchAsString(rootNode, nGram, "");
-	}
-
-	protected static String findLongestMatchAsString(NGramIndexNode node, String nGramString, String longestMatch) {
-		NGramIndexNode nextNode = node.getChild(nGramString.charAt(0));
-
-		if (nextNode == null) {
-			return longestMatch;
-		}
-
-		if (nextNode.getTerminalInfo() != null) {
-			longestMatch = longestMatch + nGramString.charAt(0);
-		}
-
-		if (nGramString.length() == 1) {
-			return longestMatch;
-		}
-
-		return findLongestMatchAsString(nextNode, nGramString.substring(1), longestMatch);
 	}
 
 	/**
@@ -326,8 +290,7 @@ public class MarkovModel {
 	}
 
 	protected void appendTransitions(String parent, Character symbol, NGramIndexNode node, StringBuilder sb) {
-		sb.append("\n[" + parent + "] ->" + symbol + " | "
-				+ (node.getTerminalInfo() != null ? node.getTerminalInfo().getCount() : 0));
+		sb.append("\n[" + parent + "] ->" + symbol + " | " + node.getCount());
 
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
