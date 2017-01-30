@@ -97,12 +97,12 @@ public class BayesianDecipherManager {
 
 		List<NGramIndexNode> nGramNodes = letterNGramDao.findAll(minimumCount, includeWordBoundaries);
 
-		letterMarkovModel.setNumWithInsufficientCounts(letterNGramDao.countLessThan(minimumCount, includeWordBoundaries));
-
 		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 				- startFindAll));
 
 		this.letterMarkovModel = new MarkovModel(this.markovOrder);
+
+		letterMarkovModel.setNumWithInsufficientCounts(letterNGramDao.countLessThan(minimumCount, includeWordBoundaries));
 
 		for (NGramIndexNode nGramNode : nGramNodes) {
 			this.letterMarkovModel.addNode(nGramNode);
