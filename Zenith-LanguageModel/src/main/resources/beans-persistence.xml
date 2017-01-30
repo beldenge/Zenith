@@ -45,6 +45,8 @@ You should have received a copy of the GNU General Public License along with Zen
 
 	<bean class="com.ciphertool.zenith.model.dao.LetterNGramDao" id="letterNGramDao">
 		<property name="mongoTemplate" ref="mongoTemplate" />
+		<property name="batchSize" value="${mongodb.parallelScan.batchSize}" />
+		<property name="numCursors" value="${mongodb.parallelScan.numCursors}" />
 	</bean>
 
 	<bean class="com.ciphertool.zenith.model.etl.persisters.NGramPersister" id="nGramPersister">

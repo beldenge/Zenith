@@ -21,12 +21,16 @@ package com.ciphertool.zenith.model.dao;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.data.mongodb.core.query.Query;
 
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 import com.mongodb.Cursor;
@@ -35,6 +39,8 @@ import com.mongodb.DBObject;
 import com.mongodb.ParallelScanOptions;
 
 public class LetterNGramDao {
+	private Logger				log							= LoggerFactory.getLogger(getClass());
+
 	private static final String	COLLECTION_WITH_SPACES		= "letterNGrams_withSpaces";
 	private static final String	COLLECTION_WITHOUT_SPACES	= "letterNGrams_withoutSpaces";
 	private static final String	ID_KEY						= "id";
@@ -52,12 +58,12 @@ public class LetterNGramDao {
 		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
 
-		List<NGramIndexNode> nodesToReturn = new ArrayList<>();
+		List<NGramIndexNode> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
 
-		DBObject next;
-		NGramIndexNode nextNode;
+		cursors.parallelStream().forEach(cursor -> {
+			DBObject next;
+			NGramIndexNode nextNode;
 
-		for (Cursor cursor : cursors) {
 			while (cursor.hasNext()) {
 				next = cursor.next();
 
@@ -80,7 +86,7 @@ public class LetterNGramDao {
 					nodesToReturn.add(nextNode);
 				}
 			}
-		}
+		});
 
 		return nodesToReturn;
 	}
@@ -98,7 +104,8 @@ public class LetterNGramDao {
 	}
 
 	public void deleteAll(boolean includeWordBoundaries) {
-		mongoOperations.dropCollection(includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES);
+		// This is better than dropping the collection because we won't have to re-ensure indexes and such
+		mongoOperations.findAllAndRemove(new Query(), NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
 	}
 
 	@Required

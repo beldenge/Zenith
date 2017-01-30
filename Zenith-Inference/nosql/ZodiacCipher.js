@@ -793,4 +793,6 @@ db.ciphers.insert(zodiac340);
 db.ciphers.insert(zodiac408);
 
 db.createCollection("letterNGrams_withoutSpaces");
+db.letterNGrams_withoutSpaces.ensureIndex( { "count": 1 }, { background: true } );
 db.createCollection("letterNGrams_withSpaces");
+db.letterNGrams_withSpaces.ensureIndex( { "count": 1 }, { background: true } );

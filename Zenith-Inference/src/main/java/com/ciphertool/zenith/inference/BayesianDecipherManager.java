@@ -102,7 +102,13 @@ public class BayesianDecipherManager {
 
 		this.letterMarkovModel = new MarkovModel(this.markovOrder);
 
+		long startCount = System.currentTimeMillis();
+		log.info("Counting nodes with counts below the minimum of {}.", minimumCount);
+
 		letterMarkovModel.setNumWithInsufficientCounts(letterNGramDao.countLessThan(minimumCount, includeWordBoundaries));
+
+		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
+				- startCount));
 
 		for (NGramIndexNode nGramNode : nGramNodes) {
 			this.letterMarkovModel.addNode(nGramNode);
