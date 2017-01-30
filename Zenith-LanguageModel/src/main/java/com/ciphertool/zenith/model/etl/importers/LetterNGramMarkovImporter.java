@@ -63,7 +63,6 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	private TaskExecutor	taskExecutor;
 	private MarkovModel		letterMarkovModel;
 	private int				order;
-	private int				minimumCount;
 
 	@Override
 	public MarkovModel importCorpus(boolean includeWordBoundaries) {
@@ -109,8 +108,6 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		for (int i = 1; i <= order; i++) {
 			normalize(this.letterMarkovModel, i, levelTotals.get(i));
 		}
-
-		this.letterMarkovModel.setNumWithInsufficientCounts(removeNodesWithInsufficientCounts(this.letterMarkovModel.getRootNode()));
 
 		for (Map.Entry<Character, NGramIndexNode> entry : this.letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			log.info(entry.getKey().toString() + ": "
@@ -342,40 +339,6 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		}
 	}
 
-	protected long removeNodesWithInsufficientCounts(NGramIndexNode node) {
-		int removedCount = 0;
-		long total = 0L;
-		Map<Character, NGramIndexNode> transitions = node.getTransitions();
-
-		NGramIndexNode terminalInfo;
-
-		List<Character> keysToRemove = new ArrayList<>();
-
-		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			if (entry.getValue() == null) {
-				continue;
-			}
-
-			terminalInfo = entry.getValue();
-
-			if (terminalInfo.getCount() < minimumCount) {
-				log.debug("Removing node: {}", entry.getValue().getCumulativeString());
-
-				keysToRemove.add(entry.getKey());
-
-				removedCount++;
-			}
-
-			total += removeNodesWithInsufficientCounts(entry.getValue());
-		}
-
-		for (Character key : keysToRemove) {
-			transitions.remove(key);
-		}
-
-		return total + removedCount;
-	}
-
 	/**
 	 * A concurrent task for parsing a file into a Markov model.
 	 */
@@ -500,14 +463,5 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	@Required
 	public void setOrder(int order) {
 		this.order = order;
-	}
-
-	/**
-	 * @param minimumCount
-	 *            the minimumCount to set
-	 */
-	@Required
-	public void setMinimumCount(int minimumCount) {
-		this.minimumCount = minimumCount;
 	}
 }

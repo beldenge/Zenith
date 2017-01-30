@@ -331,7 +331,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		LetterNGramDao letterNGramDao = new LetterNGramDao();
 		letterMarkovModel = new MarkovModel(6);
 
-		List<NGramIndexNode> nodes = letterNGramDao.findAllWithoutSpaces();
+		List<NGramIndexNode> nodes = letterNGramDao.findAll(2, false);
 
 		for (NGramIndexNode node : nodes) {
 			letterMarkovModel.addNode(node);

@@ -46,6 +46,7 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="percentToReallocate" value="${bayes.percent.to.reallocate}" />
 		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
 		<property name="markovOrder" value="${markov.letter.order}" />
+		<property name="minimumCount" value="${markov.minimum.count}" />
 	</bean>
 
 	<bean class="com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator" id="plaintextEvaluator">

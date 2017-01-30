@@ -39,7 +39,6 @@ You should have received a copy of the GNU General Public License along with Zen
 
 	<bean class="com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter" id="letterNGramMarkovImporter">
 		<property name="order" value="${markov.letter.order}" />
-		<property name="minimumCount" value="${markov.minimum.count}" />
 		<property name="corpusDirectory" value="${corpus.output.directory}" />
 		<property name="taskExecutor" ref="taskExecutor" />
 	</bean>

@@ -43,7 +43,7 @@ public class NGramPersister {
 
 		log.info("Deleting all existing n-grams with spaces.");
 
-		letterNGramDao.deleteAllWithSpaces();
+		letterNGramDao.deleteAll(true);
 
 		log.info("Completed deletion of n-grams with spaces in {}ms.", (System.currentTimeMillis()
 				- startDeleteWithSpaces));
@@ -56,7 +56,7 @@ public class NGramPersister {
 
 		List<NGramIndexNode> nGramsWithSpaces = transformToList(markovModelWithSpaces.getRootNode());
 
-		letterNGramDao.addAllWithSpaces(nGramsWithSpaces);
+		letterNGramDao.addAll(nGramsWithSpaces, true);
 
 		log.info("Completed persistence of n-grams with spaces in {}ms.", (System.currentTimeMillis()
 				- startAddWithSpaces));
@@ -68,7 +68,7 @@ public class NGramPersister {
 
 		log.info("Deleting all existing n-grams without spaces.");
 
-		letterNGramDao.deleteAllWithoutSpaces();
+		letterNGramDao.deleteAll(false);
 
 		log.info("Completed deletion of n-grams without spaces in {}ms.", (System.currentTimeMillis()
 				- startDeleteWithoutSpaces));
@@ -81,7 +81,7 @@ public class NGramPersister {
 
 		List<NGramIndexNode> nGramsWithoutSpaces = transformToList(markovModelWithoutSpaces.getRootNode());
 
-		letterNGramDao.addAllWithoutSpaces(nGramsWithoutSpaces);
+		letterNGramDao.addAll(nGramsWithoutSpaces, false);
 
 		log.info("Completed persistence of n-grams without spaces in {}ms.", (System.currentTimeMillis()
 				- startAddWithoutSpaces));

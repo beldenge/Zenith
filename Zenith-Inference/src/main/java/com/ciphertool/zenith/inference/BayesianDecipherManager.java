@@ -77,6 +77,7 @@ public class BayesianDecipherManager {
 	private Boolean							includeWordBoundaries;
 	private int								markovOrder;
 	private MarkovModel						letterMarkovModel;
+	private int								minimumCount;
 
 	@PostConstruct
 	public void setUp() {
@@ -94,12 +95,9 @@ public class BayesianDecipherManager {
 		long startFindAll = System.currentTimeMillis();
 		log.info("Beginning retrieval of all n-grams with{} spaces.", (includeWordBoundaries ? "" : "out"));
 
-		List<NGramIndexNode> nGramNodes;
-		if (includeWordBoundaries) {
-			nGramNodes = letterNGramDao.findAllWithSpaces();
-		} else {
-			nGramNodes = letterNGramDao.findAllWithoutSpaces();
-		}
+		List<NGramIndexNode> nGramNodes = letterNGramDao.findAll(minimumCount, includeWordBoundaries);
+
+		letterMarkovModel.setNumWithInsufficientCounts(letterNGramDao.countLessThan(minimumCount, includeWordBoundaries));
 
 		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 				- startFindAll));
@@ -540,5 +538,14 @@ public class BayesianDecipherManager {
 	@Required
 	public void setMarkovOrder(int markovOrder) {
 		this.markovOrder = markovOrder;
+	}
+
+	/**
+	 * @param minimumCount
+	 *            the minimumCount to set
+	 */
+	@Required
+	public void setMinimumCount(int minimumCount) {
+		this.minimumCount = minimumCount;
 	}
 }

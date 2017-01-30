@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
@@ -32,32 +33,26 @@ public class LetterNGramDao {
 
 	private MongoOperations		mongoOperations;
 
-	public List<NGramIndexNode> findAllWithSpaces() {
-		return mongoOperations.findAll(NGramIndexNode.class, COLLECTION_WITH_SPACES);
+	public List<NGramIndexNode> findAll(int minimumCount, boolean includeWordBoundaries) {
+		BasicQuery query = new BasicQuery("{ count : { $gte : " + minimumCount + " } }");
+
+		return mongoOperations.find(query, NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
 	}
 
-	public List<NGramIndexNode> findAllWithoutSpaces() {
-		return mongoOperations.findAll(NGramIndexNode.class, COLLECTION_WITHOUT_SPACES);
+	public long countLessThan(int minimumCount, boolean includeWordBoundaries) {
+		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
+
+		return mongoOperations.count(query, NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
 	}
 
-	public void addAllWithSpaces(List<NGramIndexNode> nodes) {
+	public void addAll(List<NGramIndexNode> nodes, boolean includeWordBoundaries) {
 		for (NGramIndexNode node : nodes) {
-			mongoOperations.insert(node, COLLECTION_WITH_SPACES);
+			mongoOperations.insert(node, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
 		}
 	}
 
-	public void addAllWithoutSpaces(List<NGramIndexNode> nodes) {
-		for (NGramIndexNode node : nodes) {
-			mongoOperations.insert(node, COLLECTION_WITHOUT_SPACES);
-		}
-	}
-
-	public void deleteAllWithSpaces() {
-		mongoOperations.dropCollection(COLLECTION_WITH_SPACES);
-	}
-
-	public void deleteAllWithoutSpaces() {
-		mongoOperations.dropCollection(COLLECTION_WITHOUT_SPACES);
+	public void deleteAll(boolean includeWordBoundaries) {
+		mongoOperations.dropCollection(includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES);
 	}
 
 	@Required
