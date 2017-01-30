@@ -52,6 +52,9 @@ public class NGramIndexNode {
 
 	private String							cumulativeString;
 
+	public NGramIndexNode() {
+	}
+
 	public NGramIndexNode(NGramIndexNode parent, String nGramString, int level) {
 		this.parent = parent;
 		this.cumulativeString = nGramString;
@@ -151,7 +154,7 @@ public class NGramIndexNode {
 		boolean isNew = false;
 
 		if (child == null) {
-			this.putChild(firstLetter, new NGramIndexNode(this, nGramString, level));
+			this.putChild(firstLetter, new NGramIndexNode(this, nGramString.substring(0, level), level));
 
 			child = this.getChild(firstLetter);
 
@@ -163,14 +166,39 @@ public class NGramIndexNode {
 		return isNew;
 	}
 
-	public void putChild(Character c, NGramIndexNode child) {
+	public synchronized NGramIndexNode addExistingNodeAsync(NGramIndexNode nodeToAdd, int level) {
+		Character firstLetter = nodeToAdd.cumulativeString.charAt(level - 1);
+
+		NGramIndexNode child = this.getChild(firstLetter);
+
+		if (level == nodeToAdd.level) {
+			if (child == null) {
+				nodeToAdd.setParent(this);
+
+				this.putChild(firstLetter, nodeToAdd);
+			} else {
+				child.setId(nodeToAdd.id);
+				child.setCount(nodeToAdd.count);
+				child.setConditionalProbability(nodeToAdd.conditionalProbability);
+				child.setProbability(nodeToAdd.probability);
+			}
+
+			return null;
+		} else if (child == null) {
+			this.putChild(firstLetter, new NGramIndexNode(this, nodeToAdd.cumulativeString.substring(0, level), level));
+		}
+
+		return this.getChild(firstLetter);
+	}
+
+	public NGramIndexNode putChild(Character c, NGramIndexNode child) {
 		if (!LOWERCASE_LETTERS_AND_SPACE.matcher(c.toString()).matches()) {
 			throw new IllegalArgumentException(
 					"Attempted to add a character to the Markov Model which is outside the range of "
 							+ LOWERCASE_LETTERS_AND_SPACE);
 		}
 
-		this.getTransitions().put(c, child);
+		return this.getTransitions().put(c, child);
 	}
 
 	/**
@@ -197,5 +225,13 @@ public class NGramIndexNode {
 	 */
 	public void setCumulativeString(String cumulativeString) {
 		this.cumulativeString = cumulativeString;
+	}
+
+	/**
+	 * @param parent
+	 *            the parent to set
+	 */
+	public void setParent(NGramIndexNode parent) {
+		this.parent = parent;
 	}
 }

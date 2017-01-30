@@ -19,31 +19,29 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import static org.mockito.Mockito.spy;
-
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.math.BigDecimalFunctions;
-import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.markov.MarkovModel;
+import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
-	private static Logger						log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
+	private static Logger				log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
 
-	private static LetterNGramMarkovImporter	letterNGramMarkovImporter;
-	private static MarkovModel					letterMarkovModel;
+	private static MarkovModel			letterMarkovModel;
 
-	private static PlaintextEvaluator			plaintextEvaluator;
+	private static PlaintextEvaluator	plaintextEvaluator;
 
-	private static CipherSolution				actualSolution	= new CipherSolution();
-	private static CipherSolution				solution2		= new CipherSolution();
-	private static CipherSolution				solution3		= new CipherSolution();
+	private static CipherSolution		actualSolution	= new CipherSolution();
+	private static CipherSolution		solution2		= new CipherSolution();
+	private static CipherSolution		solution3		= new CipherSolution();
 
 	static {
 		int lastRowBegin = (zodiac408.getColumns() * (zodiac408.getRows() - 1));
@@ -330,42 +328,29 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 	// @BeforeClass
 	public static void setUp() throws InterruptedException, ExecutionException {
-		ThreadPoolTaskExecutor taskExecutorSpy = spy(new ThreadPoolTaskExecutor());
-		taskExecutorSpy.setCorePoolSize(4);
-		taskExecutorSpy.setMaxPoolSize(4);
-		taskExecutorSpy.setQueueCapacity(10000);
-		taskExecutorSpy.setKeepAliveSeconds(1);
-		taskExecutorSpy.setAllowCoreThreadTimeOut(true);
-		taskExecutorSpy.initialize();
+		LetterNGramDao letterNGramDao = new LetterNGramDao();
+		letterMarkovModel = new MarkovModel(6);
 
-		letterMarkovModel = new MarkovModel();
-		letterMarkovModel.setOrder(6);
-		letterMarkovModel.setTaskExecutor(taskExecutorSpy);
-		letterMarkovModel.setIncludeWordBoundaries(false);
+		List<NGramIndexNode> nodes = letterNGramDao.findAllWithoutSpaces();
 
-		letterNGramMarkovImporter = new LetterNGramMarkovImporter();
-		letterNGramMarkovImporter.setLetterMarkovModel(letterMarkovModel);
-		letterNGramMarkovImporter.setCorpusDirectory("/Users/george/Desktop/zenith-transformed");
-		letterNGramMarkovImporter.setTaskExecutor(taskExecutorSpy);
-		letterNGramMarkovImporter.setIncludeWordBoundaries(false);
-		letterNGramMarkovImporter.importCorpus();
+		for (NGramIndexNode node : nodes) {
+			letterMarkovModel.addNode(node);
+		}
 
 		plaintextEvaluator = new PlaintextEvaluator();
-		plaintextEvaluator.setLetterMarkovModel(letterMarkovModel);
 		plaintextEvaluator.setBigDecimalFunctions(new BigDecimalFunctions());
 		plaintextEvaluator.setIncludeWordBoundaries(false);
-		plaintextEvaluator.init();
 	}
 
 	// @Test
 	public void testEvaluate() {
-		log.info("fitness1: " + plaintextEvaluator.evaluate(actualSolution));
+		log.info("fitness1: " + plaintextEvaluator.evaluate(letterMarkovModel, actualSolution));
 		log.info("solution1: " + actualSolution);
 
-		log.info("fitness2: " + plaintextEvaluator.evaluate(solution2));
+		log.info("fitness2: " + plaintextEvaluator.evaluate(letterMarkovModel, solution2));
 		log.info("solution2: " + solution2);
 
-		log.info("fitness3: " + plaintextEvaluator.evaluate(solution3));
+		log.info("fitness3: " + plaintextEvaluator.evaluate(letterMarkovModel, solution3));
 		log.info("solution3: " + solution3);
 	}
 
@@ -375,7 +360,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		long evaluations = 10000;
 
 		for (int i = 0; i < evaluations; i++) {
-			plaintextEvaluator.evaluate(actualSolution);
+			plaintextEvaluator.evaluate(letterMarkovModel, actualSolution);
 		}
 
 		log.info(evaluations + " evaluations took: " + (System.currentTimeMillis() - start) + "ms.");

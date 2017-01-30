@@ -22,5 +22,5 @@ package com.ciphertool.zenith.model.etl.importers;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 
 public interface MarkovImporter {
-	public MarkovModel importCorpus();
+	public MarkovModel importCorpus(boolean includeWordBoundaries);
 }

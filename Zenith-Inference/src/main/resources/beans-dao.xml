@@ -17,16 +17,7 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="mongoTemplate" ref="mongoTemplate" />
 	</bean>
 
-	<bean class="com.ciphertool.zenith.model.markov.MarkovModel" id="letterMarkovModel">
-		<property name="order" value="${markov.letter.order}" />
-		<property name="taskExecutor" ref="taskExecutor" />
-		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
-	</bean>
-
-	<bean class="com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter" id="letterNGramMarkovImporter">
-		<property name="letterMarkovModel" ref="letterMarkovModel" />
-		<property name="corpusDirectory" value="${markov.corpus.directory}" />
-		<property name="taskExecutor" ref="taskExecutor" />
-		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
+	<bean class="com.ciphertool.zenith.model.dao.LetterNGramDao" id="letterNGramDao">
+		<property name="mongoTemplate" ref="mongoTemplate" />
 	</bean>
 </beans>

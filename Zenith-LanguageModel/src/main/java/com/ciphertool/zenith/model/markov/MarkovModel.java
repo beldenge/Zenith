@@ -20,90 +20,50 @@
 package com.ciphertool.zenith.model.markov;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.math.MathConstants;
 
 public class MarkovModel {
-	private static Logger					log							= LoggerFactory.getLogger(MarkovModel.class);
-
-	private static final List<Character>	LOWERCASE_LETTERS			= Arrays.asList(new Character[] { 'a', 'b', 'c',
-			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-			'y', 'z' });
-	private static final List<Character>	LOWERCASE_LETTERS_AND_SPACE	= new ArrayList<>(LOWERCASE_LETTERS);
-
-	static {
-		LOWERCASE_LETTERS_AND_SPACE.add(' ');
-	}
-
-	private Boolean			includeWordBoundaries;
-	private NGramIndexNode	rootNode		= new NGramIndexNode(null, "", 0);
-	private boolean			postProcessed	= false;
+	private NGramIndexNode	rootNode	= new NGramIndexNode(null, "", 0);
 	private Integer			order;
-	private TaskExecutor	taskExecutor;
-	private Long			numWithCountOfOne;
+	private Long			numWithInsufficientCounts;
+	private BigDecimal		unknownLetterNGramProbability;
+	private BigDecimal		indexOfCoincidence;
 
-	/**
-	 * A concurrent task for normalizing a Markov model node.
-	 */
-	protected class NormalizeTask implements Callable<Void> {
-		private NGramIndexNode	node;
-		private long			parentCount;
+	public MarkovModel(int order) {
+		this.order = order;
+	}
 
-		/**
-		 * @param node
-		 *            the NGramIndexNode to set
-		 * @param parentCount
-		 *            the parentCount to set
-		 */
-		public NormalizeTask(NGramIndexNode node, long parentCount) {
-			this.node = node;
-			this.parentCount = parentCount;
+	public void addNode(NGramIndexNode nodeToAdd) {
+		if (nodeToAdd.getLevel() == 0) {
+			// This is the root node
+
+			rootNode.setId(nodeToAdd.getId());
+			rootNode.setCount(nodeToAdd.getCount());
+			rootNode.setConditionalProbability(nodeToAdd.getConditionalProbability());
+			rootNode.setProbability(nodeToAdd.getProbability());
+
+			return;
 		}
 
-		@Override
-		public Void call() throws Exception {
-			normalize(this.node, this.parentCount);
+		boolean succeeded = populateExistingNode(rootNode, nodeToAdd, 1);
 
-			return null;
+		if (!succeeded) {
+			throw new IllegalStateException("Could not add node to Markov Model: " + nodeToAdd);
 		}
 	}
 
-	/**
-	 * A concurrent task for linking leaf nodes in a Markov model.
-	 */
-	protected class LinkChildTask implements Callable<Void> {
-		private Character		key;
-		private NGramIndexNode	node;
+	protected boolean populateExistingNode(NGramIndexNode parentNode, NGramIndexNode nodeToAdd, int level) {
+		NGramIndexNode newChild = parentNode.addExistingNodeAsync(nodeToAdd, level);
 
-		/**
-		 * @param key
-		 *            the Character key to set
-		 * @param node
-		 *            the NGramIndexNode to set
-		 */
-		public LinkChildTask(Character key, NGramIndexNode node) {
-			this.key = key;
-			this.node = node;
+		if (level < nodeToAdd.getCumulativeString().length()) {
+			return populateExistingNode(newChild, nodeToAdd, level + 1);
+		} else if (newChild != null) {
+			return false;
 		}
 
-		@Override
-		public Void call() throws Exception {
-			linkChild(this.node, String.valueOf(this.key));
-
-			return null;
-		}
+		return true;
 	}
 
 	public boolean addLetterTransition(String nGramString) {
@@ -118,105 +78,6 @@ public class MarkovModel {
 		}
 
 		return isNew && level == this.order;
-	}
-
-	public void postProcess(boolean normalize, boolean linkChildren) {
-		if (postProcessed) {
-			return;
-		}
-
-		long start = System.currentTimeMillis();
-
-		log.info("Starting Markov model post-processing...");
-
-		Map<Character, NGramIndexNode> initialTransitions = this.rootNode.getTransitions();
-
-		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
-		FutureTask<Void> task;
-
-		if (normalize) {
-			for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
-				if (entry.getValue() != null) {
-					task = new FutureTask<Void>(new NormalizeTask(entry.getValue(), rootNode.getCount()));
-					futures.add(task);
-					this.taskExecutor.execute(task);
-				}
-			}
-
-			for (FutureTask<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException ie) {
-					log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
-				} catch (ExecutionException ee) {
-					log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
-				}
-			}
-		}
-
-		if (linkChildren) {
-			futures = new ArrayList<FutureTask<Void>>(26);
-
-			for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
-				if (entry.getValue() != null) {
-					task = new FutureTask<Void>(new LinkChildTask(entry.getKey(), entry.getValue()));
-					futures.add(task);
-					this.taskExecutor.execute(task);
-				}
-			}
-
-			for (FutureTask<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException ie) {
-					log.error("Caught InterruptedException while waiting for LinkChildTask ", ie);
-				} catch (ExecutionException ee) {
-					log.error("Caught ExecutionException while waiting for LinkChildTask ", ee);
-				}
-			}
-		}
-
-		postProcessed = true;
-
-		log.info("Time elapsed: " + (System.currentTimeMillis() - start) + "ms");
-	}
-
-	protected void normalize(NGramIndexNode node, long parentCount) {
-		node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
-
-		Map<Character, NGramIndexNode> transitions = node.getTransitions();
-
-		if (transitions == null || transitions.isEmpty()) {
-			return;
-		}
-
-		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			normalize(entry.getValue(), node.getCount());
-		}
-	}
-
-	protected void linkChild(NGramIndexNode node, String nGram) {
-		Map<Character, NGramIndexNode> transitions = node.getTransitions();
-
-		if (nGram.length() == order) {
-			for (Character letter : (includeWordBoundaries ? LOWERCASE_LETTERS_AND_SPACE : LOWERCASE_LETTERS)) {
-				NGramIndexNode match = this.findLongest(nGram.substring(1) + letter.toString());
-
-				if (match != null) {
-					node.putChild(letter, match);
-				}
-			}
-
-			return;
-		}
-
-		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			NGramIndexNode nextNode = entry.getValue();
-
-			if (nextNode != null) {
-				linkChild(nextNode, nGram + String.valueOf(entry.getKey()));
-			}
-		}
 	}
 
 	/**
@@ -274,6 +135,60 @@ public class MarkovModel {
 		return rootNode;
 	}
 
+	/**
+	 * @return the numWithInsufficientCounts
+	 */
+	public Long getNumWithInsufficientCounts() {
+		return numWithInsufficientCounts;
+	}
+
+	/**
+	 * @param numWithInsufficientCounts
+	 *            the numWithInsufficientCounts to set
+	 */
+	public void setNumWithInsufficientCounts(Long numWithInsufficientCounts) {
+		this.numWithInsufficientCounts = numWithInsufficientCounts;
+	}
+
+	/**
+	 * @return the order
+	 */
+	public Integer getOrder() {
+		return order;
+	}
+
+	/**
+	 * @return the unknownLetterNGramProbability
+	 */
+	public BigDecimal getUnknownLetterNGramProbability() {
+		if (this.unknownLetterNGramProbability == null) {
+			this.unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(this.rootNode.getCount()
+					+ 1), MathConstants.PREC_10_HALF_UP);
+		}
+
+		return unknownLetterNGramProbability;
+	}
+
+	/**
+	 * @return the indexOfCoincidence
+	 */
+	public BigDecimal getIndexOfCoincidence() {
+		if (this.indexOfCoincidence == null) {
+			this.indexOfCoincidence = BigDecimal.ZERO;
+
+			BigDecimal occurences = null;
+			for (Map.Entry<Character, NGramIndexNode> entry : this.rootNode.getTransitions().entrySet()) {
+				occurences = BigDecimal.valueOf(entry.getValue().getCount());
+				this.indexOfCoincidence = this.indexOfCoincidence.add(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP));
+			}
+
+			occurences = BigDecimal.valueOf(this.rootNode.getCount());
+			this.indexOfCoincidence = this.indexOfCoincidence.divide(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
+		}
+
+		return indexOfCoincidence;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -303,54 +218,5 @@ public class MarkovModel {
 				appendTransitions(parent + entry.getKey(), entry.getKey(), entry.getValue(), sb);
 			}
 		}
-	}
-
-	/**
-	 * @return the numWithCountOfOne
-	 */
-	public Long getNumWithCountOfOne() {
-		return numWithCountOfOne;
-	}
-
-	/**
-	 * @param numWithCountOfOne
-	 *            the numWithCountOfOne to set
-	 */
-	public void setNumWithCountOfOne(Long numWithCountOfOne) {
-		this.numWithCountOfOne = numWithCountOfOne;
-	}
-
-	/**
-	 * @return the order
-	 */
-	public Integer getOrder() {
-		return order;
-	}
-
-	/**
-	 * @param order
-	 *            the order to set
-	 */
-	@Required
-	public void setOrder(Integer order) {
-		this.order = order;
-	}
-
-	/**
-	 * @param taskExecutor
-	 *            the taskExecutor to set
-	 */
-	@Required
-	public void setTaskExecutor(TaskExecutor taskExecutor) {
-		this.taskExecutor = taskExecutor;
-	}
-
-	/**
-	 * @param includeWordBoundaries
-	 *            the includeWordBoundaries to set
-	 */
-	@Required
-	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
-		this.includeWordBoundaries = includeWordBoundaries;
 	}
 }

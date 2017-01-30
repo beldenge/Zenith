@@ -26,11 +26,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.ciphertool.zenith.model.etl.persisters.NGramPersister;
 import com.ciphertool.zenith.model.etl.transformers.CorpusTransformer;
 
 public class CorpusManager {
 	private static Logger				log	= LoggerFactory.getLogger(CorpusManager.class);
 
+	private static BeanFactory			persistenceContext;
 	private static BeanFactory			beanFactory;
 	private static CorpusTransformer	xmlCorpusTransformer;
 	private static CorpusTransformer	textCorpusTransformer;
@@ -60,5 +62,11 @@ public class CorpusManager {
 
 		textCorpusTransformer.transformCorpus();
 		xmlCorpusTransformer.transformCorpus();
+
+		persistenceContext = new ClassPathXmlApplicationContext("beans-persistence.xml");
+
+		NGramPersister nGramPersister = (NGramPersister) persistenceContext.getBean("nGramPersister");
+
+		nGramPersister.persistNGrams();
 	}
 }

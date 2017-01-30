@@ -791,3 +791,6 @@ var zodiac408 = {
 
 db.ciphers.insert(zodiac340);
 db.ciphers.insert(zodiac408);
+
+db.createCollection("letterNGrams_withoutSpaces");
+db.createCollection("letterNGrams_withSpaces");

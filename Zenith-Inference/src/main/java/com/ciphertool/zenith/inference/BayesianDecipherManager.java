@@ -50,6 +50,7 @@ import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
@@ -63,8 +64,8 @@ public class BayesianDecipherManager {
 	private String							cipherName;
 	private PlaintextEvaluator				plaintextEvaluator;
 	private CipherDao						cipherDao;
+	private LetterNGramDao					letterNGramDao;
 	private Cipher							cipher;
-	private MarkovModel						letterMarkovModel;
 	private int								samplerIterations;
 	private int								annealingTemperatureMax;
 	private int								annealingTemperatureMin;
@@ -74,6 +75,8 @@ public class BayesianDecipherManager {
 	private TaskExecutor					taskExecutor;
 	private Double							percentToReallocate;
 	private Boolean							includeWordBoundaries;
+	private int								markovOrder;
+	private MarkovModel						letterMarkovModel;
 
 	@PostConstruct
 	public void setUp() {
@@ -87,6 +90,25 @@ public class BayesianDecipherManager {
 		}
 
 		cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
+
+		long startFindAll = System.currentTimeMillis();
+		log.info("Beginning retrieval of all n-grams with{} spaces.", (includeWordBoundaries ? "" : "out"));
+
+		List<NGramIndexNode> nGramNodes;
+		if (includeWordBoundaries) {
+			nGramNodes = letterNGramDao.findAllWithSpaces();
+		} else {
+			nGramNodes = letterNGramDao.findAllWithoutSpaces();
+		}
+
+		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
+				- startFindAll));
+
+		this.letterMarkovModel = new MarkovModel(this.markovOrder);
+
+		for (NGramIndexNode nGramNode : nGramNodes) {
+			this.letterMarkovModel.addNode(nGramNode);
+		}
 
 		long total = 0;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
@@ -103,6 +125,9 @@ public class BayesianDecipherManager {
 				letterUnigramProbabilities.add(new LetterProbability(entry.getKey(), probability));
 			}
 		}
+
+		log.info("unknownLetterNGramProbability: {}", this.letterMarkovModel.getUnknownLetterNGramProbability());
+		log.info("Index of coincidence for English: {}", this.letterMarkovModel.getIndexOfCoincidence());
 	}
 
 	public void run() {
@@ -129,7 +154,7 @@ public class BayesianDecipherManager {
 			}
 		}
 
-		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(initialSolution);
+		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, initialSolution);
 		initialSolution.setLanguageModelProbability(initialPlaintextResults.getProbability());
 		initialSolution.setLanguageModelLogProbability(initialPlaintextResults.getLogProbability());
 		initialSolution.setProbability(initialSolution.getLanguageModelProbability());
@@ -271,7 +296,7 @@ public class BayesianDecipherManager {
 			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
 
 			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(conditionalSolution);
+			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, conditionalSolution);
 			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
 
 			conditionalSolution.setLanguageModelProbability(remainingPlaintextResults.getProbability());
@@ -341,7 +366,7 @@ public class BayesianDecipherManager {
 			addProposal = solution.clone();
 			if (!addProposal.getWordBoundaries().contains(nextBoundary)) {
 				addProposal.addWordBoundary(nextBoundary);
-				addPlaintextResults = plaintextEvaluator.evaluate(addProposal);
+				addPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, addProposal);
 				addProposal.setLanguageModelProbability(addPlaintextResults.getProbability());
 				addProposal.setLanguageModelLogProbability(addPlaintextResults.getLogProbability());
 				addProposal.setProbability(addProposal.getLanguageModelProbability());
@@ -351,7 +376,7 @@ public class BayesianDecipherManager {
 			removeProposal = solution.clone();
 			if (removeProposal.getWordBoundaries().contains(nextBoundary)) {
 				removeProposal.removeWordBoundary(nextBoundary);
-				removePlaintextResults = plaintextEvaluator.evaluate(removeProposal);
+				removePlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, removeProposal);
 				removeProposal.setLanguageModelProbability(removePlaintextResults.getProbability());
 				removeProposal.setLanguageModelLogProbability(removePlaintextResults.getLogProbability());
 				removeProposal.setProbability(removeProposal.getLanguageModelProbability());
@@ -436,12 +461,12 @@ public class BayesianDecipherManager {
 	}
 
 	/**
-	 * @param letterMarkovModel
-	 *            the letterMarkovModel to set
+	 * @param letterNGramDao
+	 *            the letterNGramDao to set
 	 */
 	@Required
-	public void setLetterMarkovModel(MarkovModel letterMarkovModel) {
-		this.letterMarkovModel = letterMarkovModel;
+	public void setLetterNGramDao(LetterNGramDao letterNGramDao) {
+		this.letterNGramDao = letterNGramDao;
 	}
 
 	/**
@@ -506,5 +531,14 @@ public class BayesianDecipherManager {
 	@Required
 	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
 		this.includeWordBoundaries = includeWordBoundaries;
+	}
+
+	/**
+	 * @param markovOrder
+	 *            the markovOrder to set
+	 */
+	@Required
+	public void setMarkovOrder(int markovOrder) {
+		this.markovOrder = markovOrder;
 	}
 }

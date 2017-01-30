@@ -19,22 +19,25 @@
 
 package com.ciphertool.zenith.model.dto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ParseResults {
-	private long	total;
-	private long	orderTotal;
-	private long	unique;
+	private long				total;
+	private Map<Integer, Long>	levelTotals	= new HashMap<>();
+	private long				unique;
 
 	/**
 	 * @param total
 	 *            the total count
-	 * @param orderTotal
-	 *            the orderTotal count
+	 * @param levelTotals
+	 *            the total level counts
 	 * @param unique
 	 *            the unique count
 	 */
-	public ParseResults(long total, long orderTotal, long unique) {
+	public ParseResults(long total, Map<Integer, Long> levelTotals, long unique) {
 		this.total = total;
-		this.orderTotal = orderTotal;
+		this.levelTotals = levelTotals;
 		this.unique = unique;
 	}
 
@@ -46,10 +49,10 @@ public class ParseResults {
 	}
 
 	/**
-	 * @return the orderTotal
+	 * @return the levelTotals
 	 */
-	public long getOrderTotal() {
-		return orderTotal;
+	public Map<Integer, Long> getLevelTotals() {
+		return levelTotals;
 	}
 
 	/**

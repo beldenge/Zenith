@@ -47,15 +47,11 @@ public class MarkovModelTest {
 		taskExecutorSpy.setAllowCoreThreadTimeOut(true);
 		taskExecutorSpy.initialize();
 
-		model = new MarkovModel();
-		model.setOrder(ORDER);
-		model.setTaskExecutor(taskExecutorSpy);
-
 		importer = new LetterNGramMarkovImporter();
-		importer.setLetterMarkovModel(model);
 		importer.setCorpusDirectory("/Users/george/Desktop/corpus");
 		importer.setTaskExecutor(taskExecutorSpy);
-		importer.importCorpus();
+		importer.setOrder(ORDER);
+		model = importer.importCorpus(false);
 	}
 
 	// @Test

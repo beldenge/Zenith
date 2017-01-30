@@ -37,7 +37,7 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="plaintextEvaluator" ref="plaintextEvaluator" />
 		<property name="cipherName" value="${cipher.name}" />
 		<property name="cipherDao" ref="cipherDao" />
-		<property name="letterMarkovModel" ref="letterMarkovModel" />
+		<property name="letterNGramDao" ref="letterNGramDao" />
 		<property name="samplerIterations" value="${bayes.sampler.iterations}" />
 		<property name="annealingTemperatureMax" value="${bayes.annealing.temperature.max}" />
 		<property name="annealingTemperatureMin" value="${bayes.annealing.temperature.min}" />
@@ -45,10 +45,10 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="taskExecutor" ref="taskExecutor" />
 		<property name="percentToReallocate" value="${bayes.percent.to.reallocate}" />
 		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
+		<property name="markovOrder" value="${markov.letter.order}" />
 	</bean>
 
 	<bean class="com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator" id="plaintextEvaluator">
-		<property name="letterMarkovModel" ref="letterMarkovModel" />
 		<property name="bigDecimalFunctions" ref="bigDecimalFunctions" />
 		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
 	</bean>

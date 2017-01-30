@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -40,45 +38,20 @@ import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class PlaintextEvaluator {
-	private Logger		log							= LoggerFactory.getLogger(getClass());
-
-	private MarkovModel	letterMarkovModel;
-
-	private BigDecimal	unknownLetterNGramProbability;
-
-	private BigDecimal	indexOfCoincidenceEnglish	= BigDecimal.ZERO;
+	private Logger		log	= LoggerFactory.getLogger(getClass());
 
 	private MathCache	bigDecimalFunctions;
 
 	private Boolean		includeWordBoundaries;
 
-	@PostConstruct
-	public void init() {
-		unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(letterMarkovModel.getRootNode().getCount()
-				+ 1), MathConstants.PREC_10_HALF_UP);
-
-		log.info("unknownLetterNGramProbability: {}", unknownLetterNGramProbability);
-
-		BigDecimal occurences = null;
-		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
-			occurences = BigDecimal.valueOf(entry.getValue().getCount());
-			indexOfCoincidenceEnglish = indexOfCoincidenceEnglish.add(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP));
-		}
-
-		occurences = BigDecimal.valueOf(letterMarkovModel.getRootNode().getCount());
-		indexOfCoincidenceEnglish = indexOfCoincidenceEnglish.divide(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-
-		log.info("Index of coincidence for English: {}", indexOfCoincidenceEnglish);
-	}
-
-	public EvaluationResults evaluate(CipherSolution solution) {
+	public EvaluationResults evaluate(MarkovModel letterMarkovModel, CipherSolution solution) {
 		BigDecimal interpolatedProbability = BigDecimal.ONE;
 		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
 
 		int order = letterMarkovModel.getOrder();
 
 		long startLetter = System.currentTimeMillis();
-		EvaluationResults letterNGramResults = evaluateLetterNGrams(solution, order);
+		EvaluationResults letterNGramResults = evaluateLetterNGrams(letterMarkovModel, solution, order);
 		log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
 
 		long startRemaining = System.currentTimeMillis();
@@ -87,7 +60,7 @@ public class PlaintextEvaluator {
 		interpolatedLogProbability = letterNGramResults.getLogProbability();
 
 		EvaluationResults iocResults = evaluateIndexOfCoincidence(solution);
-		BigDecimal difference = BigDecimal.ONE.subtract(iocResults.getProbability().subtract(indexOfCoincidenceEnglish).abs());
+		BigDecimal difference = BigDecimal.ONE.subtract(iocResults.getProbability().subtract(letterMarkovModel.getIndexOfCoincidence()).abs());
 		BigDecimal scaledDifference = difference.pow(solution.getCipher().getCiphertextCharacters().size() / 4);
 		interpolatedProbability = interpolatedProbability.multiply(scaledDifference, MathConstants.PREC_10_HALF_UP);
 		for (int i = 0; i < solution.getCipher().getCiphertextCharacters().size() / 4; i++) {
@@ -99,7 +72,7 @@ public class PlaintextEvaluator {
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterNGrams(CipherSolution solution, int order) {
+	public EvaluationResults evaluateLetterNGrams(MarkovModel letterMarkovModel, CipherSolution solution, int order) {
 		List<WordProbability> words = transformToWordList(solution);
 
 		if (words == null || words.isEmpty()) {
@@ -137,7 +110,7 @@ public class PlaintextEvaluator {
 				probability = match.getProbability();
 				log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 			} else {
-				probability = unknownLetterNGramProbability;
+				probability = letterMarkovModel.getUnknownLetterNGramProbability();
 				log.debug("No Letter N-Gram Match");
 			}
 
@@ -199,15 +172,6 @@ public class PlaintextEvaluator {
 				+ 1), currentSolutionString.length())));
 
 		return words;
-	}
-
-	/**
-	 * @param letterMarkovModel
-	 *            the letterMarkovModel to set
-	 */
-	@Required
-	public void setLetterMarkovModel(MarkovModel letterMarkovModel) {
-		this.letterMarkovModel = letterMarkovModel;
 	}
 
 	/**

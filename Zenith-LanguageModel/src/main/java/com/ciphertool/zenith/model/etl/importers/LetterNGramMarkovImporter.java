@@ -26,13 +26,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,36 +45,53 @@ import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class LetterNGramMarkovImporter implements MarkovImporter {
-	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
+	private static Logger					log							= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
 
-	private static final String	EXTENSION			= ".txt";
-	private static final String	NON_ALPHA			= "[^a-zA-Z]";
-	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
+	private static final String				EXTENSION					= ".txt";
+	private static final String				NON_ALPHA					= "[^a-zA-Z]";
+	private static final String				NON_ALPHA_OR_SPACE			= "[^a-zA-Z ]";
+	private static final List<Character>	LOWERCASE_LETTERS			= Arrays.asList(new Character[] { 'a', 'b', 'c',
+			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+			'y', 'z' });
+	private static final List<Character>	LOWERCASE_LETTERS_AND_SPACE	= new ArrayList<>(LOWERCASE_LETTERS);
 
-	private Boolean				includeWordBoundaries;
-	private String				corpusDirectory;
-	private TaskExecutor		taskExecutor;
-	private MarkovModel			letterMarkovModel;
+	static {
+		LOWERCASE_LETTERS_AND_SPACE.add(' ');
+	}
+
+	private String			corpusDirectory;
+	private TaskExecutor	taskExecutor;
+	private MarkovModel		letterMarkovModel;
+	private int				order;
+	private int				minimumCount;
 
 	@Override
-	@PostConstruct
-	public MarkovModel importCorpus() {
+	public MarkovModel importCorpus(boolean includeWordBoundaries) {
+		letterMarkovModel = new MarkovModel(this.order);
+
 		long start = System.currentTimeMillis();
 
 		log.info("Starting corpus text import...");
 
-		List<FutureTask<ParseResults>> futures = parseFiles(Paths.get(this.corpusDirectory));
+		List<FutureTask<ParseResults>> futures = parseFiles(Paths.get(this.corpusDirectory), includeWordBoundaries);
 		ParseResults parseResults;
 		long total = 0L;
-		long orderTotal = 0L;
 		long unique = 0L;
+		Map<Integer, Long> levelTotals = new HashMap<>();
+
+		for (int i = 1; i <= order; i++) {
+			levelTotals.put(i, 0L);
+		}
 
 		for (FutureTask<ParseResults> future : futures) {
 			try {
 				parseResults = future.get();
 				total += parseResults.getTotal();
-				orderTotal += parseResults.getOrderTotal();
 				unique += parseResults.getUnique();
+
+				for (int i = 1; i <= order; i++) {
+					levelTotals.put(i, levelTotals.get(i) + parseResults.getLevelTotals().get(i));
+				}
 			} catch (InterruptedException ie) {
 				log.error("Caught InterruptedException while waiting for ParseFileTask ", ie);
 			} catch (ExecutionException ee) {
@@ -87,79 +104,107 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		this.letterMarkovModel.getRootNode().setCount(total);
 
-		this.letterMarkovModel.postProcess(true, false);
+		postProcess(true, false, includeWordBoundaries);
+
+		for (int i = 1; i <= order; i++) {
+			normalize(this.letterMarkovModel, i, levelTotals.get(i));
+		}
+
+		this.letterMarkovModel.setNumWithInsufficientCounts(removeNodesWithInsufficientCounts(this.letterMarkovModel.getRootNode()));
 
 		for (Map.Entry<Character, NGramIndexNode> entry : this.letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			log.info(entry.getKey().toString() + ": "
 					+ entry.getValue().getConditionalProbability().toString().substring(0, Math.min(7, entry.getValue().getConditionalProbability().toString().length())));
 		}
 
-		normalize(this.letterMarkovModel, orderTotal);
-
-		this.letterMarkovModel.setNumWithCountOfOne(removeCountOfOne(this.letterMarkovModel.getRootNode()));
-
 		return this.letterMarkovModel;
 	}
 
-	protected void removeOutliers(NGramIndexNode node, int minCount) {
-		Map<Character, NGramIndexNode> transitions = node.getTransitions();
+	public void postProcess(boolean computeConditionalProbability, boolean linkChildren, boolean includeWordBoundaries) {
+		long start = System.currentTimeMillis();
 
-		List<Character> keysToRemove = new ArrayList<Character>();
-		NGramIndexNode terminalInfo;
+		log.info("Starting Markov model post-processing...");
 
-		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			if (entry.getValue() == null) {
-				continue;
+		Map<Character, NGramIndexNode> initialTransitions = this.letterMarkovModel.getRootNode().getTransitions();
+
+		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		FutureTask<Void> task;
+
+		if (computeConditionalProbability) {
+			for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
+				if (entry.getValue() != null) {
+					task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(),
+							this.letterMarkovModel.getRootNode().getCount()));
+					futures.add(task);
+					this.taskExecutor.execute(task);
+				}
 			}
 
-			terminalInfo = entry.getValue();
+			for (FutureTask<Void> future : futures) {
+				try {
+					future.get();
+				} catch (InterruptedException ie) {
+					log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
+				} catch (ExecutionException ee) {
+					log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
+				}
+			}
+		}
 
-			if (terminalInfo.getCount() < minCount) {
-				keysToRemove.add(entry.getKey());
+		if (linkChildren) {
+			futures = new ArrayList<FutureTask<Void>>(26);
 
-				continue;
+			for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
+				if (entry.getValue() != null) {
+					task = new FutureTask<Void>(new LinkChildTask(entry.getKey(), entry.getValue(),
+							includeWordBoundaries));
+					futures.add(task);
+					this.taskExecutor.execute(task);
+				}
 			}
 
-			removeOutliers(entry.getValue(), minCount);
+			for (FutureTask<Void> future : futures) {
+				try {
+					future.get();
+				} catch (InterruptedException ie) {
+					log.error("Caught InterruptedException while waiting for LinkChildTask ", ie);
+				} catch (ExecutionException ee) {
+					log.error("Caught ExecutionException while waiting for LinkChildTask ", ee);
+				}
+			}
 		}
 
-		for (Character key : keysToRemove) {
-			transitions.remove(key);
-		}
+		log.info("Time elapsed: " + (System.currentTimeMillis() - start) + "ms");
 	}
 
 	/**
-	 * A concurrent task for normalizing a Markov model node.
+	 * A concurrent task for computing the conditional probability of a Markov node.
 	 */
-	protected class NormalizeTask implements Callable<Void> {
+	protected class ComputeConditionalTask implements Callable<Void> {
 		private NGramIndexNode	node;
-		private long			total;
+		private long			parentCount;
 
 		/**
 		 * @param node
 		 *            the NGramIndexNode to set
-		 * @param total
-		 *            the total to set
+		 * @param parentCount
+		 *            the parentCount to set
 		 */
-		public NormalizeTask(NGramIndexNode node, long total) {
+		public ComputeConditionalTask(NGramIndexNode node, long parentCount) {
 			this.node = node;
-			this.total = total;
+			this.parentCount = parentCount;
 		}
 
 		@Override
 		public Void call() throws Exception {
-			normalizeTerminal(this.node, this.total);
+			computeConditionalProbability(this.node, this.parentCount);
 
 			return null;
 		}
 	}
 
-	protected void normalizeTerminal(NGramIndexNode node, long total) {
-		if (node.getLevel() == this.letterMarkovModel.getOrder()) {
-			node.setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
-
-			return;
-		}
+	protected void computeConditionalProbability(NGramIndexNode node, long parentCount) {
+		node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
 
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
@@ -168,17 +213,71 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		}
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			normalizeTerminal(entry.getValue(), total);
+			computeConditionalProbability(entry.getValue(), node.getCount());
 		}
 	}
 
-	protected void normalize(MarkovModel markovModel, long orderTotal) {
+	protected void linkChild(NGramIndexNode node, String nGram, boolean includeWordBoundaries) {
+		Map<Character, NGramIndexNode> transitions = node.getTransitions();
+
+		if (nGram.length() == order) {
+			for (Character letter : (includeWordBoundaries ? LOWERCASE_LETTERS_AND_SPACE : LOWERCASE_LETTERS)) {
+				NGramIndexNode match = this.letterMarkovModel.findLongest(nGram.substring(1) + letter.toString());
+
+				if (match != null) {
+					node.putChild(letter, match);
+				}
+			}
+
+			return;
+		}
+
+		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
+			NGramIndexNode nextNode = entry.getValue();
+
+			if (nextNode != null) {
+				linkChild(nextNode, nGram + String.valueOf(entry.getKey()), includeWordBoundaries);
+			}
+		}
+	}
+
+	/**
+	 * A concurrent task for linking leaf nodes in a Markov model.
+	 */
+	protected class LinkChildTask implements Callable<Void> {
+		private Character		key;
+		private NGramIndexNode	node;
+		private boolean			includeWordBoundaries;
+
+		/**
+		 * @param key
+		 *            the Character key to set
+		 * @param node
+		 *            the NGramIndexNode to set
+		 * @param includeWordBoundaries
+		 *            whether to include word boundaries
+		 */
+		public LinkChildTask(Character key, NGramIndexNode node, boolean includeWordBoundaries) {
+			this.key = key;
+			this.node = node;
+			this.includeWordBoundaries = includeWordBoundaries;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			linkChild(this.node, String.valueOf(this.key), includeWordBoundaries);
+
+			return null;
+		}
+	}
+
+	protected void normalize(MarkovModel markovModel, int level, long orderTotal) {
 		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
 		FutureTask<Void> task;
 
 		for (Map.Entry<Character, NGramIndexNode> entry : markovModel.getRootNode().getTransitions().entrySet()) {
 			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new NormalizeTask(entry.getValue(), orderTotal));
+				task = new FutureTask<Void>(new NormalizeTask(entry.getValue(), level, orderTotal));
 				futures.add(task);
 				this.taskExecutor.execute(task);
 			}
@@ -195,14 +294,62 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		}
 	}
 
-	protected long removeCountOfOne(NGramIndexNode node) {
+	/**
+	 * A concurrent task for normalizing a Markov model node.
+	 */
+	protected class NormalizeTask implements Callable<Void> {
+		private NGramIndexNode	node;
+		private int				level;
+		private long			total;
+
+		/**
+		 * @param node
+		 *            the NGramIndexNode to set
+		 * @param level
+		 *            the level to set
+		 * @param total
+		 *            the total to set
+		 */
+		public NormalizeTask(NGramIndexNode node, int level, long total) {
+			this.node = node;
+			this.level = level;
+			this.total = total;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			normalizeTerminal(this.node, this.level, this.total);
+
+			return null;
+		}
+	}
+
+	protected void normalizeTerminal(NGramIndexNode node, int level, long total) {
+		if (node.getLevel() == level) {
+			node.setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
+
+			return;
+		}
+
+		Map<Character, NGramIndexNode> transitions = node.getTransitions();
+
+		if (transitions == null || transitions.isEmpty()) {
+			return;
+		}
+
+		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
+			normalizeTerminal(entry.getValue(), level, total);
+		}
+	}
+
+	protected long removeNodesWithInsufficientCounts(NGramIndexNode node) {
 		int removedCount = 0;
 		long total = 0L;
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
 		NGramIndexNode terminalInfo;
 
-		List<Character> toRemove = new ArrayList<>();
+		List<Character> keysToRemove = new ArrayList<>();
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
 			if (entry.getValue() == null) {
@@ -211,19 +358,19 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 			terminalInfo = entry.getValue();
 
-			if (terminalInfo.getCount() == 1L) {
-				log.debug(entry.getValue().getCumulativeString());
+			if (terminalInfo.getCount() < minimumCount) {
+				log.debug("Removing node: {}", entry.getValue().getCumulativeString());
 
-				toRemove.add(entry.getKey());
+				keysToRemove.add(entry.getKey());
 
 				removedCount++;
 			}
 
-			total += removeCountOfOne(entry.getValue());
+			total += removeNodesWithInsufficientCounts(entry.getValue());
 		}
 
-		for (Character toBeRemoved : toRemove) {
-			transitions.remove(toBeRemoved);
+		for (Character key : keysToRemove) {
+			transitions.remove(key);
 		}
 
 		return total + removedCount;
@@ -233,14 +380,18 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	 * A concurrent task for parsing a file into a Markov model.
 	 */
 	protected class ParseFileTask implements Callable<ParseResults> {
-		private Path path;
+		private Path	path;
+		private boolean	includeWordBoundaries;
 
 		/**
 		 * @param path
 		 *            the Path to set
+		 * @param includeWordBoundaries
+		 *            whether to include word boundaries
 		 */
-		public ParseFileTask(Path path) {
+		public ParseFileTask(Path path, boolean includeWordBoundaries) {
 			this.path = path;
+			this.includeWordBoundaries = includeWordBoundaries;
 		}
 
 		@Override
@@ -249,8 +400,12 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 			int order = letterMarkovModel.getOrder();
 			long total = 0;
-			long orderTotal = 0;
+			Map<Integer, Long> levelTotals = new HashMap<>();
 			long unique = 0;
+
+			for (int k = 1; k <= order; k++) {
+				levelTotals.put(k, 0L);
+			}
 
 			try {
 				String content = new String(Files.readAllBytes(this.path));
@@ -259,8 +414,16 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 				String[] sentences = content.split("(\n|\r|\r\n)+");
 
 				for (int i = 0; i < sentences.length; i++) {
-					sentence = (" " + sentences[i].replaceAll("\\s+", " ").trim()
-							+ " ").replaceAll((includeWordBoundaries ? NON_ALPHA_OR_SPACE : NON_ALPHA), "").toLowerCase();
+					sentence = (" " + sentences[i].replaceAll(NON_ALPHA_OR_SPACE, "").replaceAll("\\s+", " ").trim()
+							+ " ").toLowerCase();
+
+					if (!includeWordBoundaries) {
+						sentence = sentence.replaceAll(NON_ALPHA, "");
+					}
+
+					if (sentence.trim().length() == 0) {
+						continue;
+					}
 
 					for (int j = 0; j < sentence.length(); j++) {
 						String nGramString = sentence.substring(j, j + Math.min(order, sentence.length() - j));
@@ -268,8 +431,8 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 						unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
 						total++;
 
-						if (nGramString.length() == order) {
-							orderTotal++;
+						for (int k = 1; k <= nGramString.length(); k++) {
+							levelTotals.put(k, levelTotals.get(k) + 1);
 						}
 					}
 				}
@@ -277,11 +440,11 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 				log.error("Unable to parse file: " + this.path.toString(), ioe);
 			}
 
-			return new ParseResults(total, orderTotal, unique);
+			return new ParseResults(total, levelTotals, unique);
 		}
 	}
 
-	protected List<FutureTask<ParseResults>> parseFiles(Path path) {
+	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean includeWordBoundaries) {
 		List<FutureTask<ParseResults>> tasks = new ArrayList<FutureTask<ParseResults>>();
 		FutureTask<ParseResults> task;
 		String filename;
@@ -289,7 +452,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry));
+					tasks.addAll(parseFiles(entry, includeWordBoundaries));
 				} else {
 					filename = entry.toString();
 					String ext = filename.substring(filename.lastIndexOf('.'));
@@ -300,7 +463,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 						continue;
 					}
 
-					task = new FutureTask<ParseResults>(new ParseFileTask(entry));
+					task = new FutureTask<ParseResults>(new ParseFileTask(entry, includeWordBoundaries));
 					tasks.add(task);
 					this.taskExecutor.execute(task);
 				}
@@ -331,20 +494,20 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	}
 
 	/**
-	 * @param letterMarkovModel
-	 *            the letterMarkovModel to set
+	 * @param order
+	 *            the order to set
 	 */
 	@Required
-	public void setLetterMarkovModel(MarkovModel letterMarkovModel) {
-		this.letterMarkovModel = letterMarkovModel;
+	public void setOrder(int order) {
+		this.order = order;
 	}
 
 	/**
-	 * @param includeWordBoundaries
-	 *            the includeWordBoundaries to set
+	 * @param minimumCount
+	 *            the minimumCount to set
 	 */
 	@Required
-	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
-		this.includeWordBoundaries = includeWordBoundaries;
+	public void setMinimumCount(int minimumCount) {
+		this.minimumCount = minimumCount;
 	}
 }

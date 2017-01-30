@@ -13,10 +13,13 @@ You should have received a copy of the GNU General Public License along with Zen
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
        		http://www.springframework.org/schema/beans/spring-beans.xsd
        		http://www.springframework.org/schema/context
-       		http://www.springframework.org/schema/context/spring-context.xsd">
+       		http://www.springframework.org/schema/context/spring-context.xsd
+       		http://www.springframework.org/schema/data/mongo
+            http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
 
 	<!-- Needed to make the @Required annotation to work -->
 	<context:annotation-config />
@@ -27,16 +30,27 @@ You should have received a copy of the GNU General Public License along with Zen
 		</property>
 	</bean>
 
-	<bean id="xmlCorpusTransformer" class="com.ciphertool.zenith.model.etl.transformers.XmlCorpusTransformer">
-		<property name="taskExecutor" ref="taskExecutor" />
-		<property name="corpusDirectory" value="${corpus.xml.input.directory}" />
-		<property name="outputDirectory" value="${corpus.output.directory}" />
+	<mongo:mongo host="${mongodb.host}" port="${mongodb.port}" />
+	<mongo:db-factory dbname="${mongodb.database}" />
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
 	</bean>
 
-	<bean id="textCorpusTransformer" class="com.ciphertool.zenith.model.etl.transformers.TextCorpusTransformer">
+	<bean class="com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter" id="letterNGramMarkovImporter">
+		<property name="order" value="${markov.letter.order}" />
+		<property name="minimumCount" value="${markov.minimum.count}" />
+		<property name="corpusDirectory" value="${corpus.output.directory}" />
 		<property name="taskExecutor" ref="taskExecutor" />
-		<property name="corpusDirectory" value="${corpus.text.input.directory}" />
-		<property name="outputDirectory" value="${corpus.output.directory}" />
+	</bean>
+
+	<bean class="com.ciphertool.zenith.model.dao.LetterNGramDao" id="letterNGramDao">
+		<property name="mongoTemplate" ref="mongoTemplate" />
+	</bean>
+
+	<bean class="com.ciphertool.zenith.model.etl.persisters.NGramPersister" id="nGramPersister">
+		<property name="letterNGramMarkovImporter" ref="letterNGramMarkovImporter" />
+		<property name="letterNGramDao" ref="letterNGramDao" />
 	</bean>
 
 	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
