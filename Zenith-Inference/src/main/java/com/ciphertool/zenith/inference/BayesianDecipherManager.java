@@ -163,7 +163,7 @@ public class BayesianDecipherManager {
 			}
 		}
 
-		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, initialSolution);
+		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
 		initialSolution.setLanguageModelProbability(initialPlaintextResults.getProbability());
 		initialSolution.setLanguageModelLogProbability(initialPlaintextResults.getLogProbability());
 		initialSolution.setProbability(initialSolution.getLanguageModelProbability());
@@ -267,6 +267,12 @@ public class BayesianDecipherManager {
 
 			proposal = plaintextDistribution.get(rouletteSampler.getNextIndex(plaintextDistribution, totalProbability)).getValue();
 
+			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, proposal, null);
+			proposal.setLanguageModelProbability(fullPlaintextResults.getProbability());
+			proposal.setLanguageModelLogProbability(fullPlaintextResults.getLogProbability());
+			proposal.setProbability(proposal.getLanguageModelProbability());
+			proposal.setLogProbability(proposal.getLanguageModelLogProbability());
+
 			solution = selectNext(temperature, solution, proposal);
 		}
 
@@ -297,15 +303,15 @@ public class BayesianDecipherManager {
 
 		@Override
 		public CipherSolution call() throws Exception {
-			if (conditionalSolution.getMappings().get(ciphertextKey).equals(new Plaintext(letter.toString()))) {
-				// No need to re-score the solution in this case
-				return conditionalSolution;
-			}
+			// if (conditionalSolution.getMappings().get(ciphertextKey).equals(new Plaintext(letter.toString()))) {
+			// No need to re-score the solution in this case
+			// return conditionalSolution;
+			// }
 
 			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
 
 			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, conditionalSolution);
+			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, conditionalSolution, ciphertextKey);
 			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
 
 			conditionalSolution.setLanguageModelProbability(remainingPlaintextResults.getProbability());
@@ -375,7 +381,7 @@ public class BayesianDecipherManager {
 			addProposal = solution.clone();
 			if (!addProposal.getWordBoundaries().contains(nextBoundary)) {
 				addProposal.addWordBoundary(nextBoundary);
-				addPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, addProposal);
+				addPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, addProposal, null);
 				addProposal.setLanguageModelProbability(addPlaintextResults.getProbability());
 				addProposal.setLanguageModelLogProbability(addPlaintextResults.getLogProbability());
 				addProposal.setProbability(addProposal.getLanguageModelProbability());
@@ -385,7 +391,7 @@ public class BayesianDecipherManager {
 			removeProposal = solution.clone();
 			if (removeProposal.getWordBoundaries().contains(nextBoundary)) {
 				removeProposal.removeWordBoundary(nextBoundary);
-				removePlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, removeProposal);
+				removePlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, removeProposal, null);
 				removeProposal.setLanguageModelProbability(removePlaintextResults.getProbability());
 				removeProposal.setLanguageModelLogProbability(removePlaintextResults.getLogProbability());
 				removeProposal.setProbability(removeProposal.getLanguageModelProbability());

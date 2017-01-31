@@ -344,13 +344,13 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 	// @Test
 	public void testEvaluate() {
-		log.info("fitness1: " + plaintextEvaluator.evaluate(letterMarkovModel, actualSolution));
+		log.info("fitness1: " + plaintextEvaluator.evaluate(letterMarkovModel, actualSolution, null));
 		log.info("solution1: " + actualSolution);
 
-		log.info("fitness2: " + plaintextEvaluator.evaluate(letterMarkovModel, solution2));
+		log.info("fitness2: " + plaintextEvaluator.evaluate(letterMarkovModel, solution2, null));
 		log.info("solution2: " + solution2);
 
-		log.info("fitness3: " + plaintextEvaluator.evaluate(letterMarkovModel, solution3));
+		log.info("fitness3: " + plaintextEvaluator.evaluate(letterMarkovModel, solution3, null));
 		log.info("solution3: " + solution3);
 	}
 
@@ -360,7 +360,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		long evaluations = 10000;
 
 		for (int i = 0; i < evaluations; i++) {
-			plaintextEvaluator.evaluate(letterMarkovModel, actualSolution);
+			plaintextEvaluator.evaluate(letterMarkovModel, actualSolution, null);
 		}
 
 		log.info(evaluations + " evaluations took: " + (System.currentTimeMillis() - start) + "ms.");
