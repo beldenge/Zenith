@@ -21,9 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,15 +56,6 @@ public class PlaintextEvaluator {
 
 		interpolatedProbability = letterNGramResults.getProbability();
 		interpolatedLogProbability = letterNGramResults.getLogProbability();
-
-		// EvaluationResults iocResults = evaluateIndexOfCoincidence(solution);
-		// BigDecimal difference =
-		// BigDecimal.ONE.subtract(iocResults.getProbability().subtract(letterMarkovModel.getIndexOfCoincidence()).abs());
-		// BigDecimal scaledDifference = difference.pow(solution.getCipher().getCiphertextCharacters().size() / 4);
-		// interpolatedProbability = interpolatedProbability.multiply(scaledDifference, MathConstants.PREC_10_HALF_UP);
-		// for (int i = 0; i < solution.getCipher().getCiphertextCharacters().size() / 4; i++) {
-		// interpolatedLogProbability = interpolatedLogProbability.add(bigDecimalFunctions.log(difference));
-		// }
 
 		log.debug("Rest of plaintext took {}ms.", (System.currentTimeMillis() - startRemaining));
 
@@ -114,7 +103,7 @@ public class PlaintextEvaluator {
 					match = letterMarkovModel.findLongest(sb.substring(i, i + order));
 
 					if (match != null && match.getLevel() == order) {
-						probability = match.getConditionalProbability();
+						probability = match.getProbability();
 						log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 					} else {
 						probability = letterMarkovModel.getUnknownLetterNGramProbability();
@@ -134,7 +123,7 @@ public class PlaintextEvaluator {
 				match = letterMarkovModel.findLongest(sb.substring(i, i + order));
 
 				if (match != null && match.getLevel() == order) {
-					probability = match.getConditionalProbability();
+					probability = match.getProbability();
 					log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 				} else {
 					probability = letterMarkovModel.getUnknownLetterNGramProbability();
@@ -147,38 +136,6 @@ public class PlaintextEvaluator {
 		}
 
 		return new EvaluationResults(nGramProbability, nGramLogProbability);
-	}
-
-	public EvaluationResults evaluateIndexOfCoincidence(CipherSolution solution) {
-		String currentSolutionString = solution.asSingleLineString().substring(0, solution.getCipher().getCiphertextCharacters().size());
-
-		Map<Character, Integer> characterCounts = new HashMap<>();
-		Character nextCharacter;
-
-		for (int i = 0; i < currentSolutionString.length(); i++) {
-			nextCharacter = currentSolutionString.charAt(i);
-
-			if (!characterCounts.containsKey(nextCharacter)) {
-				characterCounts.put(nextCharacter, 0);
-			}
-
-			characterCounts.put(nextCharacter, characterCounts.get(nextCharacter) + 1);
-		}
-
-		BigDecimal indexOfCoincidenceCipher = BigDecimal.ZERO;
-		BigDecimal occurences = null;
-
-		for (Map.Entry<Character, Integer> entry : characterCounts.entrySet()) {
-			occurences = BigDecimal.valueOf(entry.getValue());
-			indexOfCoincidenceCipher = indexOfCoincidenceCipher.add(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP));
-		}
-
-		occurences = BigDecimal.valueOf(solution.getCipher().getCiphertextCharacters().size());
-		indexOfCoincidenceCipher = indexOfCoincidenceCipher.divide(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-
-		log.debug("Index of coincidence for cipher solution: {}", indexOfCoincidenceCipher);
-
-		return new EvaluationResults(indexOfCoincidenceCipher, bigDecimalFunctions.log(indexOfCoincidenceCipher));
 	}
 
 	protected List<WordProbability> transformToWordList(CipherSolution solution) {

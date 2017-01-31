@@ -303,11 +303,6 @@ public class BayesianDecipherManager {
 
 		@Override
 		public CipherSolution call() throws Exception {
-			// if (conditionalSolution.getMappings().get(ciphertextKey).equals(new Plaintext(letter.toString()))) {
-			// No need to re-score the solution in this case
-			// return conditionalSolution;
-			// }
-
 			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
 
 			long startPlaintext = System.currentTimeMillis();
