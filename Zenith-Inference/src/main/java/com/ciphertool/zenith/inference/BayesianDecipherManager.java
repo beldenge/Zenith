@@ -110,9 +110,14 @@ public class BayesianDecipherManager {
 		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
 				- startCount));
 
+		long startAdding = System.currentTimeMillis();
+		log.info("Adding nodes to the model.", minimumCount);
+
 		for (NGramIndexNode nGramNode : nGramNodes) {
 			this.letterMarkovModel.addNode(nGramNode);
 		}
+
+		log.info("Finished adding nodes to the model in {}ms.", (System.currentTimeMillis() - startAdding));
 
 		long total = 0;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
