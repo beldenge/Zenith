@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.data.mongodb.core.BulkOperations.BulkMode;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Query;
@@ -94,14 +95,12 @@ public class LetterNGramDao {
 	}
 
 	public void addAll(List<NGramIndexNode> nodes, boolean includeWordBoundaries) {
-		for (NGramIndexNode node : nodes) {
-			mongoOperations.insert(node, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
-		}
+		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES)).insert(nodes).execute();
 	}
 
 	public void deleteAll(boolean includeWordBoundaries) {
 		// This is better than dropping the collection because we won't have to re-ensure indexes and such
-		mongoOperations.findAllAndRemove(new Query(), NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
+		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES)).remove(new Query()).execute();
 	}
 
 	@Required
