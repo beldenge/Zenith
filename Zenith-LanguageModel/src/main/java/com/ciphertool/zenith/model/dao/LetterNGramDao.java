@@ -25,8 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
@@ -39,8 +37,6 @@ import com.mongodb.DBObject;
 import com.mongodb.ParallelScanOptions;
 
 public class LetterNGramDao {
-	private Logger				log							= LoggerFactory.getLogger(getClass());
-
 	private static final String	COLLECTION_WITH_SPACES		= "letterNGrams_withSpaces";
 	private static final String	COLLECTION_WITHOUT_SPACES	= "letterNGrams_withoutSpaces";
 	private static final String	ID_KEY						= "id";
