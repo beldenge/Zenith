@@ -162,8 +162,8 @@ public class MarkovModel {
 	 */
 	public BigDecimal getUnknownLetterNGramProbability() {
 		if (this.unknownLetterNGramProbability == null) {
-			this.unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(this.rootNode.getCount()
-					+ 1), MathConstants.PREC_10_HALF_UP);
+			// FIXME: the root node count is the count of n-grams of all order, not just the highest order
+			this.unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(this.rootNode.getCount()), MathConstants.PREC_10_HALF_UP);
 		}
 
 		return unknownLetterNGramProbability;

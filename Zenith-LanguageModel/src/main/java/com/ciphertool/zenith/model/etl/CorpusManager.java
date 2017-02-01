@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.model.etl.persisters.NGramPersister;
 import com.ciphertool.zenith.model.etl.transformers.CorpusTransformer;
@@ -41,9 +42,17 @@ public class CorpusManager {
 	 * Bootstraps the Spring application context.
 	 */
 	private static void setUp() {
+		log.info("Starting Spring application context");
+
+		long start = System.currentTimeMillis();
+
 		beanFactory = new ClassPathXmlApplicationContext("corpusContext.xml");
 
-		log.info("Spring application context created successfully!");
+		log.info("Spring application context created successfully in {}ms.", (System.currentTimeMillis() - start));
+
+		ThreadPoolTaskExecutor taskExecutor = beanFactory.getBean(ThreadPoolTaskExecutor.class);
+		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
+		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
 		textCorpusTransformer = (CorpusTransformer) beanFactory.getBean("textCorpusTransformer");
 		xmlCorpusTransformer = (CorpusTransformer) beanFactory.getBean("xmlCorpusTransformer");

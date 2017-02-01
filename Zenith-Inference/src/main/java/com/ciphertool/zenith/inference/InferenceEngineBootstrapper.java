@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 public class InferenceEngineBootstrapper {
 	private static Logger				log	= LoggerFactory.getLogger(InferenceEngineBootstrapper.class);
@@ -53,6 +54,10 @@ public class InferenceEngineBootstrapper {
 		context = new ClassPathXmlApplicationContext("bootstrapContext.xml");
 
 		log.info("Spring application context started successfully in " + (System.currentTimeMillis() - start) + "ms.");
+
+		ThreadPoolTaskExecutor taskExecutor = context.getBean(ThreadPoolTaskExecutor.class);
+		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
+		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
 		BayesianDecipherManager manager = context.getBean(BayesianDecipherManager.class);
 		manager.run();
