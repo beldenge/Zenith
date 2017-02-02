@@ -67,4 +67,9 @@ public class Plaintext {
 
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "Plaintext [value=" + value + "]";
+	}
 }

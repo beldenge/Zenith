@@ -55,11 +55,28 @@ import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class BayesianDecipherManager {
-	private Logger							log							= LoggerFactory.getLogger(getClass());
+	private Logger							log					= LoggerFactory.getLogger(getClass());
 
-	private static final List<Character>	LOWERCASE_LETTERS			= Arrays.asList(new Character[] { 'a', 'b', 'c',
-			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-			'y', 'z' });
+	private static final List<Character>	LOWERCASE_LETTERS	= Arrays.asList(new Character[] { 'a', 'b', 'c', 'd',
+			'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y',
+			'z' });
+
+	private static BigDecimal[]				letterProbabilities	= new BigDecimal[LOWERCASE_LETTERS.size()];
+
+	static {
+		BigDecimal numLetters = BigDecimal.valueOf(LOWERCASE_LETTERS.size());
+		BigDecimal singleLetterRatio = BigDecimal.ONE.divide(numLetters, MathConstants.PREC_10_HALF_UP);
+
+		for (int i = 0; i < letterProbabilities.length; i++) {
+			letterProbabilities[i] = BigDecimal.ZERO;
+		}
+
+		for (int i = 1; i <= letterProbabilities.length; i++) {
+			for (int j = letterProbabilities.length - 1; j >= letterProbabilities.length - i; j--) {
+				letterProbabilities[j] = letterProbabilities[j].add(singleLetterRatio.divide(BigDecimal.valueOf(i), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
+			}
+		}
+	}
 
 	private String							cipherName;
 	private PlaintextEvaluator				plaintextEvaluator;
@@ -73,7 +90,7 @@ public class BayesianDecipherManager {
 	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>();
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
 	private TaskExecutor					taskExecutor;
-	private BigDecimal						percentToReallocate;
+	private Boolean							iterateRandomly;
 	private Boolean							includeWordBoundaries;
 	private int								markovOrder;
 	private MarkovModel						letterMarkovModel;
@@ -238,8 +255,20 @@ public class BayesianDecipherManager {
 
 		log.info("Gibbs sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average="
 				+ ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
+
 		log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
+		log.info("Mappings for best known: ");
+
+		for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
+			log.info(entry.getKey() + ": " + entry.getValue().getValue());
+		}
+
 		log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
+		log.info("Mappings for best probability: " + maxBayes.getMappings());
+
+		for (Map.Entry<String, Plaintext> entry : maxBayes.getMappings().entrySet()) {
+			log.info(entry.getKey() + ": " + entry.getValue().getValue());
+		}
 	}
 
 	protected CipherSolution runGibbsLetterSampler(BigDecimal temperature, CipherSolution solution) {
@@ -247,20 +276,23 @@ public class BayesianDecipherManager {
 		CipherSolution proposal = null;
 		BigDecimal totalProbability;
 
+		List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();
+		mappingList.addAll(solution.getMappings().entrySet());
+
+		Map.Entry<String, Plaintext> nextEntry;
+
 		// For each cipher symbol type, run the gibbs sampling
-		for (Map.Entry<String, Plaintext> entry : solution.getMappings().entrySet()) {
-			List<SolutionProbability> plaintextDistribution = computeDistribution(entry.getKey(), solution);
+		for (int i = 0; i < solution.getMappings().size(); i++) {
+			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			BigDecimal sumOfProbabilities = plaintextDistribution.stream().map(SolutionProbability::getProbability).reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
-
-			// Reallocate some of the total probability mass to smooth out the distribution
-			BigDecimal probabilityMassToReallocate = sumOfProbabilities.multiply(percentToReallocate, MathConstants.PREC_10_HALF_UP).divide(BigDecimal.valueOf(plaintextDistribution.size()), MathConstants.PREC_10_HALF_UP);
-
-			for (SolutionProbability solutionProbability : plaintextDistribution) {
-				solutionProbability.setProbability(solutionProbability.getProbability().multiply(BigDecimal.ONE.subtract(percentToReallocate), MathConstants.PREC_10_HALF_UP).add(probabilityMassToReallocate));
-			}
+			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), solution);
 
 			Collections.sort(plaintextDistribution);
+
+			for (int j = 0; j < LOWERCASE_LETTERS.size(); j++) {
+				plaintextDistribution.get(j).setProbability(letterProbabilities[j]);
+			}
+
 			totalProbability = rouletteSampler.reIndex(plaintextDistribution);
 
 			proposal = plaintextDistribution.get(rouletteSampler.getNextIndex(plaintextDistribution, totalProbability)).getValue();
@@ -524,12 +556,12 @@ public class BayesianDecipherManager {
 	}
 
 	/**
-	 * @param percentToReallocate
-	 *            the percentToReallocate to set
+	 * @param iterateRandomly
+	 *            the iterateRandomly to set
 	 */
 	@Required
-	public void setPercentToReallocate(Double percentToReallocate) {
-		this.percentToReallocate = BigDecimal.valueOf(percentToReallocate);
+	public void setIterateRandomly(Boolean iterateRandomly) {
+		this.iterateRandomly = iterateRandomly;
 	}
 
 	/**
