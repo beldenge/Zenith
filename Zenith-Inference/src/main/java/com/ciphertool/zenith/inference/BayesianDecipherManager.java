@@ -73,7 +73,7 @@ public class BayesianDecipherManager {
 	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>();
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
 	private TaskExecutor					taskExecutor;
-	private Double							percentToReallocate;
+	private BigDecimal						percentToReallocate;
 	private Boolean							includeWordBoundaries;
 	private int								markovOrder;
 	private MarkovModel						letterMarkovModel;
@@ -251,15 +251,13 @@ public class BayesianDecipherManager {
 		for (Map.Entry<String, Plaintext> entry : solution.getMappings().entrySet()) {
 			List<SolutionProbability> plaintextDistribution = computeDistribution(entry.getKey(), solution);
 
-			BigDecimal massToReallocate = BigDecimal.valueOf(percentToReallocate);
-
 			BigDecimal sumOfProbabilities = plaintextDistribution.stream().map(SolutionProbability::getProbability).reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
 			// Reallocate some of the total probability mass to smooth out the distribution
-			BigDecimal probabilityMassToReallocate = sumOfProbabilities.multiply(massToReallocate, MathConstants.PREC_10_HALF_UP).divide(BigDecimal.valueOf(plaintextDistribution.size()), MathConstants.PREC_10_HALF_UP);
+			BigDecimal probabilityMassToReallocate = sumOfProbabilities.multiply(percentToReallocate, MathConstants.PREC_10_HALF_UP).divide(BigDecimal.valueOf(plaintextDistribution.size()), MathConstants.PREC_10_HALF_UP);
 
 			for (SolutionProbability solutionProbability : plaintextDistribution) {
-				solutionProbability.setProbability(solutionProbability.getProbability().multiply(BigDecimal.ONE.subtract(massToReallocate), MathConstants.PREC_10_HALF_UP).add(probabilityMassToReallocate));
+				solutionProbability.setProbability(solutionProbability.getProbability().multiply(BigDecimal.ONE.subtract(percentToReallocate), MathConstants.PREC_10_HALF_UP).add(probabilityMassToReallocate));
 			}
 
 			Collections.sort(plaintextDistribution);
@@ -531,7 +529,7 @@ public class BayesianDecipherManager {
 	 */
 	@Required
 	public void setPercentToReallocate(Double percentToReallocate) {
-		this.percentToReallocate = percentToReallocate;
+		this.percentToReallocate = BigDecimal.valueOf(percentToReallocate);
 	}
 
 	/**
