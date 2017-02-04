@@ -172,30 +172,32 @@ public class BayesianDecipherManager {
 		/*
 		 * Begin setting up masked n-gram model
 		 */
-		nGramNodes = maskedNGramDao.findAll(minimumCount, includeWordBoundaries);
+		if (letterTypeSamplingEnabled) {
+			nGramNodes = maskedNGramDao.findAll(minimumCount, includeWordBoundaries);
 
-		log.info("Finished retrieving {} masked n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
-				- startFindAll));
+			log.info("Finished retrieving {} masked n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
+					- startFindAll));
 
-		this.maskedMarkovModel = new MarkovModel(this.markovOrder);
+			this.maskedMarkovModel = new MarkovModel(this.markovOrder);
 
-		long startMaskedCount = System.currentTimeMillis();
-		log.info("Counting masked nodes with counts below the minimum of {}.", minimumCount);
+			long startMaskedCount = System.currentTimeMillis();
+			log.info("Counting masked nodes with counts below the minimum of {}.", minimumCount);
 
-		maskedMarkovModel.setNumWithInsufficientCounts(maskedNGramDao.countLessThan(minimumCount, includeWordBoundaries));
+			maskedMarkovModel.setNumWithInsufficientCounts(maskedNGramDao.countLessThan(minimumCount, includeWordBoundaries));
 
-		log.info("Finished counting masked nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
-				- startMaskedCount));
+			log.info("Finished counting masked nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
+					- startMaskedCount));
 
-		long startMaskedAdding = System.currentTimeMillis();
-		log.info("Adding masked nodes to the model.", minimumCount);
+			long startMaskedAdding = System.currentTimeMillis();
+			log.info("Adding masked nodes to the model.", minimumCount);
 
-		for (NGramIndexNode nGramNode : nGramNodes) {
-			this.maskedMarkovModel.addNode(nGramNode);
+			for (NGramIndexNode nGramNode : nGramNodes) {
+				this.maskedMarkovModel.addNode(nGramNode);
+			}
+
+			log.info("Finished adding nodes to the masked n-gram model in {}ms.", (System.currentTimeMillis()
+					- startMaskedAdding));
 		}
-
-		log.info("Finished adding nodes to the masked n-gram model in {}ms.", (System.currentTimeMillis()
-				- startMaskedAdding));
 
 		long total = 0;
 		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
