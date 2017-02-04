@@ -362,7 +362,7 @@ public class BayesianDecipherManager {
 			original.setProbability(fullPlaintextResults.getProbability());
 			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
-			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), solution);
+			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
 
@@ -399,7 +399,7 @@ public class BayesianDecipherManager {
 			original.setProbability(fullPlaintextResults.getProbability());
 			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
-			List<SolutionProbability> plaintextDistribution = computeLetterTypeDistribution(nextEntry.getKey(), solution);
+			List<SolutionProbability> plaintextDistribution = computeLetterTypeDistribution(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
 
