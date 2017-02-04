@@ -32,10 +32,11 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.WordProbability;
 import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
-public class PlaintextEvaluator {
+public class LetterTypeEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
 
 	private MathCache	bigDecimalFunctions;
@@ -43,13 +44,18 @@ public class PlaintextEvaluator {
 	private Boolean		includeWordBoundaries;
 
 	public EvaluationResults evaluate(MarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
+		if (ciphertextKey == null) {
+			throw new IllegalArgumentException(
+					"LetterTypeEvaluator does not support evaluations where the ciphertext key is not specified.");
+		}
+
 		BigDecimal interpolatedProbability = BigDecimal.ONE;
 		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
 
 		int order = letterMarkovModel.getOrder();
 
 		long startLetter = System.currentTimeMillis();
-		EvaluationResults letterNGramResults = evaluateLetterNGrams(letterMarkovModel, solution, order, ciphertextKey);
+		EvaluationResults letterNGramResults = evaluateLetterTypes(letterMarkovModel, solution, order, ciphertextKey);
 		log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
 
 		interpolatedProbability = letterNGramResults.getProbability();
@@ -58,7 +64,7 @@ public class PlaintextEvaluator {
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterNGrams(MarkovModel letterMarkovModel, CipherSolution solution, int order, String ciphertextKey) {
+	public EvaluationResults evaluateLetterTypes(MarkovModel letterMarkovModel, CipherSolution solution, int order, String ciphertextKey) {
 		List<WordProbability> words = transformToWordList(solution);
 
 		if (words == null || words.isEmpty()) {
@@ -85,38 +91,32 @@ public class PlaintextEvaluator {
 			}
 		}
 
-		if (ciphertextKey != null) {
-			List<Integer> ciphertextIndices = new ArrayList<>();
-			for (int i = 0; i < sb.length(); i++) {
-				if (ciphertextKey.equals(solution.getCipher().getCiphertextCharacters().get(i).getValue())) {
-					ciphertextIndices.add(i);
-				}
+		List<Integer> ciphertextIndices = new ArrayList<>();
+		for (int i = 0; i < sb.length(); i++) {
+			if (ciphertextKey.equals(solution.getCipher().getCiphertextCharacters().get(i).getValue())) {
+				ciphertextIndices.add(i);
 			}
+		}
 
-			for (Integer ciphertextIndex : ciphertextIndices) {
-				for (int i = Math.max(0, ciphertextIndex - (order - 1)); i < Math.min(sb.length()
-						- order, ciphertextIndex + 1); i++) {
-					match = letterMarkovModel.findLongest(sb.substring(i, i + order));
+		String maskedNGram;
+		for (Integer ciphertextIndex : ciphertextIndices) {
+			for (int i = Math.max(0, ciphertextIndex - (order - 1)); i < Math.min(sb.length() - order, ciphertextIndex
+					+ 1); i++) {
+				maskedNGram = "";
 
-					if (match != null && match.getLevel() == order) {
-						probability = match.getProbability();
-						log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
+				for (int j = i; j < i + order; j++) {
+					if (j == ciphertextIndex) {
+						maskedNGram += sb.charAt(j);
+					} else if (sb.charAt(j) == ' ') {
+						maskedNGram += " ";
+					} else if (ModelConstants.LOWERCASE_VOWELS.contains(sb.charAt(j))) {
+						maskedNGram += ModelConstants.VOWEL_SYMBOL;
 					} else {
-						probability = letterMarkovModel.getUnknownLetterNGramProbability();
-						log.debug("No Letter N-Gram Match");
+						maskedNGram += ModelConstants.CONSONANT_SYMBOL;
 					}
-
-					nGramProbability = nGramProbability.multiply(probability, MathConstants.PREC_10_HALF_UP);
-					nGramLogProbability = nGramLogProbability.add(bigDecimalFunctions.log(probability), MathConstants.PREC_10_HALF_UP);
-				}
-			}
-		} else {
-			for (int i = 0; i < sb.length() - order; i++) {
-				if (i > 0 && sb.charAt(i) == ' ') {
-					continue;
 				}
 
-				match = letterMarkovModel.findLongest(sb.substring(i, i + order));
+				match = letterMarkovModel.find(maskedNGram);
 
 				if (match != null && match.getLevel() == order) {
 					probability = match.getProbability();

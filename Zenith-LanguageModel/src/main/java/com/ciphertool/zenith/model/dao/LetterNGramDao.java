@@ -38,8 +38,8 @@ import com.mongodb.DBObject;
 import com.mongodb.ParallelScanOptions;
 
 public class LetterNGramDao {
-	private static final String	COLLECTION_WITH_SPACES		= "letterNGrams_withSpaces";
-	private static final String	COLLECTION_WITHOUT_SPACES	= "letterNGrams_withoutSpaces";
+	private String				collectionWithSpaces;
+	private String				collectionWithoutSpaces;
 	private static final String	ID_KEY						= "id";
 	private static final String	LEVEL_KEY					= "level";
 	private static final String	COUNT_KEY					= "count";
@@ -52,7 +52,7 @@ public class LetterNGramDao {
 	private int					numCursors;
 
 	public List<NGramIndexNode> findAll(int minimumCount, boolean includeWordBoundaries) {
-		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
+		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
 
 		List<NGramIndexNode> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
@@ -91,16 +91,16 @@ public class LetterNGramDao {
 	public long countLessThan(int minimumCount, boolean includeWordBoundaries) {
 		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
 
-		return mongoOperations.count(query, NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES));
+		return mongoOperations.count(query, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 	}
 
 	public void addAll(List<NGramIndexNode> nodes, boolean includeWordBoundaries) {
-		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES)).insert(nodes).execute();
+		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)).insert(nodes).execute();
 	}
 
 	public void deleteAll(boolean includeWordBoundaries) {
 		// This is better than dropping the collection because we won't have to re-ensure indexes and such
-		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? COLLECTION_WITH_SPACES : COLLECTION_WITHOUT_SPACES)).remove(new Query()).execute();
+		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)).remove(new Query()).execute();
 	}
 
 	@Required
@@ -124,5 +124,23 @@ public class LetterNGramDao {
 	@Required
 	public void setNumCursors(int numCursors) {
 		this.numCursors = numCursors;
+	}
+
+	/**
+	 * @param collectionWithSpaces
+	 *            the collectionWithSpaces to set
+	 */
+	@Required
+	public void setCollectionWithSpaces(String collectionWithSpaces) {
+		this.collectionWithSpaces = collectionWithSpaces;
+	}
+
+	/**
+	 * @param collectionWithoutSpaces
+	 *            the collectionWithoutSpaces to set
+	 */
+	@Required
+	public void setCollectionWithoutSpaces(String collectionWithoutSpaces) {
+		this.collectionWithoutSpaces = collectionWithoutSpaces;
 	}
 }

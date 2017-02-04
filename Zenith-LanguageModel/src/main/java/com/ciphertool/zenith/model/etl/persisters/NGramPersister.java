@@ -37,8 +37,31 @@ public class NGramPersister {
 
 	private LetterNGramMarkovImporter	letterNGramMarkovImporter;
 	private LetterNGramDao				letterNGramDao;
+	private LetterNGramDao				maskedNGramDao;
+	private boolean						letterNGramsWithSpacesEnabled;
+	private boolean						letterNGramsWithoutSpacesEnabled;
+	private boolean						maskedNGramsWithSpacesEnabled;
+	private boolean						maskedNGramsWithoutSpacesEnabled;
 
 	public void persistNGrams() {
+		if (letterNGramsWithSpacesEnabled) {
+			persistLetterNGramsWithSpaces();
+		}
+
+		if (letterNGramsWithoutSpacesEnabled) {
+			persistLetterNGramsWithoutSpaces();
+		}
+
+		if (maskedNGramsWithSpacesEnabled) {
+			persistMaskedNGramsWithSpaces();
+		}
+
+		if (maskedNGramsWithoutSpacesEnabled) {
+			persistMaskedNGramsWithoutSpaces();
+		}
+	}
+
+	protected void persistLetterNGramsWithSpaces() {
 		long startDeleteWithSpaces = System.currentTimeMillis();
 
 		log.info("Deleting all existing n-grams with spaces.");
@@ -48,7 +71,7 @@ public class NGramPersister {
 		log.info("Completed deletion of n-grams with spaces in {}ms.", (System.currentTimeMillis()
 				- startDeleteWithSpaces));
 
-		MarkovModel markovModelWithSpaces = letterNGramMarkovImporter.importCorpus(true);
+		MarkovModel markovModelWithSpaces = letterNGramMarkovImporter.importCorpus(false, true);
 
 		long startAddWithSpaces = System.currentTimeMillis();
 
@@ -63,7 +86,9 @@ public class NGramPersister {
 
 		// Hopefully release these nodes for garbage collection
 		nGramsWithSpaces.clear();
+	}
 
+	protected void persistLetterNGramsWithoutSpaces() {
 		long startDeleteWithoutSpaces = System.currentTimeMillis();
 
 		log.info("Deleting all existing n-grams without spaces.");
@@ -73,7 +98,7 @@ public class NGramPersister {
 		log.info("Completed deletion of n-grams without spaces in {}ms.", (System.currentTimeMillis()
 				- startDeleteWithoutSpaces));
 
-		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(false);
+		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(false, false);
 
 		long startAddWithoutSpaces = System.currentTimeMillis();
 
@@ -84,6 +109,60 @@ public class NGramPersister {
 		letterNGramDao.addAll(nGramsWithoutSpaces, false);
 
 		log.info("Completed persistence of n-grams without spaces in {}ms.", (System.currentTimeMillis()
+				- startAddWithoutSpaces));
+
+		// Hopefully release these nodes for garbage collection
+		nGramsWithoutSpaces.clear();
+	}
+
+	protected void persistMaskedNGramsWithSpaces() {
+		long startDeleteWithSpaces = System.currentTimeMillis();
+
+		log.info("Deleting all existing masked n-grams with spaces.");
+
+		maskedNGramDao.deleteAll(true);
+
+		log.info("Completed deletion of masked n-grams with spaces in {}ms.", (System.currentTimeMillis()
+				- startDeleteWithSpaces));
+
+		MarkovModel markovModelWithSpaces = letterNGramMarkovImporter.importCorpus(true, true);
+
+		long startAddWithSpaces = System.currentTimeMillis();
+
+		log.info("Starting persistence of masked n-grams with spaces.");
+
+		List<NGramIndexNode> nGramsWithSpaces = transformToList(markovModelWithSpaces.getRootNode());
+
+		maskedNGramDao.addAll(nGramsWithSpaces, true);
+
+		log.info("Completed persistence of masked n-grams with spaces in {}ms.", (System.currentTimeMillis()
+				- startAddWithSpaces));
+
+		// Hopefully release these nodes for garbage collection
+		nGramsWithSpaces.clear();
+	}
+
+	protected void persistMaskedNGramsWithoutSpaces() {
+		long startDeleteWithoutSpaces = System.currentTimeMillis();
+
+		log.info("Deleting all existing masked n-grams without spaces.");
+
+		maskedNGramDao.deleteAll(false);
+
+		log.info("Completed deletion of masked n-grams without spaces in {}ms.", (System.currentTimeMillis()
+				- startDeleteWithoutSpaces));
+
+		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(true, false);
+
+		long startAddWithoutSpaces = System.currentTimeMillis();
+
+		log.info("Starting persistence of masked n-grams without spaces.");
+
+		List<NGramIndexNode> nGramsWithoutSpaces = transformToList(markovModelWithoutSpaces.getRootNode());
+
+		maskedNGramDao.addAll(nGramsWithoutSpaces, false);
+
+		log.info("Completed persistence of masked n-grams without spaces in {}ms.", (System.currentTimeMillis()
 				- startAddWithoutSpaces));
 
 		// Hopefully release these nodes for garbage collection
@@ -118,5 +197,45 @@ public class NGramPersister {
 	@Required
 	public void setLetterNGramDao(LetterNGramDao letterNGramDao) {
 		this.letterNGramDao = letterNGramDao;
+	}
+
+	/**
+	 * @param maskedNGramDao
+	 *            the maskedNGramDao to set
+	 */
+	public void setMaskedNGramDao(LetterNGramDao maskedNGramDao) {
+		this.maskedNGramDao = maskedNGramDao;
+	}
+
+	/**
+	 * @param letterNGramsWithSpacesEnabled
+	 *            the letterNGramsWithSpacesEnabled to set
+	 */
+	public void setLetterNGramsWithSpacesEnabled(boolean letterNGramsWithSpacesEnabled) {
+		this.letterNGramsWithSpacesEnabled = letterNGramsWithSpacesEnabled;
+	}
+
+	/**
+	 * @param letterNGramsWithoutSpacesEnabled
+	 *            the letterNGramsWithoutSpacesEnabled to set
+	 */
+	public void setLetterNGramsWithoutSpacesEnabled(boolean letterNGramsWithoutSpacesEnabled) {
+		this.letterNGramsWithoutSpacesEnabled = letterNGramsWithoutSpacesEnabled;
+	}
+
+	/**
+	 * @param maskedNGramsWithSpacesEnabled
+	 *            the maskedNGramsWithSpacesEnabled to set
+	 */
+	public void setMaskedNGramsWithSpacesEnabled(boolean maskedNGramsWithSpacesEnabled) {
+		this.maskedNGramsWithSpacesEnabled = maskedNGramsWithSpacesEnabled;
+	}
+
+	/**
+	 * @param maskedNGramsWithoutSpacesEnabled
+	 *            the maskedNGramsWithoutSpacesEnabled to set
+	 */
+	public void setMaskedNGramsWithoutSpacesEnabled(boolean maskedNGramsWithoutSpacesEnabled) {
+		this.maskedNGramsWithoutSpacesEnabled = maskedNGramsWithoutSpacesEnabled;
 	}
 }

@@ -21,5 +21,15 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="mongoTemplate" ref="mongoTemplate" />
 		<property name="batchSize" value="${mongodb.parallelScan.batchSize}" />
 		<property name="numCursors" value="${mongodb.parallelScan.numCursors}" />
+		<property name="collectionWithSpaces" value="${collection.letter.ngram.with.spaces.name}" />
+		<property name="collectionWithoutSpaces" value="${collection.letter.ngram.without.spaces.name}" />
+	</bean>
+
+	<bean class="com.ciphertool.zenith.model.dao.LetterNGramDao" id="maskedNGramDao">
+		<property name="mongoTemplate" ref="mongoTemplate" />
+		<property name="batchSize" value="${mongodb.parallelScan.batchSize}" />
+		<property name="numCursors" value="${mongodb.parallelScan.numCursors}" />
+		<property name="collectionWithSpaces" value="${collection.masked.ngram.with.spaces.name}" />
+		<property name="collectionWithoutSpaces" value="${collection.masked.ngram.without.spaces.name}" />
 	</bean>
 </beans>

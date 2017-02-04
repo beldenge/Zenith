@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,39 +39,32 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dto.ParseResults;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class LetterNGramMarkovImporter implements MarkovImporter {
-	private static Logger					log							= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
+	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
 
-	private static final String				EXTENSION					= ".txt";
-	private static final String				NON_ALPHA					= "[^a-zA-Z]";
-	private static final String				NON_ALPHA_OR_SPACE			= "[^a-zA-Z ]";
-	private static final List<Character>	LOWERCASE_LETTERS			= Arrays.asList(new Character[] { 'a', 'b', 'c',
-			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-			'y', 'z' });
-	private static final List<Character>	LOWERCASE_LETTERS_AND_SPACE	= new ArrayList<>(LOWERCASE_LETTERS);
+	private static final String	EXTENSION			= ".txt";
+	private static final String	NON_ALPHA			= "[^a-zA-Z]";
+	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
 
-	static {
-		LOWERCASE_LETTERS_AND_SPACE.add(' ');
-	}
-
-	private String			corpusDirectory;
-	private TaskExecutor	taskExecutor;
-	private MarkovModel		letterMarkovModel;
-	private int				order;
+	private String				corpusDirectory;
+	private TaskExecutor		taskExecutor;
+	private MarkovModel			letterMarkovModel;
+	private int					order;
 
 	@Override
-	public MarkovModel importCorpus(boolean includeWordBoundaries) {
+	public MarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries) {
 		letterMarkovModel = new MarkovModel(this.order);
 
 		long start = System.currentTimeMillis();
 
 		log.info("Starting corpus text import...");
 
-		List<FutureTask<ParseResults>> futures = parseFiles(Paths.get(this.corpusDirectory), includeWordBoundaries);
+		List<FutureTask<ParseResults>> futures = parseFiles(Paths.get(this.corpusDirectory), maskLetterTypes, includeWordBoundaries);
 		ParseResults parseResults;
 		long total = 0L;
 		long unique = 0L;
@@ -218,7 +210,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
 		if (nGram.length() == order) {
-			for (Character letter : (includeWordBoundaries ? LOWERCASE_LETTERS_AND_SPACE : LOWERCASE_LETTERS)) {
+			for (Character letter : (includeWordBoundaries ? ModelConstants.LOWERCASE_LETTERS_AND_SPACE : ModelConstants.LOWERCASE_LETTERS)) {
 				NGramIndexNode match = this.letterMarkovModel.findLongest(nGram.substring(1) + letter.toString());
 
 				if (match != null) {
@@ -344,16 +336,20 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	 */
 	protected class ParseFileTask implements Callable<ParseResults> {
 		private Path	path;
+		private boolean	maskLetterTypes;
 		private boolean	includeWordBoundaries;
 
 		/**
 		 * @param path
 		 *            the Path to set
 		 * @param includeWordBoundaries
+		 *            whether to mask letter types
+		 * @param includeWordBoundaries
 		 *            whether to include word boundaries
 		 */
-		public ParseFileTask(Path path, boolean includeWordBoundaries) {
+		public ParseFileTask(Path path, boolean maskLetterTypes, boolean includeWordBoundaries) {
 			this.path = path;
+			this.maskLetterTypes = maskLetterTypes;
 			this.includeWordBoundaries = includeWordBoundaries;
 		}
 
@@ -391,7 +387,28 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 					for (int j = 0; j < sentence.length(); j++) {
 						String nGramString = sentence.substring(j, j + Math.min(order, sentence.length() - j));
 
-						unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
+						if (maskLetterTypes) {
+							for (int k = 0; k < nGramString.length(); k++) {
+								String maskedString = "";
+
+								for (int l = 0; l < nGramString.length(); l++) {
+									if (l == k) {
+										maskedString += nGramString.charAt(l);
+									} else if (nGramString.charAt(l) == ' ') {
+										maskedString += " ";
+									} else if (ModelConstants.LOWERCASE_VOWELS.contains(nGramString.charAt(l))) {
+										maskedString += ModelConstants.VOWEL_SYMBOL;
+									} else {
+										maskedString += ModelConstants.CONSONANT_SYMBOL;
+									}
+								}
+
+								unique += (letterMarkovModel.addLetterTransition(maskedString) ? 1 : 0);
+							}
+						} else {
+							unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
+						}
+
 						total++;
 
 						for (int k = 1; k <= nGramString.length(); k++) {
@@ -407,7 +424,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		}
 	}
 
-	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean includeWordBoundaries) {
+	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean maskLetterTypes, boolean includeWordBoundaries) {
 		List<FutureTask<ParseResults>> tasks = new ArrayList<FutureTask<ParseResults>>();
 		FutureTask<ParseResults> task;
 		String filename;
@@ -415,7 +432,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, includeWordBoundaries));
+					tasks.addAll(parseFiles(entry, maskLetterTypes, includeWordBoundaries));
 				} else {
 					filename = entry.toString();
 					String ext = filename.substring(filename.lastIndexOf('.'));
@@ -426,7 +443,8 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 						continue;
 					}
 
-					task = new FutureTask<ParseResults>(new ParseFileTask(entry, includeWordBoundaries));
+					task = new FutureTask<ParseResults>(new ParseFileTask(entry, maskLetterTypes,
+							includeWordBoundaries));
 					tasks.add(task);
 					this.taskExecutor.execute(task);
 				}

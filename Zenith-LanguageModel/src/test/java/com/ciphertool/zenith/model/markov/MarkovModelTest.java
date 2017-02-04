@@ -51,7 +51,7 @@ public class MarkovModelTest {
 		importer.setCorpusDirectory("/Users/george/Desktop/corpus");
 		importer.setTaskExecutor(taskExecutorSpy);
 		importer.setOrder(ORDER);
-		model = importer.importCorpus(false);
+		model = importer.importCorpus(false, false);
 	}
 
 	// @Test

@@ -31,7 +31,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class NGramIndexNode {
-	private static final Pattern			LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z ]");
+	private static final Pattern			LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z +\\-]");
 
 	@Id
 	private ObjectId						id;

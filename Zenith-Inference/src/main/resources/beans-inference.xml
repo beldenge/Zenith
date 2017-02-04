@@ -35,9 +35,11 @@ You should have received a copy of the GNU General Public License along with Zen
 
 	<bean class="com.ciphertool.zenith.inference.BayesianDecipherManager" id="bayesianDecipherManager">
 		<property name="plaintextEvaluator" ref="plaintextEvaluator" />
+		<property name="letterTypeEvaluator" ref="letterTypeEvaluator" />
 		<property name="cipherName" value="${cipher.name}" />
 		<property name="cipherDao" ref="cipherDao" />
 		<property name="letterNGramDao" ref="letterNGramDao" />
+		<property name="maskedNGramDao" ref="maskedNGramDao" />
 		<property name="samplerIterations" value="${bayes.sampler.iterations}" />
 		<property name="annealingTemperatureMax" value="${bayes.annealing.temperature.max}" />
 		<property name="annealingTemperatureMin" value="${bayes.annealing.temperature.min}" />
@@ -47,9 +49,15 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
 		<property name="markovOrder" value="${markov.letter.order}" />
 		<property name="minimumCount" value="${markov.minimum.count}" />
+		<property name="letterTypeSamplingEnabled" value="${bayes.sampler.letterTypeSampling.enabled}" />
 	</bean>
 
 	<bean class="com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator" id="plaintextEvaluator">
+		<property name="bigDecimalFunctions" ref="bigDecimalFunctions" />
+		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
+	</bean>
+
+	<bean class="com.ciphertool.zenith.inference.evaluator.LetterTypeEvaluator" id="letterTypeEvaluator">
 		<property name="bigDecimalFunctions" ref="bigDecimalFunctions" />
 		<property name="includeWordBoundaries" value="${markov.letter.include.word.boundaries}" />
 	</bean>
