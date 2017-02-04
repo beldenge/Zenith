@@ -242,10 +242,8 @@ public class BayesianDecipherManager {
 		}
 
 		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
-		initialSolution.setLanguageModelProbability(initialPlaintextResults.getProbability());
-		initialSolution.setLanguageModelLogProbability(initialPlaintextResults.getLogProbability());
-		initialSolution.setProbability(initialSolution.getLanguageModelProbability());
-		initialSolution.setLogProbability(initialSolution.getLanguageModelLogProbability());
+		initialSolution.setProbability(initialPlaintextResults.getProbability());
+		initialSolution.setLogProbability(initialPlaintextResults.getLogProbability());
 
 		if (knownPlaintextEvaluator != null) {
 			initialSolution.setKnownSolutionProximity(BigDecimal.valueOf(knownPlaintextEvaluator.evaluate(initialSolution)));
@@ -294,10 +292,8 @@ public class BayesianDecipherManager {
 			letterTypeSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
 
 			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, next, null);
-			next.setLanguageModelProbability(fullPlaintextResults.getProbability());
-			next.setLanguageModelLogProbability(fullPlaintextResults.getLogProbability());
-			next.setProbability(next.getLanguageModelProbability());
-			next.setLogProbability(next.getLanguageModelLogProbability());
+			next.setProbability(fullPlaintextResults.getProbability());
+			next.setLogProbability(fullPlaintextResults.getLogProbability());
 
 			startWordSampling = System.currentTimeMillis();
 			if (includeWordBoundaries) {
@@ -354,16 +350,15 @@ public class BayesianDecipherManager {
 		mappingList.addAll(solution.getMappings().entrySet());
 
 		Map.Entry<String, Plaintext> nextEntry;
+		CipherSolution original = solution.clone();
 
 		// For each cipher symbol type, run the gibbs sampling
 		for (int i = 0; i < solution.getMappings().size(); i++) {
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, solution, nextEntry.getKey());
-			solution.setLanguageModelProbability(fullPlaintextResults.getProbability());
-			solution.setLanguageModelLogProbability(fullPlaintextResults.getLogProbability());
-			solution.setProbability(solution.getLanguageModelProbability());
-			solution.setLogProbability(solution.getLanguageModelLogProbability());
+			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, original, nextEntry.getKey());
+			original.setProbability(fullPlaintextResults.getProbability());
+			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
 			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), solution);
 
@@ -377,7 +372,7 @@ public class BayesianDecipherManager {
 
 			proposal = plaintextDistribution.get(rouletteSampler.getNextIndex(plaintextDistribution, totalProbability)).getValue();
 
-			solution = selectNext(temperature, solution, proposal);
+			solution = selectNext(temperature, original, proposal);
 		}
 
 		return solution;
@@ -392,16 +387,15 @@ public class BayesianDecipherManager {
 		mappingList.addAll(solution.getMappings().entrySet());
 
 		Map.Entry<String, Plaintext> nextEntry;
+		CipherSolution original = solution.clone();
 
 		// For each cipher symbol type, run the gibbs sampling
 		for (int i = 0; i < solution.getMappings().size(); i++) {
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			EvaluationResults fullPlaintextResults = letterTypeEvaluator.evaluate(maskedMarkovModel, solution, nextEntry.getKey());
-			solution.setLanguageModelProbability(fullPlaintextResults.getProbability());
-			solution.setLanguageModelLogProbability(fullPlaintextResults.getLogProbability());
-			solution.setProbability(solution.getLanguageModelProbability());
-			solution.setLogProbability(solution.getLanguageModelLogProbability());
+			EvaluationResults fullPlaintextResults = letterTypeEvaluator.evaluate(maskedMarkovModel, original, nextEntry.getKey());
+			original.setProbability(fullPlaintextResults.getProbability());
+			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
 			List<SolutionProbability> plaintextDistribution = computeLetterTypeDistribution(nextEntry.getKey(), solution);
 
@@ -417,7 +411,7 @@ public class BayesianDecipherManager {
 
 			proposal = plaintextDistribution.get(rouletteSampler.getNextIndex(plaintextDistribution, totalProbability)).getValue();
 
-			solution = selectNext(temperature, solution, proposal);
+			solution = selectNext(temperature, original, proposal);
 		}
 
 		return solution;
@@ -458,10 +452,8 @@ public class BayesianDecipherManager {
 			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, conditionalSolution, ciphertextKey);
 			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
 
-			conditionalSolution.setLanguageModelProbability(remainingPlaintextResults.getProbability());
-			conditionalSolution.setLanguageModelLogProbability(remainingPlaintextResults.getLogProbability());
-			conditionalSolution.setProbability(conditionalSolution.getLanguageModelProbability());
-			conditionalSolution.setLogProbability(conditionalSolution.getLanguageModelLogProbability());
+			conditionalSolution.setProbability(remainingPlaintextResults.getProbability());
+			conditionalSolution.setLogProbability(remainingPlaintextResults.getLogProbability());
 
 			return conditionalSolution;
 		}
@@ -502,10 +494,8 @@ public class BayesianDecipherManager {
 			EvaluationResults letterTypeResults = letterTypeEvaluator.evaluate(maskedMarkovModel, conditionalSolution, ciphertextKey);
 			log.debug("Letter type evaluation took {}ms.", (System.currentTimeMillis() - startLetterType));
 
-			conditionalSolution.setLanguageModelProbability(letterTypeResults.getProbability());
-			conditionalSolution.setLanguageModelLogProbability(letterTypeResults.getLogProbability());
-			conditionalSolution.setProbability(conditionalSolution.getLanguageModelProbability());
-			conditionalSolution.setLogProbability(conditionalSolution.getLanguageModelLogProbability());
+			conditionalSolution.setProbability(letterTypeResults.getProbability());
+			conditionalSolution.setLogProbability(letterTypeResults.getLogProbability());
 
 			return conditionalSolution;
 		}
@@ -611,20 +601,16 @@ public class BayesianDecipherManager {
 			if (!addProposal.getWordBoundaries().contains(nextBoundary)) {
 				addProposal.addWordBoundary(nextBoundary);
 				addPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, addProposal, null);
-				addProposal.setLanguageModelProbability(addPlaintextResults.getProbability());
-				addProposal.setLanguageModelLogProbability(addPlaintextResults.getLogProbability());
-				addProposal.setProbability(addProposal.getLanguageModelProbability());
-				addProposal.setLogProbability(addProposal.getLanguageModelLogProbability());
+				addProposal.setProbability(addPlaintextResults.getProbability());
+				addProposal.setLogProbability(addPlaintextResults.getLogProbability());
 			}
 
 			removeProposal = solution.clone();
 			if (removeProposal.getWordBoundaries().contains(nextBoundary)) {
 				removeProposal.removeWordBoundary(nextBoundary);
 				removePlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, removeProposal, null);
-				removeProposal.setLanguageModelProbability(removePlaintextResults.getProbability());
-				removeProposal.setLanguageModelLogProbability(removePlaintextResults.getLogProbability());
-				removeProposal.setProbability(removeProposal.getLanguageModelProbability());
-				removeProposal.setLogProbability(removeProposal.getLanguageModelLogProbability());
+				removeProposal.setProbability(removePlaintextResults.getProbability());
+				removeProposal.setLogProbability(removePlaintextResults.getLogProbability());
 			}
 
 			sumOfProbabilities = addProposal.getProbability().add(removeProposal.getProbability());
@@ -654,7 +640,7 @@ public class BayesianDecipherManager {
 	protected CipherSolution selectNext(BigDecimal temperature, CipherSolution solution, CipherSolution proposal) {
 		BigDecimal acceptanceProbability = null;
 
-		if (proposal.getLogProbability().compareTo(solution.getLogProbability()) > 0) {
+		if (proposal.getLogProbability().compareTo(solution.getLogProbability()) >= 0) {
 			log.debug("Better solution found");
 			return proposal;
 		} else {

@@ -30,15 +30,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CipherSolution {
-	private static Logger			log							= LoggerFactory.getLogger(CipherSolution.class);
+	private static Logger			log						= LoggerFactory.getLogger(CipherSolution.class);
 
 	protected Cipher				cipher;
 
-	private BigDecimal				probability					= null;
-	private BigDecimal				logProbability				= null;
-	private BigDecimal				languageModelProbability	= null;
-	private BigDecimal				languageModelLogProbability	= null;
-	private BigDecimal				knownSolutionProximity		= null;
+	private BigDecimal				probability				= null;
+	private BigDecimal				logProbability			= null;
+	private BigDecimal				knownSolutionProximity	= null;
 
 	private Map<String, Plaintext>	mappings;
 	private Set<Integer>			wordBoundaries;
@@ -98,36 +96,6 @@ public class CipherSolution {
 	 */
 	public void setLogProbability(BigDecimal logProbability) {
 		this.logProbability = logProbability;
-	}
-
-	/**
-	 * @return the languageModelProbability
-	 */
-	public BigDecimal getLanguageModelProbability() {
-		return languageModelProbability;
-	}
-
-	/**
-	 * @param languageModelProbability
-	 *            the languageModelProbability to set
-	 */
-	public void setLanguageModelProbability(BigDecimal languageModelProbability) {
-		this.languageModelProbability = languageModelProbability;
-	}
-
-	/**
-	 * @return the languageModelLogProbability
-	 */
-	public BigDecimal getLanguageModelLogProbability() {
-		return languageModelLogProbability;
-	}
-
-	/**
-	 * @param languageModelLogProbability
-	 *            the languageModelLogProbability to set
-	 */
-	public void setLanguageModelLogProbability(BigDecimal languageModelLogProbability) {
-		this.languageModelLogProbability = languageModelLogProbability;
 	}
 
 	/**
@@ -231,8 +199,6 @@ public class CipherSolution {
 		// We need to set these values last to maintain whether evaluation is needed on the clone
 		copySolution.setProbability(this.probability);
 		copySolution.setLogProbability(this.logProbability);
-		copySolution.setLanguageModelProbability(this.languageModelProbability);
-		copySolution.setLanguageModelLogProbability(this.languageModelLogProbability);
 
 		return copySolution;
 	}
@@ -246,8 +212,6 @@ public class CipherSolution {
 		int result = 1;
 		result = prime * result + ((cipher == null) ? 0 : cipher.hashCode());
 		result = prime * result + ((knownSolutionProximity == null) ? 0 : knownSolutionProximity.hashCode());
-		result = prime * result + ((languageModelLogProbability == null) ? 0 : languageModelLogProbability.hashCode());
-		result = prime * result + ((languageModelProbability == null) ? 0 : languageModelProbability.hashCode());
 		result = prime * result + ((logProbability == null) ? 0 : logProbability.hashCode());
 		result = prime * result + ((mappings == null) ? 0 : mappings.hashCode());
 		result = prime * result + ((probability == null) ? 0 : probability.hashCode());
@@ -282,20 +246,6 @@ public class CipherSolution {
 				return false;
 			}
 		} else if (!knownSolutionProximity.equals(other.knownSolutionProximity)) {
-			return false;
-		}
-		if (languageModelLogProbability == null) {
-			if (other.languageModelLogProbability != null) {
-				return false;
-			}
-		} else if (!languageModelLogProbability.equals(other.languageModelLogProbability)) {
-			return false;
-		}
-		if (languageModelProbability == null) {
-			if (other.languageModelProbability != null) {
-				return false;
-			}
-		} else if (!languageModelProbability.equals(other.languageModelProbability)) {
 			return false;
 		}
 		if (logProbability == null) {
@@ -356,9 +306,7 @@ public class CipherSolution {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Solution [probability=" + probability + ", logProbability=" + logProbability
 				+ (knownSolutionProximity != null ? ", proximity="
-						+ String.format("%1$,.2f", knownSolutionProximity.doubleValue() * 100.0) + "%" : "")
-				+ ", languageModelProbability=" + languageModelProbability + ", languageModelLogProbability="
-				+ languageModelLogProbability + "]\n");
+						+ String.format("%1$,.2f", knownSolutionProximity.doubleValue() * 100.0) + "%" : "") + "]\n");
 
 		if (this.cipher != null) {
 			String nextPlaintext = null;
