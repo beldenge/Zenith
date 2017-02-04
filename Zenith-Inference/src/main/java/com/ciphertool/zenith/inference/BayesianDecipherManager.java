@@ -329,14 +329,14 @@ public class BayesianDecipherManager {
 				+ ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
 
 		log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
-		log.info("Mappings for best known: ");
+		log.info("Mappings for best known:");
 
 		for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
 			log.info(entry.getKey() + ": " + entry.getValue().getValue());
 		}
 
 		log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
-		log.info("Mappings for best probability: " + maxBayes.getMappings());
+		log.info("Mappings for best probability:");
 
 		for (Map.Entry<String, Plaintext> entry : maxBayes.getMappings().entrySet()) {
 			log.info(entry.getKey() + ": " + entry.getValue().getValue());
