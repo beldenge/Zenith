@@ -352,10 +352,12 @@ public class BayesianDecipherManager {
 		mappingList.addAll(solution.getMappings().entrySet());
 
 		Map.Entry<String, Plaintext> nextEntry;
-		CipherSolution original = solution.clone();
+		CipherSolution original;
 
 		// For each cipher symbol type, run the gibbs sampling
 		for (int i = 0; i < solution.getMappings().size(); i++) {
+			original = solution.clone();
+
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
 			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, original, nextEntry.getKey());
@@ -389,10 +391,12 @@ public class BayesianDecipherManager {
 		mappingList.addAll(solution.getMappings().entrySet());
 
 		Map.Entry<String, Plaintext> nextEntry;
-		CipherSolution original = solution.clone();
+		CipherSolution original;
 
 		// For each cipher symbol type, run the gibbs sampling
 		for (int i = 0; i < solution.getMappings().size(); i++) {
+			original = solution.clone();
+
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
 			EvaluationResults fullPlaintextResults = letterTypeEvaluator.evaluate(maskedMarkovModel, original, nextEntry.getKey());
