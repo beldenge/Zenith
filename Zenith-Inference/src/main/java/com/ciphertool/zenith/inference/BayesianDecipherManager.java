@@ -54,6 +54,7 @@ import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
+import com.ciphertool.zenith.model.markov.UnidirectionalMarkovModel;
 
 public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
@@ -149,12 +150,11 @@ public class BayesianDecipherManager {
 		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 				- startFindAll));
 
-		this.letterMarkovModel = new MarkovModel(this.markovOrder);
-
 		long startCount = System.currentTimeMillis();
 		log.info("Counting nodes with counts below the minimum of {}.", minimumCount);
 
-		letterMarkovModel.setNumWithInsufficientCounts(letterNGramDao.countLessThan(minimumCount, includeWordBoundaries));
+		this.letterMarkovModel = new UnidirectionalMarkovModel(this.markovOrder,
+				letterNGramDao.countLessThan(minimumCount, includeWordBoundaries));
 
 		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
 				- startCount));
@@ -178,12 +178,11 @@ public class BayesianDecipherManager {
 			log.info("Finished retrieving {} masked n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 					- startFindAll));
 
-			this.maskedMarkovModel = new MarkovModel(this.markovOrder);
-
 			long startMaskedCount = System.currentTimeMillis();
 			log.info("Counting masked nodes with counts below the minimum of {}.", minimumCount);
 
-			maskedMarkovModel.setNumWithInsufficientCounts(maskedNGramDao.countLessThan(minimumCount, includeWordBoundaries));
+			this.maskedMarkovModel = new UnidirectionalMarkovModel(this.markovOrder,
+					maskedNGramDao.countLessThan(minimumCount, includeWordBoundaries));
 
 			log.info("Finished counting masked nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
 					- startMaskedCount));
@@ -212,6 +211,8 @@ public class BayesianDecipherManager {
 				probability = BigDecimal.valueOf(entry.getValue().getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
 
 				letterUnigramProbabilities.add(new LetterProbability(entry.getKey(), probability));
+
+				log.info("Unigram: {}, Probability: {}", entry.getKey(), probability);
 			}
 		}
 

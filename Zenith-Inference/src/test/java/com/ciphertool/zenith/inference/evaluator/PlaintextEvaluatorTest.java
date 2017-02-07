@@ -31,6 +31,7 @@ import com.ciphertool.zenith.math.BigDecimalFunctions;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
+import com.ciphertool.zenith.model.markov.UnidirectionalMarkovModel;
 
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	private static Logger				log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
@@ -329,7 +330,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	// @BeforeClass
 	public static void setUp() throws InterruptedException, ExecutionException {
 		LetterNGramDao letterNGramDao = new LetterNGramDao();
-		letterMarkovModel = new MarkovModel(6);
+		letterMarkovModel = new UnidirectionalMarkovModel(6);
 
 		List<NGramIndexNode> nodes = letterNGramDao.findAll(2, false);
 

@@ -35,6 +35,7 @@ import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
+import com.ciphertool.zenith.model.markov.UnidirectionalNGramIndexNode;
 
 public class LetterTypeEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
@@ -118,7 +119,7 @@ public class LetterTypeEvaluator {
 
 				match = letterMarkovModel.find(maskedNGram);
 
-				if (match != null && match.getLevel() == order) {
+				if (match != null && ((UnidirectionalNGramIndexNode) match).getLevel() == order) {
 					probability = match.getProbability();
 					log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 				} else {

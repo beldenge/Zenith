@@ -61,7 +61,7 @@ public class MarkovModelTest {
 		sb.append(root);
 
 		for (int i = 0; i < 100; i++) {
-			NGramIndexNode match = model.findLongest(root);
+			NGramIndexNode match = model.find(root);
 
 			Map<Character, NGramIndexNode> transitions = null;
 

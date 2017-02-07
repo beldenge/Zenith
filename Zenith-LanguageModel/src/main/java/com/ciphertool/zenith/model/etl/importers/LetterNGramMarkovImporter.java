@@ -43,6 +43,8 @@ import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dto.ParseResults;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
+import com.ciphertool.zenith.model.markov.UnidirectionalMarkovModel;
+import com.ciphertool.zenith.model.markov.UnidirectionalNGramIndexNode;
 
 public class LetterNGramMarkovImporter implements MarkovImporter {
 	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
@@ -58,7 +60,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 	@Override
 	public MarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries) {
-		letterMarkovModel = new MarkovModel(this.order);
+		letterMarkovModel = new UnidirectionalMarkovModel(this.order);
 
 		long start = System.currentTimeMillis();
 
@@ -93,7 +95,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		log.info("Imported " + unique + " distinct letter N-Grams out of " + total + " total in "
 				+ (System.currentTimeMillis() - start) + "ms");
 
-		this.letterMarkovModel.getRootNode().setCount(total);
+		((UnidirectionalNGramIndexNode) this.letterMarkovModel.getRootNode()).setCount(total);
 
 		postProcess(true, false, includeWordBoundaries);
 
@@ -103,7 +105,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		for (Map.Entry<Character, NGramIndexNode> entry : this.letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			log.info(entry.getKey().toString() + ": "
-					+ entry.getValue().getConditionalProbability().toString().substring(0, Math.min(7, entry.getValue().getConditionalProbability().toString().length())));
+					+ entry.getValue().getProbability().toString().substring(0, Math.min(7, entry.getValue().getProbability().toString().length())));
 		}
 
 		return this.letterMarkovModel;
@@ -193,7 +195,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	}
 
 	protected void computeConditionalProbability(NGramIndexNode node, long parentCount) {
-		node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
+		((UnidirectionalNGramIndexNode) node).setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
 
 		Map<Character, NGramIndexNode> transitions = node.getTransitions();
 
@@ -211,7 +213,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		if (nGram.length() == order) {
 			for (Character letter : (includeWordBoundaries ? ModelConstants.LOWERCASE_LETTERS_AND_SPACE : ModelConstants.LOWERCASE_LETTERS)) {
-				NGramIndexNode match = this.letterMarkovModel.findLongest(nGram.substring(1) + letter.toString());
+				NGramIndexNode match = this.letterMarkovModel.find(nGram.substring(1) + letter.toString());
 
 				if (match != null) {
 					node.putChild(letter, match);
@@ -314,8 +316,8 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	}
 
 	protected void normalizeTerminal(NGramIndexNode node, int level, long total) {
-		if (node.getLevel() == level) {
-			node.setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
+		if (((UnidirectionalNGramIndexNode) node).getLevel() == level) {
+			((UnidirectionalNGramIndexNode) node).setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
 
 			return;
 		}
@@ -403,10 +405,10 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 									}
 								}
 
-								unique += (letterMarkovModel.addLetterTransition(maskedString) ? 1 : 0);
+								unique += (letterMarkovModel.addNGram(maskedString) ? 1 : 0);
 							}
 						} else {
-							unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
+							unique += (letterMarkovModel.addNGram(nGramString) ? 1 : 0);
 						}
 
 						total++;
