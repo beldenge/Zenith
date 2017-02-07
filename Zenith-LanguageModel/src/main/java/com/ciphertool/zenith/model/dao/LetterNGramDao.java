@@ -32,7 +32,6 @@ import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Query;
 
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
-import com.ciphertool.zenith.model.markov.UnidirectionalNGramIndexNode;
 import com.mongodb.Cursor;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -60,13 +59,13 @@ public class LetterNGramDao {
 
 		cursors.parallelStream().forEach(cursor -> {
 			DBObject next;
-			UnidirectionalNGramIndexNode nextNode;
+			NGramIndexNode nextNode;
 
 			while (cursor.hasNext()) {
 				next = cursor.next();
 
 				if (((long) next.get(COUNT_KEY)) >= minimumCount) {
-					nextNode = new UnidirectionalNGramIndexNode(null, (String) next.get(CUMULATIVE_STRING_KEY),
+					nextNode = new NGramIndexNode(null, (String) next.get(CUMULATIVE_STRING_KEY),
 							(int) next.get(LEVEL_KEY));
 
 					nextNode.setId((ObjectId) next.get(ID_KEY));

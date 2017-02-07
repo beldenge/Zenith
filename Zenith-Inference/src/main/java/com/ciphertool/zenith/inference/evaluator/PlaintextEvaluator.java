@@ -96,9 +96,9 @@ public class PlaintextEvaluator {
 			for (Integer ciphertextIndex : ciphertextIndices) {
 				for (int i = Math.max(0, ciphertextIndex - (order - 1)); i < Math.min(sb.length()
 						- order, ciphertextIndex + 1); i++) {
-					match = letterMarkovModel.find(sb.substring(i, i + order));
+					match = letterMarkovModel.findLongest(sb.substring(i, i + order));
 
-					if (match != null) {
+					if (match != null && match.getLevel() == order) {
 						probability = match.getProbability();
 						log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 					} else {
@@ -116,9 +116,9 @@ public class PlaintextEvaluator {
 					continue;
 				}
 
-				match = letterMarkovModel.find(sb.substring(i, i + order));
+				match = letterMarkovModel.findLongest(sb.substring(i, i + order));
 
-				if (match != null) {
+				if (match != null && match.getLevel() == order) {
 					probability = match.getProbability();
 					log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 				} else {
