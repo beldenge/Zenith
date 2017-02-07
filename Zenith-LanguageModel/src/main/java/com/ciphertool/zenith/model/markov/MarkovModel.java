@@ -22,9 +22,14 @@ package com.ciphertool.zenith.model.markov;
 import java.math.BigDecimal;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.ciphertool.zenith.math.MathConstants;
 
 public class MarkovModel {
+	private Logger			log			= LoggerFactory.getLogger(getClass());
+
 	private NGramIndexNode	rootNode	= new NGramIndexNode(null, "", 0);
 	private Integer			order;
 	private Long			numWithInsufficientCounts;
@@ -162,11 +167,35 @@ public class MarkovModel {
 	 */
 	public BigDecimal getUnknownLetterNGramProbability() {
 		if (this.unknownLetterNGramProbability == null) {
-			// FIXME: the root node count is the count of n-grams of all order, not just the highest order
-			this.unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(this.rootNode.getCount()), MathConstants.PREC_10_HALF_UP);
+			long startSum = System.currentTimeMillis();
+
+			this.unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(sumCounts(this.rootNode)), MathConstants.PREC_10_HALF_UP);
+
+			log.info("Took {}ms to compute unknownLetterNGramProbability.  It is now cached.", (System.currentTimeMillis()
+					- startSum));
 		}
 
 		return unknownLetterNGramProbability;
+	}
+
+	protected long sumCounts(NGramIndexNode node) {
+		Map<Character, NGramIndexNode> transitions = node.getTransitions();
+
+		if (transitions == null || transitions.isEmpty()) {
+			return 0L;
+		}
+
+		long sum = 0L;
+
+		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
+			if (entry.getValue().getTransitions() == null || entry.getValue().getTransitions().isEmpty()) {
+				sum += entry.getValue().getCount();
+			} else {
+				sum += sumCounts(entry.getValue());
+			}
+		}
+
+		return sum;
 	}
 
 	/**
