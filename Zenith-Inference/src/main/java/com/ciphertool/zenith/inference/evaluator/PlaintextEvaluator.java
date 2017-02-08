@@ -103,9 +103,9 @@ public class PlaintextEvaluator {
 				}
 
 				for (int i = start; i < end; i++) {
-					match = letterMarkovModel.findLongest(sb.substring(i, i + order));
+					match = letterMarkovModel.find(sb.substring(i, i + order));
 
-					if (match != null && match.getLevel() == order) {
+					if (match != null) {
 						probability = match.getProbability();
 						log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 					} else {

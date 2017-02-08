@@ -211,7 +211,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		if (nGram.length() == order) {
 			for (Character letter : (includeWordBoundaries ? ModelConstants.LOWERCASE_LETTERS_AND_SPACE : ModelConstants.LOWERCASE_LETTERS)) {
-				NGramIndexNode match = this.letterMarkovModel.findLongest(nGram.substring(1) + letter.toString());
+				NGramIndexNode match = this.letterMarkovModel.find(nGram.substring(1) + letter.toString());
 
 				if (match != null) {
 					node.putChild(letter, match);
