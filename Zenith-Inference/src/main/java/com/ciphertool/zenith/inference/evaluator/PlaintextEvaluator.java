@@ -93,9 +93,16 @@ public class PlaintextEvaluator {
 				}
 			}
 
+			Integer lastIndex = null;
 			for (Integer ciphertextIndex : ciphertextIndices) {
-				for (int i = Math.max(0, ciphertextIndex - (order - 1)); i < Math.min(sb.length()
-						- order, ciphertextIndex + 1); i++) {
+				int start = Math.max(0, ciphertextIndex - (order - 1));
+				int end = Math.min(sb.length() - order, ciphertextIndex + 1);
+
+				if (lastIndex != null) {
+					start = Math.max(start, lastIndex);
+				}
+
+				for (int i = start; i < end; i++) {
 					match = letterMarkovModel.findLongest(sb.substring(i, i + order));
 
 					if (match != null && match.getLevel() == order) {
@@ -109,6 +116,8 @@ public class PlaintextEvaluator {
 					nGramProbability = nGramProbability.multiply(probability, MathConstants.PREC_10_HALF_UP);
 					nGramLogProbability = nGramLogProbability.add(bigDecimalFunctions.log(probability), MathConstants.PREC_10_HALF_UP);
 				}
+
+				lastIndex = end;
 			}
 		} else {
 			for (int i = 0; i < sb.length() - order; i++) {
