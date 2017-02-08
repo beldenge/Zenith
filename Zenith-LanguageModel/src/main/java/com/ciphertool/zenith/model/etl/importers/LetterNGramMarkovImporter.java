@@ -95,7 +95,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		this.letterMarkovModel.getRootNode().setCount(total);
 
-		postProcess(true, false, includeWordBoundaries);
+		postProcess(true, includeWordBoundaries);
 
 		for (int i = 1; i <= order; i++) {
 			normalize(this.letterMarkovModel, i, levelTotals.get(i));
@@ -109,7 +109,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		return this.letterMarkovModel;
 	}
 
-	public void postProcess(boolean computeConditionalProbability, boolean linkChildren, boolean includeWordBoundaries) {
+	public void postProcess(boolean computeConditionalProbability, boolean includeWordBoundaries) {
 		long start = System.currentTimeMillis();
 
 		log.info("Starting Markov model post-processing...");
@@ -136,29 +136,6 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 					log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
 				} catch (ExecutionException ee) {
 					log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
-				}
-			}
-		}
-
-		if (linkChildren) {
-			futures = new ArrayList<FutureTask<Void>>(26);
-
-			for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
-				if (entry.getValue() != null) {
-					task = new FutureTask<Void>(new LinkChildTask(entry.getKey(), entry.getValue(),
-							includeWordBoundaries));
-					futures.add(task);
-					this.taskExecutor.execute(task);
-				}
-			}
-
-			for (FutureTask<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException ie) {
-					log.error("Caught InterruptedException while waiting for LinkChildTask ", ie);
-				} catch (ExecutionException ee) {
-					log.error("Caught ExecutionException while waiting for LinkChildTask ", ee);
 				}
 			}
 		}
@@ -203,60 +180,6 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
 			computeConditionalProbability(entry.getValue(), node.getCount());
-		}
-	}
-
-	protected void linkChild(NGramIndexNode node, String nGram, boolean includeWordBoundaries) {
-		Map<Character, NGramIndexNode> transitions = node.getTransitions();
-
-		if (nGram.length() == order) {
-			for (Character letter : (includeWordBoundaries ? ModelConstants.LOWERCASE_LETTERS_AND_SPACE : ModelConstants.LOWERCASE_LETTERS)) {
-				NGramIndexNode match = this.letterMarkovModel.find(nGram.substring(1) + letter.toString());
-
-				if (match != null) {
-					node.putChild(letter, match);
-				}
-			}
-
-			return;
-		}
-
-		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			NGramIndexNode nextNode = entry.getValue();
-
-			if (nextNode != null) {
-				linkChild(nextNode, nGram + String.valueOf(entry.getKey()), includeWordBoundaries);
-			}
-		}
-	}
-
-	/**
-	 * A concurrent task for linking leaf nodes in a Markov model.
-	 */
-	protected class LinkChildTask implements Callable<Void> {
-		private Character		key;
-		private NGramIndexNode	node;
-		private boolean			includeWordBoundaries;
-
-		/**
-		 * @param key
-		 *            the Character key to set
-		 * @param node
-		 *            the NGramIndexNode to set
-		 * @param includeWordBoundaries
-		 *            whether to include word boundaries
-		 */
-		public LinkChildTask(Character key, NGramIndexNode node, boolean includeWordBoundaries) {
-			this.key = key;
-			this.node = node;
-			this.includeWordBoundaries = includeWordBoundaries;
-		}
-
-		@Override
-		public Void call() throws Exception {
-			linkChild(this.node, String.valueOf(this.key), includeWordBoundaries);
-
-			return null;
 		}
 	}
 

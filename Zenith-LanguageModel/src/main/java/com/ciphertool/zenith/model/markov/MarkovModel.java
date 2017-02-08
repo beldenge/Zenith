@@ -20,12 +20,19 @@
 package com.ciphertool.zenith.model.markov;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.ModelConstants;
 
 public class MarkovModel {
 	private Logger			log			= LoggerFactory.getLogger(getClass());
@@ -188,7 +195,7 @@ public class MarkovModel {
 		long sum = 0L;
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			if (entry.getValue().getTransitions() == null || entry.getValue().getTransitions().isEmpty()) {
+			if (entry.getValue().getLevel() == this.order) {
 				sum += entry.getValue().getCount();
 			} else {
 				sum += sumCounts(entry.getValue());
@@ -246,6 +253,85 @@ public class MarkovModel {
 			if (entry.getValue() != null) {
 				appendTransitions(parent + entry.getKey(), entry.getKey(), entry.getValue(), sb);
 			}
+		}
+	}
+
+	public void linkChildren(boolean includeWordBoundaries, TaskExecutor taskExecutor) {
+		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		FutureTask<Void> task;
+
+		futures = new ArrayList<FutureTask<Void>>(26);
+
+		for (Map.Entry<Character, NGramIndexNode> entry : this.rootNode.getTransitions().entrySet()) {
+			if (entry.getValue() != null) {
+				task = new FutureTask<Void>(new LinkChildTask(entry.getKey(), entry.getValue(), includeWordBoundaries));
+				futures.add(task);
+				taskExecutor.execute(task);
+			}
+		}
+
+		for (FutureTask<Void> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException ie) {
+				log.error("Caught InterruptedException while waiting for LinkChildTask ", ie);
+			} catch (ExecutionException ee) {
+				log.error("Caught ExecutionException while waiting for LinkChildTask ", ee);
+			}
+		}
+	}
+
+	protected void linkChild(NGramIndexNode node, String nGram, boolean includeWordBoundaries) {
+		Map<Character, NGramIndexNode> transitions = node.getTransitions();
+
+		if (nGram.length() == order) {
+			for (Character letter : (includeWordBoundaries ? ModelConstants.LOWERCASE_LETTERS_AND_SPACE : ModelConstants.LOWERCASE_LETTERS)) {
+				NGramIndexNode match = this.find(nGram.substring(1) + letter.toString());
+
+				if (match != null) {
+					node.putChild(letter, match);
+				}
+			}
+
+			return;
+		}
+
+		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
+			NGramIndexNode nextNode = entry.getValue();
+
+			if (nextNode != null) {
+				linkChild(nextNode, nGram + String.valueOf(entry.getKey()), includeWordBoundaries);
+			}
+		}
+	}
+
+	/**
+	 * A concurrent task for linking leaf nodes in a Markov model.
+	 */
+	protected class LinkChildTask implements Callable<Void> {
+		private Character		key;
+		private NGramIndexNode	node;
+		private boolean			includeWordBoundaries;
+
+		/**
+		 * @param key
+		 *            the Character key to set
+		 * @param node
+		 *            the NGramIndexNode to set
+		 * @param includeWordBoundaries
+		 *            whether to include word boundaries
+		 */
+		public LinkChildTask(Character key, NGramIndexNode node, boolean includeWordBoundaries) {
+			this.key = key;
+			this.node = node;
+			this.includeWordBoundaries = includeWordBoundaries;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			linkChild(this.node, String.valueOf(this.key), includeWordBoundaries);
+
+			return null;
 		}
 	}
 }
