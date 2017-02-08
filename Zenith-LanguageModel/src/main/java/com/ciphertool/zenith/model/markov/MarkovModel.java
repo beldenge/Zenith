@@ -39,12 +39,12 @@ public class MarkovModel {
 
 	private NGramIndexNode	rootNode	= new NGramIndexNode(null, "", 0);
 	private Integer			order;
-	private Long			numWithInsufficientCounts;
 	private BigDecimal		unknownLetterNGramProbability;
 	private BigDecimal		indexOfCoincidence;
 
-	public MarkovModel(int order) {
+	public MarkovModel(int order, BigDecimal unknownLetterNGramProbability) {
 		this.order = order;
+		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
 	public void addNode(NGramIndexNode nodeToAdd) {
@@ -148,21 +148,6 @@ public class MarkovModel {
 	}
 
 	/**
-	 * @return the numWithInsufficientCounts
-	 */
-	public Long getNumWithInsufficientCounts() {
-		return numWithInsufficientCounts;
-	}
-
-	/**
-	 * @param numWithInsufficientCounts
-	 *            the numWithInsufficientCounts to set
-	 */
-	public void setNumWithInsufficientCounts(Long numWithInsufficientCounts) {
-		this.numWithInsufficientCounts = numWithInsufficientCounts;
-	}
-
-	/**
 	 * @return the order
 	 */
 	public Integer getOrder() {
@@ -173,36 +158,7 @@ public class MarkovModel {
 	 * @return the unknownLetterNGramProbability
 	 */
 	public BigDecimal getUnknownLetterNGramProbability() {
-		if (this.unknownLetterNGramProbability == null) {
-			long startSum = System.currentTimeMillis();
-
-			this.unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(sumCounts(this.rootNode)), MathConstants.PREC_10_HALF_UP);
-
-			log.info("Took {}ms to compute unknownLetterNGramProbability.  It is now cached.", (System.currentTimeMillis()
-					- startSum));
-		}
-
 		return unknownLetterNGramProbability;
-	}
-
-	protected long sumCounts(NGramIndexNode node) {
-		Map<Character, NGramIndexNode> transitions = node.getTransitions();
-
-		if (transitions == null || transitions.isEmpty()) {
-			return 0L;
-		}
-
-		long sum = 0L;
-
-		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			if (entry.getValue().getLevel() == this.order) {
-				sum += entry.getValue().getCount();
-			} else {
-				sum += sumCounts(entry.getValue());
-			}
-		}
-
-		return sum;
 	}
 
 	/**

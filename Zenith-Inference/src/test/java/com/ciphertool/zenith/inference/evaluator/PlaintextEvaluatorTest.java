@@ -329,7 +329,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	// @BeforeClass
 	public static void setUp() throws InterruptedException, ExecutionException {
 		LetterNGramDao letterNGramDao = new LetterNGramDao();
-		letterMarkovModel = new MarkovModel(6);
+		letterMarkovModel = new MarkovModel(6, null);
 
 		List<NGramIndexNode> nodes = letterNGramDao.findAll(2, false);
 

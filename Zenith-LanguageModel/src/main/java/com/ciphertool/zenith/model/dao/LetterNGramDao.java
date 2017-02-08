@@ -25,10 +25,15 @@ import java.util.Collections;
 import java.util.List;
 
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.mongodb.core.BulkOperations.BulkMode;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
 import com.ciphertool.zenith.model.markov.NGramIndexNode;
@@ -38,6 +43,8 @@ import com.mongodb.DBObject;
 import com.mongodb.ParallelScanOptions;
 
 public class LetterNGramDao {
+	private Logger				log							= LoggerFactory.getLogger(getClass());
+
 	private String				collectionWithSpaces;
 	private String				collectionWithoutSpaces;
 	private static final String	ID_KEY						= "id";
@@ -89,9 +96,37 @@ public class LetterNGramDao {
 	}
 
 	public long countLessThan(int minimumCount, boolean includeWordBoundaries) {
+		long startMaskedCount = System.currentTimeMillis();
+		log.info("Counting masked nodes with counts below the minimum of {}.", minimumCount);
+
 		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
 
-		return mongoOperations.count(query, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+		long result = mongoOperations.count(query, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+
+		log.info("Finished counting masked nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
+				- startMaskedCount));
+
+		return result;
+	}
+
+	public long sumCounts(int order, boolean includeWordBoundaries) {
+		long startSum = System.currentTimeMillis();
+		log.info("Summing counts of all nodes of order {}.", order);
+
+		Aggregation agg = Aggregation.newAggregation(Aggregation.match(Criteria.where("level").is(order)), Aggregation.group().sum("count").as("sum"));
+
+		AggregationResults<SumResult> sumResult = mongoOperations.aggregate(agg, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces), SumResult.class);
+
+		long result = sumResult.getUniqueMappedResult().sum;
+
+		log.info("Finished summing counts of all nodes of {} in {}ms.", order, (System.currentTimeMillis()
+				- startSum));
+
+		return result;
+	}
+
+	private class SumResult {
+		private Long sum;
 	}
 
 	public void addAll(List<NGramIndexNode> nodes, boolean includeWordBoundaries) {

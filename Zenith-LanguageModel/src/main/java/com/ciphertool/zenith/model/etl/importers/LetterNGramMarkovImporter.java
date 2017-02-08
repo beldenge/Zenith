@@ -58,7 +58,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 	@Override
 	public MarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries) {
-		letterMarkovModel = new MarkovModel(this.order);
+		letterMarkovModel = new MarkovModel(this.order, null);
 
 		long start = System.currentTimeMillis();
 

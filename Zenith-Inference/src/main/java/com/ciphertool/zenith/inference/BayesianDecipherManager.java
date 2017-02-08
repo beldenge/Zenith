@@ -149,15 +149,9 @@ public class BayesianDecipherManager {
 		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 				- startFindAll));
 
-		this.letterMarkovModel = new MarkovModel(this.markovOrder);
+		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(letterNGramDao.sumCounts(this.markovOrder, includeWordBoundaries)), MathConstants.PREC_10_HALF_UP);
 
-		long startCount = System.currentTimeMillis();
-		log.info("Counting nodes with counts below the minimum of {}.", minimumCount);
-
-		letterMarkovModel.setNumWithInsufficientCounts(letterNGramDao.countLessThan(minimumCount, includeWordBoundaries));
-
-		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
-				- startCount));
+		this.letterMarkovModel = new MarkovModel(this.markovOrder, unknownLetterNGramProbability);
 
 		long startAdding = System.currentTimeMillis();
 		log.info("Adding nodes to the model.", minimumCount);
@@ -178,15 +172,9 @@ public class BayesianDecipherManager {
 			log.info("Finished retrieving {} masked n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 					- startFindAll));
 
-			this.maskedMarkovModel = new MarkovModel(this.markovOrder);
+			BigDecimal unknownMaskedNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(maskedNGramDao.sumCounts(this.markovOrder, includeWordBoundaries)), MathConstants.PREC_10_HALF_UP);
 
-			long startMaskedCount = System.currentTimeMillis();
-			log.info("Counting masked nodes with counts below the minimum of {}.", minimumCount);
-
-			maskedMarkovModel.setNumWithInsufficientCounts(maskedNGramDao.countLessThan(minimumCount, includeWordBoundaries));
-
-			log.info("Finished counting masked nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
-					- startMaskedCount));
+			this.maskedMarkovModel = new MarkovModel(this.markovOrder, unknownMaskedNGramProbability);
 
 			long startMaskedAdding = System.currentTimeMillis();
 			log.info("Adding masked nodes to the model.", minimumCount);
