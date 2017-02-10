@@ -22,10 +22,14 @@ package com.ciphertool.zenith.model.etl.persisters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.NGramIndexNode;
@@ -33,7 +37,7 @@ import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 
 public class NGramPersister {
-	private Logger						log		= LoggerFactory.getLogger(getClass());
+	private Logger						log	= LoggerFactory.getLogger(getClass());
 
 	private LetterNGramMarkovImporter	letterNGramMarkovImporter;
 	private LetterNGramDao				letterNGramDao;
@@ -43,145 +47,80 @@ public class NGramPersister {
 	private boolean						maskedNGramsWithSpacesEnabled;
 	private boolean						maskedNGramsWithoutSpacesEnabled;
 	private int							batchSize;
-
-	private List<NGramIndexNode>		nGrams	= new ArrayList<>();
+	private TaskExecutor				taskExecutor;
 
 	public void persistNGrams() {
 		if (letterNGramsWithSpacesEnabled) {
-			persistLetterNGramsWithSpaces();
+			persistLetterNGrams(false, true);
 		}
 
 		if (letterNGramsWithoutSpacesEnabled) {
-			persistLetterNGramsWithoutSpaces();
+			persistLetterNGrams(false, false);
 		}
 
 		if (maskedNGramsWithSpacesEnabled) {
-			persistMaskedNGramsWithSpaces();
+			persistLetterNGrams(true, true);
 		}
 
 		if (maskedNGramsWithoutSpacesEnabled) {
-			persistMaskedNGramsWithoutSpaces();
+			persistLetterNGrams(true, false);
 		}
 	}
 
-	protected void persistLetterNGramsWithSpaces() {
-		long startDeleteWithSpaces = System.currentTimeMillis();
-
-		log.info("Deleting all existing n-grams with spaces.");
-
-		letterNGramDao.deleteAll(true);
-
-		log.info("Completed deletion of n-grams with spaces in {}ms.", (System.currentTimeMillis()
-				- startDeleteWithSpaces));
-
-		MarkovModel markovModelWithSpaces = letterNGramMarkovImporter.importCorpus(false, true);
-
-		long count = countAll(markovModelWithSpaces.getRootNode());
-
-		log.info("Total nodes with spaces: {}", count);
-
-		long startAddWithSpaces = System.currentTimeMillis();
-
-		log.info("Starting persistence of n-grams with spaces.");
-
-		persistNodes(markovModelWithSpaces.getRootNode(), true);
-
-		letterNGramDao.addAll(nGrams, true);
-
-		nGrams = new ArrayList<>();
-
-		log.info("Completed persistence of n-grams with spaces in {}ms.", (System.currentTimeMillis()
-				- startAddWithSpaces));
-	}
-
-	protected void persistLetterNGramsWithoutSpaces() {
+	protected void persistLetterNGrams(boolean maskLetterTypes, boolean includeWordBoundaries) {
 		long startDeleteWithoutSpaces = System.currentTimeMillis();
 
-		log.info("Deleting all existing n-grams without spaces.");
+		log.info("Deleting all existing" + (maskLetterTypes ? " masked" : "") + " n-grams with"
+				+ (includeWordBoundaries ? "" : "out") + " spaces.");
 
-		letterNGramDao.deleteAll(false);
+		(maskLetterTypes ? maskedNGramDao : letterNGramDao).deleteAll(includeWordBoundaries);
 
-		log.info("Completed deletion of n-grams without spaces in {}ms.", (System.currentTimeMillis()
-				- startDeleteWithoutSpaces));
+		log.info("Completed deletion of" + (maskLetterTypes ? " masked" : "") + " n-grams with"
+				+ (includeWordBoundaries ? "" : "out") + " spaces in {}ms.", (System.currentTimeMillis()
+						- startDeleteWithoutSpaces));
 
-		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(false, false);
+		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(maskLetterTypes, includeWordBoundaries);
 
 		long count = countAll(markovModelWithoutSpaces.getRootNode());
 
-		log.info("Total nodes without spaces: {}", count);
+		log.info("Total" + (maskLetterTypes ? " masked" : "") + " nodes with" + (includeWordBoundaries ? "" : "out")
+				+ " spaces: {}", count);
 
 		long startAddWithoutSpaces = System.currentTimeMillis();
 
-		log.info("Starting persistence of n-grams without spaces.");
+		log.info("Starting persistence of" + (maskLetterTypes ? " masked" : "") + " n-grams with"
+				+ (includeWordBoundaries ? "" : "out") + " spaces.");
 
-		persistNodes(markovModelWithoutSpaces.getRootNode(), false);
+		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		FutureTask<Void> task;
 
-		letterNGramDao.addAll(nGrams, false);
+		for (Map.Entry<Character, NGramIndexNode> entry : markovModelWithoutSpaces.getRootNode().getTransitions().entrySet()) {
+			if (entry.getValue() != null) {
+				task = new FutureTask<Void>(new PersistNodesTask(entry.getValue(), maskLetterTypes,
+						includeWordBoundaries));
+				futures.add(task);
+				this.taskExecutor.execute(task);
+			}
+		}
 
-		nGrams = new ArrayList<>();
+		for (FutureTask<Void> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException ie) {
+				log.error("Caught InterruptedException while waiting for PersistNodesTask ", ie);
+			} catch (ExecutionException ee) {
+				log.error("Caught ExecutionException while waiting for PersistNodesTask ", ee);
+			}
+		}
 
-		log.info("Completed persistence of n-grams without spaces in {}ms.", (System.currentTimeMillis()
-				- startAddWithoutSpaces));
-	}
+		// Don't forget to persist the root node itself
+		List<NGramIndexNode> nGrams = new ArrayList<>();
+		nGrams.add(markovModelWithoutSpaces.getRootNode());
+		(maskLetterTypes ? maskedNGramDao : letterNGramDao).addAll(nGrams, includeWordBoundaries);
 
-	protected void persistMaskedNGramsWithSpaces() {
-		long startDeleteWithSpaces = System.currentTimeMillis();
-
-		log.info("Deleting all existing masked n-grams with spaces.");
-
-		maskedNGramDao.deleteAll(true);
-
-		log.info("Completed deletion of masked n-grams with spaces in {}ms.", (System.currentTimeMillis()
-				- startDeleteWithSpaces));
-
-		MarkovModel markovModelWithSpaces = letterNGramMarkovImporter.importCorpus(true, true);
-
-		long count = countAll(markovModelWithSpaces.getRootNode());
-
-		log.info("Total masked nodes with spaces: {}", count);
-
-		long startAddWithSpaces = System.currentTimeMillis();
-
-		log.info("Starting persistence of masked n-grams with spaces.");
-
-		persistNodes(markovModelWithSpaces.getRootNode(), true);
-
-		maskedNGramDao.addAll(nGrams, true);
-
-		nGrams = new ArrayList<>();
-
-		log.info("Completed persistence of masked n-grams with spaces in {}ms.", (System.currentTimeMillis()
-				- startAddWithSpaces));
-	}
-
-	protected void persistMaskedNGramsWithoutSpaces() {
-		long startDeleteWithoutSpaces = System.currentTimeMillis();
-
-		log.info("Deleting all existing masked n-grams without spaces.");
-
-		maskedNGramDao.deleteAll(false);
-
-		log.info("Completed deletion of masked n-grams without spaces in {}ms.", (System.currentTimeMillis()
-				- startDeleteWithoutSpaces));
-
-		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(true, false);
-
-		long count = countAll(markovModelWithoutSpaces.getRootNode());
-
-		log.info("Total masked nodes without spaces: {}", count);
-
-		long startAddWithoutSpaces = System.currentTimeMillis();
-
-		log.info("Starting persistence of masked n-grams without spaces.");
-
-		persistNodes(markovModelWithoutSpaces.getRootNode(), false);
-
-		maskedNGramDao.addAll(nGrams, false);
-
-		nGrams = new ArrayList<>();
-
-		log.info("Completed persistence of masked n-grams without spaces in {}ms.", (System.currentTimeMillis()
-				- startAddWithoutSpaces));
+		log.info("Completed persistence of" + (maskLetterTypes ? " masked" : "") + " n-grams with"
+				+ (includeWordBoundaries ? "" : "out") + " spaces in {}ms.", (System.currentTimeMillis()
+						- startAddWithoutSpaces));
 	}
 
 	protected long countAll(NGramIndexNode node) {
@@ -194,17 +133,53 @@ public class NGramPersister {
 		return sum;
 	}
 
-	protected void persistNodes(NGramIndexNode node, boolean includeWordBoundaries) {
+	protected List<NGramIndexNode> persistNodes(NGramIndexNode node, boolean maskLetterTypes, boolean includeWordBoundaries) {
+		List<NGramIndexNode> nGrams = new ArrayList<>();
+
 		nGrams.add(node);
 
-		if (nGrams.size() >= batchSize) {
-			letterNGramDao.addAll(nGrams, includeWordBoundaries);
+		for (Map.Entry<Character, NGramIndexNode> entry : node.getTransitions().entrySet()) {
+			nGrams.addAll(persistNodes(entry.getValue(), maskLetterTypes, includeWordBoundaries));
 
-			nGrams = new ArrayList<>();
+			if (nGrams.size() >= batchSize) {
+				(maskLetterTypes ? maskedNGramDao : letterNGramDao).addAll(nGrams, includeWordBoundaries);
+
+				nGrams = new ArrayList<>();
+			}
 		}
 
-		for (Map.Entry<Character, NGramIndexNode> entry : node.getTransitions().entrySet()) {
-			persistNodes(entry.getValue(), includeWordBoundaries);
+		return nGrams;
+	}
+
+	/**
+	 * A concurrent task for computing the conditional probability of a Markov node.
+	 */
+	protected class PersistNodesTask implements Callable<Void> {
+		private NGramIndexNode	node;
+		private boolean			maskLetterTypes;
+		private boolean			includeWordBoundaries;
+
+		/**
+		 * @param node
+		 *            the root node
+		 * @param maskLetterTypes
+		 *            whether to mask letter types (vowels and consonants)
+		 * @param includeWordBoundaries
+		 *            whether to include word boundaries
+		 */
+		public PersistNodesTask(NGramIndexNode node, boolean maskLetterTypes, boolean includeWordBoundaries) {
+			this.node = node;
+			this.maskLetterTypes = maskLetterTypes;
+			this.includeWordBoundaries = includeWordBoundaries;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			List<NGramIndexNode> nGrams = persistNodes(node, maskLetterTypes, includeWordBoundaries);
+
+			(maskLetterTypes ? maskedNGramDao : letterNGramDao).addAll(nGrams, includeWordBoundaries);
+
+			return null;
 		}
 	}
 
@@ -278,5 +253,14 @@ public class NGramPersister {
 	@Required
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
+	}
+
+	/**
+	 * @param taskExecutor
+	 *            the taskExecutor to set
+	 */
+	@Required
+	public void setTaskExecutor(TaskExecutor taskExecutor) {
+		this.taskExecutor = taskExecutor;
 	}
 }
