@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License along with Zen
     		http://www.springframework.org/schema/context
        		http://www.springframework.org/schema/context/spring-context.xsd
      		http://www.springframework.org/schema/data/mongo
-            http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
+            http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
 
 	<!-- Needed to make the @Required annotation to work -->
 	<context:annotation-config />
@@ -36,16 +36,15 @@ You should have received a copy of the GNU General Public License along with Zen
 
 	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
 		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<property name="writeResultChecking" value="EXCEPTION"/>
+		<property name="writeConcern" value="JOURNALED" />
 	</bean>
 
 	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
 		<property name="corePoolSize" value="${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}" />
 		<property name="maxPoolSize" value="${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}" />
-		<!-- queueCapacity should be the same as populationSize, or we will get 
-			rejected execution exceptions -->
 		<property name="queueCapacity" value="${taskExecutor.queueCapacity}" />
-		<!-- We want to try to avoid threads timing out during long GC pauses -->
-		<property name="keepAliveSeconds" value="30" />
+		<property name="keepAliveSeconds" value="5" />
 		<property name="allowCoreThreadTimeOut" value="true" />
 	</bean>
 

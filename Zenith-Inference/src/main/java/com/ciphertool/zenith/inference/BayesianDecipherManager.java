@@ -52,8 +52,10 @@ import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.dao.NGramCountSumDao;
+import com.ciphertool.zenith.model.entities.NGramCountSum;
+import com.ciphertool.zenith.model.entities.NGramIndexNode;
 import com.ciphertool.zenith.model.markov.MarkovModel;
-import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
@@ -109,6 +111,7 @@ public class BayesianDecipherManager {
 	private CipherDao						cipherDao;
 	private LetterNGramDao					letterNGramDao;
 	private LetterNGramDao					maskedNGramDao;
+	private NGramCountSumDao				nGramCountSumDao;
 	private Cipher							cipher;
 	private int								samplerIterations;
 	private int								annealingTemperatureMax;
@@ -149,7 +152,13 @@ public class BayesianDecipherManager {
 		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 				- startFindAll));
 
-		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(letterNGramDao.sumCounts(this.markovOrder, includeWordBoundaries)), MathConstants.PREC_10_HALF_UP);
+		NGramCountSum sumOfCounts = nGramCountSumDao.find(markovOrder, includeWordBoundaries, false);
+
+		if (sumOfCounts == null || sumOfCounts.getSum() == null) {
+			throw new IllegalStateException("Could not find sum of order " + markovOrder + ".  Unable to proceed.");
+		}
+
+		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(sumOfCounts.getSum()), MathConstants.PREC_10_HALF_UP);
 
 		this.letterMarkovModel = new MarkovModel(this.markovOrder, unknownLetterNGramProbability);
 
@@ -172,7 +181,13 @@ public class BayesianDecipherManager {
 			log.info("Finished retrieving {} masked n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 					- startFindAll));
 
-			BigDecimal unknownMaskedNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(maskedNGramDao.sumCounts(this.markovOrder, includeWordBoundaries)), MathConstants.PREC_10_HALF_UP);
+			NGramCountSum sumOfCountsMasked = nGramCountSumDao.find(markovOrder, includeWordBoundaries, true);
+
+			if (sumOfCountsMasked == null || sumOfCountsMasked.getSum() == null) {
+				throw new IllegalStateException("Could not find sum of order " + markovOrder + ".  Unable to proceed.");
+			}
+
+			BigDecimal unknownMaskedNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(sumOfCountsMasked.getSum()), MathConstants.PREC_10_HALF_UP);
 
 			this.maskedMarkovModel = new MarkovModel(this.markovOrder, unknownMaskedNGramProbability);
 
@@ -709,6 +724,15 @@ public class BayesianDecipherManager {
 	@Required
 	public void setMaskedNGramDao(LetterNGramDao maskedNGramDao) {
 		this.maskedNGramDao = maskedNGramDao;
+	}
+
+	/**
+	 * @param nGramCountSumDao
+	 *            the nGramCountSumDao to set
+	 */
+	@Required
+	public void setnGramCountSumDao(NGramCountSumDao nGramCountSumDao) {
+		this.nGramCountSumDao = nGramCountSumDao;
 	}
 
 	/**

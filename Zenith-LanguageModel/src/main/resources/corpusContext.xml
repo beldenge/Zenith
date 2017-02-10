@@ -42,8 +42,6 @@ You should have received a copy of the GNU General Public License along with Zen
 	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
 		<property name="corePoolSize" value="${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}" />
 		<property name="maxPoolSize" value="${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}" />
-		<!-- queueCapacity should be the same as populationSize, or we will get 
-			rejected execution exceptions -->
 		<property name="queueCapacity" value="${taskExecutor.queueCapacity}" />
 		<property name="keepAliveSeconds" value="5" />
 		<property name="allowCoreThreadTimeOut" value="true" />

@@ -31,7 +31,9 @@ import com.ciphertool.zenith.model.etl.persisters.NGramPersister;
 import com.ciphertool.zenith.model.etl.transformers.CorpusTransformer;
 
 public class CorpusManager {
-	private static Logger				log	= LoggerFactory.getLogger(CorpusManager.class);
+	private static Logger				log						= LoggerFactory.getLogger(CorpusManager.class);
+
+	private static final String			TRANSFORM_CORPUS_KEY	= "corpus.transformation.required";
 
 	private static BeanFactory			persistenceContext;
 	private static BeanFactory			beanFactory;
@@ -69,8 +71,10 @@ public class CorpusManager {
 	public static void main(String[] args) throws ParserConfigurationException {
 		setUp();
 
-		textCorpusTransformer.transformCorpus();
-		xmlCorpusTransformer.transformCorpus();
+		if (Boolean.valueOf(((ClassPathXmlApplicationContext) beanFactory).getEnvironment().getProperty(TRANSFORM_CORPUS_KEY))) {
+			textCorpusTransformer.transformCorpus();
+			xmlCorpusTransformer.transformCorpus();
+		}
 
 		persistenceContext = new ClassPathXmlApplicationContext("beans-persistence.xml");
 

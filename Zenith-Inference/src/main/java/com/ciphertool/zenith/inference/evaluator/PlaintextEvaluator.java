@@ -32,8 +32,8 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.WordProbability;
 import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.entities.NGramIndexNode;
 import com.ciphertool.zenith.model.markov.MarkovModel;
-import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class PlaintextEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
@@ -125,9 +125,9 @@ public class PlaintextEvaluator {
 					continue;
 				}
 
-				match = letterMarkovModel.findLongest(sb.substring(i, i + order));
+				match = letterMarkovModel.find(sb.substring(i, i + order));
 
-				if (match != null && match.getLevel() == order) {
+				if (match != null) {
 					probability = match.getProbability();
 					log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
 				} else {

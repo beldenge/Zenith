@@ -40,9 +40,11 @@ import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.dao.NGramCountSumDao;
 import com.ciphertool.zenith.model.dto.ParseResults;
+import com.ciphertool.zenith.model.entities.NGramCountSum;
+import com.ciphertool.zenith.model.entities.NGramIndexNode;
 import com.ciphertool.zenith.model.markov.MarkovModel;
-import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class LetterNGramMarkovImporter implements MarkovImporter {
 	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
@@ -55,6 +57,8 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	private TaskExecutor		taskExecutor;
 	private MarkovModel			letterMarkovModel;
 	private int					order;
+	private NGramCountSumDao	nGramCountSumDao;
+	private boolean				computeConditionalProbability;
 
 	@Override
 	public MarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries) {
@@ -95,52 +99,56 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		this.letterMarkovModel.getRootNode().setCount(total);
 
-		postProcess(true, includeWordBoundaries);
+		if (computeConditionalProbability) {
+			computeConditionalProbability();
+		}
+
+		nGramCountSumDao.deleteAll(includeWordBoundaries, maskLetterTypes);
 
 		for (int i = 1; i <= order; i++) {
 			normalize(this.letterMarkovModel, i, levelTotals.get(i));
+
+			nGramCountSumDao.add(new NGramCountSum(i, includeWordBoundaries, maskLetterTypes, levelTotals.get(i)));
 		}
 
 		for (Map.Entry<Character, NGramIndexNode> entry : this.letterMarkovModel.getRootNode().getTransitions().entrySet()) {
 			log.info(entry.getKey().toString() + ": "
-					+ entry.getValue().getConditionalProbability().toString().substring(0, Math.min(7, entry.getValue().getConditionalProbability().toString().length())));
+					+ entry.getValue().getProbability().toString().substring(0, Math.min(7, entry.getValue().getProbability().toString().length())));
 		}
 
 		return this.letterMarkovModel;
 	}
 
-	public void postProcess(boolean computeConditionalProbability, boolean includeWordBoundaries) {
+	public void computeConditionalProbability() {
 		long start = System.currentTimeMillis();
 
-		log.info("Starting Markov model post-processing...");
+		log.info("Starting calculation of conditional probabilities...");
 
 		Map<Character, NGramIndexNode> initialTransitions = this.letterMarkovModel.getRootNode().getTransitions();
 
 		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
 		FutureTask<Void> task;
 
-		if (computeConditionalProbability) {
-			for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
-				if (entry.getValue() != null) {
-					task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(),
-							this.letterMarkovModel.getRootNode().getCount()));
-					futures.add(task);
-					this.taskExecutor.execute(task);
-				}
-			}
-
-			for (FutureTask<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException ie) {
-					log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
-				} catch (ExecutionException ee) {
-					log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
-				}
+		for (Map.Entry<Character, NGramIndexNode> entry : initialTransitions.entrySet()) {
+			if (entry.getValue() != null) {
+				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(),
+						this.letterMarkovModel.getRootNode().getCount()));
+				futures.add(task);
+				this.taskExecutor.execute(task);
 			}
 		}
 
-		log.info("Time elapsed: " + (System.currentTimeMillis() - start) + "ms");
+		for (FutureTask<Void> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException ie) {
+				log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
+			} catch (ExecutionException ee) {
+				log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
+			}
+		}
+
+		log.info("Finished calculating conditional probabilities in {}ms", (System.currentTimeMillis() - start));
 	}
 
 	/**
@@ -183,13 +191,13 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		}
 	}
 
-	protected void normalize(MarkovModel markovModel, int level, long orderTotal) {
+	protected void normalize(MarkovModel markovModel, int order, long orderTotal) {
 		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
 		FutureTask<Void> task;
 
 		for (Map.Entry<Character, NGramIndexNode> entry : markovModel.getRootNode().getTransitions().entrySet()) {
 			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new NormalizeTask(entry.getValue(), level, orderTotal));
+				task = new FutureTask<Void>(new NormalizeTask(entry.getValue(), order, orderTotal));
 				futures.add(task);
 				this.taskExecutor.execute(task);
 			}
@@ -211,33 +219,33 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	 */
 	protected class NormalizeTask implements Callable<Void> {
 		private NGramIndexNode	node;
-		private int				level;
+		private int				order;
 		private long			total;
 
 		/**
 		 * @param node
 		 *            the NGramIndexNode to set
-		 * @param level
-		 *            the level to set
+		 * @param order
+		 *            the order to set
 		 * @param total
-		 *            the total to set
+		 *            the order to set
 		 */
-		public NormalizeTask(NGramIndexNode node, int level, long total) {
+		public NormalizeTask(NGramIndexNode node, int order, long total) {
 			this.node = node;
-			this.level = level;
+			this.order = order;
 			this.total = total;
 		}
 
 		@Override
 		public Void call() throws Exception {
-			normalizeTerminal(this.node, this.level, this.total);
+			normalizeTerminal(this.node, this.order, this.total);
 
 			return null;
 		}
 	}
 
-	protected void normalizeTerminal(NGramIndexNode node, int level, long total) {
-		if (node.getLevel() == level) {
+	protected void normalizeTerminal(NGramIndexNode node, int order, long total) {
+		if (node.getCumulativeString().length() == order) {
 			node.setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
 
 			return;
@@ -250,7 +258,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		}
 
 		for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
-			normalizeTerminal(entry.getValue(), level, total);
+			normalizeTerminal(entry.getValue(), order, total);
 		}
 	}
 
@@ -404,5 +412,23 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	@Required
 	public void setOrder(int order) {
 		this.order = order;
+	}
+
+	/**
+	 * @param nGramCountSumDao
+	 *            the nGramCountSumDao to set
+	 */
+	@Required
+	public void setnGramCountSumDao(NGramCountSumDao nGramCountSumDao) {
+		this.nGramCountSumDao = nGramCountSumDao;
+	}
+
+	/**
+	 * @param computeConditionalProbability
+	 *            the computeConditionalProbability to set
+	 */
+	@Required
+	public void setComputeConditionalProbability(boolean computeConditionalProbability) {
+		this.computeConditionalProbability = computeConditionalProbability;
 	}
 }

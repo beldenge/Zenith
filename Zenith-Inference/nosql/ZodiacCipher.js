@@ -21,7 +21,7 @@ var conn = new Mongo();
 var db = conn.getDB("Zenith");
 
 db.createCollection("ciphers");
-db.ciphers.ensureIndex( { "name": 1 }, { background: true } );
+db.ciphers.ensureIndex( { "name": 1 } );
 
 var zodiac340 = { 
 	name: "zodiac340",
@@ -793,13 +793,15 @@ db.ciphers.insert(zodiac340);
 db.ciphers.insert(zodiac408);
 
 db.createCollection("letterNGrams_withoutSpaces");
-db.letterNGrams_withoutSpaces.ensureIndex( { "count": 1 }, { background: true } );
+db.letterNGrams_withoutSpaces.ensureIndex( { "count": -1 } );
 
 db.createCollection("letterNGrams_withSpaces");
-db.letterNGrams_withSpaces.ensureIndex( { "count": 1 }, { background: true } );
+db.letterNGrams_withSpaces.ensureIndex( { "count": -1 } );
 
 db.createCollection("maskedNGrams_withoutSpaces");
-db.maskedNGrams_withoutSpaces.ensureIndex( { "count": 1 }, { background: true } );
+db.maskedNGrams_withoutSpaces.ensureIndex( { "count": -1 } );
 
 db.createCollection("maskedNGrams_withSpaces");
-db.maskedNGrams_withSpaces.ensureIndex( { "count": 1 }, { background: true } );
+db.maskedNGrams_withSpaces.ensureIndex( { "count": -1 } );
+
+db.createCollection("nGramCount_levelSums");

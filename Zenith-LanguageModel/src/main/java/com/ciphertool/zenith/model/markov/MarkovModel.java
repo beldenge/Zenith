@@ -33,11 +33,12 @@ import org.springframework.core.task.TaskExecutor;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.entities.NGramIndexNode;
 
 public class MarkovModel {
 	private Logger			log			= LoggerFactory.getLogger(getClass());
 
-	private NGramIndexNode	rootNode	= new NGramIndexNode(null, "", 0);
+	private NGramIndexNode	rootNode	= new NGramIndexNode("");
 	private Integer			order;
 	private BigDecimal		unknownLetterNGramProbability;
 	private BigDecimal		indexOfCoincidence;
@@ -48,7 +49,7 @@ public class MarkovModel {
 	}
 
 	public void addNode(NGramIndexNode nodeToAdd) {
-		if (nodeToAdd.getLevel() == 0) {
+		if (nodeToAdd.getCumulativeString() == null || nodeToAdd.getCumulativeString().length() == 0) {
 			// This is the root node
 
 			rootNode.setId(nodeToAdd.getId());
@@ -66,11 +67,11 @@ public class MarkovModel {
 		}
 	}
 
-	protected boolean populateExistingNode(NGramIndexNode parentNode, NGramIndexNode nodeToAdd, int level) {
-		NGramIndexNode newChild = parentNode.addExistingNodeAsync(nodeToAdd, level);
+	protected boolean populateExistingNode(NGramIndexNode parentNode, NGramIndexNode nodeToAdd, int order) {
+		NGramIndexNode newChild = parentNode.addExistingNodeAsync(nodeToAdd, order);
 
-		if (level < nodeToAdd.getCumulativeString().length()) {
-			return populateExistingNode(newChild, nodeToAdd, level + 1);
+		if (order < nodeToAdd.getCumulativeString().length()) {
+			return populateExistingNode(newChild, nodeToAdd, order + 1);
 		} else if (newChild != null) {
 			return false;
 		}
@@ -82,14 +83,14 @@ public class MarkovModel {
 		return populateLetterNode(rootNode, nGramString, 1);
 	}
 
-	protected boolean populateLetterNode(NGramIndexNode currentNode, String nGramString, Integer level) {
-		boolean isNew = currentNode.addOrIncrementChildAsync(nGramString, level);
+	protected boolean populateLetterNode(NGramIndexNode currentNode, String nGramString, Integer order) {
+		boolean isNew = currentNode.addOrIncrementChildAsync(nGramString, order);
 
-		if (level < nGramString.length()) {
-			return populateLetterNode(currentNode.getChild(nGramString.charAt(level - 1)), nGramString, level + 1);
+		if (order < nGramString.length()) {
+			return populateLetterNode(currentNode.getChild(nGramString.charAt(order - 1)), nGramString, order + 1);
 		}
 
-		return isNew && level == this.order;
+		return isNew && order == this.order;
 	}
 
 	/**

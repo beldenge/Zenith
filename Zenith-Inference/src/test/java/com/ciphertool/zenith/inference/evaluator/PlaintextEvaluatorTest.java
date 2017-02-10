@@ -29,8 +29,8 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.math.BigDecimalFunctions;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.NGramIndexNode;
 import com.ciphertool.zenith.model.markov.MarkovModel;
-import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	private static Logger				log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);

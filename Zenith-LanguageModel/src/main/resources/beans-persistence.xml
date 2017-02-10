@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License along with Zen
        		http://www.springframework.org/schema/context
        		http://www.springframework.org/schema/context/spring-context.xsd
        		http://www.springframework.org/schema/data/mongo
-            http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
+            http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
 
 	<!-- Needed to make the @Required annotation to work -->
 	<context:annotation-config />
@@ -35,12 +35,16 @@ You should have received a copy of the GNU General Public License along with Zen
 
 	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
 		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<property name="writeResultChecking" value="EXCEPTION"/>
+		<property name="writeConcern" value="JOURNALED" />
 	</bean>
 
 	<bean class="com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter" id="letterNGramMarkovImporter">
 		<property name="order" value="${markov.letter.order}" />
 		<property name="corpusDirectory" value="${corpus.output.directory}" />
 		<property name="taskExecutor" ref="taskExecutor" />
+		<property name="nGramCountSumDao" ref="nGramCountSumDao" />
+		<property name="computeConditionalProbability" value="${compute.conditional.probability.enabled}" />
 	</bean>
 
 	<bean class="com.ciphertool.zenith.model.dao.LetterNGramDao" id="letterNGramDao">
@@ -59,6 +63,11 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="collectionWithoutSpaces" value="${collection.masked.ngram.without.spaces.name}" />
 	</bean>
 
+	<bean class="com.ciphertool.zenith.model.dao.NGramCountSumDao" id="nGramCountSumDao">
+		<property name="mongoTemplate" ref="mongoTemplate" />
+		<property name="collectionName" value="${collection.ngram.count.sum.name}" />
+	</bean>
+
 	<bean class="com.ciphertool.zenith.model.etl.persisters.NGramPersister" id="nGramPersister">
 		<property name="letterNGramMarkovImporter" ref="letterNGramMarkovImporter" />
 		<property name="letterNGramDao" ref="letterNGramDao" />
@@ -67,6 +76,7 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="letterNGramsWithoutSpacesEnabled" value="${letter.ngrams.without.spaces.enabled}" />
 		<property name="maskedNGramsWithSpacesEnabled" value="${masked.ngrams.with.spaces.enabled}" />
 		<property name="maskedNGramsWithoutSpacesEnabled" value="${masked.ngrams.without.spaces.enabled}" />
+		<property name="batchSize" value="${mongodb.parallelScan.batchSize}" />
 	</bean>
 
 	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">

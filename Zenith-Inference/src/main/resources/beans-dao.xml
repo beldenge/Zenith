@@ -32,4 +32,9 @@ You should have received a copy of the GNU General Public License along with Zen
 		<property name="collectionWithSpaces" value="${collection.masked.ngram.with.spaces.name}" />
 		<property name="collectionWithoutSpaces" value="${collection.masked.ngram.without.spaces.name}" />
 	</bean>
+
+	<bean class="com.ciphertool.zenith.model.dao.NGramCountSumDao" id="nGramCountSumDao">
+		<property name="mongoTemplate" ref="mongoTemplate" />
+		<property name="collectionName" value="${collection.ngram.count.sum.name}" />
+	</bean>
 </beans>

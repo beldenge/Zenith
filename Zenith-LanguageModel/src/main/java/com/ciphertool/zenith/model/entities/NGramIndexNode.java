@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.model.markov;
+package com.ciphertool.zenith.model.entities;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -39,26 +39,19 @@ public class NGramIndexNode {
 	@Transient
 	private Map<Character, NGramIndexNode>	transitions;
 
-	private int								level						= -1;
-
 	private long							count						= 0L;
 
 	private BigDecimal						probability;
 
 	private BigDecimal						conditionalProbability;
 
-	@Transient
-	private NGramIndexNode					parent;
-
 	private String							cumulativeString;
 
 	public NGramIndexNode() {
 	}
 
-	public NGramIndexNode(NGramIndexNode parent, String nGramString, int level) {
-		this.parent = parent;
+	public NGramIndexNode(String nGramString) {
 		this.cumulativeString = nGramString;
-		this.level = level;
 	}
 
 	/**
@@ -104,13 +97,6 @@ public class NGramIndexNode {
 	}
 
 	/**
-	 * @return the level
-	 */
-	public int getLevel() {
-		return this.level;
-	}
-
-	/**
 	 * @return the probability
 	 */
 	public BigDecimal getProbability() {
@@ -146,15 +132,15 @@ public class NGramIndexNode {
 		this.conditionalProbability = conditionalProbability;
 	}
 
-	public synchronized boolean addOrIncrementChildAsync(String nGramString, int level) {
-		Character firstLetter = nGramString.charAt(level - 1);
+	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order) {
+		Character firstLetter = nGramString.charAt(order - 1);
 
 		NGramIndexNode child = this.getChild(firstLetter);
 
 		boolean isNew = false;
 
 		if (child == null) {
-			this.putChild(firstLetter, new NGramIndexNode(this, nGramString.substring(0, level), level));
+			this.putChild(firstLetter, new NGramIndexNode(nGramString.substring(0, order)));
 
 			child = this.getChild(firstLetter);
 
@@ -166,15 +152,13 @@ public class NGramIndexNode {
 		return isNew;
 	}
 
-	public synchronized NGramIndexNode addExistingNodeAsync(NGramIndexNode nodeToAdd, int level) {
-		Character firstLetter = nodeToAdd.cumulativeString.charAt(level - 1);
+	public synchronized NGramIndexNode addExistingNodeAsync(NGramIndexNode nodeToAdd, int order) {
+		Character firstLetter = nodeToAdd.cumulativeString.charAt(order - 1);
 
 		NGramIndexNode child = this.getChild(firstLetter);
 
-		if (level == nodeToAdd.level) {
+		if (order == nodeToAdd.cumulativeString.length()) {
 			if (child == null) {
-				nodeToAdd.setParent(this);
-
 				this.putChild(firstLetter, nodeToAdd);
 			} else {
 				child.setId(nodeToAdd.id);
@@ -185,7 +169,7 @@ public class NGramIndexNode {
 
 			return null;
 		} else if (child == null) {
-			this.putChild(firstLetter, new NGramIndexNode(this, nodeToAdd.cumulativeString.substring(0, level), level));
+			this.putChild(firstLetter, new NGramIndexNode(nodeToAdd.cumulativeString.substring(0, order)));
 		}
 
 		return this.getChild(firstLetter);
@@ -225,13 +209,5 @@ public class NGramIndexNode {
 	 */
 	public void setCumulativeString(String cumulativeString) {
 		this.cumulativeString = cumulativeString;
-	}
-
-	/**
-	 * @param parent
-	 *            the parent to set
-	 */
-	public void setParent(NGramIndexNode parent) {
-		this.parent = parent;
 	}
 }

@@ -28,15 +28,12 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.data.mongodb.core.BulkOperations.BulkMode;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 
-import com.ciphertool.zenith.model.markov.NGramIndexNode;
+import com.ciphertool.zenith.model.entities.NGramIndexNode;
 import com.mongodb.Cursor;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -48,7 +45,6 @@ public class LetterNGramDao {
 	private String				collectionWithSpaces;
 	private String				collectionWithoutSpaces;
 	private static final String	ID_KEY						= "id";
-	private static final String	LEVEL_KEY					= "level";
 	private static final String	COUNT_KEY					= "count";
 	private static final String	PROBABILITY_KEY				= "probability";
 	private static final String	CONDITIONAL_PROBABILITY_KEY	= "conditionalProbability";
@@ -72,8 +68,7 @@ public class LetterNGramDao {
 				next = cursor.next();
 
 				if (((long) next.get(COUNT_KEY)) >= minimumCount) {
-					nextNode = new NGramIndexNode(null, (String) next.get(CUMULATIVE_STRING_KEY),
-							(int) next.get(LEVEL_KEY));
+					nextNode = new NGramIndexNode((String) next.get(CUMULATIVE_STRING_KEY));
 
 					nextNode.setId((ObjectId) next.get(ID_KEY));
 					nextNode.setCount((long) next.get(COUNT_KEY));
@@ -97,45 +92,32 @@ public class LetterNGramDao {
 
 	public long countLessThan(int minimumCount, boolean includeWordBoundaries) {
 		long startMaskedCount = System.currentTimeMillis();
-		log.info("Counting masked nodes with counts below the minimum of {}.", minimumCount);
+		log.info("Counting nodes with counts below the minimum of {}.", minimumCount);
 
 		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
 
 		long result = mongoOperations.count(query, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 
-		log.info("Finished counting masked nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
+		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
 				- startMaskedCount));
 
 		return result;
 	}
 
-	public long sumCounts(int order, boolean includeWordBoundaries) {
-		long startSum = System.currentTimeMillis();
-		log.info("Summing counts of all nodes of order {}.", order);
-
-		Aggregation agg = Aggregation.newAggregation(Aggregation.match(Criteria.where("level").is(order)), Aggregation.group().sum("count").as("sum"));
-
-		AggregationResults<SumResult> sumResult = mongoOperations.aggregate(agg, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces), SumResult.class);
-
-		long result = sumResult.getUniqueMappedResult().sum;
-
-		log.info("Finished summing counts of all nodes of {} in {}ms.", order, (System.currentTimeMillis()
-				- startSum));
-
-		return result;
-	}
-
-	private class SumResult {
-		private Long sum;
-	}
-
 	public void addAll(List<NGramIndexNode> nodes, boolean includeWordBoundaries) {
-		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)).insert(nodes).execute();
+		if (nodes == null || nodes.isEmpty()) {
+			return;
+		}
+
+		mongoOperations.insert(nodes, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 	}
 
 	public void deleteAll(boolean includeWordBoundaries) {
-		// This is better than dropping the collection because we won't have to re-ensure indexes and such
-		mongoOperations.bulkOps(BulkMode.UNORDERED, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)).remove(new Query()).execute();
+		String collection = includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces;
+
+		mongoOperations.dropCollection(collection);
+		mongoOperations.createCollection(collection);
+		mongoOperations.indexOps(collection).ensureIndex(new Index("count", Direction.ASC));
 	}
 
 	@Required

@@ -28,12 +28,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.NGramIndexNode;
 import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
 import com.ciphertool.zenith.model.markov.MarkovModel;
-import com.ciphertool.zenith.model.markov.NGramIndexNode;
 
 public class NGramPersister {
-	private Logger						log	= LoggerFactory.getLogger(getClass());
+	private Logger						log		= LoggerFactory.getLogger(getClass());
 
 	private LetterNGramMarkovImporter	letterNGramMarkovImporter;
 	private LetterNGramDao				letterNGramDao;
@@ -42,6 +42,9 @@ public class NGramPersister {
 	private boolean						letterNGramsWithoutSpacesEnabled;
 	private boolean						maskedNGramsWithSpacesEnabled;
 	private boolean						maskedNGramsWithoutSpacesEnabled;
+	private int							batchSize;
+
+	private List<NGramIndexNode>		nGrams	= new ArrayList<>();
 
 	public void persistNGrams() {
 		if (letterNGramsWithSpacesEnabled) {
@@ -73,19 +76,22 @@ public class NGramPersister {
 
 		MarkovModel markovModelWithSpaces = letterNGramMarkovImporter.importCorpus(false, true);
 
+		long count = countAll(markovModelWithSpaces.getRootNode());
+
+		log.info("Total nodes with spaces: {}", count);
+
 		long startAddWithSpaces = System.currentTimeMillis();
 
 		log.info("Starting persistence of n-grams with spaces.");
 
-		List<NGramIndexNode> nGramsWithSpaces = transformToList(markovModelWithSpaces.getRootNode());
+		persistNodes(markovModelWithSpaces.getRootNode(), true);
 
-		letterNGramDao.addAll(nGramsWithSpaces, true);
+		letterNGramDao.addAll(nGrams, true);
+
+		nGrams = new ArrayList<>();
 
 		log.info("Completed persistence of n-grams with spaces in {}ms.", (System.currentTimeMillis()
 				- startAddWithSpaces));
-
-		// Hopefully release these nodes for garbage collection
-		nGramsWithSpaces.clear();
 	}
 
 	protected void persistLetterNGramsWithoutSpaces() {
@@ -100,19 +106,22 @@ public class NGramPersister {
 
 		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(false, false);
 
+		long count = countAll(markovModelWithoutSpaces.getRootNode());
+
+		log.info("Total nodes without spaces: {}", count);
+
 		long startAddWithoutSpaces = System.currentTimeMillis();
 
 		log.info("Starting persistence of n-grams without spaces.");
 
-		List<NGramIndexNode> nGramsWithoutSpaces = transformToList(markovModelWithoutSpaces.getRootNode());
+		persistNodes(markovModelWithoutSpaces.getRootNode(), false);
 
-		letterNGramDao.addAll(nGramsWithoutSpaces, false);
+		letterNGramDao.addAll(nGrams, false);
+
+		nGrams = new ArrayList<>();
 
 		log.info("Completed persistence of n-grams without spaces in {}ms.", (System.currentTimeMillis()
 				- startAddWithoutSpaces));
-
-		// Hopefully release these nodes for garbage collection
-		nGramsWithoutSpaces.clear();
 	}
 
 	protected void persistMaskedNGramsWithSpaces() {
@@ -127,19 +136,22 @@ public class NGramPersister {
 
 		MarkovModel markovModelWithSpaces = letterNGramMarkovImporter.importCorpus(true, true);
 
+		long count = countAll(markovModelWithSpaces.getRootNode());
+
+		log.info("Total masked nodes with spaces: {}", count);
+
 		long startAddWithSpaces = System.currentTimeMillis();
 
 		log.info("Starting persistence of masked n-grams with spaces.");
 
-		List<NGramIndexNode> nGramsWithSpaces = transformToList(markovModelWithSpaces.getRootNode());
+		persistNodes(markovModelWithSpaces.getRootNode(), true);
 
-		maskedNGramDao.addAll(nGramsWithSpaces, true);
+		maskedNGramDao.addAll(nGrams, true);
+
+		nGrams = new ArrayList<>();
 
 		log.info("Completed persistence of masked n-grams with spaces in {}ms.", (System.currentTimeMillis()
 				- startAddWithSpaces));
-
-		// Hopefully release these nodes for garbage collection
-		nGramsWithSpaces.clear();
 	}
 
 	protected void persistMaskedNGramsWithoutSpaces() {
@@ -154,31 +166,46 @@ public class NGramPersister {
 
 		MarkovModel markovModelWithoutSpaces = letterNGramMarkovImporter.importCorpus(true, false);
 
+		long count = countAll(markovModelWithoutSpaces.getRootNode());
+
+		log.info("Total masked nodes without spaces: {}", count);
+
 		long startAddWithoutSpaces = System.currentTimeMillis();
 
 		log.info("Starting persistence of masked n-grams without spaces.");
 
-		List<NGramIndexNode> nGramsWithoutSpaces = transformToList(markovModelWithoutSpaces.getRootNode());
+		persistNodes(markovModelWithoutSpaces.getRootNode(), false);
 
-		maskedNGramDao.addAll(nGramsWithoutSpaces, false);
+		maskedNGramDao.addAll(nGrams, false);
+
+		nGrams = new ArrayList<>();
 
 		log.info("Completed persistence of masked n-grams without spaces in {}ms.", (System.currentTimeMillis()
 				- startAddWithoutSpaces));
-
-		// Hopefully release these nodes for garbage collection
-		nGramsWithoutSpaces.clear();
 	}
 
-	protected List<NGramIndexNode> transformToList(NGramIndexNode node) {
-		List<NGramIndexNode> nGrams = new ArrayList<>();
-
-		nGrams.add(node);
+	protected long countAll(NGramIndexNode node) {
+		long sum = 1L;
 
 		for (Map.Entry<Character, NGramIndexNode> entry : node.getTransitions().entrySet()) {
-			nGrams.addAll(transformToList(entry.getValue()));
+			sum += countAll(entry.getValue());
 		}
 
-		return nGrams;
+		return sum;
+	}
+
+	protected void persistNodes(NGramIndexNode node, boolean includeWordBoundaries) {
+		nGrams.add(node);
+
+		if (nGrams.size() >= batchSize) {
+			letterNGramDao.addAll(nGrams, includeWordBoundaries);
+
+			nGrams = new ArrayList<>();
+		}
+
+		for (Map.Entry<Character, NGramIndexNode> entry : node.getTransitions().entrySet()) {
+			persistNodes(entry.getValue(), includeWordBoundaries);
+		}
 	}
 
 	/**
@@ -203,6 +230,7 @@ public class NGramPersister {
 	 * @param maskedNGramDao
 	 *            the maskedNGramDao to set
 	 */
+	@Required
 	public void setMaskedNGramDao(LetterNGramDao maskedNGramDao) {
 		this.maskedNGramDao = maskedNGramDao;
 	}
@@ -211,6 +239,7 @@ public class NGramPersister {
 	 * @param letterNGramsWithSpacesEnabled
 	 *            the letterNGramsWithSpacesEnabled to set
 	 */
+	@Required
 	public void setLetterNGramsWithSpacesEnabled(boolean letterNGramsWithSpacesEnabled) {
 		this.letterNGramsWithSpacesEnabled = letterNGramsWithSpacesEnabled;
 	}
@@ -219,6 +248,7 @@ public class NGramPersister {
 	 * @param letterNGramsWithoutSpacesEnabled
 	 *            the letterNGramsWithoutSpacesEnabled to set
 	 */
+	@Required
 	public void setLetterNGramsWithoutSpacesEnabled(boolean letterNGramsWithoutSpacesEnabled) {
 		this.letterNGramsWithoutSpacesEnabled = letterNGramsWithoutSpacesEnabled;
 	}
@@ -227,6 +257,7 @@ public class NGramPersister {
 	 * @param maskedNGramsWithSpacesEnabled
 	 *            the maskedNGramsWithSpacesEnabled to set
 	 */
+	@Required
 	public void setMaskedNGramsWithSpacesEnabled(boolean maskedNGramsWithSpacesEnabled) {
 		this.maskedNGramsWithSpacesEnabled = maskedNGramsWithSpacesEnabled;
 	}
@@ -235,7 +266,17 @@ public class NGramPersister {
 	 * @param maskedNGramsWithoutSpacesEnabled
 	 *            the maskedNGramsWithoutSpacesEnabled to set
 	 */
+	@Required
 	public void setMaskedNGramsWithoutSpacesEnabled(boolean maskedNGramsWithoutSpacesEnabled) {
 		this.maskedNGramsWithoutSpacesEnabled = maskedNGramsWithoutSpacesEnabled;
+	}
+
+	/**
+	 * @param batchSize
+	 *            the batchSize to set
+	 */
+	@Required
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
 	}
 }
