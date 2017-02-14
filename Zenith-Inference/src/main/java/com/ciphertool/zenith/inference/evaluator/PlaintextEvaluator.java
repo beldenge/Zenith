@@ -78,18 +78,22 @@ public class PlaintextEvaluator {
 		}
 
 		for (WordProbability word : words) {
-			sb.append(word.getValue());
-
 			if (includeWordBoundaries) {
+				sb.append(String.join(".", word.getValue().split("\\.*")));
 				sb.append(" ");
+			} else {
+				sb.append(word.getValue());
 			}
 		}
 
 		if (ciphertextKey != null) {
 			List<Integer> ciphertextIndices = new ArrayList<>();
-			for (int i = 0; i < sb.length(); i++) {
+			int nextIndice;
+			for (int i = 0; i < solution.getCipher().getCiphertextCharacters().size(); i++) {
+				nextIndice = i * (includeWordBoundaries ? 2 : 1);
+
 				if (ciphertextKey.equals(solution.getCipher().getCiphertextCharacters().get(i).getValue())) {
-					ciphertextIndices.add(i);
+					ciphertextIndices.add(nextIndice);
 				}
 			}
 
@@ -121,10 +125,6 @@ public class PlaintextEvaluator {
 			}
 		} else {
 			for (int i = 0; i < sb.length() - order; i++) {
-				if (i > 0 && sb.charAt(i) == ' ') {
-					continue;
-				}
-
 				match = letterMarkovModel.find(sb.substring(i, i + order));
 
 				if (match != null) {

@@ -309,6 +309,19 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 					if (!includeWordBoundaries) {
 						sentence = sentence.replaceAll(NON_ALPHA, "");
+					} else {
+						StringBuilder newSentence = new StringBuilder();
+						for (int j = 0; j < sentence.length() - 1; j++) {
+							newSentence.append(sentence.charAt(j));
+
+							if (sentence.charAt(j) != ' ' && sentence.charAt(j + 1) != ' ') {
+								newSentence.append('.');
+							}
+						}
+
+						newSentence.append(sentence.charAt(sentence.length() - 1));
+
+						sentence = newSentence.toString();
 					}
 
 					if (sentence.trim().length() == 0) {
