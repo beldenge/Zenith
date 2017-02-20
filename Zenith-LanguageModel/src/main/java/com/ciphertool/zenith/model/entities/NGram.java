@@ -20,39 +20,25 @@
 package com.ciphertool.zenith.model.entities;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class NGramIndexNode {
-	private static final Pattern			LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z +\\-\\.]");
-
+public class NGram {
 	@Id
-	private ObjectId						id;
+	protected ObjectId		id;
 
-	@Transient
-	private Map<Character, NGramIndexNode>	transitions;
+	protected long			count	= 0L;
 
-	private long							count						= 0L;
+	protected BigDecimal	probability;
 
-	private BigDecimal						probability;
+	protected BigDecimal	conditionalProbability;
 
-	private BigDecimal						conditionalProbability;
+	protected String		cumulativeString;
 
-	private String							cumulativeString;
-
-	public NGramIndexNode() {
-	}
-
-	public NGramIndexNode(String nGramString) {
-		this.cumulativeString = nGramString;
-	}
+	protected Integer		order;
 
 	/**
 	 * @return the id
@@ -67,14 +53,6 @@ public class NGramIndexNode {
 	 */
 	public void setId(ObjectId id) {
 		this.id = id;
-	}
-
-	public boolean containsChild(Character c) {
-		return this.getTransitions().containsKey(c);
-	}
-
-	public NGramIndexNode getChild(Character c) {
-		return this.getTransitions().get(c);
 	}
 
 	public void increment() {
@@ -132,68 +110,19 @@ public class NGramIndexNode {
 		this.conditionalProbability = conditionalProbability;
 	}
 
-	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order) {
-		Character firstLetter = nGramString.charAt(order - 1);
-
-		NGramIndexNode child = this.getChild(firstLetter);
-
-		boolean isNew = false;
-
-		if (child == null) {
-			this.putChild(firstLetter, new NGramIndexNode(nGramString.substring(0, order)));
-
-			child = this.getChild(firstLetter);
-
-			isNew = true;
-		}
-
-		child.increment();
-
-		return isNew;
-	}
-
-	public synchronized NGramIndexNode addExistingNodeAsync(NGramIndexNode nodeToAdd, int order) {
-		Character firstLetter = nodeToAdd.cumulativeString.charAt(order - 1);
-
-		NGramIndexNode child = this.getChild(firstLetter);
-
-		if (order == nodeToAdd.cumulativeString.length()) {
-			if (child == null) {
-				this.putChild(firstLetter, nodeToAdd);
-			} else {
-				child.setId(nodeToAdd.id);
-				child.setCount(nodeToAdd.count);
-				child.setConditionalProbability(nodeToAdd.conditionalProbability);
-				child.setProbability(nodeToAdd.probability);
-			}
-
-			return null;
-		} else if (child == null) {
-			this.putChild(firstLetter, new NGramIndexNode(nodeToAdd.cumulativeString.substring(0, order)));
-		}
-
-		return this.getChild(firstLetter);
-	}
-
-	public NGramIndexNode putChild(Character c, NGramIndexNode child) {
-		if (!LOWERCASE_LETTERS_AND_SPACE.matcher(c.toString()).matches()) {
-			throw new IllegalArgumentException(
-					"Attempted to add a character to the Markov Model which is outside the range of "
-							+ LOWERCASE_LETTERS_AND_SPACE);
-		}
-
-		return this.getTransitions().put(c, child);
+	/**
+	 * @return the order
+	 */
+	public Integer getOrder() {
+		return order;
 	}
 
 	/**
-	 * @return the transitions array
+	 * @param order
+	 *            the order to set
 	 */
-	public Map<Character, NGramIndexNode> getTransitions() {
-		if (this.transitions == null) {
-			this.transitions = new HashMap<Character, NGramIndexNode>(1);
-		}
-
-		return this.transitions;
+	public void setOrder(Integer order) {
+		this.order = order;
 	}
 
 	/**

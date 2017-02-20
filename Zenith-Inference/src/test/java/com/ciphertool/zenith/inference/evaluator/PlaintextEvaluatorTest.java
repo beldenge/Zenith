@@ -29,13 +29,13 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.math.BigDecimalFunctions;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.NGramIndexNode;
-import com.ciphertool.zenith.model.markov.MarkovModel;
+import com.ciphertool.zenith.model.entities.ListNGram;
+import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	private static Logger				log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
 
-	private static MarkovModel			letterMarkovModel;
+	private static ListMarkovModel		letterMarkovModel;
 
 	private static PlaintextEvaluator	plaintextEvaluator;
 
@@ -328,12 +328,14 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 	// @BeforeClass
 	public static void setUp() throws InterruptedException, ExecutionException {
+		int order = 6;
+
 		LetterNGramDao letterNGramDao = new LetterNGramDao();
-		letterMarkovModel = new MarkovModel(6, null);
+		letterMarkovModel = new ListMarkovModel(order, null);
 
-		List<NGramIndexNode> nodes = letterNGramDao.findAll(2, false);
+		List<ListNGram> nodes = letterNGramDao.findAll(order, 2, false);
 
-		for (NGramIndexNode node : nodes) {
+		for (ListNGram node : nodes) {
 			letterMarkovModel.addNode(node);
 		}
 

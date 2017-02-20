@@ -30,6 +30,17 @@ public class ParseResults {
 	/**
 	 * @param total
 	 *            the total count
+	 * @param unique
+	 *            the unique count
+	 */
+	public ParseResults(long total, long unique) {
+		this.total = total;
+		this.unique = unique;
+	}
+
+	/**
+	 * @param total
+	 *            the total count
 	 * @param levelTotals
 	 *            the total level counts
 	 * @param unique

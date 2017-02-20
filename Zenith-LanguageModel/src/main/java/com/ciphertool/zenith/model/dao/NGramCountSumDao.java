@@ -23,9 +23,9 @@ public class NGramCountSumDao {
 		return mongoOperations.findOne(query, NGramCountSum.class, collectionName);
 	}
 
-	public void deleteAll(boolean includesWordBoundaries, boolean isTypeMasked) {
+	public void delete(int order, boolean includesWordBoundaries, boolean isTypeMasked) {
 		Query query = new Query();
-		query.addCriteria(Criteria.where("includesWordBoundaries").is(includesWordBoundaries).and("isTypeMasked").is(isTypeMasked));
+		query.addCriteria(Criteria.where("order").is(order).and("includesWordBoundaries").is(includesWordBoundaries).and("isTypeMasked").is(isTypeMasked));
 
 		mongoOperations.remove(query, NGramCountSum.class, collectionName);
 	}

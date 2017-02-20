@@ -53,9 +53,10 @@ import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.dao.NGramCountSumDao;
+import com.ciphertool.zenith.model.entities.ListNGram;
+import com.ciphertool.zenith.model.entities.NGram;
 import com.ciphertool.zenith.model.entities.NGramCountSum;
-import com.ciphertool.zenith.model.entities.NGramIndexNode;
-import com.ciphertool.zenith.model.markov.MarkovModel;
+import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
 public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
@@ -123,8 +124,8 @@ public class BayesianDecipherManager {
 	private Boolean							iterateRandomly;
 	private Boolean							includeWordBoundaries;
 	private int								markovOrder;
-	private MarkovModel						letterMarkovModel;
-	private MarkovModel						maskedMarkovModel;
+	private ListMarkovModel					letterMarkovModel;
+	private ListMarkovModel					maskedMarkovModel;
 	private int								minimumCount;
 	private boolean							letterTypeSamplingEnabled;
 
@@ -147,7 +148,7 @@ public class BayesianDecipherManager {
 		/*
 		 * Begin setting up letter n-gram model
 		 */
-		List<NGramIndexNode> nGramNodes = letterNGramDao.findAll(minimumCount, includeWordBoundaries);
+		List<ListNGram> nGramNodes = letterNGramDao.findAll(markovOrder, minimumCount, includeWordBoundaries);
 
 		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 				- startFindAll));
@@ -160,12 +161,12 @@ public class BayesianDecipherManager {
 
 		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(sumOfCounts.getSum()), MathConstants.PREC_10_HALF_UP);
 
-		this.letterMarkovModel = new MarkovModel(this.markovOrder, unknownLetterNGramProbability);
+		this.letterMarkovModel = new ListMarkovModel(this.markovOrder, unknownLetterNGramProbability);
 
 		long startAdding = System.currentTimeMillis();
 		log.info("Adding nodes to the model.", minimumCount);
 
-		for (NGramIndexNode nGramNode : nGramNodes) {
+		for (ListNGram nGramNode : nGramNodes) {
 			this.letterMarkovModel.addNode(nGramNode);
 		}
 
@@ -176,7 +177,7 @@ public class BayesianDecipherManager {
 		 * Begin setting up masked n-gram model
 		 */
 		if (letterTypeSamplingEnabled) {
-			nGramNodes = maskedNGramDao.findAll(minimumCount, includeWordBoundaries);
+			nGramNodes = maskedNGramDao.findAll(markovOrder, minimumCount, includeWordBoundaries);
 
 			log.info("Finished retrieving {} masked n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 					- startFindAll));
@@ -189,12 +190,12 @@ public class BayesianDecipherManager {
 
 			BigDecimal unknownMaskedNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(sumOfCountsMasked.getSum()), MathConstants.PREC_10_HALF_UP);
 
-			this.maskedMarkovModel = new MarkovModel(this.markovOrder, unknownMaskedNGramProbability);
+			this.maskedMarkovModel = new ListMarkovModel(this.markovOrder, unknownMaskedNGramProbability);
 
 			long startMaskedAdding = System.currentTimeMillis();
 			log.info("Adding masked nodes to the model.", minimumCount);
 
-			for (NGramIndexNode nGramNode : nGramNodes) {
+			for (ListNGram nGramNode : nGramNodes) {
 				this.maskedMarkovModel.addNode(nGramNode);
 			}
 
@@ -202,24 +203,30 @@ public class BayesianDecipherManager {
 					- startMaskedAdding));
 		}
 
+		List<ListNGram> firstOrderNodes = letterNGramDao.findAll(1, 0, includeWordBoundaries);
+
 		long total = 0;
-		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
-			if (!entry.getKey().equals(' ') && !entry.getKey().equals('.')) {
-				total += entry.getValue().getCount();
+		for (NGram node : firstOrderNodes) {
+			if (!node.getCumulativeString().equals(" ") && !node.getCumulativeString().equals(".")) {
+				total += node.getCount();
 			}
 		}
 
 		BigDecimal probability;
-		for (Map.Entry<Character, NGramIndexNode> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
-			if (!entry.getKey().equals(' ') && !entry.getKey().equals('.')) {
-				probability = BigDecimal.valueOf(entry.getValue().getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
+		for (NGram node : firstOrderNodes) {
+			if (!node.getCumulativeString().equals(" ") && !node.getCumulativeString().equals(".")) {
+				probability = BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
 
-				letterUnigramProbabilities.add(new LetterProbability(entry.getKey(), probability));
+				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0),
+						probability));
+
+				log.info(node.getCumulativeString().charAt(0) + ": "
+						+ probability.toString().substring(0, Math.min(7, probability.toString().length())));
 			}
 		}
 
 		log.info("unknownLetterNGramProbability: {}", this.letterMarkovModel.getUnknownLetterNGramProbability());
-		log.info("Index of coincidence for English: {}", this.letterMarkovModel.getIndexOfCoincidence());
+		// log.info("Index of coincidence for English: {}", this.letterMarkovModel.getIndexOfCoincidence());
 	}
 
 	public void run() {

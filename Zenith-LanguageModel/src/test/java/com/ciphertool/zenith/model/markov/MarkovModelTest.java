@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import com.ciphertool.zenith.model.entities.NGramIndexNode;
+import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
 
 public class MarkovModelTest {
@@ -36,7 +36,7 @@ public class MarkovModelTest {
 	private static final int					ORDER	= 6;
 
 	private static LetterNGramMarkovImporter	importer;
-	private static MarkovModel					model;
+	private static TreeMarkovModel				model;
 
 	// @BeforeClass
 	public static void setUp() {
@@ -52,7 +52,7 @@ public class MarkovModelTest {
 		importer.setCorpusDirectory("/Users/george/Desktop/corpus");
 		importer.setTaskExecutor(taskExecutorSpy);
 		importer.setOrder(ORDER);
-		model = importer.importCorpus(false, false);
+		// model = importer.importCorpus(false, false);
 	}
 
 	// @Test
@@ -62,9 +62,9 @@ public class MarkovModelTest {
 		sb.append(root);
 
 		for (int i = 0; i < 100; i++) {
-			NGramIndexNode match = model.findLongest(root);
+			TreeNGram match = model.findLongest(root);
 
-			Map<Character, NGramIndexNode> transitions = null;
+			Map<Character, TreeNGram> transitions = null;
 
 			if (match != null) {
 				transitions = match.getTransitions();
@@ -77,7 +77,7 @@ public class MarkovModelTest {
 			}
 
 			int count = 0;
-			for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
+			for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
 				if (entry.getValue() != null) {
 					count++;
 				}
@@ -86,7 +86,7 @@ public class MarkovModelTest {
 			char[] tempArray = new char[count];
 
 			count = 0;
-			for (Map.Entry<Character, NGramIndexNode> entry : transitions.entrySet()) {
+			for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
 				if (entry.getValue() != null) {
 					tempArray[count] = entry.getKey();
 

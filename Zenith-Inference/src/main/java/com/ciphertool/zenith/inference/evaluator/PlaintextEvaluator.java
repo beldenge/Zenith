@@ -32,8 +32,8 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.WordProbability;
 import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.entities.NGramIndexNode;
-import com.ciphertool.zenith.model.markov.MarkovModel;
+import com.ciphertool.zenith.model.entities.NGram;
+import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
 public class PlaintextEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
@@ -42,7 +42,7 @@ public class PlaintextEvaluator {
 
 	private Boolean		includeWordBoundaries;
 
-	public EvaluationResults evaluate(MarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
+	public EvaluationResults evaluate(ListMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
 		BigDecimal interpolatedProbability = BigDecimal.ONE;
 		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
 
@@ -58,7 +58,7 @@ public class PlaintextEvaluator {
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterNGrams(MarkovModel letterMarkovModel, CipherSolution solution, int order, String ciphertextKey) {
+	public EvaluationResults evaluateLetterNGrams(ListMarkovModel letterMarkovModel, CipherSolution solution, int order, String ciphertextKey) {
 		List<WordProbability> words = transformToWordList(solution);
 
 		if (words == null || words.isEmpty()) {
@@ -69,7 +69,7 @@ public class PlaintextEvaluator {
 		BigDecimal probability = null;
 		BigDecimal nGramProbability = BigDecimal.ONE;
 		BigDecimal nGramLogProbability = BigDecimal.ZERO;
-		NGramIndexNode match = null;
+		NGram match = null;
 
 		StringBuilder sb = new StringBuilder();
 

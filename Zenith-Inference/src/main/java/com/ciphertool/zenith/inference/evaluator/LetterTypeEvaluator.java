@@ -33,8 +33,8 @@ import com.ciphertool.zenith.inference.probability.WordProbability;
 import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
-import com.ciphertool.zenith.model.entities.NGramIndexNode;
-import com.ciphertool.zenith.model.markov.MarkovModel;
+import com.ciphertool.zenith.model.entities.NGram;
+import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
 public class LetterTypeEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
@@ -43,7 +43,7 @@ public class LetterTypeEvaluator {
 
 	private Boolean		includeWordBoundaries;
 
-	public EvaluationResults evaluate(MarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
+	public EvaluationResults evaluate(ListMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
 		if (ciphertextKey == null) {
 			throw new IllegalArgumentException(
 					"LetterTypeEvaluator does not support evaluations where the ciphertext key is not specified.");
@@ -64,7 +64,7 @@ public class LetterTypeEvaluator {
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterTypes(MarkovModel letterMarkovModel, CipherSolution solution, int order, String ciphertextKey) {
+	public EvaluationResults evaluateLetterTypes(ListMarkovModel letterMarkovModel, CipherSolution solution, int order, String ciphertextKey) {
 		List<WordProbability> words = transformToWordList(solution);
 
 		if (words == null || words.isEmpty()) {
@@ -75,7 +75,7 @@ public class LetterTypeEvaluator {
 		BigDecimal probability = null;
 		BigDecimal nGramProbability = BigDecimal.ONE;
 		BigDecimal nGramLogProbability = BigDecimal.ZERO;
-		NGramIndexNode match = null;
+		NGram match = null;
 
 		StringBuilder sb = new StringBuilder();
 

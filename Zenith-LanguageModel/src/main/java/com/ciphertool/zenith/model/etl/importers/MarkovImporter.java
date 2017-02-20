@@ -19,8 +19,8 @@
 
 package com.ciphertool.zenith.model.etl.importers;
 
-import com.ciphertool.zenith.model.markov.MarkovModel;
+import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
 public interface MarkovImporter {
-	public MarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries);
+	public ListMarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries);
 }

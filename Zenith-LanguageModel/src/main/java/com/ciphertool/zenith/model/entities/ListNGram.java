@@ -17,8 +17,25 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.model.markov;
+package com.ciphertool.zenith.model.entities;
 
-public interface MarkovModel {
-	public long size();
+import java.util.regex.Pattern;
+
+public class ListNGram extends NGram {
+	private static final Pattern LOWERCASE_LETTERS_AND_SPACE = Pattern.compile("[a-z +\\-\\.]+");
+
+	public ListNGram(String nGramString) {
+		if (nGramString == null || nGramString.isEmpty()
+				|| !LOWERCASE_LETTERS_AND_SPACE.matcher(nGramString).matches()) {
+			throw new IllegalArgumentException(
+					"Attempted to create a node with an n-gram String which contains characters outside the range of "
+							+ LOWERCASE_LETTERS_AND_SPACE + ".  n-gram: " + nGramString);
+		}
+
+		this.cumulativeString = nGramString;
+
+		this.order = nGramString.length();
+
+		this.increment();
+	}
 }

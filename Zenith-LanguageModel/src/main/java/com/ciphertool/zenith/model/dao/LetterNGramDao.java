@@ -33,7 +33,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 
-import com.ciphertool.zenith.model.entities.NGramIndexNode;
+import com.ciphertool.zenith.model.entities.ListNGram;
 import com.mongodb.Cursor;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -49,29 +49,36 @@ public class LetterNGramDao {
 	private static final String	PROBABILITY_KEY				= "probability";
 	private static final String	CONDITIONAL_PROBABILITY_KEY	= "conditionalProbability";
 	private static final String	CUMULATIVE_STRING_KEY		= "cumulativeString";
+	private static final String	ORDER_KEY					= "order";
 
 	private MongoOperations		mongoOperations;
 	private int					batchSize;
 	private int					numCursors;
 
-	public List<NGramIndexNode> findAll(int minimumCount, boolean includeWordBoundaries) {
-		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+	public List<ListNGram> findAll(Integer order, Integer minimumCount, Boolean includeWordBoundaries) {
+		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
+				+ "_" + order);
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
 
-		List<NGramIndexNode> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
+		List<ListNGram> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
 
 		cursors.parallelStream().forEach(cursor -> {
 			DBObject next;
-			NGramIndexNode nextNode;
+			ListNGram nextNode;
 
 			while (cursor.hasNext()) {
 				next = cursor.next();
 
+				if (order != null && ((int) next.get(ORDER_KEY)) != order) {
+					continue;
+				}
+
 				if (((long) next.get(COUNT_KEY)) >= minimumCount) {
-					nextNode = new NGramIndexNode((String) next.get(CUMULATIVE_STRING_KEY));
+					nextNode = new ListNGram((String) next.get(CUMULATIVE_STRING_KEY));
 
 					nextNode.setId((ObjectId) next.get(ID_KEY));
 					nextNode.setCount((long) next.get(COUNT_KEY));
+					nextNode.setOrder((int) next.get(ORDER_KEY));
 
 					if (next.containsField(PROBABILITY_KEY)) {
 						nextNode.setProbability(new BigDecimal((String) next.get(PROBABILITY_KEY)));
@@ -90,13 +97,14 @@ public class LetterNGramDao {
 		return nodesToReturn;
 	}
 
-	public long countLessThan(int minimumCount, boolean includeWordBoundaries) {
+	public long countLessThan(Integer order, int minimumCount, boolean includeWordBoundaries) {
 		long startMaskedCount = System.currentTimeMillis();
 		log.info("Counting nodes with counts below the minimum of {}.", minimumCount);
 
 		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
 
-		long result = mongoOperations.count(query, NGramIndexNode.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+		long result = mongoOperations.count(query, ListNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
+				+ "_" + order);
 
 		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
 				- startMaskedCount));
@@ -104,20 +112,21 @@ public class LetterNGramDao {
 		return result;
 	}
 
-	public void addAll(List<NGramIndexNode> nodes, boolean includeWordBoundaries) {
+	public void addAll(Integer order, List<ListNGram> nodes, boolean includeWordBoundaries) {
 		if (nodes == null || nodes.isEmpty()) {
 			return;
 		}
 
-		mongoOperations.insert(nodes, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+		mongoOperations.insert(nodes, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces) + "_"
+				+ order);
 	}
 
-	public void deleteAll(boolean includeWordBoundaries) {
-		String collection = includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces;
+	public void deleteAll(Integer order, boolean includeWordBoundaries) {
+		String collection = (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces) + "_" + order;
 
 		mongoOperations.dropCollection(collection);
 		mongoOperations.createCollection(collection);
-		mongoOperations.indexOps(collection).ensureIndex(new Index("count", Direction.ASC));
+		mongoOperations.indexOps(collection).ensureIndex(new Index("count", Direction.DESC));
 	}
 
 	@Required
