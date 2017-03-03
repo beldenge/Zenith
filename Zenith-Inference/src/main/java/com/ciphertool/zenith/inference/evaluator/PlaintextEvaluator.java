@@ -46,10 +46,8 @@ public class PlaintextEvaluator {
 		BigDecimal interpolatedProbability = BigDecimal.ONE;
 		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
 
-		int order = letterMarkovModel.getOrder();
-
 		long startLetter = System.currentTimeMillis();
-		EvaluationResults letterNGramResults = evaluateLetterNGrams(letterMarkovModel, solution, order, ciphertextKey);
+		EvaluationResults letterNGramResults = evaluateLetterNGrams(letterMarkovModel, solution, ciphertextKey);
 		log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
 
 		interpolatedProbability = letterNGramResults.getProbability();
@@ -58,7 +56,8 @@ public class PlaintextEvaluator {
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterNGrams(ListMarkovModel letterMarkovModel, CipherSolution solution, int order, String ciphertextKey) {
+	public EvaluationResults evaluateLetterNGrams(ListMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
+		int order = letterMarkovModel.getOrder();
 		List<WordProbability> words = transformToWordList(solution);
 
 		if (words == null || words.isEmpty()) {
