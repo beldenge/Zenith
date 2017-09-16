@@ -779,17 +779,4 @@ public class Ifactor implements Cloneable, Comparable<Ifactor> {
 		}
 		return resul;
 	} /* Ifactor.toString */
-
-	/**
-	 * Test program. It takes a single argument n and prints the integer factorizaton.<br>
-	 * java -cp . org.nevec.rjm.Ifactor n<br>
-	 * 
-	 * @param args
-	 *            It takes a single argument n and prints the integer factorizaton.<br>
-	 * @author Richard J. Mathar
-	 */
-	public static void main(String[] args) {
-		BigInteger n = new BigInteger(args[0]);
-		System.out.println(new Ifactor(n));
-	} /* Ifactor.main */
 } /* Ifactor */

@@ -25,7 +25,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
@@ -35,11 +37,14 @@ import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.entities.NGram;
 import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
+@Component
 public class PlaintextEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
 
+	@Autowired
 	private MathCache	bigDecimalFunctions;
 
+	@Value("${markov.letter.include.word.boundaries}")
 	private Boolean		includeWordBoundaries;
 
 	public EvaluationResults evaluate(ListMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
@@ -161,23 +166,5 @@ public class PlaintextEvaluator {
 				+ 1), currentSolutionString.length())));
 
 		return words;
-	}
-
-	/**
-	 * @param bigDecimalFunctions
-	 *            the bigDecimalFunctions to set
-	 */
-	@Required
-	public void setBigDecimalFunctions(MathCache bigDecimalFunctions) {
-		this.bigDecimalFunctions = bigDecimalFunctions;
-	}
-
-	/**
-	 * @param includeWordBoundaries
-	 *            the includeWordBoundaries to set
-	 */
-	@Required
-	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
-		this.includeWordBoundaries = includeWordBoundaries;
 	}
 }

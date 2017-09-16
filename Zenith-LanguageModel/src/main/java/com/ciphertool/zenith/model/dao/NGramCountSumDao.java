@@ -1,15 +1,20 @@
 package com.ciphertool.zenith.model.dao;
 
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.model.entities.NGramCountSum;
 
+@Component
 public class NGramCountSumDao {
+	@Autowired
 	private MongoOperations	mongoOperations;
 
+	@Value("${collection.ngram.count.sum.name}")
 	private String			collectionName;
 
 	public void add(NGramCountSum nGramCountSum) {
@@ -28,19 +33,5 @@ public class NGramCountSumDao {
 		query.addCriteria(Criteria.where("order").is(order).and("includesWordBoundaries").is(includesWordBoundaries).and("isTypeMasked").is(isTypeMasked));
 
 		mongoOperations.remove(query, NGramCountSum.class, collectionName);
-	}
-
-	@Required
-	public void setMongoTemplate(MongoOperations mongoOperations) {
-		this.mongoOperations = mongoOperations;
-	}
-
-	/**
-	 * @param collectionName
-	 *            the collectionName to set
-	 */
-	@Required
-	public void setCollectionName(String collectionName) {
-		this.collectionName = collectionName;
 	}
 }

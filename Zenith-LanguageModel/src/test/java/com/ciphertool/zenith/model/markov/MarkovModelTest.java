@@ -21,12 +21,14 @@ package com.ciphertool.zenith.model.markov;
 
 import static org.mockito.Mockito.spy;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.ReflectionUtils;
 
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
@@ -49,9 +51,19 @@ public class MarkovModelTest {
 		taskExecutorSpy.initialize();
 
 		importer = new LetterNGramMarkovImporter();
-		importer.setCorpusDirectory("/Users/george/Desktop/corpus");
-		importer.setTaskExecutor(taskExecutorSpy);
-		importer.setOrder(ORDER);
+
+		Field corpusDirectoryField = ReflectionUtils.findField(LetterNGramMarkovImporter.class, "corpusDirectory");
+		ReflectionUtils.makeAccessible(corpusDirectoryField);
+		ReflectionUtils.setField(corpusDirectoryField, importer, "/Users/george/Desktop/corpus");
+
+		Field taskExecutorField = ReflectionUtils.findField(LetterNGramMarkovImporter.class, "taskExecutor");
+		ReflectionUtils.makeAccessible(taskExecutorField);
+		ReflectionUtils.setField(taskExecutorField, importer, taskExecutorSpy);
+
+		Field orderField = ReflectionUtils.findField(LetterNGramMarkovImporter.class, "order");
+		ReflectionUtils.makeAccessible(orderField);
+		ReflectionUtils.setField(orderField, importer, ORDER);
+
 		// model = importer.importCorpus(false, false);
 	}
 

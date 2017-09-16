@@ -16,54 +16,91 @@
 # Zenith. If not, see <http://www.gnu.org/licenses/>.
 #
 
-cipher.name=zodiac408
+cipher:
+  name: zodiac408
 
 # ---------------------------------------
 # Spring Concurrency Properties
 # ---------------------------------------
-# The following property can be set to override the number of threads
+# The taskExecutor.poolSize.override property can be set to override the number of threads
 # (defaults to the number of available cores of the system)
-#taskExecutor.poolSize.override=8
-taskExecutor.queueCapacity=1000000
+taskExecutor:
+  queueCapacity: 1000000
+  poolSize:
+    override:
 
 # ---------------------------------------
 # Markov Model Properties
 # ---------------------------------------
-markov.corpus.directory=/Users/george/Desktop/zenith-transformed
-
-markov.letter.order=10
-markov.minimum.count=2
-markov.letter.include.word.boundaries=true
+markov:
+  corpus:
+    directory: /Users/george/Desktop/zenith-transformed
+  letter:
+    order: 10
+    include:
+      word:
+        boundaries: true
+  minimum:
+    count: 2
 
 #----------------------------------------
 # Bayesian Properties
 #----------------------------------------
-bayes.sampler.iterations=5000
-bayes.sampler.iterateRandomly=false
-bayes.sampler.letterTypeSampling.enabled=false
-bayes.annealing.temperature.max=100
-bayes.annealing.temperature.min=10
+bayes:
+  sampler:
+    iterations: 5000
+    iterateRandomly: false
+    letterTypeSampling:
+      enabled: false
+  annealing:
+    temperature:
+      max: 100
+      min: 10
 
 #----------------------------------------
 # MongoDB Properties
 #----------------------------------------
-mongodb.host=localhost
-mongodb.port=27017
-mongodb.database=Zenith
-mongodb.parallelScan.batchSize=2500
-mongodb.parallelScan.numCursors=25
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: Zenith
+
+mongodb:
+  parallelScan:
+    batchSize: 2500
+    numCursors: 25
 
 # ---------------------------------------
 # Thermal Control Properties
 # ---------------------------------------
-app.commands.before=
-app.commands.after=
+app:
+  commands:
+    before:
+    after:
 
 #----------------------------------------
 # Data Properties
 #----------------------------------------
-collection.letter.ngram.with.spaces.name=letterNGrams_withSpaces
-collection.letter.ngram.without.spaces.name=letterNGrams_withoutSpaces
-collection.masked.ngram.with.spaces.name=maskedNGrams_withSpaces
-collection.masked.ngram.without.spaces.name=maskedNGrams_withoutSpaces
-collection.ngram.count.sum.name=nGramCount_levelSums
+collection:
+  letter:
+    ngram:
+      with:
+        spaces:
+          name: letterNGrams_withSpaces
+      without:
+        spaces:
+          name: letterNGrams_withoutSpaces
+  masked:
+    ngram:
+      with:
+        spaces:
+          name: maskedNGrams_withSpaces
+      without:
+        spaces:
+          name: maskedNGrams_withoutSpaces
+  ngram:
+    count:
+      sum:
+        name: nGramCount_levelSums

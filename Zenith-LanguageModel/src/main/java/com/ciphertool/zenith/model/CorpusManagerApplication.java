@@ -3,24 +3,21 @@
  * 
  * This file is part of Zenith.
  * 
- * Zenith is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
+ * Zenith is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  * 
- * Zenith is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * Zenith is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
  * 
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
+package com.ciphertool.zenith.model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +26,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.etl.persisters.NGramPersister;
+import com.ciphertool.zenith.model.etl.transformers.CorpusTransformer;
 
 @SpringBootApplication
-@EnableCaching
-public class InferenceEngineBootstrapper implements CommandLineRunner {
-	private static Logger			log	= LoggerFactory.getLogger(InferenceEngineBootstrapper.class);
+public class CorpusManagerApplication implements CommandLineRunner {
+	private static Logger			log	= LoggerFactory.getLogger(CorpusManagerApplication.class);
 
 	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;
@@ -50,28 +47,42 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	@Value("${taskExecutor.queueCapacity}")
 	private int						queueCapacity;
 
+	@Value("${corpus.transformation.required}")
+	private boolean					transformCorpus;
+
+	@Autowired
+	private CorpusTransformer		xmlCorpusTransformer;
+
+	@Autowired
+	private CorpusTransformer		textCorpusTransformer;
+
+	@Autowired
+	private NGramPersister			nGramPersister;
+
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
 
-	@Autowired
-	private BayesianDecipherManager	manager;
-
-	public static void main(String[] args) throws FileNotFoundException, IOException {
-		SpringApplication.run(InferenceEngineBootstrapper.class, args);
+	/**
+	 * Main entry point for the application.
+	 * 
+	 * @param args
+	 *            the optional, unused command-line arguments
+	 */
+	public static void main(String[] args) {
+		SpringApplication.run(CorpusManagerApplication.class, args);
 	}
 
-	/**
-	 * Spins up the Spring application context
-	 * 
-	 * @throws Exception
-	 *             if there's an error during initialization
-	 */
 	@Override
 	public void run(String... arg0) throws Exception {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
-		manager.run();
+		if (transformCorpus) {
+			textCorpusTransformer.transformCorpus();
+			xmlCorpusTransformer.transformCorpus();
+		}
+
+		nGramPersister.persistNGrams();
 	}
 
 	@Bean

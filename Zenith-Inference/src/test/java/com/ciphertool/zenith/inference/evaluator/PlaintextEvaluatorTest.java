@@ -19,11 +19,13 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ReflectionUtils;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
@@ -340,8 +342,14 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		}
 
 		plaintextEvaluator = new PlaintextEvaluator();
-		plaintextEvaluator.setBigDecimalFunctions(new BigDecimalFunctions());
-		plaintextEvaluator.setIncludeWordBoundaries(false);
+
+		Field bigDecimalFunctionsField = ReflectionUtils.findField(PlaintextEvaluator.class, "bigDecimalFunctions");
+		ReflectionUtils.makeAccessible(bigDecimalFunctionsField);
+		ReflectionUtils.setField(bigDecimalFunctionsField, plaintextEvaluator, new BigDecimalFunctions());
+
+		Field includeWordBoundariesField = ReflectionUtils.findField(PlaintextEvaluator.class, "includeWordBoundaries");
+		ReflectionUtils.makeAccessible(includeWordBoundariesField);
+		ReflectionUtils.setField(includeWordBoundariesField, plaintextEvaluator, false);
 	}
 
 	// @Test

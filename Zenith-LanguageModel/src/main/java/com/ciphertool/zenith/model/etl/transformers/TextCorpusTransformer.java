@@ -34,16 +34,24 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TextCorpusTransformer implements CorpusTransformer {
 	private static Logger		log			= LoggerFactory.getLogger(TextCorpusTransformer.class);
 
 	private static final String	INPUT_EXT	= ".txt";
 
+	@Value("${corpus.text.input.directory}")
 	private String				corpusDirectory;
+
+	@Value("${corpus.output.directory}")
 	private String				outputDirectory;
+
+	@Autowired
 	private TaskExecutor		taskExecutor;
 
 	@Override
@@ -154,32 +162,5 @@ public class TextCorpusTransformer implements CorpusTransformer {
 		}
 
 		return tasks;
-	}
-
-	/**
-	 * @param fileName
-	 *            the fileName to set
-	 */
-	@Required
-	public void setCorpusDirectory(String corpusDirectory) {
-		this.corpusDirectory = corpusDirectory;
-	}
-
-	/**
-	 * @param outputDirectory
-	 *            the outputDirectory to set
-	 */
-	@Required
-	public void setOutputDirectory(String outputDirectory) {
-		this.outputDirectory = outputDirectory;
-	}
-
-	/**
-	 * @param taskExecutor
-	 *            the taskExecutor to set
-	 */
-	@Required
-	public void setTaskExecutor(TaskExecutor taskExecutor) {
-		this.taskExecutor = taskExecutor;
 	}
 }

@@ -34,8 +34,10 @@ import javax.annotation.PostConstruct;
 import org.nevec.rjm.BigDecimalMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.dto.EvaluationResults;
@@ -58,6 +60,7 @@ import com.ciphertool.zenith.model.entities.NGram;
 import com.ciphertool.zenith.model.entities.NGramCountSum;
 import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
+@Component
 public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
 
@@ -106,28 +109,62 @@ public class BayesianDecipherManager {
 		}
 	}
 
+	@Value("${cipher.name}")
 	private String							cipherName;
-	private PlaintextEvaluator				plaintextEvaluator;
-	private LetterTypeEvaluator				letterTypeEvaluator;
-	private CipherDao						cipherDao;
-	private LetterNGramDao					letterNGramDao;
-	private LetterNGramDao					maskedNGramDao;
-	private NGramCountSumDao				nGramCountSumDao;
-	private Cipher							cipher;
+
+	@Value("${bayes.sampler.iterations}")
 	private int								samplerIterations;
+
+	@Value("${bayes.annealing.temperature.max}")
 	private int								annealingTemperatureMax;
+
+	@Value("${bayes.annealing.temperature.min}")
 	private int								annealingTemperatureMin;
+
+	@Value("${bayes.sampler.iterateRandomly}")
+	private Boolean							iterateRandomly;
+
+	@Value("${markov.letter.include.word.boundaries}")
+	private Boolean							includeWordBoundaries;
+
+	@Value("${markov.letter.order}")
+	private int								markovOrder;
+
+	@Value("${markov.minimum.count}")
+	private int								minimumCount;
+
+	@Value("${bayes.sampler.letterTypeSampling.enabled}")
+	private boolean							letterTypeSamplingEnabled;
+
+	@Autowired
+	private PlaintextEvaluator				plaintextEvaluator;
+
+	@Autowired
+	private LetterTypeEvaluator				letterTypeEvaluator;
+
+	@Autowired
+	private CipherDao						cipherDao;
+
+	@Autowired
+	private LetterNGramDao					letterNGramDao;
+
+	@Autowired
+	private LetterNGramDao					maskedNGramDao;
+
+	@Autowired
+	private NGramCountSumDao				nGramCountSumDao;
+
+	@Autowired(required = false)
+	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
+
+	@Autowired
+	private TaskExecutor					taskExecutor;
+
+	private Cipher							cipher;
 	private int								cipherKeySize;
 	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>();
-	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
-	private TaskExecutor					taskExecutor;
-	private Boolean							iterateRandomly;
-	private Boolean							includeWordBoundaries;
-	private int								markovOrder;
 	private ListMarkovModel					letterMarkovModel;
 	private ListMarkovModel					maskedMarkovModel;
-	private int								minimumCount;
-	private boolean							letterTypeSamplingEnabled;
 
 	@PostConstruct
 	public void setUp() {
@@ -677,159 +714,5 @@ public class BayesianDecipherManager {
 		}
 
 		return solution;
-	}
-
-	/**
-	 * @param plaintextEvaluator
-	 *            the plaintextEvaluator to set
-	 */
-	@Required
-	public void setPlaintextEvaluator(PlaintextEvaluator plaintextEvaluator) {
-		this.plaintextEvaluator = plaintextEvaluator;
-	}
-
-	/**
-	 * @param letterTypeEvaluator
-	 *            the letterTypeEvaluator to set
-	 */
-	@Required
-	public void setLetterTypeEvaluator(LetterTypeEvaluator letterTypeEvaluator) {
-		this.letterTypeEvaluator = letterTypeEvaluator;
-	}
-
-	/**
-	 * @param cipherName
-	 *            the cipherName to set
-	 */
-	@Required
-	public void setCipherName(String cipherName) {
-		this.cipherName = cipherName;
-	}
-
-	/**
-	 * @param cipherDao
-	 *            the cipherDao to set
-	 */
-	@Required
-	public void setCipherDao(CipherDao cipherDao) {
-		this.cipherDao = cipherDao;
-	}
-
-	/**
-	 * @param letterNGramDao
-	 *            the letterNGramDao to set
-	 */
-	@Required
-	public void setLetterNGramDao(LetterNGramDao letterNGramDao) {
-		this.letterNGramDao = letterNGramDao;
-	}
-
-	/**
-	 * @param maskedNGramDao
-	 *            the maskedNGramDao to set
-	 */
-	@Required
-	public void setMaskedNGramDao(LetterNGramDao maskedNGramDao) {
-		this.maskedNGramDao = maskedNGramDao;
-	}
-
-	/**
-	 * @param nGramCountSumDao
-	 *            the nGramCountSumDao to set
-	 */
-	@Required
-	public void setnGramCountSumDao(NGramCountSumDao nGramCountSumDao) {
-		this.nGramCountSumDao = nGramCountSumDao;
-	}
-
-	/**
-	 * @param samplerIterations
-	 *            the samplerIterations to set
-	 */
-	@Required
-	public void setSamplerIterations(int samplerIterations) {
-		this.samplerIterations = samplerIterations;
-	}
-
-	/**
-	 * @param annealingTemperatureMax
-	 *            the annealingTemperatureMax to set
-	 */
-	@Required
-	public void setAnnealingTemperatureMax(int annealingTemperatureMax) {
-		this.annealingTemperatureMax = annealingTemperatureMax;
-	}
-
-	/**
-	 * @param annealingTemperatureMin
-	 *            the annealingTemperatureMin to set
-	 */
-	@Required
-	public void setAnnealingTemperatureMin(int annealingTemperatureMin) {
-		this.annealingTemperatureMin = annealingTemperatureMin;
-	}
-
-	/**
-	 * @param taskExecutor
-	 *            the taskExecutor to set
-	 */
-	@Required
-	public void setTaskExecutor(TaskExecutor taskExecutor) {
-		this.taskExecutor = taskExecutor;
-	}
-
-	/**
-	 * This is NOT required. We will not always know the solution. In fact, that should be the rare case.
-	 * 
-	 * @param knownPlaintextEvaluator
-	 *            the knownPlaintextEvaluator to set
-	 */
-	public void setKnownPlaintextEvaluator(KnownPlaintextEvaluator knownPlaintextEvaluator) {
-		this.knownPlaintextEvaluator = knownPlaintextEvaluator;
-	}
-
-	/**
-	 * @param iterateRandomly
-	 *            the iterateRandomly to set
-	 */
-	@Required
-	public void setIterateRandomly(Boolean iterateRandomly) {
-		this.iterateRandomly = iterateRandomly;
-	}
-
-	/**
-	 * @param includeWordBoundaries
-	 *            the includeWordBoundaries to set
-	 */
-	@Required
-	public void setIncludeWordBoundaries(Boolean includeWordBoundaries) {
-		this.includeWordBoundaries = includeWordBoundaries;
-	}
-
-	/**
-	 * @param markovOrder
-	 *            the markovOrder to set
-	 */
-	@Required
-	public void setMarkovOrder(int markovOrder) {
-		this.markovOrder = markovOrder;
-	}
-
-	/**
-	 * @param minimumCount
-	 *            the minimumCount to set
-	 */
-	@Required
-	public void setMinimumCount(int minimumCount) {
-		this.minimumCount = minimumCount;
-	}
-
-	/**
-	 * @param letterTypeSamplingEnabled
-	 *            the letterTypeSamplingEnabled to set
-	 */
-	@Required
-	public void setLetterTypeSamplingEnabled(boolean letterTypeSamplingEnabled) {
-		this.letterTypeSamplingEnabled = letterTypeSamplingEnabled;
 	}
 }

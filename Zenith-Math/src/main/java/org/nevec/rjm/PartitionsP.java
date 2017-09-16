@@ -74,17 +74,4 @@ public class PartitionsP {
 		}
 		nMax = new BigInteger("" + (a.size() - 1));
 	} /* growto */
-
-	/**
-	 * Test program. It takes one integer argument n and prints P(n).<br>
-	 * java -cp . org.nevec.rjm.PartitionsP n<br>
-	 * 
-	 * @since 2008-10-15
-	 * @author Richard J. Mathar
-	 */
-	public static void main(String[] args) {
-		PartitionsP a = new PartitionsP();
-		int n = (new Integer(args[0])).intValue();
-		System.out.println("P(" + n + ")=" + a.at(n));
-	}
 }

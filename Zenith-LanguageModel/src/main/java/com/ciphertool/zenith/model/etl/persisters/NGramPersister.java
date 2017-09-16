@@ -24,26 +24,46 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
 import com.ciphertool.zenith.model.markov.ListMarkovModel;
 import com.ciphertool.zenith.model.markov.MarkovModel;
 
+@Component
 public class NGramPersister {
 	private Logger						log	= LoggerFactory.getLogger(getClass());
 
-	private LetterNGramMarkovImporter	letterNGramMarkovImporter;
-	private LetterNGramDao				letterNGramDao;
-	private LetterNGramDao				maskedNGramDao;
-	private boolean						letterNGramsWithSpacesEnabled;
-	private boolean						letterNGramsWithoutSpacesEnabled;
-	private boolean						maskedNGramsWithSpacesEnabled;
-	private boolean						maskedNGramsWithoutSpacesEnabled;
-	private int							batchSize;
+	@Autowired
 	private TaskExecutor				taskExecutor;
+
+	@Autowired
+	private LetterNGramMarkovImporter	letterNGramMarkovImporter;
+
+	@Autowired
+	private LetterNGramDao				letterNGramDao;
+
+	@Autowired
+	private LetterNGramDao				maskedNGramDao;
+
+	@Value("${letter.ngrams.with.spaces.enabled}")
+	private boolean						letterNGramsWithSpacesEnabled;
+
+	@Value("${letter.ngrams.without.spaces.enabled}")
+	private boolean						letterNGramsWithoutSpacesEnabled;
+
+	@Value("${masked.ngrams.with.spaces.enabled}")
+	private boolean						maskedNGramsWithSpacesEnabled;
+
+	@Value("${masked.ngrams.without.spaces.enabled}")
+	private boolean						maskedNGramsWithoutSpacesEnabled;
+
+	@Value("${mongodb.parallelScan.batchSize}")
+	private int							batchSize;
 
 	public void persistNGrams() {
 		int order = letterNGramMarkovImporter.getOrder();
@@ -172,85 +192,4 @@ public class NGramPersister {
 	// return null;
 	// }
 	// }
-
-	/**
-	 * @param letterNGramMarkovImporter
-	 *            the letterNGramMarkovImporter to set
-	 */
-	@Required
-	public void setLetterNGramMarkovImporter(LetterNGramMarkovImporter letterNGramMarkovImporter) {
-		this.letterNGramMarkovImporter = letterNGramMarkovImporter;
-	}
-
-	/**
-	 * @param letterNGramDao
-	 *            the letterNGramDao to set
-	 */
-	@Required
-	public void setLetterNGramDao(LetterNGramDao letterNGramDao) {
-		this.letterNGramDao = letterNGramDao;
-	}
-
-	/**
-	 * @param maskedNGramDao
-	 *            the maskedNGramDao to set
-	 */
-	@Required
-	public void setMaskedNGramDao(LetterNGramDao maskedNGramDao) {
-		this.maskedNGramDao = maskedNGramDao;
-	}
-
-	/**
-	 * @param letterNGramsWithSpacesEnabled
-	 *            the letterNGramsWithSpacesEnabled to set
-	 */
-	@Required
-	public void setLetterNGramsWithSpacesEnabled(boolean letterNGramsWithSpacesEnabled) {
-		this.letterNGramsWithSpacesEnabled = letterNGramsWithSpacesEnabled;
-	}
-
-	/**
-	 * @param letterNGramsWithoutSpacesEnabled
-	 *            the letterNGramsWithoutSpacesEnabled to set
-	 */
-	@Required
-	public void setLetterNGramsWithoutSpacesEnabled(boolean letterNGramsWithoutSpacesEnabled) {
-		this.letterNGramsWithoutSpacesEnabled = letterNGramsWithoutSpacesEnabled;
-	}
-
-	/**
-	 * @param maskedNGramsWithSpacesEnabled
-	 *            the maskedNGramsWithSpacesEnabled to set
-	 */
-	@Required
-	public void setMaskedNGramsWithSpacesEnabled(boolean maskedNGramsWithSpacesEnabled) {
-		this.maskedNGramsWithSpacesEnabled = maskedNGramsWithSpacesEnabled;
-	}
-
-	/**
-	 * @param maskedNGramsWithoutSpacesEnabled
-	 *            the maskedNGramsWithoutSpacesEnabled to set
-	 */
-	@Required
-	public void setMaskedNGramsWithoutSpacesEnabled(boolean maskedNGramsWithoutSpacesEnabled) {
-		this.maskedNGramsWithoutSpacesEnabled = maskedNGramsWithoutSpacesEnabled;
-	}
-
-	/**
-	 * @param batchSize
-	 *            the batchSize to set
-	 */
-	@Required
-	public void setBatchSize(int batchSize) {
-		this.batchSize = batchSize;
-	}
-
-	/**
-	 * @param taskExecutor
-	 *            the taskExecutor to set
-	 */
-	@Required
-	public void setTaskExecutor(TaskExecutor taskExecutor) {
-		this.taskExecutor = taskExecutor;
-	}
 }

@@ -38,14 +38,17 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.ciphertool.zenith.model.etl.converters.NumberToWordsConverter;
 
+@Component
 public class XmlCorpusTransformer implements CorpusTransformer {
 	private static Logger			log					= LoggerFactory.getLogger(XmlCorpusTransformer.class);
 
@@ -75,8 +78,13 @@ public class XmlCorpusTransformer implements CorpusTransformer {
 	private static final String		DOLLAR				= "(\\$|£)[0-9]+";
 	private static final Pattern	DOLLAR_PATTERN		= Pattern.compile(DOLLAR);
 
+	@Value("${corpus.xml.input.directory}")
 	private String					corpusDirectory;
+
+	@Value("${corpus.output.directory}")
 	private String					outputDirectory;
+
+	@Autowired
 	private TaskExecutor			taskExecutor;
 
 	@Override
@@ -276,32 +284,5 @@ public class XmlCorpusTransformer implements CorpusTransformer {
 		}
 
 		return tasks;
-	}
-
-	/**
-	 * @param fileName
-	 *            the fileName to set
-	 */
-	@Required
-	public void setCorpusDirectory(String corpusDirectory) {
-		this.corpusDirectory = corpusDirectory;
-	}
-
-	/**
-	 * @param outputDirectory
-	 *            the outputDirectory to set
-	 */
-	@Required
-	public void setOutputDirectory(String outputDirectory) {
-		this.outputDirectory = outputDirectory;
-	}
-
-	/**
-	 * @param taskExecutor
-	 *            the taskExecutor to set
-	 */
-	@Required
-	public void setTaskExecutor(TaskExecutor taskExecutor) {
-		this.taskExecutor = taskExecutor;
 	}
 }

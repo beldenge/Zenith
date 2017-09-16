@@ -21,10 +21,12 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 
+@Component
 public class KnownPlaintextEvaluator {
 	private Logger					log				= LoggerFactory.getLogger(getClass());
 

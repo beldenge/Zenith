@@ -299,19 +299,4 @@ public class Wigner3jGUI implements ActionListener, ListSelectionListener {
 			break;
 		}
 	} /* valueChanged */
-
-	/**
-	 * Main entry point. not taking any command line options:<br>
-	 * java -jar Wigner3jGUI.jar<br>
-	 * 
-	 * @param args
-	 *            There are no arguments or command line options.
-	 * @since 2012-02-16
-	 * @author Richard J. Mathar
-	 */
-	public static void main(String[] args) {
-		Wigner3jGUI g = new Wigner3jGUI();
-		g.init();
-	} /* main */
-
 } /* Wigner3jGUI */

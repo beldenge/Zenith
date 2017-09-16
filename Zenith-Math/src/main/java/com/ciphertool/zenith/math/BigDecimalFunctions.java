@@ -23,7 +23,9 @@ import java.math.BigDecimal;
 
 import org.nevec.rjm.BigDecimalMath;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BigDecimalFunctions implements MathCache {
 	@Override
 	@Cacheable(value = "logarithmCache", key = "#x")

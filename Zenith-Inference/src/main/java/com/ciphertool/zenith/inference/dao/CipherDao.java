@@ -23,16 +23,19 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 
+@Component
 public class CipherDao {
 	private static Logger	log	= LoggerFactory.getLogger(CipherDao.class);
 
+	@Autowired
 	private MongoOperations	mongoOperations;
 
 	public Cipher findByCipherName(String name) {
@@ -53,10 +56,5 @@ public class CipherDao {
 		List<Cipher> ciphers = mongoOperations.findAll(Cipher.class);
 
 		return ciphers;
-	}
-
-	@Required
-	public void setMongoTemplate(MongoOperations mongoOperations) {
-		this.mongoOperations = mongoOperations;
 	}
 }

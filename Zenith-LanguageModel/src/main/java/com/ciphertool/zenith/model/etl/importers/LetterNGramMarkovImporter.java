@@ -34,8 +34,10 @@ import java.util.concurrent.FutureTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
@@ -45,6 +47,7 @@ import com.ciphertool.zenith.model.entities.NGramCountSum;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ListMarkovModel;
 
+@Component
 public class LetterNGramMarkovImporter implements MarkovImporter {
 	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
 
@@ -52,12 +55,22 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	private static final String	NON_ALPHA			= "[^a-zA-Z]";
 	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
 
-	private String				corpusDirectory;
+	@Autowired
 	private TaskExecutor		taskExecutor;
-	private ListMarkovModel		letterMarkovModel;
-	private int					order;
+
+	@Autowired
 	private NGramCountSumDao	nGramCountSumDao;
+
+	@Value("${corpus.output.directory}")
+	private String				corpusDirectory;
+
+	@Value("${markov.letter.order}")
+	private int					order;
+
+	@Value("${compute.conditional.probability.enabled}")
 	private boolean				computeConditionalProbability;
+
+	private ListMarkovModel		letterMarkovModel;
 
 	@Override
 	public ListMarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries) {
@@ -302,54 +315,9 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	}
 
 	/**
-	 * @param taskExecutor
-	 *            the taskExecutor to set
-	 */
-	@Required
-	public void setTaskExecutor(TaskExecutor taskExecutor) {
-		this.taskExecutor = taskExecutor;
-	}
-
-	/**
-	 * @param fileName
-	 *            the fileName to set
-	 */
-	@Required
-	public void setCorpusDirectory(String corpusDirectory) {
-		this.corpusDirectory = corpusDirectory;
-	}
-
-	/**
 	 * @return the order
 	 */
 	public int getOrder() {
 		return order;
-	}
-
-	/**
-	 * @param order
-	 *            the order to set
-	 */
-	@Required
-	public void setOrder(int order) {
-		this.order = order;
-	}
-
-	/**
-	 * @param nGramCountSumDao
-	 *            the nGramCountSumDao to set
-	 */
-	@Required
-	public void setnGramCountSumDao(NGramCountSumDao nGramCountSumDao) {
-		this.nGramCountSumDao = nGramCountSumDao;
-	}
-
-	/**
-	 * @param computeConditionalProbability
-	 *            the computeConditionalProbability to set
-	 */
-	@Required
-	public void setComputeConditionalProbability(boolean computeConditionalProbability) {
-		this.computeConditionalProbability = computeConditionalProbability;
 	}
 }

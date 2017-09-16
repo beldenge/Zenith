@@ -1,0 +1,106 @@
+#
+# Copyright 2017 George Belden
+# 
+# This file is part of Zenith.
+# 
+# Zenith is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+# 
+# Zenith is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along with
+# Zenith. If not, see <http://www.gnu.org/licenses/>.
+#
+
+corpus:
+  text:
+    input:
+      directory: /Users/george/Desktop/corpus
+  xml:
+    input:
+      directory: /Users/george/Desktop/2554/2554/download/Texts
+  output:
+    directory: /Users/george/Desktop/zenith-transformed
+  transformation:
+    required: false
+
+markov:
+  letter:
+    order: 7
+
+compute:
+  conditional:
+    probability:
+      enabled: false
+
+letter:
+  ngrams:
+    with:
+      spaces:
+        enabled: true
+    without:
+      spaces:
+        enabled: false
+
+masked:
+  ngrams:
+    with:
+      spaces:
+        enabled: false
+    without:
+      spaces:
+        enabled: false
+
+# ---------------------------------------
+# Spring Concurrency Properties
+# ---------------------------------------
+# The taskExecutor.poolSize.override property can be set to override the number of threads
+# (defaults to the number of available cores of the system)
+taskExecutor:
+  queueCapacity: 100000
+  poolSize:
+    override:
+
+#----------------------------------------
+# MongoDB Properties
+#----------------------------------------
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: Zenith
+
+mongodb:
+  parallelScan:
+    batchSize: 1000
+    numCursors: 100
+
+#----------------------------------------
+# Data Properties
+#----------------------------------------
+collection:
+  letter:
+    ngram:
+      with:
+        spaces:
+          name: letterNGrams_withSpaces
+      without:
+        spaces:
+          name: letterNGrams_withoutSpaces
+  masked:
+    ngram:
+      with:
+        spaces:
+          name: maskedNGrams_withSpaces
+      without:
+        spaces:
+          name: maskedNGrams_withoutSpaces
+  ngram:
+    count:
+      sum:
+        name: nGramCount_levelSums

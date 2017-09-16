@@ -284,24 +284,4 @@ public class Prime {
 				a.add(nMax);
 		}
 	}
-
-	/**
-	 * Test program. Usage: java -cp . org.nevec.rjm.Prime n<br>
-	 * 
-	 * @param args
-	 *            This takes a single argument (n) and prints prime(n), the previous and next prime, and pi(n).
-	 * @since 2006-08-14
-	 * @author Richard J. Mathar
-	 */
-	public static void main(String[] args) {
-		Prime a = new Prime();
-		int n = (new Integer(args[0])).intValue();
-		if (n >= 1) {
-			if (n >= 2)
-				System.out.println("prime(" + (n - 1) + ") = " + a.at(n - 1));
-			System.out.println("prime(" + n + ") = " + a.at(n));
-			System.out.println("prime(" + (n + 1) + ") = " + a.at(n + 1));
-			System.out.println("pi(" + n + ") = " + a.pi(new BigInteger("" + n)));
-		}
-	}
 } /* Prime */

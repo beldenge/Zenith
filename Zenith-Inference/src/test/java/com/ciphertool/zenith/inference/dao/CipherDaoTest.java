@@ -52,24 +52,14 @@ public class CipherDaoTest {
 		cipherDao = new CipherDao();
 		mongoTemplateMock = mock(MongoOperations.class);
 
-		cipherDao.setMongoTemplate(mongoTemplateMock);
+		Field mongoTemplateField = ReflectionUtils.findField(CipherDao.class, "mongoOperations");
+		ReflectionUtils.makeAccessible(mongoTemplateField);
+		ReflectionUtils.setField(mongoTemplateField, cipherDao, mongoTemplateMock);
 	}
 
 	@Before
 	public void resetMocks() {
 		reset(mongoTemplateMock);
-	}
-
-	@Test
-	public void testSetMongoTemplate() {
-		CipherDao cipherDao = new CipherDao();
-		cipherDao.setMongoTemplate(mongoTemplateMock);
-
-		Field mongoOperationsField = ReflectionUtils.findField(CipherDao.class, "mongoOperations");
-		ReflectionUtils.makeAccessible(mongoOperationsField);
-		MongoOperations mongoOperationsFromObject = (MongoOperations) ReflectionUtils.getField(mongoOperationsField, cipherDao);
-
-		assertSame(mongoTemplateMock, mongoOperationsFromObject);
 	}
 
 	@Test

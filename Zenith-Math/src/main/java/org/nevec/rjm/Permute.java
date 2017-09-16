@@ -196,34 +196,4 @@ class Permute implements Iterator {
 		s += ")";
 		return s;
 	}
-
-	/**
-	 * Test program.
-	 * 
-	 * @param args
-	 *            There is only one single command line argument, the number n .
-	 * @since 2010-09-13
-	 * @author Richard J. Mathar
-	 */
-	static public void main(String args[]) {
-		/*
-		 * Parse the command line arguments for the number n.
-		 */
-		int n = Integer.parseInt(args[0]);
-
-		/*
-		 * Initialize the permutation.
-		 */
-		Permute p = new Permute(n);
-		/*
-		 * As long as the number of permutations is not exhausted: Get the next vector and print it.
-		 */
-		while (!p.exhst) {
-			int[] t = p.next();
-			for (int i = 0; i < n; i++)
-				System.out.print(" " + t[i]);
-			System.out.println("");
-		}
-	}
-
 } /* Permute */

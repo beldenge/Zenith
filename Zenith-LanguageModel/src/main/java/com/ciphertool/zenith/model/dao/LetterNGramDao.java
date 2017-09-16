@@ -27,7 +27,6 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.index.Index;
@@ -42,8 +41,6 @@ import com.mongodb.ParallelScanOptions;
 public class LetterNGramDao {
 	private Logger				log							= LoggerFactory.getLogger(getClass());
 
-	private String				collectionWithSpaces;
-	private String				collectionWithoutSpaces;
 	private static final String	ID_KEY						= "id";
 	private static final String	COUNT_KEY					= "count";
 	private static final String	PROBABILITY_KEY				= "probability";
@@ -52,8 +49,22 @@ public class LetterNGramDao {
 	private static final String	ORDER_KEY					= "order";
 
 	private MongoOperations		mongoOperations;
+	private String				collectionWithSpaces;
+	private String				collectionWithoutSpaces;
 	private int					batchSize;
 	private int					numCursors;
+
+	public LetterNGramDao() {
+	}
+
+	public LetterNGramDao(MongoOperations mongoOperations, String collectionWithSpaces, String collectionWithoutSpaces,
+			int batchSize, int numCursors) {
+		this.mongoOperations = mongoOperations;
+		this.collectionWithSpaces = collectionWithSpaces;
+		this.collectionWithoutSpaces = collectionWithoutSpaces;
+		this.batchSize = batchSize;
+		this.numCursors = numCursors;
+	}
 
 	public List<ListNGram> findAll(Integer order, Integer minimumCount, Boolean includeWordBoundaries) {
 		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
@@ -127,46 +138,5 @@ public class LetterNGramDao {
 		mongoOperations.dropCollection(collection);
 		mongoOperations.createCollection(collection);
 		mongoOperations.indexOps(collection).ensureIndex(new Index("count", Direction.DESC));
-	}
-
-	@Required
-	public void setMongoTemplate(MongoOperations mongoOperations) {
-		this.mongoOperations = mongoOperations;
-	}
-
-	/**
-	 * @param batchSize
-	 *            the batchSize to set
-	 */
-	@Required
-	public void setBatchSize(int batchSize) {
-		this.batchSize = batchSize;
-	}
-
-	/**
-	 * @param numCursors
-	 *            the numCursors to set
-	 */
-	@Required
-	public void setNumCursors(int numCursors) {
-		this.numCursors = numCursors;
-	}
-
-	/**
-	 * @param collectionWithSpaces
-	 *            the collectionWithSpaces to set
-	 */
-	@Required
-	public void setCollectionWithSpaces(String collectionWithSpaces) {
-		this.collectionWithSpaces = collectionWithSpaces;
-	}
-
-	/**
-	 * @param collectionWithoutSpaces
-	 *            the collectionWithoutSpaces to set
-	 */
-	@Required
-	public void setCollectionWithoutSpaces(String collectionWithoutSpaces) {
-		this.collectionWithoutSpaces = collectionWithoutSpaces;
 	}
 }
