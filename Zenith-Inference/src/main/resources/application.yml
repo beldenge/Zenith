@@ -27,7 +27,7 @@ cipher:
 taskExecutor:
   queueCapacity: 1000000
   poolSize:
-    override:
+    #override:
 
 # ---------------------------------------
 # Markov Model Properties
@@ -36,7 +36,7 @@ markov:
   corpus:
     directory: /Users/george/Desktop/zenith-transformed
   letter:
-    order: 10
+    order: 6
     include:
       word:
         boundaries: true

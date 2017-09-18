@@ -30,7 +30,7 @@ corpus:
 
 markov:
   letter:
-    order: 7
+    order: 1
 
 compute:
   conditional:
@@ -63,7 +63,7 @@ masked:
 taskExecutor:
   queueCapacity: 100000
   poolSize:
-    override:
+    #override:
 
 #----------------------------------------
 # MongoDB Properties

@@ -80,7 +80,17 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 
 		log.info("Starting corpus text import...");
 
-		List<FutureTask<ParseResults>> futures = parseFiles(Paths.get(this.corpusDirectory), maskLetterTypes, includeWordBoundaries);
+		Path corpusDirectoryPath = Paths.get(this.corpusDirectory);
+
+		if (!Files.exists(corpusDirectoryPath)) {
+			try {
+				Files.createDirectories(corpusDirectoryPath);
+			} catch (IOException ioe) {
+				throw new IllegalStateException("Unable to create directory: " + this.corpusDirectory, ioe);
+			}
+		}
+
+		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, maskLetterTypes, includeWordBoundaries);
 		ParseResults parseResults;
 		long total = 0L;
 		long unique = 0L;
