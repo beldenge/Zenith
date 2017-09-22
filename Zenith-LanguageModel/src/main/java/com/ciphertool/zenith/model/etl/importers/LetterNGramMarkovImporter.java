@@ -40,7 +40,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.NGramCountSumDao;
 import com.ciphertool.zenith.model.dto.ParseResults;
 import com.ciphertool.zenith.model.entities.NGramCountSum;
@@ -73,7 +72,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	private ListMarkovModel		letterMarkovModel;
 
 	@Override
-	public ListMarkovModel importCorpus(boolean maskLetterTypes, boolean includeWordBoundaries) {
+	public ListMarkovModel importCorpus(boolean includeWordBoundaries) {
 		letterMarkovModel = new ListMarkovModel(this.order, null);
 
 		long start = System.currentTimeMillis();
@@ -90,7 +89,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 			}
 		}
 
-		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, maskLetterTypes, includeWordBoundaries);
+		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, includeWordBoundaries);
 		ParseResults parseResults;
 		long total = 0L;
 		long unique = 0L;
@@ -114,11 +113,11 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 			// computeConditionalProbability();
 		}
 
-		nGramCountSumDao.delete(order, includeWordBoundaries, maskLetterTypes);
+		nGramCountSumDao.delete(order, includeWordBoundaries);
 
 		this.letterMarkovModel.normalize(total);
 
-		nGramCountSumDao.add(new NGramCountSum(order, includeWordBoundaries, maskLetterTypes, total));
+		nGramCountSumDao.add(new NGramCountSum(order, includeWordBoundaries, total));
 
 		return this.letterMarkovModel;
 	}
@@ -200,20 +199,16 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	 */
 	protected class ParseFileTask implements Callable<ParseResults> {
 		private Path	path;
-		private boolean	maskLetterTypes;
 		private boolean	includeWordBoundaries;
 
 		/**
 		 * @param path
 		 *            the Path to set
 		 * @param includeWordBoundaries
-		 *            whether to mask letter types
-		 * @param includeWordBoundaries
 		 *            whether to include word boundaries
 		 */
-		public ParseFileTask(Path path, boolean maskLetterTypes, boolean includeWordBoundaries) {
+		public ParseFileTask(Path path, boolean includeWordBoundaries) {
 			this.path = path;
-			this.maskLetterTypes = maskLetterTypes;
 			this.includeWordBoundaries = includeWordBoundaries;
 		}
 
@@ -259,27 +254,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 					for (int j = 0; j < sentence.length() - order; j++) {
 						String nGramString = sentence.substring(j, j + order);
 
-						if (maskLetterTypes) {
-							for (int k = 0; k < nGramString.length(); k++) {
-								String maskedString = "";
-
-								for (int l = 0; l < nGramString.length(); l++) {
-									if (l == k) {
-										maskedString += nGramString.charAt(l);
-									} else if (nGramString.charAt(l) == ' ') {
-										maskedString += " ";
-									} else if (ModelConstants.LOWERCASE_VOWELS.contains(nGramString.charAt(l))) {
-										maskedString += ModelConstants.VOWEL_SYMBOL;
-									} else {
-										maskedString += ModelConstants.CONSONANT_SYMBOL;
-									}
-								}
-
-								unique += (letterMarkovModel.addLetterTransition(maskedString) ? 1 : 0);
-							}
-						} else {
-							unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
-						}
+						unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
 
 						total++;
 					}
@@ -292,7 +267,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		}
 	}
 
-	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean maskLetterTypes, boolean includeWordBoundaries) {
+	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean includeWordBoundaries) {
 		List<FutureTask<ParseResults>> tasks = new ArrayList<FutureTask<ParseResults>>();
 		FutureTask<ParseResults> task;
 		String filename;
@@ -300,7 +275,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, maskLetterTypes, includeWordBoundaries));
+					tasks.addAll(parseFiles(entry, includeWordBoundaries));
 				} else {
 					filename = entry.toString();
 					String ext = filename.substring(filename.lastIndexOf('.'));
@@ -311,8 +286,7 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 						continue;
 					}
 
-					task = new FutureTask<ParseResults>(new ParseFileTask(entry, maskLetterTypes,
-							includeWordBoundaries));
+					task = new FutureTask<ParseResults>(new ParseFileTask(entry, includeWordBoundaries));
 					tasks.add(task);
 					this.taskExecutor.execute(task);
 				}

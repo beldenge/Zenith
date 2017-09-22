@@ -21,16 +21,16 @@ public class NGramCountSumDao {
 		mongoOperations.insert(nGramCountSum, collectionName);
 	}
 
-	public NGramCountSum find(int order, boolean includesWordBoundaries, boolean isTypeMasked) {
+	public NGramCountSum find(int order, boolean includesWordBoundaries) {
 		Query query = new Query();
-		query.addCriteria(Criteria.where("order").is(order).and("includesWordBoundaries").is(includesWordBoundaries).and("isTypeMasked").is(isTypeMasked));
+		query.addCriteria(Criteria.where("order").is(order).and("includesWordBoundaries").is(includesWordBoundaries));
 
 		return mongoOperations.findOne(query, NGramCountSum.class, collectionName);
 	}
 
-	public void delete(int order, boolean includesWordBoundaries, boolean isTypeMasked) {
+	public void delete(int order, boolean includesWordBoundaries) {
 		Query query = new Query();
-		query.addCriteria(Criteria.where("order").is(order).and("includesWordBoundaries").is(includesWordBoundaries).and("isTypeMasked").is(isTypeMasked));
+		query.addCriteria(Criteria.where("order").is(order).and("includesWordBoundaries").is(includesWordBoundaries));
 
 		mongoOperations.remove(query, NGramCountSum.class, collectionName);
 	}

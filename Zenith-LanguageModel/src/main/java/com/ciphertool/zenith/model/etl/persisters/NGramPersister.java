@@ -47,20 +47,11 @@ public class NGramPersister {
 	@Autowired
 	private LetterNGramDao				letterNGramDao;
 
-	@Autowired
-	private LetterNGramDao				maskedNGramDao;
-
 	@Value("${letter.ngrams.with.spaces.enabled}")
 	private boolean						letterNGramsWithSpacesEnabled;
 
 	@Value("${letter.ngrams.without.spaces.enabled}")
 	private boolean						letterNGramsWithoutSpacesEnabled;
-
-	@Value("${masked.ngrams.with.spaces.enabled}")
-	private boolean						maskedNGramsWithSpacesEnabled;
-
-	@Value("${masked.ngrams.without.spaces.enabled}")
-	private boolean						maskedNGramsWithoutSpacesEnabled;
 
 	@Value("${mongodb.parallelScan.batchSize}")
 	private int							batchSize;
@@ -69,45 +60,33 @@ public class NGramPersister {
 		int order = letterNGramMarkovImporter.getOrder();
 
 		if (letterNGramsWithSpacesEnabled) {
-			persistLetterNGrams(order, false, true);
+			persistLetterNGrams(order, true);
 		}
 
 		if (letterNGramsWithoutSpacesEnabled) {
-			persistLetterNGrams(order, false, false);
-		}
-
-		if (maskedNGramsWithSpacesEnabled) {
-			persistLetterNGrams(order, true, true);
-		}
-
-		if (maskedNGramsWithoutSpacesEnabled) {
-			persistLetterNGrams(order, true, false);
+			persistLetterNGrams(order, false);
 		}
 	}
 
-	protected void persistLetterNGrams(int order, boolean maskLetterTypes, boolean includeWordBoundaries) {
+	protected void persistLetterNGrams(int order, boolean includeWordBoundaries) {
 		long startDeleteWithoutSpaces = System.currentTimeMillis();
 
-		log.info("Deleting all existing" + (maskLetterTypes ? " masked" : "") + " n-grams with"
-				+ (includeWordBoundaries ? "" : "out") + " spaces.");
+		log.info("Deleting all existing n-grams with" + (includeWordBoundaries ? "" : "out") + " spaces.");
 
-		(maskLetterTypes ? maskedNGramDao : letterNGramDao).deleteAll(order, includeWordBoundaries);
+		letterNGramDao.deleteAll(order, includeWordBoundaries);
 
-		log.info("Completed deletion of" + (maskLetterTypes ? " masked" : "") + " n-grams with"
-				+ (includeWordBoundaries ? "" : "out") + " spaces in {}ms.", (System.currentTimeMillis()
-						- startDeleteWithoutSpaces));
+		log.info("Completed deletion of n-grams with" + (includeWordBoundaries ? "" : "out")
+				+ " spaces in {}ms.", (System.currentTimeMillis() - startDeleteWithoutSpaces));
 
-		MarkovModel markovModel = letterNGramMarkovImporter.importCorpus(maskLetterTypes, includeWordBoundaries);
+		MarkovModel markovModel = letterNGramMarkovImporter.importCorpus(includeWordBoundaries);
 
 		long count = markovModel.size();
 
-		log.info("Total" + (maskLetterTypes ? " masked" : "") + " nodes with" + (includeWordBoundaries ? "" : "out")
-				+ " spaces: {}", count);
+		log.info("Total nodes with" + (includeWordBoundaries ? "" : "out") + " spaces: {}", count);
 
 		long startAddWithoutSpaces = System.currentTimeMillis();
 
-		log.info("Starting persistence of" + (maskLetterTypes ? " masked" : "") + " n-grams with"
-				+ (includeWordBoundaries ? "" : "out") + " spaces.");
+		log.info("Starting persistence of n-grams with" + (includeWordBoundaries ? "" : "out") + " spaces.");
 
 		// List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
 		// FutureTask<Void> task;
@@ -115,7 +94,7 @@ public class NGramPersister {
 		// for (Map.Entry<Character, TreeNGram> entry : ((TreeMarkovModel)
 		// markovModel).getRootNode().getTransitions().entrySet()) {
 		// if (entry.getValue() != null) {
-		// task = new FutureTask<Void>(new PersistNodesTask(entry.getValue(), maskLetterTypes,
+		// task = new FutureTask<Void>(new PersistNodesTask(entry.getValue(),
 		// includeWordBoundaries));
 		// futures.add(task);
 		// this.taskExecutor.execute(task);
@@ -135,24 +114,22 @@ public class NGramPersister {
 		AtomicInteger counter = new AtomicInteger();
 
 		((ListMarkovModel) markovModel).getNodeMap().values().stream().collect(Collectors.groupingBy(c -> counter.getAndIncrement()
-				/ batchSize)).values().parallelStream().forEach(chunk -> (maskLetterTypes ? maskedNGramDao : letterNGramDao).addAll(order, chunk, includeWordBoundaries));
+				/ batchSize)).values().parallelStream().forEach(chunk -> letterNGramDao.addAll(order, chunk, includeWordBoundaries));
 
-		log.info("Completed persistence of" + (maskLetterTypes ? " masked" : "") + " n-grams with"
-				+ (includeWordBoundaries ? "" : "out") + " spaces in {}ms.", (System.currentTimeMillis()
-						- startAddWithoutSpaces));
+		log.info("Completed persistence of n-grams with" + (includeWordBoundaries ? "" : "out")
+				+ " spaces in {}ms.", (System.currentTimeMillis() - startAddWithoutSpaces));
 	}
 
-	// protected List<TreeNGram> persistNodes(TreeNGram node, boolean maskLetterTypes, boolean includeWordBoundaries) {
+	// protected List<TreeNGram> persistNodes(TreeNGram node, boolean includeWordBoundaries) {
 	// List<TreeNGram> nGrams = new ArrayList<>();
 	//
 	// nGrams.add(node);
 	//
 	// for (Map.Entry<Character, TreeNGram> entry : node.getTransitions().entrySet()) {
-	// nGrams.addAll(persistNodes(entry.getValue(), maskLetterTypes, includeWordBoundaries));
+	// nGrams.addAll(persistNodes(entry.getValue(), includeWordBoundaries));
 	//
 	// if (nGrams.size() >= batchSize) {
-	// (maskLetterTypes ? maskedNGramDao : letterNGramDao).addAll(entry.getValue().getOrder(), nGrams,
-	// includeWordBoundaries);
+	// letterNGramDao.addAll(entry.getValue().getOrder(), nGrams, includeWordBoundaries);
 	//
 	// nGrams = new ArrayList<>();
 	// }
@@ -166,28 +143,24 @@ public class NGramPersister {
 	// */
 	// protected class PersistNodesTask implements Callable<Void> {
 	// private TreeNGram node;
-	// private boolean maskLetterTypes;
 	// private boolean includeWordBoundaries;
 	//
 	// /**
 	// * @param node
 	// * the root node
-	// * @param maskLetterTypes
-	// * whether to mask letter types (vowels and consonants)
 	// * @param includeWordBoundaries
 	// * whether to include word boundaries
 	// */
-	// public PersistNodesTask(TreeNGram node, boolean maskLetterTypes, boolean includeWordBoundaries) {
+	// public PersistNodesTask(TreeNGram node, boolean includeWordBoundaries) {
 	// this.node = node;
-	// this.maskLetterTypes = maskLetterTypes;
 	// this.includeWordBoundaries = includeWordBoundaries;
 	// }
 	//
 	// @Override
 	// public Void call() throws Exception {
-	// List<TreeNGram> nGrams = persistNodes(node, maskLetterTypes, includeWordBoundaries);
+	// List<TreeNGram> nGrams = persistNodes(node, includeWordBoundaries);
 	//
-	// (maskLetterTypes ? maskedNGramDao : letterNGramDao).addAll(node.getOrder(), nGrams, includeWordBoundaries);
+	// letterNGramDao.addAll(node.getOrder(), nGrams, includeWordBoundaries);
 	//
 	// return null;
 	// }

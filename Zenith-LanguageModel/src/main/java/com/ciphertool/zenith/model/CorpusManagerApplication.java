@@ -27,10 +27,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.etl.persisters.NGramPersister;
 import com.ciphertool.zenith.model.etl.transformers.CorpusTransformer;
 
@@ -96,17 +94,5 @@ public class CorpusManagerApplication implements CommandLineRunner {
 		taskExecutor.setAllowCoreThreadTimeOut(true);
 
 		return taskExecutor;
-	}
-
-	@Bean
-	public LetterNGramDao letterNGramDao(@Autowired MongoOperations mongoOperations, @Value("${collection.letter.ngram.with.spaces.name}") String collectionWithSpaces, @Value("${collection.letter.ngram.without.spaces.name}") String collectionWithoutSpaces, @Value("${mongodb.parallelScan.batchSize}") int batchSize, @Value("${mongodb.parallelScan.numCursors}") int numCursors) {
-		return new LetterNGramDao(mongoOperations, collectionWithSpaces, collectionWithoutSpaces, batchSize,
-				numCursors);
-	}
-
-	@Bean
-	public LetterNGramDao maskedNGramDao(@Autowired MongoOperations mongoOperations, @Value("${collection.masked.ngram.with.spaces.name}") String collectionWithSpaces, @Value("${collection.masked.ngram.without.spaces.name}") String collectionWithoutSpaces, @Value("${mongodb.parallelScan.batchSize}") int batchSize, @Value("${mongodb.parallelScan.numCursors}") int numCursors) {
-		return new LetterNGramDao(mongoOperations, collectionWithSpaces, collectionWithoutSpaces, batchSize,
-				numCursors);
 	}
 }

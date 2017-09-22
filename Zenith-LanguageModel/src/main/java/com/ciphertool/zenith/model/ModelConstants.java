@@ -40,7 +40,4 @@ public class ModelConstants {
 	static {
 		LOWERCASE_LETTERS_AND_SPACE.add(' ');
 	}
-
-	public static final Character	VOWEL_SYMBOL		= '-';
-	public static final Character	CONSONANT_SYMBOL	= '+';
 }

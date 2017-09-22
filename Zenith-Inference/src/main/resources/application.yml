@@ -92,14 +92,6 @@ collection:
       without:
         spaces:
           name: letterNGrams_withoutSpaces
-  masked:
-    ngram:
-      with:
-        spaces:
-          name: maskedNGrams_withSpaces
-      without:
-        spaces:
-          name: maskedNGrams_withoutSpaces
   ngram:
     count:
       sum:

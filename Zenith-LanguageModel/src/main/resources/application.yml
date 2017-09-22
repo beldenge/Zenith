@@ -30,7 +30,7 @@ corpus:
 
 markov:
   letter:
-    order: 1
+    order: 2
 
 compute:
   conditional:
@@ -42,15 +42,6 @@ letter:
     with:
       spaces:
         enabled: true
-    without:
-      spaces:
-        enabled: false
-
-masked:
-  ngrams:
-    with:
-      spaces:
-        enabled: false
     without:
       spaces:
         enabled: false
@@ -92,14 +83,6 @@ collection:
       without:
         spaces:
           name: letterNGrams_withoutSpaces
-  masked:
-    ngram:
-      with:
-        spaces:
-          name: maskedNGrams_withSpaces
-      without:
-        spaces:
-          name: maskedNGrams_withoutSpaces
   ngram:
     count:
       sum:

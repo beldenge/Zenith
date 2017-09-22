@@ -32,8 +32,6 @@ public class NGramCountSum {
 
 	private Boolean		includesWordBoundaries;
 
-	private Boolean		isTypeMasked;
-
 	private Long		sum;
 
 	/**
@@ -41,15 +39,12 @@ public class NGramCountSum {
 	 *            the Markov order
 	 * @param includesWordBoundaries
 	 *            whether this sum includes word boundaries
-	 * @param isTypeMasked
-	 *            whether this sum is for type masked n-grams
 	 * @param sum
 	 *            the sum of n-gram counts at this order
 	 */
-	public NGramCountSum(int order, boolean includesWordBoundaries, boolean isTypeMasked, long sum) {
+	public NGramCountSum(int order, boolean includesWordBoundaries, long sum) {
 		this.order = order;
 		this.includesWordBoundaries = includesWordBoundaries;
-		this.isTypeMasked = isTypeMasked;
 		this.sum = sum;
 	}
 
@@ -72,13 +67,6 @@ public class NGramCountSum {
 	 */
 	public Boolean isIncludesWordBoundaries() {
 		return includesWordBoundaries;
-	}
-
-	/**
-	 * @return the isTypeMasked
-	 */
-	public Boolean isTypeMasked() {
-		return isTypeMasked;
 	}
 
 	/**

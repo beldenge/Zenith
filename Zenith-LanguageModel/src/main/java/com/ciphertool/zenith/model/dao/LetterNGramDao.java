@@ -27,10 +27,13 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.model.entities.ListNGram;
 import com.mongodb.Cursor;
@@ -38,6 +41,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.ParallelScanOptions;
 
+@Component
 public class LetterNGramDao {
 	private Logger				log							= LoggerFactory.getLogger(getClass());
 
@@ -48,23 +52,20 @@ public class LetterNGramDao {
 	private static final String	CUMULATIVE_STRING_KEY		= "cumulativeString";
 	private static final String	ORDER_KEY					= "order";
 
-	private MongoOperations		mongoOperations;
+	@Value("${collection.letter.ngram.with.spaces.name}")
 	private String				collectionWithSpaces;
+
+	@Value("${collection.letter.ngram.without.spaces.name}")
 	private String				collectionWithoutSpaces;
+
+	@Value("${mongodb.parallelScan.batchSize}")
 	private int					batchSize;
+
+	@Value("${mongodb.parallelScan.numCursors}")
 	private int					numCursors;
 
-	public LetterNGramDao() {
-	}
-
-	public LetterNGramDao(MongoOperations mongoOperations, String collectionWithSpaces, String collectionWithoutSpaces,
-			int batchSize, int numCursors) {
-		this.mongoOperations = mongoOperations;
-		this.collectionWithSpaces = collectionWithSpaces;
-		this.collectionWithoutSpaces = collectionWithoutSpaces;
-		this.batchSize = batchSize;
-		this.numCursors = numCursors;
-	}
+	@Autowired
+	private MongoOperations		mongoOperations;
 
 	public List<ListNGram> findAll(Integer order, Integer minimumCount, Boolean includeWordBoundaries) {
 		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
@@ -109,7 +110,7 @@ public class LetterNGramDao {
 	}
 
 	public long countLessThan(Integer order, int minimumCount, boolean includeWordBoundaries) {
-		long startMaskedCount = System.currentTimeMillis();
+		long startCount = System.currentTimeMillis();
 		log.info("Counting nodes with counts below the minimum of {}.", minimumCount);
 
 		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
@@ -118,7 +119,7 @@ public class LetterNGramDao {
 				+ "_" + order);
 
 		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
-				- startMaskedCount));
+				- startCount));
 
 		return result;
 	}
