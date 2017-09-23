@@ -44,10 +44,10 @@ import com.ciphertool.zenith.model.dao.NGramCountSumDao;
 import com.ciphertool.zenith.model.dto.ParseResults;
 import com.ciphertool.zenith.model.entities.NGramCountSum;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.ListMarkovModel;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
 @Component
-public class LetterNGramMarkovImporter implements MarkovImporter {
+public class LetterNGramMarkovImporter {
 	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
 
 	private static final String	EXTENSION			= ".txt";
@@ -69,11 +69,10 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 	@Value("${compute.conditional.probability.enabled}")
 	private boolean				computeConditionalProbability;
 
-	private ListMarkovModel		letterMarkovModel;
+	private TreeMarkovModel		letterMarkovModel;
 
-	@Override
-	public ListMarkovModel importCorpus(boolean includeWordBoundaries) {
-		letterMarkovModel = new ListMarkovModel(this.order, null);
+	public TreeMarkovModel importCorpus(boolean includeWordBoundaries) {
+		letterMarkovModel = new TreeMarkovModel(this.order, null);
 
 		long start = System.currentTimeMillis();
 
@@ -110,49 +109,49 @@ public class LetterNGramMarkovImporter implements MarkovImporter {
 				+ (System.currentTimeMillis() - start) + "ms");
 
 		if (computeConditionalProbability) {
-			// computeConditionalProbability();
+			computeConditionalProbability();
 		}
 
 		nGramCountSumDao.delete(order, includeWordBoundaries);
 
-		this.letterMarkovModel.normalize(total);
+		this.letterMarkovModel.normalize(order, total, taskExecutor);
 
 		nGramCountSumDao.add(new NGramCountSum(order, includeWordBoundaries, total));
 
 		return this.letterMarkovModel;
 	}
 
-	// public void computeConditionalProbability() {
-	// long start = System.currentTimeMillis();
-	//
-	// log.info("Starting calculation of conditional probabilities...");
-	//
-	// Map<Character, TreeNGram> initialTransitions = this.letterMarkovModel.getRootNode().getTransitions();
-	//
-	// List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
-	// FutureTask<Void> task;
-	//
-	// for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
-	// if (entry.getValue() != null) {
-	// task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(),
-	// this.letterMarkovModel.getRootNode().getCount()));
-	// futures.add(task);
-	// this.taskExecutor.execute(task);
-	// }
-	// }
-	//
-	// for (FutureTask<Void> future : futures) {
-	// try {
-	// future.get();
-	// } catch (InterruptedException ie) {
-	// log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
-	// } catch (ExecutionException ee) {
-	// log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
-	// }
-	// }
-	//
-	// log.info("Finished calculating conditional probabilities in {}ms", (System.currentTimeMillis() - start));
-	// }
+	public void computeConditionalProbability() {
+		long start = System.currentTimeMillis();
+
+		log.info("Starting calculation of conditional probabilities...");
+
+		Map<Character, TreeNGram> initialTransitions = this.letterMarkovModel.getRootNode().getTransitions();
+
+		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		FutureTask<Void> task;
+
+		for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
+			if (entry.getValue() != null) {
+				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(),
+						this.letterMarkovModel.getRootNode().getCount()));
+				futures.add(task);
+				this.taskExecutor.execute(task);
+			}
+		}
+
+		for (FutureTask<Void> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException ie) {
+				log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
+			} catch (ExecutionException ee) {
+				log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
+			}
+		}
+
+		log.info("Finished calculating conditional probabilities in {}ms", (System.currentTimeMillis() - start));
+	}
 
 	/**
 	 * A concurrent task for computing the conditional probability of a Markov node.

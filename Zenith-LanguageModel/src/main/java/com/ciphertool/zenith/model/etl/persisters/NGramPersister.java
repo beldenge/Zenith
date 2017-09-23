@@ -19,8 +19,12 @@
 
 package com.ciphertool.zenith.model.etl.persisters;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +34,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
-import com.ciphertool.zenith.model.markov.ListMarkovModel;
-import com.ciphertool.zenith.model.markov.MarkovModel;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
 @Component
 public class NGramPersister {
@@ -78,7 +82,7 @@ public class NGramPersister {
 		log.info("Completed deletion of n-grams with" + (includeWordBoundaries ? "" : "out")
 				+ " spaces in {}ms.", (System.currentTimeMillis() - startDeleteWithoutSpaces));
 
-		MarkovModel markovModel = letterNGramMarkovImporter.importCorpus(includeWordBoundaries);
+		TreeMarkovModel markovModel = letterNGramMarkovImporter.importCorpus(includeWordBoundaries);
 
 		long count = markovModel.size();
 
@@ -88,81 +92,74 @@ public class NGramPersister {
 
 		log.info("Starting persistence of n-grams with" + (includeWordBoundaries ? "" : "out") + " spaces.");
 
-		// List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
-		// FutureTask<Void> task;
-		//
-		// for (Map.Entry<Character, TreeNGram> entry : ((TreeMarkovModel)
-		// markovModel).getRootNode().getTransitions().entrySet()) {
-		// if (entry.getValue() != null) {
-		// task = new FutureTask<Void>(new PersistNodesTask(entry.getValue(),
-		// includeWordBoundaries));
-		// futures.add(task);
-		// this.taskExecutor.execute(task);
-		// }
-		// }
-		//
-		// for (FutureTask<Void> future : futures) {
-		// try {
-		// future.get();
-		// } catch (InterruptedException ie) {
-		// log.error("Caught InterruptedException while waiting for PersistNodesTask ", ie);
-		// } catch (ExecutionException ee) {
-		// log.error("Caught ExecutionException while waiting for PersistNodesTask ", ee);
-		// }
-		// }
+		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		FutureTask<Void> task;
 
-		AtomicInteger counter = new AtomicInteger();
+		for (Map.Entry<Character, TreeNGram> entry : ((TreeMarkovModel) markovModel).getRootNode().getTransitions().entrySet()) {
+			if (entry.getValue() != null) {
+				task = new FutureTask<Void>(new PersistNodesTask(entry.getValue(), includeWordBoundaries));
+				futures.add(task);
+				this.taskExecutor.execute(task);
+			}
+		}
 
-		((ListMarkovModel) markovModel).getNodeMap().values().stream().collect(Collectors.groupingBy(c -> counter.getAndIncrement()
-				/ batchSize)).values().parallelStream().forEach(chunk -> letterNGramDao.addAll(order, chunk, includeWordBoundaries));
+		for (FutureTask<Void> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException ie) {
+				log.error("Caught InterruptedException while waiting for PersistNodesTask ", ie);
+			} catch (ExecutionException ee) {
+				log.error("Caught ExecutionException while waiting for PersistNodesTask ", ee);
+			}
+		}
 
 		log.info("Completed persistence of n-grams with" + (includeWordBoundaries ? "" : "out")
 				+ " spaces in {}ms.", (System.currentTimeMillis() - startAddWithoutSpaces));
 	}
 
-	// protected List<TreeNGram> persistNodes(TreeNGram node, boolean includeWordBoundaries) {
-	// List<TreeNGram> nGrams = new ArrayList<>();
-	//
-	// nGrams.add(node);
-	//
-	// for (Map.Entry<Character, TreeNGram> entry : node.getTransitions().entrySet()) {
-	// nGrams.addAll(persistNodes(entry.getValue(), includeWordBoundaries));
-	//
-	// if (nGrams.size() >= batchSize) {
-	// letterNGramDao.addAll(entry.getValue().getOrder(), nGrams, includeWordBoundaries);
-	//
-	// nGrams = new ArrayList<>();
-	// }
-	// }
-	//
-	// return nGrams;
-	// }
-	//
-	// /**
-	// * A concurrent task for computing the conditional probability of a Markov node.
-	// */
-	// protected class PersistNodesTask implements Callable<Void> {
-	// private TreeNGram node;
-	// private boolean includeWordBoundaries;
-	//
-	// /**
-	// * @param node
-	// * the root node
-	// * @param includeWordBoundaries
-	// * whether to include word boundaries
-	// */
-	// public PersistNodesTask(TreeNGram node, boolean includeWordBoundaries) {
-	// this.node = node;
-	// this.includeWordBoundaries = includeWordBoundaries;
-	// }
-	//
-	// @Override
-	// public Void call() throws Exception {
-	// List<TreeNGram> nGrams = persistNodes(node, includeWordBoundaries);
-	//
-	// letterNGramDao.addAll(node.getOrder(), nGrams, includeWordBoundaries);
-	//
-	// return null;
-	// }
-	// }
+	protected List<TreeNGram> persistNodes(TreeNGram node, boolean includeWordBoundaries) {
+		List<TreeNGram> nGrams = new ArrayList<>();
+
+		nGrams.add(node);
+
+		for (Map.Entry<Character, TreeNGram> entry : node.getTransitions().entrySet()) {
+			nGrams.addAll(persistNodes(entry.getValue(), includeWordBoundaries));
+
+			if (nGrams.size() >= batchSize) {
+				letterNGramDao.addAll(entry.getValue().getOrder(), nGrams, includeWordBoundaries);
+
+				nGrams = new ArrayList<>();
+			}
+		}
+
+		return nGrams;
+	}
+
+	/**
+	 * A concurrent task for computing the conditional probability of a Markov node.
+	 */
+	protected class PersistNodesTask implements Callable<Void> {
+		private TreeNGram	node;
+		private boolean		includeWordBoundaries;
+
+		/**
+		 * @param node
+		 *            the root node
+		 * @param includeWordBoundaries
+		 *            whether to include word boundaries
+		 */
+		public PersistNodesTask(TreeNGram node, boolean includeWordBoundaries) {
+			this.node = node;
+			this.includeWordBoundaries = includeWordBoundaries;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			List<TreeNGram> nGrams = persistNodes(node, includeWordBoundaries);
+
+			letterNGramDao.addAll(node.getOrder(), nGrams, includeWordBoundaries);
+
+			return null;
+		}
+	}
 }

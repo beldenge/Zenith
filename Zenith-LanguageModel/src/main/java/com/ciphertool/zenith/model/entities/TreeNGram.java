@@ -19,14 +19,32 @@
 
 package com.ciphertool.zenith.model.entities;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-public class TreeNGram extends NGram {
+@Document
+public class TreeNGram {
 	private static final Pattern		LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z +\\-\\.]");
+
+	@Id
+	protected ObjectId					id;
+
+	protected long						count						= 0L;
+
+	protected BigDecimal				probability;
+
+	protected BigDecimal				conditionalProbability;
+
+	protected String					cumulativeString;
+
+	protected Integer					order;
 
 	@Transient
 	private Map<Character, TreeNGram>	transitions;
@@ -35,6 +53,106 @@ public class TreeNGram extends NGram {
 		this.cumulativeString = nGramString;
 
 		this.order = nGramString.length();
+	}
+
+	/**
+	 * @return the id
+	 */
+	public ObjectId getId() {
+		return id;
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(ObjectId id) {
+		this.id = id;
+	}
+
+	public void increment() {
+		this.count += 1L;
+	}
+
+	/**
+	 * @return the count
+	 */
+	public long getCount() {
+		return this.count;
+	}
+
+	/**
+	 * @param count
+	 *            the count to set
+	 */
+	public void setCount(long count) {
+		this.count = count;
+	}
+
+	/**
+	 * @return the probability
+	 */
+	public BigDecimal getProbability() {
+		return this.probability;
+	}
+
+	/**
+	 * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
+	 * defensive measure in case future usage changes are not thread-safe.
+	 * 
+	 * @param probability
+	 *            the probability to set
+	 */
+	public synchronized void setProbability(BigDecimal probability) {
+		this.probability = probability;
+	}
+
+	/**
+	 * @return the conditionalProbability
+	 */
+	public BigDecimal getConditionalProbability() {
+		return conditionalProbability;
+	}
+
+	/**
+	 * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
+	 * defensive measure in case future usage changes are not thread-safe.
+	 * 
+	 * @param conditionalProbability
+	 *            the conditionalProbability to set
+	 */
+	public synchronized void setConditionalProbability(BigDecimal conditionalProbability) {
+		this.conditionalProbability = conditionalProbability;
+	}
+
+	/**
+	 * @return the order
+	 */
+	public Integer getOrder() {
+		return order;
+	}
+
+	/**
+	 * @param order
+	 *            the order to set
+	 */
+	public void setOrder(Integer order) {
+		this.order = order;
+	}
+
+	/**
+	 * @return the cumulativeString
+	 */
+	public String getCumulativeString() {
+		return cumulativeString;
+	}
+
+	/**
+	 * @param cumulativeString
+	 *            the cumulativeString to set
+	 */
+	public void setCumulativeString(String cumulativeString) {
+		this.cumulativeString = cumulativeString;
 	}
 
 	public boolean containsChild(Character c) {

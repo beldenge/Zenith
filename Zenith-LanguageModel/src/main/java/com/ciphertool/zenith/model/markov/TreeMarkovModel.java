@@ -35,13 +35,13 @@ import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 
-public class TreeMarkovModel implements MarkovModel {
-	private Logger			log			= LoggerFactory.getLogger(getClass());
+public class TreeMarkovModel {
+	private Logger		log			= LoggerFactory.getLogger(getClass());
 
 	private TreeNGram	rootNode	= new TreeNGram("");
-	private Integer			order;
-	private BigDecimal		unknownLetterNGramProbability;
-	private BigDecimal		indexOfCoincidence;
+	private Integer		order;
+	private BigDecimal	unknownLetterNGramProbability;
+	private BigDecimal	indexOfCoincidence;
 
 	public TreeMarkovModel(int order, BigDecimal unknownLetterNGramProbability) {
 		this.order = order;
@@ -266,9 +266,9 @@ public class TreeMarkovModel implements MarkovModel {
 	 * A concurrent task for linking leaf nodes in a Markov model.
 	 */
 	protected class LinkChildTask implements Callable<Void> {
-		private Character		key;
+		private Character	key;
 		private TreeNGram	node;
-		private boolean			includeWordBoundaries;
+		private boolean		includeWordBoundaries;
 
 		/**
 		 * @param key
@@ -320,8 +320,8 @@ public class TreeMarkovModel implements MarkovModel {
 	 */
 	protected class NormalizeTask implements Callable<Void> {
 		private TreeNGram	node;
-		private int				order;
-		private long			total;
+		private int			order;
+		private long		total;
 
 		/**
 		 * @param node
@@ -363,7 +363,6 @@ public class TreeMarkovModel implements MarkovModel {
 		}
 	}
 
-	@Override
 	public long size() {
 		return countAll(this.getRootNode());
 	}

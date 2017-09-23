@@ -31,13 +31,13 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.math.BigDecimalFunctions;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.ListNGram;
-import com.ciphertool.zenith.model.markov.ListMarkovModel;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	private static Logger				log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
 
-	private static ListMarkovModel		letterMarkovModel;
+	private static TreeMarkovModel		letterMarkovModel;
 
 	private static PlaintextEvaluator	plaintextEvaluator;
 
@@ -333,11 +333,11 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		int order = 6;
 
 		LetterNGramDao letterNGramDao = new LetterNGramDao();
-		letterMarkovModel = new ListMarkovModel(order, null);
+		letterMarkovModel = new TreeMarkovModel(order, null);
 
-		List<ListNGram> nodes = letterNGramDao.findAll(order, 2, false);
+		List<TreeNGram> nodes = letterNGramDao.findAll(order, 2, false);
 
-		for (ListNGram node : nodes) {
+		for (TreeNGram node : nodes) {
 			letterMarkovModel.addNode(node);
 		}
 

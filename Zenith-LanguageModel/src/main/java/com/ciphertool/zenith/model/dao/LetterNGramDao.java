@@ -35,7 +35,7 @@ import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.model.entities.ListNGram;
+import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.mongodb.Cursor;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -67,16 +67,16 @@ public class LetterNGramDao {
 	@Autowired
 	private MongoOperations		mongoOperations;
 
-	public List<ListNGram> findAll(Integer order, Integer minimumCount, Boolean includeWordBoundaries) {
+	public List<TreeNGram> findAll(Integer order, Integer minimumCount, Boolean includeWordBoundaries) {
 		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
 				+ "_" + order);
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
 
-		List<ListNGram> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
+		List<TreeNGram> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
 
 		cursors.parallelStream().forEach(cursor -> {
 			DBObject next;
-			ListNGram nextNode;
+			TreeNGram nextNode;
 
 			while (cursor.hasNext()) {
 				next = cursor.next();
@@ -86,7 +86,7 @@ public class LetterNGramDao {
 				}
 
 				if (((long) next.get(COUNT_KEY)) >= minimumCount) {
-					nextNode = new ListNGram((String) next.get(CUMULATIVE_STRING_KEY));
+					nextNode = new TreeNGram((String) next.get(CUMULATIVE_STRING_KEY));
 
 					nextNode.setId((ObjectId) next.get(ID_KEY));
 					nextNode.setCount((long) next.get(COUNT_KEY));
@@ -115,7 +115,7 @@ public class LetterNGramDao {
 
 		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
 
-		long result = mongoOperations.count(query, ListNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
+		long result = mongoOperations.count(query, TreeNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
 				+ "_" + order);
 
 		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
@@ -124,7 +124,7 @@ public class LetterNGramDao {
 		return result;
 	}
 
-	public void addAll(Integer order, List<ListNGram> nodes, boolean includeWordBoundaries) {
+	public void addAll(Integer order, List<TreeNGram> nodes, boolean includeWordBoundaries) {
 		if (nodes == null || nodes.isEmpty()) {
 			return;
 		}
