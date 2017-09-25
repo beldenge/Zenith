@@ -31,7 +31,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class TreeNGram {
-	private static final Pattern		LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z +\\-\\.]");
+	private static final Pattern		LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z \\.]");
 
 	@Id
 	protected ObjectId					id;
@@ -41,6 +41,8 @@ public class TreeNGram {
 	protected BigDecimal				probability;
 
 	protected BigDecimal				conditionalProbability;
+
+	protected BigDecimal				chainedProbability;
 
 	protected String					cumulativeString;
 
@@ -126,6 +128,21 @@ public class TreeNGram {
 	}
 
 	/**
+	 * @return the chainedProbability
+	 */
+	public BigDecimal getChainedProbability() {
+		return chainedProbability;
+	}
+
+	/**
+	 * @param chainedProbability
+	 *            the chainedProbability to set
+	 */
+	public synchronized void setChainedProbability(BigDecimal chainedProbability) {
+		this.chainedProbability = chainedProbability;
+	}
+
+	/**
 	 * @return the order
 	 */
 	public Integer getOrder() {
@@ -196,6 +213,7 @@ public class TreeNGram {
 				child.setCount(nodeToAdd.count);
 				child.setConditionalProbability(nodeToAdd.conditionalProbability);
 				child.setProbability(nodeToAdd.probability);
+				child.setChainedProbability(nodeToAdd.chainedProbability);
 			}
 
 			return null;

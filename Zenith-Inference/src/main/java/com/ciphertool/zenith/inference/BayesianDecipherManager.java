@@ -53,8 +53,6 @@ import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.dao.NGramCountSumDao;
-import com.ciphertool.zenith.model.entities.NGramCountSum;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
@@ -143,9 +141,6 @@ public class BayesianDecipherManager {
 	@Autowired
 	private LetterNGramDao					letterNGramDao;
 
-	@Autowired
-	private NGramCountSumDao				nGramCountSumDao;
-
 	@Autowired(required = false)
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
 
@@ -176,20 +171,12 @@ public class BayesianDecipherManager {
 		/*
 		 * Begin setting up letter n-gram model
 		 */
-		List<TreeNGram> nGramNodes = letterNGramDao.findAll(markovOrder, minimumCount, includeWordBoundaries);
+		List<TreeNGram> nGramNodes = letterNGramDao.findAll(minimumCount, includeWordBoundaries);
 
 		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
 				- startFindAll));
 
-		NGramCountSum sumOfCounts = nGramCountSumDao.find(markovOrder, includeWordBoundaries);
-
-		if (sumOfCounts == null || sumOfCounts.getSum() == null) {
-			throw new IllegalStateException("Could not find sum of order " + markovOrder + ".  Unable to proceed.");
-		}
-
-		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(sumOfCounts.getSum()), MathConstants.PREC_10_HALF_UP);
-
-		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder, unknownLetterNGramProbability);
+		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder);
 
 		long startAdding = System.currentTimeMillis();
 		log.info("Adding nodes to the model.", minimumCount);
@@ -198,21 +185,23 @@ public class BayesianDecipherManager {
 			this.letterMarkovModel.addNode(nGramNode);
 		}
 
+		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+
+		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
+
+		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(rootNodeCount), MathConstants.PREC_10_HALF_UP);
+		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
+
 		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis()
 				- startAdding));
 
-		List<TreeNGram> firstOrderNodes = letterNGramDao.findAll(1, 0, includeWordBoundaries);
-
-		long total = 0;
-		for (TreeNGram node : firstOrderNodes) {
-			if (!node.getCumulativeString().equals(" ") && !node.getCumulativeString().equals(".")) {
-				total += node.getCount();
-			}
-		}
+		long total = firstOrderNodes.stream().filter(node -> !node.getCumulativeString().equals(" ")
+				&& !node.getCumulativeString().equals(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR)).mapToLong(TreeNGram::getCount).sum();
 
 		BigDecimal probability;
 		for (TreeNGram node : firstOrderNodes) {
-			if (!node.getCumulativeString().equals(" ") && !node.getCumulativeString().equals(".")) {
+			if (!node.getCumulativeString().equals(" ")
+					&& !node.getCumulativeString().equals(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR)) {
 				probability = BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
 
 				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0),

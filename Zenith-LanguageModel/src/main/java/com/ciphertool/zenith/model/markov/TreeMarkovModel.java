@@ -43,9 +43,8 @@ public class TreeMarkovModel {
 	private BigDecimal	unknownLetterNGramProbability;
 	private BigDecimal	indexOfCoincidence;
 
-	public TreeMarkovModel(int order, BigDecimal unknownLetterNGramProbability) {
+	public TreeMarkovModel(int order) {
 		this.order = order;
-		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
 	public void addNode(TreeNGram nodeToAdd) {
@@ -56,6 +55,7 @@ public class TreeMarkovModel {
 			rootNode.setCount(nodeToAdd.getCount());
 			rootNode.setConditionalProbability(nodeToAdd.getConditionalProbability());
 			rootNode.setProbability(nodeToAdd.getProbability());
+			rootNode.setChainedProbability(nodeToAdd.getChainedProbability());
 
 			return;
 		}
@@ -98,11 +98,11 @@ public class TreeMarkovModel {
 	 *            the N-Gram String to search by
 	 * @return the exact matching NGramIndexNode
 	 */
-	public TreeNGram find(String nGram) {
-		return findMatch(rootNode, nGram);
+	public TreeNGram findExact(String nGram) {
+		return findExactMatch(rootNode, nGram);
 	}
 
-	protected static TreeNGram findMatch(TreeNGram node, String nGramString) {
+	protected static TreeNGram findExactMatch(TreeNGram node, String nGramString) {
 		TreeNGram nextNode = node.getChild(nGramString.charAt(0));
 
 		if (nextNode == null) {
@@ -113,7 +113,7 @@ public class TreeMarkovModel {
 			return nextNode;
 		}
 
-		return findMatch(nextNode, nGramString.substring(1));
+		return findExactMatch(nextNode, nGramString.substring(1));
 	}
 
 	/**
@@ -160,6 +160,14 @@ public class TreeMarkovModel {
 	 */
 	public BigDecimal getUnknownLetterNGramProbability() {
 		return unknownLetterNGramProbability;
+	}
+
+	/**
+	 * @param unknownLetterNGramProbability
+	 *            the unknownLetterNGramProbability to set
+	 */
+	public void setUnknownLetterNGramProbability(BigDecimal unknownLetterNGramProbability) {
+		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
 	/**
@@ -243,7 +251,7 @@ public class TreeMarkovModel {
 
 		if (nGram.length() == order) {
 			for (Character letter : (includeWordBoundaries ? ModelConstants.LOWERCASE_LETTERS_AND_SPACE : ModelConstants.LOWERCASE_LETTERS)) {
-				TreeNGram match = this.find(nGram.substring(1) + letter.toString());
+				TreeNGram match = this.findExact(nGram.substring(1) + letter.toString());
 
 				if (match != null) {
 					node.putChild(letter, match);

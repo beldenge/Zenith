@@ -36,7 +36,7 @@ markov:
   corpus:
     directory: /Users/george/Desktop/zenith-transformed
   letter:
-    order: 6
+    order: 5
     include:
       word:
         boundaries: true

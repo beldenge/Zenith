@@ -34,10 +34,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.math.MathCache;
-import com.ciphertool.zenith.model.dao.NGramCountSumDao;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
 
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, MathCache.class,
-		NGramCountSumDao.class })
+		LetterNGramDao.class })
 @EnableCaching
 public class InferenceEngineBootstrapper implements CommandLineRunner {
 	private static Logger			log	= LoggerFactory.getLogger(InferenceEngineBootstrapper.class);

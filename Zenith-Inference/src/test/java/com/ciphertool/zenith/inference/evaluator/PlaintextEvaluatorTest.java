@@ -333,9 +333,9 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		int order = 6;
 
 		LetterNGramDao letterNGramDao = new LetterNGramDao();
-		letterMarkovModel = new TreeMarkovModel(order, null);
+		letterMarkovModel = new TreeMarkovModel(order);
 
-		List<TreeNGram> nodes = letterNGramDao.findAll(order, 2, false);
+		List<TreeNGram> nodes = letterNGramDao.findAll(2, false);
 
 		for (TreeNGram node : nodes) {
 			letterMarkovModel.addNode(node);

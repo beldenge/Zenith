@@ -49,6 +49,7 @@ public class LetterNGramDao {
 	private static final String	COUNT_KEY					= "count";
 	private static final String	PROBABILITY_KEY				= "probability";
 	private static final String	CONDITIONAL_PROBABILITY_KEY	= "conditionalProbability";
+	private static final String	CHAINED_PROBABILITY_KEY		= "chainedProbability";
 	private static final String	CUMULATIVE_STRING_KEY		= "cumulativeString";
 	private static final String	ORDER_KEY					= "order";
 
@@ -67,9 +68,8 @@ public class LetterNGramDao {
 	@Autowired
 	private MongoOperations		mongoOperations;
 
-	public List<TreeNGram> findAll(Integer order, Integer minimumCount, Boolean includeWordBoundaries) {
-		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
-				+ "_" + order);
+	public List<TreeNGram> findAll(Integer minimumCount, Boolean includeWordBoundaries) {
+		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
 
 		List<TreeNGram> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
@@ -80,10 +80,6 @@ public class LetterNGramDao {
 
 			while (cursor.hasNext()) {
 				next = cursor.next();
-
-				if (order != null && ((int) next.get(ORDER_KEY)) != order) {
-					continue;
-				}
 
 				if (((long) next.get(COUNT_KEY)) >= minimumCount) {
 					nextNode = new TreeNGram((String) next.get(CUMULATIVE_STRING_KEY));
@@ -101,6 +97,10 @@ public class LetterNGramDao {
 								(String) next.get(CONDITIONAL_PROBABILITY_KEY)));
 					}
 
+					if (next.containsField(CHAINED_PROBABILITY_KEY)) {
+						nextNode.setChainedProbability(new BigDecimal((String) next.get(CHAINED_PROBABILITY_KEY)));
+					}
+
 					nodesToReturn.add(nextNode);
 				}
 			}
@@ -109,14 +109,13 @@ public class LetterNGramDao {
 		return nodesToReturn;
 	}
 
-	public long countLessThan(Integer order, int minimumCount, boolean includeWordBoundaries) {
+	public long countLessThan(int minimumCount, boolean includeWordBoundaries) {
 		long startCount = System.currentTimeMillis();
 		log.info("Counting nodes with counts below the minimum of {}.", minimumCount);
 
 		BasicQuery query = new BasicQuery("{ count : { $lt : " + minimumCount + " } }");
 
-		long result = mongoOperations.count(query, TreeNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces)
-				+ "_" + order);
+		long result = mongoOperations.count(query, TreeNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 
 		log.info("Finished counting nodes below the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
 				- startCount));
@@ -124,17 +123,16 @@ public class LetterNGramDao {
 		return result;
 	}
 
-	public void addAll(Integer order, List<TreeNGram> nodes, boolean includeWordBoundaries) {
+	public void addAll(List<TreeNGram> nodes, boolean includeWordBoundaries) {
 		if (nodes == null || nodes.isEmpty()) {
 			return;
 		}
 
-		mongoOperations.insert(nodes, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces) + "_"
-				+ order);
+		mongoOperations.insert(nodes, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 	}
 
-	public void deleteAll(Integer order, boolean includeWordBoundaries) {
-		String collection = (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces) + "_" + order;
+	public void deleteAll(boolean includeWordBoundaries) {
+		String collection = (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces);
 
 		mongoOperations.dropCollection(collection);
 		mongoOperations.createCollection(collection);

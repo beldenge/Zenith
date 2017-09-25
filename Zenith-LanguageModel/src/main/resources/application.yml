@@ -25,17 +25,10 @@ corpus:
       directory: /Users/george/Desktop/2554/2554/download/Texts
   output:
     directory: /Users/george/Desktop/zenith-transformed
-  transformation:
-    required: false
 
 markov:
   letter:
-    order: 6
-
-compute:
-  conditional:
-    probability:
-      enabled: false
+    order: 5
 
 letter:
   ngrams:

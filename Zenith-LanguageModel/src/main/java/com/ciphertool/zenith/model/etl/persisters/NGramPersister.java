@@ -77,7 +77,7 @@ public class NGramPersister {
 
 		log.info("Deleting all existing n-grams with" + (includeWordBoundaries ? "" : "out") + " spaces.");
 
-		letterNGramDao.deleteAll(order, includeWordBoundaries);
+		letterNGramDao.deleteAll(includeWordBoundaries);
 
 		log.info("Completed deletion of n-grams with" + (includeWordBoundaries ? "" : "out")
 				+ " spaces in {}ms.", (System.currentTimeMillis() - startDeleteWithoutSpaces));
@@ -88,7 +88,7 @@ public class NGramPersister {
 
 		log.info("Total nodes with" + (includeWordBoundaries ? "" : "out") + " spaces: {}", count);
 
-		long startAddWithoutSpaces = System.currentTimeMillis();
+		long startAdd = System.currentTimeMillis();
 
 		log.info("Starting persistence of n-grams with" + (includeWordBoundaries ? "" : "out") + " spaces.");
 
@@ -114,7 +114,7 @@ public class NGramPersister {
 		}
 
 		log.info("Completed persistence of n-grams with" + (includeWordBoundaries ? "" : "out")
-				+ " spaces in {}ms.", (System.currentTimeMillis() - startAddWithoutSpaces));
+				+ " spaces in {}ms.", (System.currentTimeMillis() - startAdd));
 	}
 
 	protected List<TreeNGram> persistNodes(TreeNGram node, boolean includeWordBoundaries) {
@@ -126,7 +126,7 @@ public class NGramPersister {
 			nGrams.addAll(persistNodes(entry.getValue(), includeWordBoundaries));
 
 			if (nGrams.size() >= batchSize) {
-				letterNGramDao.addAll(entry.getValue().getOrder(), nGrams, includeWordBoundaries);
+				letterNGramDao.addAll(nGrams, includeWordBoundaries);
 
 				nGrams = new ArrayList<>();
 			}
@@ -157,7 +157,7 @@ public class NGramPersister {
 		public Void call() throws Exception {
 			List<TreeNGram> nGrams = persistNodes(node, includeWordBoundaries);
 
-			letterNGramDao.addAll(node.getOrder(), nGrams, includeWordBoundaries);
+			letterNGramDao.addAll(nGrams, includeWordBoundaries);
 
 			return null;
 		}

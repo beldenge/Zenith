@@ -40,9 +40,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.dao.NGramCountSumDao;
+import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dto.ParseResults;
-import com.ciphertool.zenith.model.entities.NGramCountSum;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
@@ -57,22 +56,14 @@ public class LetterNGramMarkovImporter {
 	@Autowired
 	private TaskExecutor		taskExecutor;
 
-	@Autowired
-	private NGramCountSumDao	nGramCountSumDao;
-
 	@Value("${corpus.output.directory}")
 	private String				corpusDirectory;
 
 	@Value("${markov.letter.order}")
 	private int					order;
 
-	@Value("${compute.conditional.probability.enabled}")
-	private boolean				computeConditionalProbability;
-
-	private TreeMarkovModel		letterMarkovModel;
-
 	public TreeMarkovModel importCorpus(boolean includeWordBoundaries) {
-		letterMarkovModel = new TreeMarkovModel(this.order, null);
+		TreeMarkovModel letterMarkovModel = new TreeMarkovModel(this.order);
 
 		long start = System.currentTimeMillis();
 
@@ -88,7 +79,7 @@ public class LetterNGramMarkovImporter {
 			}
 		}
 
-		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, includeWordBoundaries);
+		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, includeWordBoundaries, letterMarkovModel);
 		ParseResults parseResults;
 		long total = 0L;
 		long unique = 0L;
@@ -108,25 +99,19 @@ public class LetterNGramMarkovImporter {
 		log.info("Imported " + unique + " distinct letter N-Grams out of " + total + " total in "
 				+ (System.currentTimeMillis() - start) + "ms");
 
-		if (computeConditionalProbability) {
-			computeConditionalProbability();
-		}
+		computeConditionalProbabilityAsync(letterMarkovModel);
 
-		nGramCountSumDao.delete(order, includeWordBoundaries);
+		letterMarkovModel.normalize(order, total, taskExecutor);
 
-		this.letterMarkovModel.normalize(order, total, taskExecutor);
-
-		nGramCountSumDao.add(new NGramCountSum(order, includeWordBoundaries, total));
-
-		return this.letterMarkovModel;
+		return letterMarkovModel;
 	}
 
-	public void computeConditionalProbability() {
+	public void computeConditionalProbabilityAsync(TreeMarkovModel letterMarkovModel) {
 		long start = System.currentTimeMillis();
 
 		log.info("Starting calculation of conditional probabilities...");
 
-		Map<Character, TreeNGram> initialTransitions = this.letterMarkovModel.getRootNode().getTransitions();
+		Map<Character, TreeNGram> initialTransitions = letterMarkovModel.getRootNode().getTransitions();
 
 		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
 		FutureTask<Void> task;
@@ -134,7 +119,7 @@ public class LetterNGramMarkovImporter {
 		for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
 			if (entry.getValue() != null) {
 				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(),
-						this.letterMarkovModel.getRootNode().getCount()));
+						letterMarkovModel.getRootNode().getCount()));
 				futures.add(task);
 				this.taskExecutor.execute(task);
 			}
@@ -177,19 +162,19 @@ public class LetterNGramMarkovImporter {
 
 			return null;
 		}
-	}
 
-	protected void computeConditionalProbability(TreeNGram node, long parentCount) {
-		node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
+		protected void computeConditionalProbability(TreeNGram node, long parentCount) {
+			node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
 
-		Map<Character, TreeNGram> transitions = node.getTransitions();
+			Map<Character, TreeNGram> transitions = node.getTransitions();
 
-		if (transitions == null || transitions.isEmpty()) {
-			return;
-		}
+			if (transitions == null || transitions.isEmpty()) {
+				return;
+			}
 
-		for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
-			computeConditionalProbability(entry.getValue(), node.getCount());
+			for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
+				computeConditionalProbability(entry.getValue(), node.getCount());
+			}
 		}
 	}
 
@@ -197,18 +182,22 @@ public class LetterNGramMarkovImporter {
 	 * A concurrent task for parsing a file into a Markov model.
 	 */
 	protected class ParseFileTask implements Callable<ParseResults> {
-		private Path	path;
-		private boolean	includeWordBoundaries;
+		private Path			path;
+		private boolean			includeWordBoundaries;
+		private TreeMarkovModel	letterMarkovModel;
 
 		/**
 		 * @param path
 		 *            the Path to set
 		 * @param includeWordBoundaries
 		 *            whether to include word boundaries
+		 * @param letterMarkovModel
+		 *            the TreeMarkovModel to use
 		 */
-		public ParseFileTask(Path path, boolean includeWordBoundaries) {
+		public ParseFileTask(Path path, boolean includeWordBoundaries, TreeMarkovModel letterMarkovModel) {
 			this.path = path;
 			this.includeWordBoundaries = includeWordBoundaries;
+			this.letterMarkovModel = letterMarkovModel;
 		}
 
 		@Override
@@ -237,7 +226,7 @@ public class LetterNGramMarkovImporter {
 							newSentence.append(sentence.charAt(j));
 
 							if (sentence.charAt(j) != ' ' && sentence.charAt(j + 1) != ' ') {
-								newSentence.append('.');
+								newSentence.append(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR);
 							}
 						}
 
@@ -266,7 +255,7 @@ public class LetterNGramMarkovImporter {
 		}
 	}
 
-	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean includeWordBoundaries) {
+	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean includeWordBoundaries, TreeMarkovModel letterMarkovModel) {
 		List<FutureTask<ParseResults>> tasks = new ArrayList<FutureTask<ParseResults>>();
 		FutureTask<ParseResults> task;
 		String filename;
@@ -274,7 +263,7 @@ public class LetterNGramMarkovImporter {
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, includeWordBoundaries));
+					tasks.addAll(parseFiles(entry, includeWordBoundaries, letterMarkovModel));
 				} else {
 					filename = entry.toString();
 					String ext = filename.substring(filename.lastIndexOf('.'));
@@ -285,7 +274,8 @@ public class LetterNGramMarkovImporter {
 						continue;
 					}
 
-					task = new FutureTask<ParseResults>(new ParseFileTask(entry, includeWordBoundaries));
+					task = new FutureTask<ParseResults>(new ParseFileTask(entry, includeWordBoundaries,
+							letterMarkovModel));
 					tasks.add(task);
 					this.taskExecutor.execute(task);
 				}

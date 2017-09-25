@@ -19,6 +19,9 @@
 
 package com.ciphertool.zenith.model;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +48,8 @@ public class CorpusManagerApplication implements CommandLineRunner {
 	@Value("${taskExecutor.queueCapacity}")
 	private int						queueCapacity;
 
-	@Value("${corpus.transformation.required}")
-	private boolean					transformCorpus;
+	@Value("${corpus.output.directory}")
+	private String					outputDirectory;
 
 	@Autowired
 	private CorpusTransformer		xmlCorpusTransformer;
@@ -75,7 +78,7 @@ public class CorpusManagerApplication implements CommandLineRunner {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
-		if (transformCorpus) {
+		if (!Files.exists(Paths.get(outputDirectory))) {
 			textCorpusTransformer.transformCorpus();
 			xmlCorpusTransformer.transformCorpus();
 		}

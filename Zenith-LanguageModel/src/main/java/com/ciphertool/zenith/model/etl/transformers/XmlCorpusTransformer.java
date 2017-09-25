@@ -21,11 +21,9 @@ package com.ciphertool.zenith.model.etl.transformers;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -36,11 +34,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -49,9 +43,7 @@ import org.w3c.dom.NodeList;
 import com.ciphertool.zenith.model.etl.converters.NumberToWordsConverter;
 
 @Component
-public class XmlCorpusTransformer implements CorpusTransformer {
-	private static Logger			log					= LoggerFactory.getLogger(XmlCorpusTransformer.class);
-
+public class XmlCorpusTransformer extends CorpusTransformer {
 	private static final String		INPUT_EXT			= ".xml";
 	private static final String		OUTPUT_EXT			= ".txt";
 	private static final String		HEAD_TAG			= "head";
@@ -84,16 +76,13 @@ public class XmlCorpusTransformer implements CorpusTransformer {
 	@Value("${corpus.output.directory}")
 	private String					outputDirectory;
 
-	@Autowired
-	private TaskExecutor			taskExecutor;
-
 	@Override
 	public void transformCorpus() throws ParserConfigurationException {
 		long start = System.currentTimeMillis();
 
 		log.info("Starting corpus transformation...");
 
-		List<FutureTask<Long>> futures = parseFiles(Paths.get(this.corpusDirectory));
+		List<FutureTask<Long>> futures = parseFiles(INPUT_EXT, Paths.get(this.corpusDirectory));
 
 		long total = 0;
 
@@ -108,6 +97,11 @@ public class XmlCorpusTransformer implements CorpusTransformer {
 		}
 
 		log.info("Transformed " + total + " words in " + (System.currentTimeMillis() - start) + "ms");
+	}
+
+	@Override
+	protected TransformFileTask getTransformFileTask(Path entry) {
+		return new TransformFileTask(entry);
 	}
 
 	/**
@@ -253,36 +247,5 @@ public class XmlCorpusTransformer implements CorpusTransformer {
 
 			return wordCount;
 		}
-	}
-
-	protected List<FutureTask<Long>> parseFiles(Path path) {
-		List<FutureTask<Long>> tasks = new ArrayList<FutureTask<Long>>();
-		FutureTask<Long> task;
-		String filename;
-
-		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-			for (Path entry : stream) {
-				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry));
-				} else {
-					filename = entry.toString();
-					String ext = filename.substring(filename.lastIndexOf('.'));
-
-					if (!ext.equals(INPUT_EXT)) {
-						log.info("Skipping file with unexpected file extension: " + filename);
-
-						continue;
-					}
-
-					task = new FutureTask<Long>(new TransformFileTask(entry));
-					tasks.add(task);
-					this.taskExecutor.execute(task);
-				}
-			}
-		} catch (IOException ioe) {
-			log.error("Unable to parse files due to:" + ioe.getMessage(), ioe);
-		}
-
-		return tasks;
 	}
 }

@@ -34,6 +34,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.WordProbability;
 import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
@@ -83,7 +84,7 @@ public class PlaintextEvaluator {
 
 		for (WordProbability word : words) {
 			if (includeWordBoundaries) {
-				sb.append(String.join(".", word.getValue().split("\\.*")));
+				sb.append(String.join(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR, word.getValue().split("\\.*")));
 				sb.append(" ");
 			} else {
 				sb.append(word.getValue());
@@ -111,7 +112,7 @@ public class PlaintextEvaluator {
 				}
 
 				for (int i = start; i < end; i++) {
-					match = letterMarkovModel.find(sb.substring(i, i + order));
+					match = letterMarkovModel.findExact(sb.substring(i, i + order));
 
 					if (match != null) {
 						probability = match.getProbability();
@@ -129,7 +130,7 @@ public class PlaintextEvaluator {
 			}
 		} else {
 			for (int i = 0; i < sb.length() - order; i++) {
-				match = letterMarkovModel.find(sb.substring(i, i + order));
+				match = letterMarkovModel.findExact(sb.substring(i, i + order));
 
 				if (match != null) {
 					probability = match.getProbability();

@@ -19,8 +19,66 @@
 
 package com.ciphertool.zenith.model.etl.transformers;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+
+import javax.annotation.PostConstruct;
 import javax.xml.parsers.ParserConfigurationException;
 
-public interface CorpusTransformer {
-	public void transformCorpus() throws ParserConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
+
+public abstract class CorpusTransformer {
+	protected Logger		log;
+
+	@Autowired
+	protected TaskExecutor	taskExecutor;
+
+	public abstract void transformCorpus() throws ParserConfigurationException;
+
+	protected abstract Callable<Long> getTransformFileTask(Path entry);
+
+	@PostConstruct
+	public void init() {
+		log = LoggerFactory.getLogger(getClass());
+	}
+
+	protected List<FutureTask<Long>> parseFiles(String inputExt, Path path) {
+		List<FutureTask<Long>> tasks = new ArrayList<FutureTask<Long>>();
+		FutureTask<Long> task;
+		String filename;
+
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+			for (Path entry : stream) {
+				if (Files.isDirectory(entry)) {
+					tasks.addAll(parseFiles(inputExt, entry));
+				} else {
+					filename = entry.toString();
+					String ext = filename.substring(filename.lastIndexOf('.'));
+
+					if (!ext.equals(inputExt)) {
+						log.info("Skipping file with unexpected file extension: " + filename);
+
+						continue;
+					}
+
+					task = new FutureTask<Long>(getTransformFileTask(entry));
+					tasks.add(task);
+					this.taskExecutor.execute(task);
+				}
+			}
+		} catch (IOException ioe) {
+			log.error("Unable to parse files due to:" + ioe.getMessage(), ioe);
+		}
+
+		return tasks;
+	}
 }

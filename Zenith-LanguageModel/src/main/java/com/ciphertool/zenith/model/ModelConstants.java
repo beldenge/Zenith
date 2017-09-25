@@ -40,4 +40,6 @@ public class ModelConstants {
 	static {
 		LOWERCASE_LETTERS_AND_SPACE.add(' ');
 	}
+
+	public static final String CONNECTED_LETTERS_PLACEHOLDER_CHAR = ".";
 }
