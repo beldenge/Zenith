@@ -16,29 +16,6 @@
 # Zenith. If not, see <http://www.gnu.org/licenses/>.
 #
 
-corpus:
-  text:
-    input:
-      directory: /Users/george/Desktop/corpus
-  xml:
-    input:
-      directory: /Users/george/Desktop/2554/2554/download/Texts
-  output:
-    directory: /Users/george/Desktop/zenith-transformed
-
-markov:
-  letter:
-    order: 7
-
-letter:
-  ngrams:
-    with:
-      spaces:
-        enabled: true
-    without:
-      spaces:
-        enabled: false
-
 # ---------------------------------------
 # Spring Concurrency Properties
 # ---------------------------------------
@@ -49,34 +26,9 @@ taskExecutor:
   poolSize:
     #override:
 
-#----------------------------------------
-# MongoDB Properties
-#----------------------------------------
-spring:
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: Zenith
-
-mongodb:
-  parallelScan:
-    batchSize: 1000
-    numCursors: 100
-
-#----------------------------------------
-# Data Properties
-#----------------------------------------
-collection:
-  letter:
-    ngram:
-      with:
-        spaces:
-          name: letterNGrams_withSpaces
-      without:
-        spaces:
-          name: letterNGrams_withoutSpaces
-  ngram:
-    count:
-      sum:
-        name: nGramCount_levelSums
+# The hidden layer takes a list of integers representing the number of neurons per hidden layer
+network:
+  layers:
+    input: 2
+    hidden: 3
+    output: 1 

@@ -116,10 +116,13 @@ public class LetterNGramMarkovImporter {
 		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
 		FutureTask<Void> task;
 
+		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+
+		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
+
 		for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
 			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(),
-						letterMarkovModel.getRootNode().getCount()));
+				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(), rootNodeCount));
 				futures.add(task);
 				this.taskExecutor.execute(task);
 			}
