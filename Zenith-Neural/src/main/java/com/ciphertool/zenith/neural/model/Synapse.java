@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 
 public class Synapse {
 	private BigDecimal	weight;
+	private BigDecimal	oldWeight;
 	private Neuron		outGoingNeuron;
 
 	/**
@@ -56,5 +57,20 @@ public class Synapse {
 	 */
 	public void setWeight(BigDecimal weight) {
 		this.weight = weight;
+	}
+
+	/**
+	 * @return the oldWeight
+	 */
+	public BigDecimal getOldWeight() {
+		return oldWeight;
+	}
+
+	/**
+	 * @param oldWeight
+	 *            the oldWeight to set
+	 */
+	public void setOldWeight(BigDecimal oldWeight) {
+		this.oldWeight = oldWeight;
 	}
 }

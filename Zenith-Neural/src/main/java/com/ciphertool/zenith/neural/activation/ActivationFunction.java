@@ -19,6 +19,10 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-public interface ActivationFunction {
+import java.math.BigDecimal;
 
+public interface ActivationFunction {
+	public BigDecimal transformInputSignal(BigDecimal sum);
+
+	public BigDecimal calculateDerivative(BigDecimal sum);
 }

@@ -22,7 +22,8 @@ package com.ciphertool.zenith.neural.model;
 import java.math.BigDecimal;
 
 public class Neuron {
-	private BigDecimal	value;
+	private BigDecimal	activationValue;
+	private BigDecimal	outputSum;
 	private Synapse[]	outgoingSynapses;
 
 	/**
@@ -41,17 +42,32 @@ public class Neuron {
 	}
 
 	/**
-	 * @return the value
+	 * @return the activationValue
 	 */
-	public BigDecimal getValue() {
-		return value;
+	public BigDecimal getActivationValue() {
+		return activationValue;
 	}
 
 	/**
-	 * @param value
-	 *            the value to set
+	 * @param activationValue
+	 *            the activationValue to set
 	 */
-	public void setValue(BigDecimal value) {
-		this.value = value;
+	public void setActivationValue(BigDecimal activationValue) {
+		this.activationValue = activationValue;
+	}
+
+	/**
+	 * @return the outputSum
+	 */
+	public BigDecimal getOutputSum() {
+		return outputSum;
+	}
+
+	/**
+	 * @param outputSum
+	 *            the outputSum to set
+	 */
+	public void setOutputSum(BigDecimal outputSum) {
+		this.outputSum = outputSum;
 	}
 }

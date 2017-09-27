@@ -23,4 +23,13 @@ You should have received a copy of the GNU General Public License along with Zen
 	</parent>
 
 	<artifactId>Zenith-Neural</artifactId>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.ciphertool.zenith</groupId>
+			<artifactId>Zenith-Math</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
 </project>

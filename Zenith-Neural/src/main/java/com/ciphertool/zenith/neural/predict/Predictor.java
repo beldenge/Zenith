@@ -17,14 +17,19 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.neural.model;
+package com.ciphertool.zenith.neural.predict;
 
-public class HiddenLayer extends Layer {
-	/**
-	 * @param neurons
-	 *            the number of neurons to set
-	 */
-	public HiddenLayer(int neurons) {
-		super(neurons);
+import java.math.BigDecimal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.ciphertool.zenith.neural.model.NeuralNetwork;
+
+public class Predictor {
+	@Autowired
+	private NeuralNetwork network;
+
+	public BigDecimal[][] predict(BigDecimal[][] inputs) {
+		return null;
 	}
 }

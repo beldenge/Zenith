@@ -29,9 +29,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NeuralNetwork {
-	private InputLayer		inputLayer;
-	private HiddenLayer[]	hiddenLayers;
-	private OutputLayer		outputLayer;
+	private Layer	inputLayer;
+	private Layer[]	hiddenLayers;
+	private Layer	outputLayer;
 
 	@PostConstruct
 	public void init() {
@@ -60,35 +60,35 @@ public class NeuralNetwork {
 	public NeuralNetwork(@Value("${network.layers.input}") int inputLayerNeurons,
 			@Value("${network.layers.hidden}") int[] hiddenLayersNeurons,
 			@Value("${network.layers.output}") int outputLayerNeurons) {
-		inputLayer = new InputLayer(inputLayerNeurons);
+		inputLayer = new Layer(inputLayerNeurons);
 
-		hiddenLayers = new HiddenLayer[hiddenLayersNeurons.length];
+		hiddenLayers = new Layer[hiddenLayersNeurons.length];
 
 		for (int i = 0; i < hiddenLayersNeurons.length; i++) {
-			hiddenLayers[i] = new HiddenLayer(hiddenLayersNeurons[i]);
+			hiddenLayers[i] = new Layer(hiddenLayersNeurons[i]);
 		}
 
-		outputLayer = new OutputLayer(outputLayerNeurons);
+		outputLayer = new Layer(outputLayerNeurons);
 	}
 
 	/**
 	 * @return the inputLayer
 	 */
-	public InputLayer getInputLayer() {
+	public Layer getInputLayer() {
 		return inputLayer;
 	}
 
 	/**
 	 * @return the hiddenLayers
 	 */
-	public HiddenLayer[] getHiddenLayers() {
+	public Layer[] getHiddenLayers() {
 		return hiddenLayers;
 	}
 
 	/**
 	 * @return the outputLayer
 	 */
-	public OutputLayer getOutputLayer() {
+	public Layer getOutputLayer() {
 		return outputLayer;
 	}
 }

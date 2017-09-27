@@ -19,6 +19,27 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-public class ReLuActivationFunction implements ActivationFunction {
+import java.math.BigDecimal;
 
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+
+@Primary
+@Component
+public class ReLuActivationFunction implements ActivationFunction {
+	@Override
+	public BigDecimal transformInputSignal(BigDecimal sum) {
+		return BigDecimal.ZERO.max(sum);
+	}
+
+	@Override
+	public BigDecimal calculateDerivative(BigDecimal sum) {
+		if (BigDecimal.ZERO.compareTo(sum) < 0) {
+			return BigDecimal.ZERO;
+		} else if (BigDecimal.ZERO.compareTo(sum) > 0) {
+			return BigDecimal.ONE;
+		} else {
+			throw new IllegalArgumentException("The derivative of ReLU is undefined at zero!");
+		}
+	}
 }
