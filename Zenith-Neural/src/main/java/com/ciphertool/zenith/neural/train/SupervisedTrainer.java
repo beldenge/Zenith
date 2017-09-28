@@ -63,7 +63,7 @@ public class SupervisedTrainer {
 		}
 
 		Layer[] layers = network.getLayers();
-		Layer fromLayer = layers[layers.length - 1];
+		Layer fromLayer = layers[layers.length - 2];
 
 		/*
 		 * TODO: This really only works for a single output neuron right now -- I need to figure out how this works for
@@ -71,20 +71,22 @@ public class SupervisedTrainer {
 		 * 
 		 */
 		BigDecimal deltaSum = null;
-		for (int j = 0; j < outputLayer.getNeurons().length; j++) {
-			Neuron nextOutputNeuron = outputLayer.getNeurons()[j];
+		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
+			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
-			BigDecimal marginOfError = expectedOutputs[j].subtract(nextOutputNeuron.getActivationValue());
+			BigDecimal marginOfError = expectedOutputs[i].subtract(nextOutputNeuron.getActivationValue());
 			BigDecimal derivative = activationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+
 			deltaSum = derivative.multiply(marginOfError, MathConstants.PREC_10_HALF_UP);
 
-			for (int k = 0; k < fromLayer.getNeurons().length; k++) {
-				Neuron nextInputNeuron = fromLayer.getNeurons()[k];
+			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
+				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
 
+				// Avoid division by zero by just returning zero
 				// TODO: this could be pre-computed before entering the loop
-				BigDecimal deltaWeight = deltaSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
+				BigDecimal deltaWeight = BigDecimal.ZERO.equals(nextInputNeuron.getActivationValue()) ? BigDecimal.ZERO : deltaSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
 
-				Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
+				Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
 				nextSynapse.setOldWeight(nextSynapse.getWeight());
 				nextSynapse.setWeight(nextSynapse.getWeight().add(deltaWeight));
 			}
@@ -106,7 +108,8 @@ public class SupervisedTrainer {
 					for (int l = 0; l < fromLayer.getNeurons().length; l++) {
 						Neuron nextInputNeuron = fromLayer.getNeurons()[l];
 
-						BigDecimal deltaWeight = deltaHiddenSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
+						// Avoid division by zero by just returning zero
+						BigDecimal deltaWeight = BigDecimal.ZERO.equals(nextInputNeuron.getActivationValue()) ? BigDecimal.ZERO : deltaHiddenSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
 
 						Synapse nextIncomingSynpase = nextInputNeuron.getOutgoingSynapses()[l];
 						nextIncomingSynpase.setOldWeight(nextIncomingSynpase.getWeight());

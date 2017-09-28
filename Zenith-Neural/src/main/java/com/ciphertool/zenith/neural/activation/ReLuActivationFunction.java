@@ -39,7 +39,11 @@ public class ReLuActivationFunction implements ActivationFunction {
 		} else if (BigDecimal.ZERO.compareTo(sum) > 0) {
 			return BigDecimal.ONE;
 		} else {
-			throw new IllegalArgumentException("The derivative of ReLU is undefined at zero!");
+			/*
+			 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to
+			 * just return zero.
+			 */
+			return BigDecimal.ZERO;
 		}
 	}
 }

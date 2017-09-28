@@ -38,7 +38,9 @@ import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 
 @SpringBootApplication
 public class NeuralNetworkApplication implements CommandLineRunner {
-	private static Logger			log	= LoggerFactory.getLogger(NeuralNetworkApplication.class);
+	private static Logger			log							= LoggerFactory.getLogger(NeuralNetworkApplication.class);
+
+	private static final BigDecimal	ACCEPTABLE_MARGIN_OF_ERROR	= BigDecimal.valueOf(0.1);
 
 	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;
@@ -83,16 +85,24 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
 		log.info("Generating " + numberOfSamples + " training samples...");
+		long start = System.currentTimeMillis();
 		DataSet trainingData = generator.generate(numberOfSamples);
+		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		log.info("Training network...");
+		start = System.currentTimeMillis();
 		trainer.train(trainingData.getInputs(), trainingData.getOutputs());
+		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
-		log.info("Generating " + numberOfSamples + " test samples...");
+		log.info("Generating " + numberOfTests + " test samples...");
+		start = System.currentTimeMillis();
 		DataSet testData = generator.generate(numberOfTests);
+		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		log.info("Testing predictions...");
+		start = System.currentTimeMillis();
 		BigDecimal[][] predictions = predictor.predict(testData.getInputs());
+		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		int correctCount = 0;
 		int incorrectCount = 0;
@@ -101,7 +111,13 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 			wasIncorrect = false;
 
 			for (int j = 0; j < predictions[i].length; j++) {
-				if (!predictions[i][j].equals(testData.getOutputs()[i][j])) {
+				BigDecimal prediction = predictions[i][j];
+				BigDecimal expected = testData.getOutputs()[i][j];
+
+				log.info("Expected: " + expected + ", Prediction: " + prediction);
+
+				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
+				if (prediction.subtract(expected).abs().compareTo(ACCEPTABLE_MARGIN_OF_ERROR) > 0) {
 					incorrectCount++;
 
 					wasIncorrect = true;
@@ -115,8 +131,8 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		}
 
 		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
-		log.info("Percentage correct: " + (correctCount / numberOfTests));
-		log.info("Percentage incorrect: " + (incorrectCount / numberOfTests));
+		log.info("Percentage correct: " + (int) (((double) correctCount / (double) numberOfTests) * 100));
+		log.info("Percentage incorrect: " + (int) (((double) incorrectCount / (double) numberOfTests) * 100));
 	}
 
 	@Bean

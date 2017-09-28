@@ -40,9 +40,7 @@ public class SampleGenerator {
 		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];
 
 		for (int i = 0; i < count; i++) {
-			inputs[i] = new BigDecimal[inputLayerSize];
-
-			for (int j = 0; j < inputLayerSize; i++) {
+			for (int j = 0; j < inputLayerSize; j++) {
 				inputs[i][j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(2));
 			}
 
@@ -58,6 +56,6 @@ public class SampleGenerator {
 					+ ".  Unable to continue.");
 		}
 
-		return values[0].equals(values[1]) ? BigDecimal.ONE : BigDecimal.ZERO;
+		return values[0].equals(values[1]) ? BigDecimal.ZERO : BigDecimal.ONE;
 	}
 }
