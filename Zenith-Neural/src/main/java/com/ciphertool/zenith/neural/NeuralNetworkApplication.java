@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.neural;
 
+import java.math.BigDecimal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.model.DataSet;
+import com.ciphertool.zenith.neural.predict.Predictor;
+import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 
 @SpringBootApplication
 public class NeuralNetworkApplication implements CommandLineRunner {
@@ -42,8 +49,23 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${taskExecutor.queueCapacity}")
 	private int						queueCapacity;
 
+	@Value("${network.trainingSamples.count}")
+	private int						numberOfSamples;
+
+	@Value("${network.testSamples.count}")
+	private int						numberOfTests;
+
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
+
+	@Autowired
+	private SampleGenerator			generator;
+
+	@Autowired
+	private SupervisedTrainer		trainer;
+
+	@Autowired
+	private Predictor				predictor;
 
 	/**
 	 * Main entry point for the application.
@@ -59,6 +81,42 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	public void run(String... arg0) throws Exception {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
+
+		log.info("Generating " + numberOfSamples + " training samples...");
+		DataSet trainingData = generator.generate(numberOfSamples);
+
+		log.info("Training network...");
+		trainer.train(trainingData.getInputs(), trainingData.getOutputs());
+
+		log.info("Generating " + numberOfSamples + " test samples...");
+		DataSet testData = generator.generate(numberOfTests);
+
+		log.info("Testing predictions...");
+		BigDecimal[][] predictions = predictor.predict(testData.getInputs());
+
+		int correctCount = 0;
+		int incorrectCount = 0;
+		boolean wasIncorrect;
+		for (int i = 0; i < predictions.length; i++) {
+			wasIncorrect = false;
+
+			for (int j = 0; j < predictions[i].length; j++) {
+				if (!predictions[i][j].equals(testData.getOutputs()[i][j])) {
+					incorrectCount++;
+
+					wasIncorrect = true;
+					break;
+				}
+			}
+
+			if (!wasIncorrect) {
+				correctCount++;
+			}
+		}
+
+		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
+		log.info("Percentage correct: " + (correctCount / numberOfTests));
+		log.info("Percentage incorrect: " + (incorrectCount / numberOfTests));
 	}
 
 	@Bean

@@ -22,6 +22,7 @@ package com.ciphertool.zenith.neural.train;
 import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.ActivationFunction;
@@ -30,6 +31,7 @@ import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
 import com.ciphertool.zenith.neural.model.Synapse;
 
+@Component
 public class SupervisedTrainer {
 	@Autowired
 	private NeuralNetwork		network;
@@ -45,50 +47,9 @@ public class SupervisedTrainer {
 		}
 
 		for (int i = 0; i < inputs.length; i++) {
-			feedForward(inputs[i]);
+			network.feedForward(inputs[i]);
 
 			backPropagate(outputs[i]);
-		}
-	}
-
-	protected void feedForward(BigDecimal[] inputs) {
-		Layer inputLayer = network.getInputLayer();
-
-		if (inputs.length != inputLayer.getNeurons().length) {
-			throw new IllegalArgumentException("The sample input size of " + inputs.length
-					+ " does not match the input layer size of " + inputLayer.getNeurons().length
-					+ ".  Unable to continue with feed forward step.");
-		}
-
-		for (int i = 0; i < inputLayer.getNeurons().length; i++) {
-			inputLayer.getNeurons()[i].setActivationValue(inputs[i]);
-		}
-
-		Layer fromLayer;
-		Layer toLayer;
-		Layer[] hiddenLayers = network.getHiddenLayers();
-		Layer outputLayer = network.getOutputLayer();
-
-		for (int i = 0; i < hiddenLayers.length + 1; i++) {
-			fromLayer = i == 0 ? inputLayer : hiddenLayers[i - 1];
-			toLayer = i < hiddenLayers.length ? hiddenLayers[i] : outputLayer;
-
-			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				BigDecimal sum = BigDecimal.ZERO;
-
-				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
-					Neuron nextInputNeuron = fromLayer.getNeurons()[k];
-
-					Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
-
-					sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP));
-				}
-
-				Neuron nextOutputNeuron = toLayer.getNeurons()[j];
-
-				nextOutputNeuron.setOutputSum(sum);
-				nextOutputNeuron.setActivationValue(activationFunction.transformInputSignal(sum));
-			}
 		}
 	}
 
@@ -101,8 +62,8 @@ public class SupervisedTrainer {
 					+ ".  Unable to continue with back propagation step.");
 		}
 
-		Layer[] hiddenLayers = network.getHiddenLayers();
-		Layer fromLayer = hiddenLayers[hiddenLayers.length - 1];
+		Layer[] layers = network.getLayers();
+		Layer fromLayer = layers[layers.length - 1];
 
 		/*
 		 * TODO: This really only works for a single output neuron right now -- I need to figure out how this works for
@@ -130,11 +91,10 @@ public class SupervisedTrainer {
 		}
 
 		Layer toLayer;
-		Layer inputLayer = network.getInputLayer();
 
-		for (int i = hiddenLayers.length - 1; i >= 0; i--) {
-			fromLayer = i == 0 ? inputLayer : hiddenLayers[i - 1];
-			toLayer = hiddenLayers[i];
+		for (int i = layers.length - 2; i > 0; i--) {
+			fromLayer = layers[i - 1];
+			toLayer = layers[i];
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
 				Neuron nextOutputNeuron = toLayer.getNeurons()[j];

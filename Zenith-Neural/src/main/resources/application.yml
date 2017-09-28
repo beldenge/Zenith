@@ -32,3 +32,7 @@ network:
     input: 2
     hidden: 3
     output: 1 
+  trainingSamples:
+    count: 1000
+  testSamples:
+    count: 100

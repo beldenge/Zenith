@@ -22,14 +22,29 @@ package com.ciphertool.zenith.neural.predict;
 import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
+import com.ciphertool.zenith.neural.model.Neuron;
 
+@Component
 public class Predictor {
 	@Autowired
 	private NeuralNetwork network;
 
 	public BigDecimal[][] predict(BigDecimal[][] inputs) {
-		return null;
+		Neuron[] outputLayerNeurons = network.getOutputLayer().getNeurons();
+
+		BigDecimal[][] predictions = new BigDecimal[inputs.length][outputLayerNeurons.length];
+
+		for (int i = 0; i < inputs.length; i++) {
+			network.feedForward(inputs[i]);
+
+			for (int j = 0; j < outputLayerNeurons.length; j++) {
+				predictions[i][j] = outputLayerNeurons[j].getActivationValue();
+			}
+		}
+
+		return predictions;
 	}
 }
