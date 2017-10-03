@@ -32,6 +32,9 @@ network:
     input: 2
     hidden: 3
     output: 1 
+  bias:
+    add: true
+    weight: 1.0
   trainingSamples:
     count: 10000
   testSamples:

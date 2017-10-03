@@ -20,13 +20,20 @@
 package com.ciphertool.zenith.neural.model;
 
 public class Layer {
-	protected Neuron[] neurons;
+	protected Neuron[]	neurons;
+	protected boolean	hasBias;
 
-	public Layer(int neurons) {
-		this.neurons = new Neuron[neurons];
+	public Layer(int neurons, boolean hasBias) {
+		this.hasBias = hasBias;
+
+		this.neurons = new Neuron[neurons + (hasBias ? 1 : 0)];
 
 		for (int i = 0; i < neurons; i++) {
 			this.neurons[i] = new Neuron();
+		}
+
+		if (hasBias) {
+			this.neurons[this.neurons.length - 1] = new Neuron(true);
 		}
 	}
 
@@ -35,5 +42,12 @@ public class Layer {
 	 */
 	public Neuron[] getNeurons() {
 		return neurons;
+	}
+
+	/**
+	 * @return the hasBias
+	 */
+	public boolean hasBias() {
+		return hasBias;
 	}
 }

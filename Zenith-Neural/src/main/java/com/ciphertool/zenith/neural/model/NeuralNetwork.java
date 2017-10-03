@@ -33,6 +33,9 @@ import com.ciphertool.zenith.neural.activation.ActivationFunction;
 
 @Component
 public class NeuralNetwork {
+	@Value("${network.bias.weight}")
+	private BigDecimal			biasWeight;
+
 	@Autowired
 	private ActivationFunction	activationFunction;
 
@@ -49,12 +52,19 @@ public class NeuralNetwork {
 
 			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
 				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
-				nextInputNeuron.setOutgoingSynapses(new Synapse[toLayer.getNeurons().length]);
+				nextInputNeuron.setOutgoingSynapses(new Synapse[toLayer.getNeurons().length
+						- (toLayer.hasBias() ? 1 : 0)]);
 
 				for (int k = 0; k < toLayer.getNeurons().length; k++) {
+					Neuron nextOutputNeuron = toLayer.getNeurons()[k];
+
+					if (nextOutputNeuron.isBias()) {
+						continue;
+					}
+
 					BigDecimal initialWeight = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble());
 
-					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(toLayer.getNeurons()[k], initialWeight);
+					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight);
 				}
 			}
 		}
@@ -62,30 +72,35 @@ public class NeuralNetwork {
 
 	public NeuralNetwork(@Value("${network.layers.input}") int inputLayerNeurons,
 			@Value("${network.layers.hidden}") int[] hiddenLayersNeurons,
-			@Value("${network.layers.output}") int outputLayerNeurons) {
-
+			@Value("${network.layers.output}") int outputLayerNeurons, @Value("${network.bias.add}") boolean addBias) {
 		layers = new Layer[hiddenLayersNeurons.length + 2];
 
-		layers[0] = new Layer(inputLayerNeurons);
+		layers[0] = new Layer(inputLayerNeurons, addBias);
 
 		for (int i = 1; i <= hiddenLayersNeurons.length; i++) {
-			layers[i] = new Layer(hiddenLayersNeurons[i - 1]);
+			layers[i] = new Layer(hiddenLayersNeurons[i - 1], addBias);
 		}
 
-		layers[layers.length - 1] = new Layer(outputLayerNeurons);
+		layers[layers.length - 1] = new Layer(outputLayerNeurons, false);
 	}
 
 	public void feedForward(BigDecimal[] inputs) {
 		Layer inputLayer = this.getInputLayer();
 
-		if (inputs.length != inputLayer.getNeurons().length) {
+		int nonBiasNeurons = inputLayer.getNeurons().length - (inputLayer.hasBias() ? 1 : 0);
+
+		if (inputs.length != nonBiasNeurons) {
 			throw new IllegalArgumentException("The sample input size of " + inputs.length
 					+ " does not match the input layer size of " + inputLayer.getNeurons().length
 					+ ".  Unable to continue with feed forward step.");
 		}
 
-		for (int i = 0; i < inputLayer.getNeurons().length; i++) {
+		for (int i = 0; i < nonBiasNeurons; i++) {
 			inputLayer.getNeurons()[i].setActivationValue(inputs[i]);
+		}
+
+		if (inputLayer.hasBias()) {
+			inputLayer.getNeurons()[inputLayer.getNeurons().length - 1].setActivationValue(biasWeight);
 		}
 
 		Layer fromLayer;
@@ -97,6 +112,14 @@ public class NeuralNetwork {
 			toLayer = layers[i + 1];
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
+				Neuron nextOutputNeuron = toLayer.getNeurons()[j];
+
+				if (nextOutputNeuron.isBias()) {
+					nextOutputNeuron.setActivationValue(biasWeight);
+
+					continue;
+				}
+
 				BigDecimal sum = BigDecimal.ZERO;
 
 				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
@@ -106,8 +129,6 @@ public class NeuralNetwork {
 
 					sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP));
 				}
-
-				Neuron nextOutputNeuron = toLayer.getNeurons()[j];
 
 				nextOutputNeuron.setOutputSum(sum);
 				nextOutputNeuron.setActivationValue(activationFunction.transformInputSignal(sum));

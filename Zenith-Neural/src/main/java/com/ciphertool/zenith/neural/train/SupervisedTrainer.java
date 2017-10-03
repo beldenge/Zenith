@@ -67,7 +67,8 @@ public class SupervisedTrainer {
 
 		/*
 		 * TODO: This really only works for a single output neuron right now -- I need to figure out how this works for
-		 * multiple output neurons.
+		 * multiple output neurons. We could also probably skip the rest of the back propagation algorithm if deltaSum
+		 * turns out to be zero.
 		 * 
 		 */
 		BigDecimal deltaSum = null;
@@ -82,9 +83,9 @@ public class SupervisedTrainer {
 			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
 				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
 
-				// Avoid division by zero by just returning zero
 				// TODO: this could be pre-computed before entering the loop
-				BigDecimal deltaWeight = BigDecimal.ZERO.equals(nextInputNeuron.getActivationValue()) ? BigDecimal.ZERO : deltaSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
+				// Leaky ReLU is used to avoid division by zero
+				BigDecimal deltaWeight = deltaSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
 
 				Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
 				nextSynapse.setOldWeight(nextSynapse.getWeight());
@@ -101,6 +102,10 @@ public class SupervisedTrainer {
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
 				Neuron nextOutputNeuron = toLayer.getNeurons()[j];
 
+				if (nextOutputNeuron.isBias()) {
+					continue;
+				}
+
 				for (int k = 0; k < nextOutputNeuron.getOutgoingSynapses().length; k++) {
 					Synapse nextOutgoingSynapse = nextOutputNeuron.getOutgoingSynapses()[k];
 					BigDecimal deltaHiddenSum = deltaSum.divide(nextOutgoingSynapse.getOldWeight(), MathConstants.PREC_10_HALF_UP).multiply(activationFunction.calculateDerivative(nextOutputNeuron.getOutputSum()), MathConstants.PREC_10_HALF_UP);
@@ -108,10 +113,10 @@ public class SupervisedTrainer {
 					for (int l = 0; l < fromLayer.getNeurons().length; l++) {
 						Neuron nextInputNeuron = fromLayer.getNeurons()[l];
 
-						// Avoid division by zero by just returning zero
+						// TODO: Division by zero is still possible if an input is zero
 						BigDecimal deltaWeight = BigDecimal.ZERO.equals(nextInputNeuron.getActivationValue()) ? BigDecimal.ZERO : deltaHiddenSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
 
-						Synapse nextIncomingSynpase = nextInputNeuron.getOutgoingSynapses()[l];
+						Synapse nextIncomingSynpase = nextInputNeuron.getOutgoingSynapses()[j];
 						nextIncomingSynpase.setOldWeight(nextIncomingSynpase.getWeight());
 						nextIncomingSynpase.setWeight(nextIncomingSynpase.getWeight().add(deltaWeight));
 					}

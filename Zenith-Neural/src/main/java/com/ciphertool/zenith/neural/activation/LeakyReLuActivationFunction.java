@@ -24,20 +24,28 @@ import java.math.BigDecimal;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import com.ciphertool.zenith.math.MathConstants;
+
 @Primary
 @Component
-public class ReLuActivationFunction implements ActivationFunction {
+public class LeakyReLuActivationFunction implements ActivationFunction {
+	private static final BigDecimal SLOPE_CLOSE_TO_ZERO = BigDecimal.valueOf(0.01);
+
 	@Override
 	public BigDecimal transformInputSignal(BigDecimal sum) {
-		return BigDecimal.ZERO.max(sum);
+		if (BigDecimal.ZERO.compareTo(sum) < 0) {
+			return sum;
+		} else {
+			return SLOPE_CLOSE_TO_ZERO.multiply(sum, MathConstants.PREC_10_HALF_UP);
+		}
 	}
 
 	@Override
 	public BigDecimal calculateDerivative(BigDecimal sum) {
 		if (BigDecimal.ZERO.compareTo(sum) < 0) {
-			return BigDecimal.ZERO;
-		} else if (BigDecimal.ZERO.compareTo(sum) > 0) {
 			return BigDecimal.ONE;
+		} else if (BigDecimal.ZERO.compareTo(sum) > 0) {
+			return SLOPE_CLOSE_TO_ZERO;
 		} else {
 			/*
 			 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to

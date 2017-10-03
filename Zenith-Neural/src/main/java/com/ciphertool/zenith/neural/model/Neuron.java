@@ -25,6 +25,17 @@ public class Neuron {
 	private BigDecimal	activationValue;
 	private BigDecimal	outputSum;
 	private Synapse[]	outgoingSynapses;
+	private boolean		isBias;
+
+	public Neuron() {
+	}
+
+	/**
+	 * @param isBias
+	 */
+	public Neuron(boolean isBias) {
+		this.isBias = isBias;
+	}
 
 	/**
 	 * @return the outgoingSynapses the outgoing Synapses to set
@@ -69,5 +80,12 @@ public class Neuron {
 	 */
 	public void setOutputSum(BigDecimal outputSum) {
 		this.outputSum = outputSum;
+	}
+
+	/**
+	 * @return the isBias
+	 */
+	public boolean isBias() {
+		return isBias;
 	}
 }
