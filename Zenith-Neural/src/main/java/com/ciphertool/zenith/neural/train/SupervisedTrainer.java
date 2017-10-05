@@ -21,7 +21,10 @@ package com.ciphertool.zenith.neural.train;
 
 import java.math.BigDecimal;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
@@ -33,11 +36,23 @@ import com.ciphertool.zenith.neural.model.Synapse;
 
 @Component
 public class SupervisedTrainer {
+	@Value("${network.learningRate}")
+	private BigDecimal			learningRate;
+
+	private boolean				factorLearningRate;
+
 	@Autowired
 	private NeuralNetwork		network;
 
 	@Autowired
 	private ActivationFunction	activationFunction;
+
+	@PostConstruct
+	public void init() {
+		if (learningRate != null && learningRate.compareTo(BigDecimal.ONE) != 0) {
+			factorLearningRate = true;
+		}
+	}
 
 	public void train(BigDecimal[][] inputs, BigDecimal[][] outputs) {
 		if (inputs.length != outputs.length) {
@@ -65,63 +80,97 @@ public class SupervisedTrainer {
 		Layer[] layers = network.getLayers();
 		Layer fromLayer = layers[layers.length - 2];
 
-		/*
-		 * TODO: This really only works for a single output neuron right now -- I need to figure out how this works for
-		 * multiple output neurons. We could also probably skip the rest of the back propagation algorithm if deltaSum
-		 * turns out to be zero.
-		 * 
-		 */
-		BigDecimal deltaSum = null;
+		// Compute sum of errors
+		BigDecimal errorTotal = BigDecimal.ZERO;
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
-			BigDecimal marginOfError = expectedOutputs[i].subtract(nextOutputNeuron.getActivationValue());
-			BigDecimal derivative = activationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+			errorTotal = errorTotal.add(costFunction(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+		}
 
-			deltaSum = derivative.multiply(marginOfError, MathConstants.PREC_10_HALF_UP);
+		BigDecimal[] errorDerivatives = new BigDecimal[outputLayer.getNeurons().length];
+		BigDecimal[] activationDerivatives = new BigDecimal[outputLayer.getNeurons().length];
+
+		// Compute deltas for output layer using chain rule and subtract them from current weights
+		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
+			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
+
+			BigDecimal errorDerivative = derivativeOfCostFunction(expectedOutputs[i], nextOutputNeuron.getActivationValue());
+			errorDerivatives[i] = errorDerivative;
+
+			BigDecimal activationDerivative = activationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+			activationDerivatives[i] = activationDerivative;
 
 			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
 				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
 
-				// TODO: this could be pre-computed before entering the loop
-				// Leaky ReLU is used to avoid division by zero
-				BigDecimal deltaWeight = deltaSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
+				BigDecimal outputSumDerivative = nextInputNeuron.getActivationValue();
+
+				BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP);
+
+				if (factorLearningRate) {
+					delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP);
+				}
 
 				Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
 				nextSynapse.setOldWeight(nextSynapse.getWeight());
-				nextSynapse.setWeight(nextSynapse.getWeight().add(deltaWeight));
+				nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
 			}
 		}
 
 		Layer toLayer;
 
+		// Compute deltas for hidden layers using chain rule and subtract them from current weights
 		for (int i = layers.length - 2; i > 0; i--) {
 			fromLayer = layers[i - 1];
 			toLayer = layers[i];
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				Neuron nextOutputNeuron = toLayer.getNeurons()[j];
+				Neuron nextToNeuron = toLayer.getNeurons()[j];
 
-				if (nextOutputNeuron.isBias()) {
-					continue;
-				}
+				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
+					Neuron nextFromNeuron = fromLayer.getNeurons()[k];
 
-				for (int k = 0; k < nextOutputNeuron.getOutgoingSynapses().length; k++) {
-					Synapse nextOutgoingSynapse = nextOutputNeuron.getOutgoingSynapses()[k];
-					BigDecimal deltaHiddenSum = deltaSum.divide(nextOutgoingSynapse.getOldWeight(), MathConstants.PREC_10_HALF_UP).multiply(activationFunction.calculateDerivative(nextOutputNeuron.getOutputSum()), MathConstants.PREC_10_HALF_UP);
-
-					for (int l = 0; l < fromLayer.getNeurons().length; l++) {
-						Neuron nextInputNeuron = fromLayer.getNeurons()[l];
-
-						// TODO: Division by zero is still possible if an input is zero
-						BigDecimal deltaWeight = BigDecimal.ZERO.equals(nextInputNeuron.getActivationValue()) ? BigDecimal.ZERO : deltaHiddenSum.divide(nextInputNeuron.getActivationValue(), MathConstants.PREC_10_HALF_UP);
-
-						Synapse nextIncomingSynpase = nextInputNeuron.getOutgoingSynapses()[j];
-						nextIncomingSynpase.setOldWeight(nextIncomingSynpase.getWeight());
-						nextIncomingSynpase.setWeight(nextIncomingSynpase.getWeight().add(deltaWeight));
+					if (nextToNeuron.isBias()) {
+						// TODO: Why wouldn't we want to update bias weights?
+						continue;
 					}
+
+					BigDecimal errorDerivative = BigDecimal.ZERO;
+
+					for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
+						Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
+
+						BigDecimal partialErrorDerivative = errorDerivatives[l].multiply(activationDerivatives[l], MathConstants.PREC_10_HALF_UP);
+
+						BigDecimal weightDerivative = nextSynapse.getOldWeight();
+
+						errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP));
+					}
+
+					BigDecimal activationDerivative = activationFunction.calculateDerivative(nextToNeuron.getOutputSum());
+
+					BigDecimal outputSumDerivative = nextFromNeuron.getActivationValue();
+
+					BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP);
+
+					if (factorLearningRate) {
+						delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP);
+					}
+
+					Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
+					nextSynapse.setOldWeight(nextSynapse.getWeight());
+					nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
 				}
 			}
 		}
+	}
+
+	protected static BigDecimal costFunction(BigDecimal expected, BigDecimal actual) {
+		return expected.subtract(actual).pow(2, MathConstants.PREC_10_HALF_UP).divide(BigDecimal.valueOf(2.0), MathConstants.PREC_10_HALF_UP);
+	}
+
+	protected static BigDecimal derivativeOfCostFunction(BigDecimal expected, BigDecimal actual) {
+		return expected.subtract(actual).negate();
 	}
 }

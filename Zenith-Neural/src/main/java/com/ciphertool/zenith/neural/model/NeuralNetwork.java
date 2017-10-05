@@ -55,10 +55,16 @@ public class NeuralNetwork {
 				nextInputNeuron.setOutgoingSynapses(new Synapse[toLayer.getNeurons().length
 						- (toLayer.hasBias() ? 1 : 0)]);
 
+				if (nextInputNeuron.isBias()) {
+					// The bias activation value is static and should never change
+					nextInputNeuron.setActivationValue(biasWeight);
+				}
+
 				for (int k = 0; k < toLayer.getNeurons().length; k++) {
 					Neuron nextOutputNeuron = toLayer.getNeurons()[k];
 
 					if (nextOutputNeuron.isBias()) {
+						// We don't want to create a synapse going into a bias neuron
 						continue;
 					}
 
@@ -99,10 +105,6 @@ public class NeuralNetwork {
 			inputLayer.getNeurons()[i].setActivationValue(inputs[i]);
 		}
 
-		if (inputLayer.hasBias()) {
-			inputLayer.getNeurons()[inputLayer.getNeurons().length - 1].setActivationValue(biasWeight);
-		}
-
 		Layer fromLayer;
 		Layer toLayer;
 		Layer[] layers = this.getLayers();
@@ -117,6 +119,7 @@ public class NeuralNetwork {
 				if (nextOutputNeuron.isBias()) {
 					nextOutputNeuron.setActivationValue(biasWeight);
 
+					// There is no synapse going into a bias neuron
 					continue;
 				}
 
