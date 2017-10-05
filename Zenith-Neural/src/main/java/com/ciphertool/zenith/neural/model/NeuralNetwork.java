@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
@@ -130,7 +131,7 @@ public class NeuralNetwork {
 
 					Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
 
-					sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP));
+					sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
 				}
 
 				nextOutputNeuron.setOutputSum(sum);

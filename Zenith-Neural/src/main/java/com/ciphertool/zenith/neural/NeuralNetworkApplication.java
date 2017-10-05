@@ -41,7 +41,7 @@ import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 public class NeuralNetworkApplication implements CommandLineRunner {
 	private static Logger			log							= LoggerFactory.getLogger(NeuralNetworkApplication.class);
 
-	private static final BigDecimal	ACCEPTABLE_MARGIN_OF_ERROR	= BigDecimal.valueOf(0.1);
+	private static final BigDecimal	ACCEPTABLE_MARGIN_OF_ERROR	= BigDecimal.valueOf(0.01);
 
 	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;

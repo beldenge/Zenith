@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural.train;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import javax.annotation.PostConstruct;
 
@@ -106,10 +107,10 @@ public class SupervisedTrainer {
 
 				BigDecimal outputSumDerivative = nextInputNeuron.getActivationValue();
 
-				BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP);
+				BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
 				if (factorLearningRate) {
-					delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP);
+					delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 				}
 
 				Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
@@ -141,21 +142,21 @@ public class SupervisedTrainer {
 					for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
 						Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
 
-						BigDecimal partialErrorDerivative = errorDerivatives[l].multiply(activationDerivatives[l], MathConstants.PREC_10_HALF_UP);
+						BigDecimal partialErrorDerivative = errorDerivatives[l].multiply(activationDerivatives[l], MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
 						BigDecimal weightDerivative = nextSynapse.getOldWeight();
 
-						errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP));
+						errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
 					}
 
 					BigDecimal activationDerivative = activationFunction.calculateDerivative(nextToNeuron.getOutputSum());
 
 					BigDecimal outputSumDerivative = nextFromNeuron.getActivationValue();
 
-					BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP);
+					BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
 					if (factorLearningRate) {
-						delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP);
+						delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 					}
 
 					Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
@@ -167,7 +168,7 @@ public class SupervisedTrainer {
 	}
 
 	protected static BigDecimal costFunction(BigDecimal expected, BigDecimal actual) {
-		return expected.subtract(actual).pow(2, MathConstants.PREC_10_HALF_UP).divide(BigDecimal.valueOf(2.0), MathConstants.PREC_10_HALF_UP);
+		return expected.subtract(actual).pow(2, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).divide(BigDecimal.valueOf(2.0), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 
 	protected static BigDecimal derivativeOfCostFunction(BigDecimal expected, BigDecimal actual) {

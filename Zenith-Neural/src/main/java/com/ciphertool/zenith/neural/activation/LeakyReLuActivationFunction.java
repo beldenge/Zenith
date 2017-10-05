@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural.activation;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -36,7 +37,7 @@ public class LeakyReLuActivationFunction implements ActivationFunction {
 		if (BigDecimal.ZERO.compareTo(sum) < 0) {
 			return sum;
 		} else {
-			return SLOPE_CLOSE_TO_ZERO.multiply(sum, MathConstants.PREC_10_HALF_UP);
+			return SLOPE_CLOSE_TO_ZERO.multiply(sum, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 		}
 	}
 
