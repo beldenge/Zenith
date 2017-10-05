@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,11 +111,14 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		for (int i = 0; i < predictions.length; i++) {
 			wasIncorrect = false;
 
+			BigDecimal[] inputs = testData.getInputs()[i];
+
 			for (int j = 0; j < predictions[i].length; j++) {
 				BigDecimal prediction = predictions[i][j];
 				BigDecimal expected = testData.getOutputs()[i][j];
 
-				log.info("Expected: " + expected + ", Prediction: " + prediction);
+				log.info("Inputs: " + Arrays.asList(inputs) + ", Expected: " + expected + ", Prediction: "
+						+ prediction);
 
 				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
 				if (prediction.subtract(expected).abs().compareTo(ACCEPTABLE_MARGIN_OF_ERROR) > 0) {

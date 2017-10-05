@@ -128,13 +128,13 @@ public class SupervisedTrainer {
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
 				Neuron nextToNeuron = toLayer.getNeurons()[j];
 
+				if (nextToNeuron.isBias()) {
+					// There are no synapses going into the bias neuron
+					continue;
+				}
+
 				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
 					Neuron nextFromNeuron = fromLayer.getNeurons()[k];
-
-					if (nextToNeuron.isBias()) {
-						// TODO: Why wouldn't we want to update bias weights?
-						continue;
-					}
 
 					BigDecimal errorDerivative = BigDecimal.ZERO;
 
