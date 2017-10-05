@@ -39,4 +39,4 @@ network:
     count: 10000
   testSamples:
     count: 100
-  learningRate: 1.0
+  learningRate: 0.1
