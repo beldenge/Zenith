@@ -19,43 +19,10 @@
 
 package com.ciphertool.zenith.neural.generate;
 
-import java.math.BigDecimal;
-import java.util.concurrent.ThreadLocalRandom;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.ciphertool.zenith.neural.model.DataSet;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
 
-@Component
-public class SampleGenerator {
-	@Autowired
-	private NeuralNetwork network;
+public interface SampleGenerator {
+	public DataSet generateTrainingSamples(int count);
 
-	public DataSet generate(int count) {
-		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
-		int outputLayerSize = network.getOutputLayer().getNeurons().length;
-		BigDecimal[][] inputs = new BigDecimal[count][inputLayerSize];
-		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];
-
-		for (int i = 0; i < count; i++) {
-			for (int j = 0; j < inputLayerSize; j++) {
-				inputs[i][j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(2));
-			}
-
-			outputs[i] = new BigDecimal[] { xor(inputs[i]) };
-		}
-
-		return new DataSet(inputs, outputs);
-	}
-
-	protected BigDecimal xor(BigDecimal[] values) {
-		if (values.length != 2) {
-			throw new IllegalArgumentException("Exclusive or expects only two values, but found " + values.length
-					+ ".  Unable to continue.");
-		}
-
-		return values[0].equals(values[1]) ? BigDecimal.ZERO : BigDecimal.ONE;
-	}
+	public DataSet generateTestSamples(int count);
 }

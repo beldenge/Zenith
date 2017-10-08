@@ -29,8 +29,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.DataSet;
@@ -43,23 +41,11 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 	private static final BigDecimal	ACCEPTABLE_MARGIN_OF_ERROR	= BigDecimal.valueOf(0.01);
 
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						corePoolSize;
-
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						maxPoolSize;
-
-	@Value("${taskExecutor.queueCapacity}")
-	private int						queueCapacity;
-
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
 
 	@Value("${network.testSamples.count}")
 	private int						numberOfTests;
-
-	@Autowired
-	private ThreadPoolTaskExecutor	taskExecutor;
 
 	@Autowired
 	private SampleGenerator			generator;
@@ -82,12 +68,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... arg0) throws Exception {
-		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
-		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
-
 		log.info("Generating " + numberOfSamples + " training samples...");
 		long start = System.currentTimeMillis();
-		DataSet trainingData = generator.generate(numberOfSamples);
+		DataSet trainingData = generator.generateTrainingSamples(numberOfSamples);
 		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		log.info("Training network...");
@@ -97,7 +80,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 		log.info("Generating " + numberOfTests + " test samples...");
 		start = System.currentTimeMillis();
-		DataSet testData = generator.generate(numberOfTests);
+		DataSet testData = generator.generateTestSamples(numberOfTests);
 		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		log.info("Testing predictions...");
@@ -117,7 +100,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 				BigDecimal prediction = predictions[i][j];
 				BigDecimal expected = testData.getOutputs()[i][j];
 
-				log.info("Inputs: " + Arrays.asList(inputs) + ", Expected: " + expected + ", Prediction: "
+				log.info("Inputs: " + Arrays.toString(inputs) + ", Expected: " + expected + ", Prediction: "
 						+ prediction);
 
 				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
@@ -137,18 +120,5 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
 		log.info("Percentage correct: " + (int) (((double) correctCount / (double) numberOfTests) * 100));
 		log.info("Percentage incorrect: " + (int) (((double) incorrectCount / (double) numberOfTests) * 100));
-	}
-
-	@Bean
-	public ThreadPoolTaskExecutor taskExecutor() {
-		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-
-		taskExecutor.setCorePoolSize(corePoolSize);
-		taskExecutor.setMaxPoolSize(maxPoolSize);
-		taskExecutor.setQueueCapacity(queueCapacity);
-		taskExecutor.setKeepAliveSeconds(5);
-		taskExecutor.setAllowCoreThreadTimeOut(true);
-
-		return taskExecutor;
 	}
 }
