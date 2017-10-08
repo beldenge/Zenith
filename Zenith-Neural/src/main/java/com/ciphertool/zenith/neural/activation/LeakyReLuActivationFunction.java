@@ -36,9 +36,9 @@ public class LeakyReLuActivationFunction implements ActivationFunction {
 	public BigDecimal transformInputSignal(BigDecimal sum) {
 		if (BigDecimal.ZERO.compareTo(sum) < 0) {
 			return sum;
-		} else {
-			return SLOPE_CLOSE_TO_ZERO.multiply(sum, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 		}
+
+		return SLOPE_CLOSE_TO_ZERO.multiply(sum, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 
 	@Override
@@ -47,12 +47,12 @@ public class LeakyReLuActivationFunction implements ActivationFunction {
 			return BigDecimal.ONE;
 		} else if (BigDecimal.ZERO.compareTo(sum) > 0) {
 			return SLOPE_CLOSE_TO_ZERO;
-		} else {
-			/*
-			 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to
-			 * just return zero.
-			 */
-			return BigDecimal.ZERO;
 		}
+
+		/*
+		 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to just
+		 * return zero.
+		 */
+		return BigDecimal.ZERO;
 	}
 }

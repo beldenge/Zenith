@@ -120,11 +120,19 @@ public class SupervisedTrainer {
 		}
 
 		Layer toLayer;
+		BigDecimal[] oldErrorDerivatives;
+		BigDecimal[] oldActivationDerivatives;
 
 		// Compute deltas for hidden layers using chain rule and subtract them from current weights
 		for (int i = layers.length - 2; i > 0; i--) {
 			fromLayer = layers[i - 1];
 			toLayer = layers[i];
+
+			oldErrorDerivatives = errorDerivatives;
+			oldActivationDerivatives = activationDerivatives;
+
+			errorDerivatives = new BigDecimal[toLayer.getNeurons().length];
+			activationDerivatives = new BigDecimal[toLayer.getNeurons().length];
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
 				Neuron nextToNeuron = toLayer.getNeurons()[j];
@@ -134,26 +142,31 @@ public class SupervisedTrainer {
 					continue;
 				}
 
+				BigDecimal activationDerivative = activationFunction.calculateDerivative(nextToNeuron.getOutputSum());
+				activationDerivatives[j] = activationDerivative;
+
+				BigDecimal errorDerivative = BigDecimal.ZERO;
+
+				for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
+					Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
+
+					BigDecimal partialErrorDerivative = oldErrorDerivatives[l].multiply(oldActivationDerivatives[l], MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
+					BigDecimal weightDerivative = nextSynapse.getOldWeight();
+
+					errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
+				}
+
+				errorDerivatives[j] = errorDerivative;
+
+				BigDecimal errorTimesActivation = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
 				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
 					Neuron nextFromNeuron = fromLayer.getNeurons()[k];
 
-					BigDecimal errorDerivative = BigDecimal.ZERO;
-
-					for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
-						Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
-
-						BigDecimal partialErrorDerivative = errorDerivatives[l].multiply(activationDerivatives[l], MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-
-						BigDecimal weightDerivative = nextSynapse.getOldWeight();
-
-						errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
-					}
-
-					BigDecimal activationDerivative = activationFunction.calculateDerivative(nextToNeuron.getOutputSum());
-
 					BigDecimal outputSumDerivative = nextFromNeuron.getActivationValue();
 
-					BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+					BigDecimal delta = errorTimesActivation.multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
 					if (factorLearningRate) {
 						delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
