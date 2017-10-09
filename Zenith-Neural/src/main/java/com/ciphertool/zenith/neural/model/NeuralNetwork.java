@@ -30,17 +30,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.neural.activation.ActivationFunction;
+import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
+import com.ciphertool.zenith.neural.activation.OutputActivationFunction;
 
 @Component
 public class NeuralNetwork {
 	@Value("${network.bias.weight}")
-	private BigDecimal			biasWeight;
+	private BigDecimal					biasWeight;
+
+	@Value("${problem.type}")
+	private ProblemType					problemType;
 
 	@Autowired
-	private ActivationFunction	activationFunction;
+	private HiddenActivationFunction	hiddenActivationFunction;
 
-	private Layer[]				layers;
+	@Autowired
+	private OutputActivationFunction	outputActivationFunction;
+
+	private Layer[]						layers;
 
 	@PostConstruct
 	public void init() {
@@ -135,7 +142,26 @@ public class NeuralNetwork {
 				}
 
 				nextOutputNeuron.setOutputSum(sum);
-				nextOutputNeuron.setActivationValue(activationFunction.transformInputSignal(sum));
+
+				if (problemType == ProblemType.REGRESSION || toLayer != this.getOutputLayer()) {
+					nextOutputNeuron.setActivationValue(hiddenActivationFunction.transformInputSignal(sum));
+				}
+			}
+		}
+
+		if (problemType == ProblemType.CLASSIFICATION) {
+			BigDecimal sumOfSums = BigDecimal.ZERO;
+
+			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
+				Neuron nextOutputNeuron = this.getOutputLayer().getNeurons()[i];
+
+				sumOfSums = sumOfSums.add(nextOutputNeuron.getOutputSum());
+			}
+
+			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
+				Neuron nextOutputNeuron = this.getOutputLayer().getNeurons()[i];
+
+				nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), sumOfSums));
 			}
 		}
 	}

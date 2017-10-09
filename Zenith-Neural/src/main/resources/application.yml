@@ -40,6 +40,9 @@ network:
     count: 100
   learningRate: 0.1
 
+problem:
+  type: REGRESSION
+
 ---
 
 spring:
@@ -59,6 +62,9 @@ network:
   testSamples:
     count: 10000
   learningRate: 0.1
+
+problem:
+  type: CLASSIFICATION
 
 task:
   mnist:

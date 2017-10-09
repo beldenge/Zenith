@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural.generate;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +56,11 @@ public class MnistSampleGenerator implements SampleGenerator {
 	@Value("${task.mnist.directory.testLabels}")
 	private String			testLabelsFile;
 
+	private BigDecimal[][]	trainingImages;
+	private BigDecimal[][]	trainingLabels;
+	private BigDecimal[][]	testImages;
+	private BigDecimal[][]	testLabels;
+
 	@Autowired
 	private NeuralNetwork	network;
 
@@ -70,10 +76,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 			throw new IllegalStateException("Unable to read training images file.", ioe);
 		}
 
-		int[][] trainingImages = loadImages(trainingImagesBytes);
+		trainingImages = loadImages(trainingImagesBytes);
 
 		for (int i = 0; i < trainingImages.length; i++) {
-			log.info("Test image " + (i + 1) + ": " + Arrays.toString(trainingImages[i]));
+			log.debug("Test image {}: {}", i + 1, Arrays.toString(trainingImages[i]));
 		}
 
 		Path trainingLabelsPath = Paths.get(trainingLabelsFile);
@@ -86,10 +92,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 			throw new IllegalStateException("Unable to read training labels file.", ioe);
 		}
 
-		int[] trainingLabels = loadLabels(trainingLabelsBytes);
+		trainingLabels = loadLabels(trainingLabelsBytes);
 
 		for (int i = 0; i < trainingLabels.length; i++) {
-			log.info("Test image " + (i + 1) + ": " + trainingLabels[i]);
+			log.debug("Test image {}: {}", i + 1, trainingLabels[i]);
 		}
 
 		Path testImagesPath = Paths.get(testImagesFile);
@@ -102,10 +108,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 			throw new IllegalStateException("Unable to read test images file.", ioe);
 		}
 
-		int[][] testImages = loadImages(testImagesBytes);
+		testImages = loadImages(testImagesBytes);
 
 		for (int i = 0; i < testImages.length; i++) {
-			log.info("Test image " + (i + 1) + ": " + Arrays.toString(testImages[i]));
+			log.debug("Test image {}: {}", i + 1, Arrays.toString(testImages[i]));
 		}
 
 		Path testLabelsPath = Paths.get(testLabelsFile);
@@ -118,14 +124,14 @@ public class MnistSampleGenerator implements SampleGenerator {
 			throw new IllegalStateException("Unable to read test labels file.", ioe);
 		}
 
-		int[] testLabels = loadLabels(testLabelsBytes);
+		testLabels = loadLabels(testLabelsBytes);
 
 		for (int i = 0; i < testLabels.length; i++) {
-			log.info("Test label " + (i + 1) + ": " + testLabels[i]);
+			log.debug("Test label {}: {}", i + 1, testLabels[i]);
 		}
 	}
 
-	protected int[][] loadImages(byte[] imagesBytes) {
+	protected BigDecimal[][] loadImages(byte[] imagesBytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(imagesBytes);
 
 		// Skip the first four bytes, as it's a magic number
@@ -139,13 +145,13 @@ public class MnistSampleGenerator implements SampleGenerator {
 		int numberOfColumns = byteBuffer.getInt();
 		int totalPixels = numberOfRows * numberOfColumns;
 
-		int[][] images = new int[numberOfItems][totalPixels];
+		BigDecimal[][] images = new BigDecimal[numberOfItems][totalPixels];
 
 		for (int i = 0; i < numberOfItems; i++) {
-			int[] pixels = new int[totalPixels];
+			BigDecimal[] pixels = new BigDecimal[totalPixels];
 
 			for (int j = 0; j < totalPixels; j++) {
-				pixels[j] = Byte.toUnsignedInt(byteBuffer.get());
+				pixels[j] = BigDecimal.valueOf(Byte.toUnsignedInt(byteBuffer.get()));
 			}
 
 			images[i] = pixels;
@@ -154,7 +160,7 @@ public class MnistSampleGenerator implements SampleGenerator {
 		return images;
 	}
 
-	protected int[] loadLabels(byte[] labelsBytes) {
+	protected BigDecimal[][] loadLabels(byte[] labelsBytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(labelsBytes);
 
 		// Skip the first four bytes, as it's a magic number
@@ -163,10 +169,14 @@ public class MnistSampleGenerator implements SampleGenerator {
 		// The second four bytes is the number of items
 		int numberOfItems = byteBuffer.getInt();
 
-		int[] labels = new int[numberOfItems];
+		BigDecimal[][] labels = new BigDecimal[numberOfItems][network.getOutputLayer().getNeurons().length];
 
 		for (int i = 0; i < numberOfItems; i++) {
-			labels[i] = Byte.toUnsignedInt(byteBuffer.get());
+			int label = Byte.toUnsignedInt(byteBuffer.get());
+
+			for (int j = 0; j < network.getOutputLayer().getNeurons().length; j++) {
+				labels[i][j] = (label == j) ? BigDecimal.ONE : BigDecimal.ZERO;
+			}
 		}
 
 		return labels;
@@ -174,11 +184,31 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSamples(int count) {
-		return null;
+		return generate(count, trainingImages, trainingLabels);
 	}
 
 	@Override
 	public DataSet generateTestSamples(int count) {
-		return null;
+		return generate(count, testImages, testLabels);
+	}
+
+	protected DataSet generate(int count, BigDecimal[][] images, BigDecimal[][] labels) {
+		if (count < images.length) {
+			throw new IllegalArgumentException("The number of samples to generate (" + count
+					+ ") exceeds the maximum number of samples available (" + images.length + ").");
+		}
+
+		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
+		int outputLayerSize = network.getOutputLayer().getNeurons().length;
+
+		BigDecimal[][] inputs = new BigDecimal[count][inputLayerSize];
+		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];
+
+		for (int i = 0; i < count; i++) {
+			inputs[i] = images[i];
+			outputs[i] = labels[i];
+		}
+
+		return new DataSet(inputs, outputs);
 	}
 }

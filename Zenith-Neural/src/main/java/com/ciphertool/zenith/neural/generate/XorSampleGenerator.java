@@ -48,6 +48,7 @@ public class XorSampleGenerator implements SampleGenerator {
 	protected DataSet generate(int count) {
 		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
 		int outputLayerSize = network.getOutputLayer().getNeurons().length;
+
 		BigDecimal[][] inputs = new BigDecimal[count][inputLayerSize];
 		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];
 

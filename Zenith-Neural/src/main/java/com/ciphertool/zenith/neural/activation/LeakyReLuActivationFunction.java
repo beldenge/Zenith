@@ -22,14 +22,12 @@ package com.ciphertool.zenith.neural.activation;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
 
-@Primary
 @Component
-public class LeakyReLuActivationFunction implements ActivationFunction {
+public class LeakyReLuActivationFunction implements HiddenActivationFunction {
 	private static final BigDecimal SLOPE_CLOSE_TO_ZERO = BigDecimal.valueOf(0.01);
 
 	@Override

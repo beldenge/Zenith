@@ -24,29 +24,42 @@ import java.math.RoundingMode;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.neural.activation.ActivationFunction;
+import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
+import com.ciphertool.zenith.neural.activation.OutputActivationFunction;
+import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
+import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.model.Synapse;
 
 @Component
 public class SupervisedTrainer {
+	private static Logger				log	= LoggerFactory.getLogger(SupervisedTrainer.class);
+
 	@Value("${network.learningRate}")
-	private BigDecimal			learningRate;
+	private BigDecimal					learningRate;
 
-	private boolean				factorLearningRate;
+	@Value("${problem.type}")
+	private ProblemType					problemType;
+
+	private boolean						factorLearningRate;
 
 	@Autowired
-	private NeuralNetwork		network;
+	private NeuralNetwork				network;
 
 	@Autowired
-	private ActivationFunction	activationFunction;
+	private HiddenActivationFunction	hiddenActivationFunction;
+
+	@Autowired
+	private OutputActivationFunction	outputActivationFunction;
 
 	@PostConstruct
 	public void init() {
@@ -62,10 +75,18 @@ public class SupervisedTrainer {
 					+ ".  Unable to continue with training.");
 		}
 
+		ConsoleProgressBar progressBar = new ConsoleProgressBar();
+
 		for (int i = 0; i < inputs.length; i++) {
+			long start = System.currentTimeMillis();
+
 			network.feedForward(inputs[i]);
 
 			backPropagate(outputs[i]);
+
+			log.info("Finished training sample {} in {}ms.", i, System.currentTimeMillis() - start);
+
+			progressBar.tick((double) i / (double) inputs.length);
 		}
 	}
 
@@ -83,10 +104,12 @@ public class SupervisedTrainer {
 
 		// Compute sum of errors
 		BigDecimal errorTotal = BigDecimal.ZERO;
+		BigDecimal outputSumTotal = BigDecimal.ZERO;
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
 			errorTotal = errorTotal.add(costFunction(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+			outputSumTotal = outputSumTotal.add(nextOutputNeuron.getOutputSum());
 		}
 
 		BigDecimal[] errorDerivatives = new BigDecimal[outputLayer.getNeurons().length];
@@ -99,7 +122,14 @@ public class SupervisedTrainer {
 			BigDecimal errorDerivative = derivativeOfCostFunction(expectedOutputs[i], nextOutputNeuron.getActivationValue());
 			errorDerivatives[i] = errorDerivative;
 
-			BigDecimal activationDerivative = activationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+			BigDecimal activationDerivative;
+
+			if (problemType == ProblemType.CLASSIFICATION) {
+				activationDerivative = outputActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum(), outputSumTotal);
+			} else {
+				activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+			}
+
 			activationDerivatives[i] = activationDerivative;
 
 			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
@@ -142,7 +172,7 @@ public class SupervisedTrainer {
 					continue;
 				}
 
-				BigDecimal activationDerivative = activationFunction.calculateDerivative(nextToNeuron.getOutputSum());
+				BigDecimal activationDerivative = hiddenActivationFunction.calculateDerivative(nextToNeuron.getOutputSum());
 				activationDerivatives[j] = activationDerivative;
 
 				BigDecimal errorDerivative = BigDecimal.ZERO;
