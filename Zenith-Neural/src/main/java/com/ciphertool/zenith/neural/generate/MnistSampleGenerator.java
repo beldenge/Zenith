@@ -21,6 +21,7 @@ package com.ciphertool.zenith.neural.generate;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,33 +37,36 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.DataSet;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 
 @Component
 @Profile("mnist")
 public class MnistSampleGenerator implements SampleGenerator {
-	private static Logger	log	= LoggerFactory.getLogger(MnistSampleGenerator.class);
+	private static Logger			log				= LoggerFactory.getLogger(MnistSampleGenerator.class);
+
+	private static final BigDecimal	MAX_PIXEL_VALUE	= BigDecimal.valueOf(256);
 
 	@Value("${task.mnist.directory.trainingImages}")
-	private String			trainingImagesFile;
+	private String					trainingImagesFile;
 
 	@Value("${task.mnist.directory.trainingLabels}")
-	private String			trainingLabelsFile;
+	private String					trainingLabelsFile;
 
 	@Value("${task.mnist.directory.testImages}")
-	private String			testImagesFile;
+	private String					testImagesFile;
 
 	@Value("${task.mnist.directory.testLabels}")
-	private String			testLabelsFile;
+	private String					testLabelsFile;
 
-	private BigDecimal[][]	trainingImages;
-	private BigDecimal[][]	trainingLabels;
-	private BigDecimal[][]	testImages;
-	private BigDecimal[][]	testLabels;
+	private BigDecimal[][]			trainingImages;
+	private BigDecimal[][]			trainingLabels;
+	private BigDecimal[][]			testImages;
+	private BigDecimal[][]			testLabels;
 
 	@Autowired
-	private NeuralNetwork	network;
+	private NeuralNetwork			network;
 
 	@PostConstruct
 	public void init() {
@@ -152,6 +156,11 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 			for (int j = 0; j < totalPixels; j++) {
 				pixels[j] = BigDecimal.valueOf(Byte.toUnsignedInt(byteBuffer.get()));
+				/*
+				 * Scale the value so that it is between 0 and 1, as this makes the BigDecimal math during training
+				 * orders of magnitude more efficient
+				 */
+				pixels[j] = pixels[j].divide(MAX_PIXEL_VALUE, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 			}
 
 			images[i] = pixels;
@@ -193,7 +202,7 @@ public class MnistSampleGenerator implements SampleGenerator {
 	}
 
 	protected DataSet generate(int count, BigDecimal[][] images, BigDecimal[][] labels) {
-		if (count < images.length) {
+		if (count > images.length) {
 			throw new IllegalArgumentException("The number of samples to generate (" + count
 					+ ") exceeds the maximum number of samples available (" + images.length + ").");
 		}

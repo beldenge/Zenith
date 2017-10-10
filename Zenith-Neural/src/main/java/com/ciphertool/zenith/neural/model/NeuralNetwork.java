@@ -150,18 +150,18 @@ public class NeuralNetwork {
 		}
 
 		if (problemType == ProblemType.CLASSIFICATION) {
-			BigDecimal sumOfSums = BigDecimal.ZERO;
+			BigDecimal[] allSums = new BigDecimal[this.getOutputLayer().getNeurons().length];
 
 			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
 				Neuron nextOutputNeuron = this.getOutputLayer().getNeurons()[i];
 
-				sumOfSums = sumOfSums.add(nextOutputNeuron.getOutputSum());
+				allSums[i] = nextOutputNeuron.getOutputSum();
 			}
 
 			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
 				Neuron nextOutputNeuron = this.getOutputLayer().getNeurons()[i];
 
-				nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), sumOfSums));
+				nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));
 			}
 		}
 	}

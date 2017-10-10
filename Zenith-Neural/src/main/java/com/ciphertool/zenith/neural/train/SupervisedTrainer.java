@@ -24,6 +24,7 @@ import java.math.RoundingMode;
 
 import javax.annotation.PostConstruct;
 
+import org.nevec.rjm.BigDecimalMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,24 +109,46 @@ public class SupervisedTrainer {
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
-			errorTotal = errorTotal.add(costFunction(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+			if (problemType == ProblemType.REGRESSION) {
+				errorTotal = errorTotal.add(costFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+			} else {
+				errorTotal = errorTotal.add(costFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+			}
+
 			outputSumTotal = outputSumTotal.add(nextOutputNeuron.getOutputSum());
 		}
 
 		BigDecimal[] errorDerivatives = new BigDecimal[outputLayer.getNeurons().length];
 		BigDecimal[] activationDerivatives = new BigDecimal[outputLayer.getNeurons().length];
 
+		BigDecimal[] allSums = new BigDecimal[outputLayer.getNeurons().length];
+
+		if (problemType == ProblemType.CLASSIFICATION) {
+			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
+				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
+
+				allSums[i] = nextOutputNeuron.getOutputSum();
+			}
+		}
+
 		// Compute deltas for output layer using chain rule and subtract them from current weights
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
-			BigDecimal errorDerivative = derivativeOfCostFunction(expectedOutputs[i], nextOutputNeuron.getActivationValue());
+			BigDecimal errorDerivative;
+
+			if (problemType == ProblemType.REGRESSION) {
+				errorDerivative = derivativeOfCostFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
+			} else {
+				errorDerivative = derivativeOfCostFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue());
+			}
+
 			errorDerivatives[i] = errorDerivative;
 
 			BigDecimal activationDerivative;
 
 			if (problemType == ProblemType.CLASSIFICATION) {
-				activationDerivative = outputActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum(), outputSumTotal);
+				activationDerivative = outputActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum(), allSums);
 			} else {
 				activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
 			}
@@ -210,11 +233,19 @@ public class SupervisedTrainer {
 		}
 	}
 
-	protected static BigDecimal costFunction(BigDecimal expected, BigDecimal actual) {
+	protected static BigDecimal costFunctionRegression(BigDecimal expected, BigDecimal actual) {
 		return expected.subtract(actual).pow(2, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).divide(BigDecimal.valueOf(2.0), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 
-	protected static BigDecimal derivativeOfCostFunction(BigDecimal expected, BigDecimal actual) {
+	protected static BigDecimal derivativeOfCostFunctionRegression(BigDecimal expected, BigDecimal actual) {
 		return expected.subtract(actual).negate();
+	}
+
+	protected static BigDecimal costFunctionClassification(BigDecimal expected, BigDecimal actual) {
+		return BigDecimalMath.log(actual).multiply(expected, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).negate();
+	}
+
+	protected static BigDecimal derivativeOfCostFunctionClassification(BigDecimal expected, BigDecimal actual) {
+		return actual.subtract(expected);
 	}
 }
