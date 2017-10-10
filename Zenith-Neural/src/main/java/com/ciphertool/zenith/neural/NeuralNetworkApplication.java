@@ -105,7 +105,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 				log.info("Expected: " + expected + ", Prediction: " + prediction);
 
 				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
-				if (prediction.subtract(expected).abs().compareTo(ACCEPTABLE_MARGIN_OF_ERROR) > 0) {
+				if (!wasIncorrect && prediction.subtract(expected).abs().compareTo(ACCEPTABLE_MARGIN_OF_ERROR) > 0) {
 					incorrectCount++;
 
 					wasIncorrect = true;
@@ -118,7 +118,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		}
 
 		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
-		log.info("Percentage correct: " + (int) ((((double) correctCount / (double) numberOfTests) * 100) + 0.5));
-		log.info("Percentage incorrect: " + (int) ((((double) incorrectCount / (double) numberOfTests) * 100) + 0.5));
+		log.info("Percentage correct: " + (int) ((((double) correctCount / (double) numberOfTests) * 100.0) + 0.5));
+		log.info("Percentage incorrect: " + (int) ((((double) incorrectCount / (double) numberOfTests) * 100.0) + 0.5));
 	}
 }
