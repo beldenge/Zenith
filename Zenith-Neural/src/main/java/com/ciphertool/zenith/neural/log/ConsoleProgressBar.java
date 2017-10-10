@@ -8,19 +8,21 @@ public class ConsoleProgressBar {
 
 	private int				progress	= 0;
 
-	private int				barLength	= 20;
+	private int				barLength	= 100;
 
-	public void tick(double progressPercent) {
+	public void tick(double current, double total) {
+		double progressPercent = current / total;
+
 		int ticksToPrint = (int) (progressPercent * (double) barLength);
 
 		if (ticksToPrint > progress) {
 			this.progress = ticksToPrint;
 
-			log.info(print(ticksToPrint));
+			log.info(print(ticksToPrint, (int) (progressPercent * 100.0)));
 		}
 	}
 
-	private String print(int ticks) {
+	private String print(int ticks, int progressPercent) {
 		if (ticks > barLength) {
 			throw new IllegalArgumentException("The number of ticks to print (" + ticks
 					+ ") exceeds the progress bar length of " + barLength + ".");
@@ -38,6 +40,8 @@ public class ConsoleProgressBar {
 		}
 
 		sb.append("]");
+
+		sb.append(" " + progressPercent + "%");
 
 		return sb.toString();
 	}

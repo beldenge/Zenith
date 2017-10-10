@@ -96,12 +96,13 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 			BigDecimal[] inputs = testData.getInputs()[i];
 
+			log.info("Inputs: " + Arrays.toString(inputs));
+
 			for (int j = 0; j < predictions[i].length; j++) {
 				BigDecimal prediction = predictions[i][j];
 				BigDecimal expected = testData.getOutputs()[i][j];
 
-				log.info("Inputs: " + Arrays.toString(inputs) + ", Expected: " + expected + ", Prediction: "
-						+ prediction);
+				log.info("Expected: " + expected + ", Prediction: " + prediction);
 
 				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
 				if (prediction.subtract(expected).abs().compareTo(ACCEPTABLE_MARGIN_OF_ERROR) > 0) {
@@ -118,7 +119,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		}
 
 		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
-		log.info("Percentage correct: " + (int) (((double) correctCount / (double) numberOfTests) * 100));
-		log.info("Percentage incorrect: " + (int) (((double) incorrectCount / (double) numberOfTests) * 100));
+		log.info("Percentage correct: " + (int) ((((double) correctCount / (double) numberOfTests) * 100) + 0.5));
+		log.info("Percentage incorrect: " + (int) ((((double) incorrectCount / (double) numberOfTests) * 100) + 0.5));
 	}
 }

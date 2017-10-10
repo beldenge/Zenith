@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
 
@@ -82,10 +83,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		trainingImages = loadImages(trainingImagesBytes);
 
-		for (int i = 0; i < trainingImages.length; i++) {
-			log.debug("Test image {}: {}", i + 1, Arrays.toString(trainingImages[i]));
-		}
-
 		Path trainingLabelsPath = Paths.get(trainingLabelsFile);
 
 		byte[] trainingLabelsBytes;
@@ -98,8 +95,14 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		trainingLabels = loadLabels(trainingLabelsBytes);
 
-		for (int i = 0; i < trainingLabels.length; i++) {
-			log.debug("Test image {}: {}", i + 1, trainingLabels[i]);
+		DataSet shuffledTrainingData = shuffleArrays(trainingImages, trainingLabels);
+
+		trainingImages = shuffledTrainingData.getInputs();
+		trainingLabels = shuffledTrainingData.getOutputs();
+
+		for (int i = 0; i < trainingImages.length; i++) {
+			log.debug("Test image {}: {}", i + 1, Arrays.toString(trainingImages[i]));
+			log.debug("Test label {}: {}", i + 1, trainingLabels[i]);
 		}
 
 		Path testImagesPath = Paths.get(testImagesFile);
@@ -114,10 +117,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		testImages = loadImages(testImagesBytes);
 
-		for (int i = 0; i < testImages.length; i++) {
-			log.debug("Test image {}: {}", i + 1, Arrays.toString(testImages[i]));
-		}
-
 		Path testLabelsPath = Paths.get(testLabelsFile);
 
 		byte[] testLabelsBytes;
@@ -130,7 +129,13 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		testLabels = loadLabels(testLabelsBytes);
 
-		for (int i = 0; i < testLabels.length; i++) {
+		DataSet shuffledTestData = shuffleArrays(testImages, testLabels);
+
+		testImages = shuffledTestData.getInputs();
+		testLabels = shuffledTestData.getOutputs();
+
+		for (int i = 0; i < testImages.length; i++) {
+			log.debug("Test image {}: {}", i + 1, Arrays.toString(testImages[i]));
 			log.debug("Test label {}: {}", i + 1, testLabels[i]);
 		}
 	}
@@ -189,6 +194,28 @@ public class MnistSampleGenerator implements SampleGenerator {
 		}
 
 		return labels;
+	}
+
+	protected static DataSet shuffleArrays(BigDecimal[][] imagesArray, BigDecimal[][] labelsArray) {
+		if (imagesArray.length != labelsArray.length) {
+			throw new IllegalArgumentException("The images array length of " + imagesArray.length
+					+ " does not match the labels array length of " + labelsArray.length
+					+ ".  Unable to shuffle arrays.");
+		}
+
+		BigDecimal[][] shuffledImagesArray = new BigDecimal[imagesArray.length][];
+		BigDecimal[][] shuffledLabelsArray = new BigDecimal[labelsArray.length][];
+
+		int arrayLength = imagesArray.length;
+
+		for (int i = 0; i < arrayLength; i++) {
+			int randomIndex = ThreadLocalRandom.current().nextInt(imagesArray.length);
+
+			shuffledImagesArray[i] = imagesArray[randomIndex];
+			shuffledLabelsArray[i] = labelsArray[randomIndex];
+		}
+
+		return new DataSet(shuffledImagesArray, shuffledLabelsArray);
 	}
 
 	@Override

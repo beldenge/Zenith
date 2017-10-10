@@ -85,9 +85,9 @@ public class SupervisedTrainer {
 
 			backPropagate(outputs[i]);
 
-			log.info("Finished training sample {} in {}ms.", i, System.currentTimeMillis() - start);
+			log.info("Finished training sample {} in {}ms.", i + 1, System.currentTimeMillis() - start);
 
-			progressBar.tick((double) i / (double) inputs.length);
+			progressBar.tick((double) i, (double) inputs.length);
 		}
 	}
 
