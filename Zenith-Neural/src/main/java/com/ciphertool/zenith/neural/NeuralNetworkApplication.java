@@ -109,7 +109,6 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 					incorrectCount++;
 
 					wasIncorrect = true;
-					break;
 				}
 			}
 
