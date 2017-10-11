@@ -21,6 +21,10 @@ package com.ciphertool.zenith.neural.train;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 
@@ -29,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
@@ -131,44 +136,18 @@ public class SupervisedTrainer {
 			}
 		}
 
+		List<Future<Void>> futures = new ArrayList<>(outputLayer.getNeurons().length);
+
 		// Compute deltas for output layer using chain rule and subtract them from current weights
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
+			futures.add(processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, allSums));
+		}
 
-			BigDecimal errorDerivative;
-
-			if (problemType == ProblemType.REGRESSION) {
-				errorDerivative = derivativeOfCostFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
-			} else {
-				errorDerivative = derivativeOfCostFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue());
-			}
-
-			errorDerivatives[i] = errorDerivative;
-
-			BigDecimal activationDerivative;
-
-			if (problemType == ProblemType.CLASSIFICATION) {
-				activationDerivative = outputActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum(), allSums);
-			} else {
-				activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
-			}
-
-			activationDerivatives[i] = activationDerivative;
-
-			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
-				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
-
-				BigDecimal outputSumDerivative = nextInputNeuron.getActivationValue();
-
-				BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-
-				if (factorLearningRate) {
-					delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-				}
-
-				Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
-				nextSynapse.setOldWeight(nextSynapse.getWeight());
-				nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
+		for (Future<Void> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new IllegalStateException("Unable to process neuron.", e);
 			}
 		}
 
@@ -187,50 +166,108 @@ public class SupervisedTrainer {
 			errorDerivatives = new BigDecimal[toLayer.getNeurons().length];
 			activationDerivatives = new BigDecimal[toLayer.getNeurons().length];
 
+			futures = new ArrayList<>(toLayer.getNeurons().length);
+
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				Neuron nextToNeuron = toLayer.getNeurons()[j];
+				futures.add(processHiddenNeuron(j, fromLayer, toLayer, errorDerivatives, activationDerivatives, oldErrorDerivatives, oldActivationDerivatives));
+			}
 
-				if (nextToNeuron.isBias()) {
-					// There are no synapses going into the bias neuron
-					continue;
-				}
-
-				BigDecimal activationDerivative = hiddenActivationFunction.calculateDerivative(nextToNeuron.getOutputSum());
-				activationDerivatives[j] = activationDerivative;
-
-				BigDecimal errorDerivative = BigDecimal.ZERO;
-
-				for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
-					Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
-
-					BigDecimal partialErrorDerivative = oldErrorDerivatives[l].multiply(oldActivationDerivatives[l], MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-
-					BigDecimal weightDerivative = nextSynapse.getOldWeight();
-
-					errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
-				}
-
-				errorDerivatives[j] = errorDerivative;
-
-				BigDecimal errorTimesActivation = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-
-				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
-					Neuron nextFromNeuron = fromLayer.getNeurons()[k];
-
-					BigDecimal outputSumDerivative = nextFromNeuron.getActivationValue();
-
-					BigDecimal delta = errorTimesActivation.multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-
-					if (factorLearningRate) {
-						delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-					}
-
-					Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
-					nextSynapse.setOldWeight(nextSynapse.getWeight());
-					nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
+			for (Future<Void> future : futures) {
+				try {
+					future.get();
+				} catch (InterruptedException | ExecutionException e) {
+					throw new IllegalStateException("Unable to process neuron.", e);
 				}
 			}
 		}
+	}
+
+	protected Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] expectedOutputs, BigDecimal[] allSums) {
+		Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
+
+		BigDecimal errorDerivative;
+
+		if (problemType == ProblemType.REGRESSION) {
+			errorDerivative = derivativeOfCostFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
+		} else {
+			errorDerivative = derivativeOfCostFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue());
+		}
+
+		errorDerivatives[i] = errorDerivative;
+
+		BigDecimal activationDerivative;
+
+		if (problemType == ProblemType.CLASSIFICATION) {
+			activationDerivative = outputActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum(), allSums);
+		} else {
+			activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+		}
+
+		activationDerivatives[i] = activationDerivative;
+
+		for (int j = 0; j < fromLayer.getNeurons().length; j++) {
+			Neuron nextInputNeuron = fromLayer.getNeurons()[j];
+
+			BigDecimal outputSumDerivative = nextInputNeuron.getActivationValue();
+
+			BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
+			if (factorLearningRate) {
+				delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+			}
+
+			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
+			nextSynapse.setOldWeight(nextSynapse.getWeight());
+			nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
+		}
+
+		return new AsyncResult<>(null);
+	}
+
+	protected Future<Void> processHiddenNeuron(int j, Layer fromLayer, Layer toLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] oldErrorDerivatives, BigDecimal[] oldActivationDerivatives) {
+		Neuron nextToNeuron = toLayer.getNeurons()[j];
+
+		if (nextToNeuron.isBias()) {
+			// There are no synapses going into the bias neuron
+			return new AsyncResult<>(null);
+		}
+
+		BigDecimal activationDerivative = hiddenActivationFunction.calculateDerivative(nextToNeuron.getOutputSum());
+		activationDerivatives[j] = activationDerivative;
+
+		BigDecimal errorDerivative = BigDecimal.ZERO;
+
+		for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
+			Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
+
+			BigDecimal partialErrorDerivative = oldErrorDerivatives[l].multiply(oldActivationDerivatives[l], MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
+			BigDecimal weightDerivative = nextSynapse.getOldWeight();
+
+			errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
+		}
+
+		errorDerivatives[j] = errorDerivative;
+
+		BigDecimal errorTimesActivation = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
+		for (int k = 0; k < fromLayer.getNeurons().length; k++) {
+			Neuron nextFromNeuron = fromLayer.getNeurons()[k];
+
+			BigDecimal outputSumDerivative = nextFromNeuron.getActivationValue();
+
+			BigDecimal delta = errorTimesActivation.multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
+			if (factorLearningRate) {
+				delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+			}
+
+			Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
+			nextSynapse.setOldWeight(nextSynapse.getWeight());
+			nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
+		}
+
+		return new AsyncResult<>(null);
 	}
 
 	protected static BigDecimal costFunctionRegression(BigDecimal expected, BigDecimal actual) {

@@ -10,7 +10,13 @@ public class ConsoleProgressBar {
 
 	private int				barLength	= 100;
 
+	private boolean			complete	= false;
+
 	public void tick(double current, double total) {
+		if (complete) {
+			return;
+		}
+
 		double progressPercent = current / total;
 
 		int ticksToPrint = (int) (progressPercent * (double) barLength);
@@ -18,7 +24,9 @@ public class ConsoleProgressBar {
 		if (ticksToPrint > progress) {
 			this.progress = ticksToPrint;
 
-			log.info(print(ticksToPrint, (int) (progressPercent * 100.0)));
+			if (log.isDebugEnabled()) {
+				System.out.print("\r" + print(ticksToPrint, (int) (progressPercent * 100.0)));
+			}
 		}
 	}
 
@@ -43,6 +51,12 @@ public class ConsoleProgressBar {
 
 		sb.append(" " + progressPercent + "%");
 
+		if (ticks == barLength) {
+			complete = true;
+
+			sb.append("\n");
+		}
+		
 		return sb.toString();
 	}
 }

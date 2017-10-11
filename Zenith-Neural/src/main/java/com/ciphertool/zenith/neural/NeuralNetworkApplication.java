@@ -29,23 +29,39 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.DataSet;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 
+@EnableAsync
 @SpringBootApplication
 public class NeuralNetworkApplication implements CommandLineRunner {
 	private static Logger			log							= LoggerFactory.getLogger(NeuralNetworkApplication.class);
 
 	private static final BigDecimal	ACCEPTABLE_MARGIN_OF_ERROR	= BigDecimal.valueOf(0.01);
 
+	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	private int						corePoolSize;
+
+	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	private int						maxPoolSize;
+
+	@Value("${taskExecutor.queueCapacity}")
+	private int						queueCapacity;
+
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
 
 	@Value("${network.testSamples.count}")
 	private int						numberOfTests;
+
+	@Autowired
+	private ThreadPoolTaskExecutor	taskExecutor;
 
 	@Autowired
 	private SampleGenerator			generator;
@@ -68,6 +84,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... arg0) throws Exception {
+		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
+		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
+
 		log.info("Generating " + numberOfSamples + " training samples...");
 		long start = System.currentTimeMillis();
 		DataSet trainingData = generator.generateTrainingSamples(numberOfSamples);
@@ -120,5 +139,18 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
 		log.info("Percentage correct: " + (int) ((((double) correctCount / (double) numberOfTests) * 100.0) + 0.5));
 		log.info("Percentage incorrect: " + (int) ((((double) incorrectCount / (double) numberOfTests) * 100.0) + 0.5));
+	}
+
+	@Bean
+	public ThreadPoolTaskExecutor taskExecutor() {
+		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+		taskExecutor.setCorePoolSize(corePoolSize);
+		taskExecutor.setMaxPoolSize(maxPoolSize);
+		taskExecutor.setQueueCapacity(queueCapacity);
+		taskExecutor.setKeepAliveSeconds(5);
+		taskExecutor.setAllowCoreThreadTimeOut(true);
+
+		return taskExecutor;
 	}
 }

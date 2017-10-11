@@ -20,6 +20,16 @@ spring:
   profiles:
     active: mnist
 
+# ---------------------------------------
+# Spring Concurrency Properties
+# ---------------------------------------
+# The taskExecutor.poolSize.override property can be set to override the number of threads
+# (defaults to the number of available cores of the system)
+taskExecutor:
+  queueCapacity: 1000000
+  poolSize:
+    #override:
+
 ---
 
 spring:
@@ -58,9 +68,9 @@ network:
     add: true
     weight: 1.0
   trainingSamples:
-    count: 100
+    count: 9000
   testSamples:
-    count: 100
+    count: 10000
   learningRate: 0.1
 
 problem:

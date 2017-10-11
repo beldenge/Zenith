@@ -21,12 +21,18 @@ package com.ciphertool.zenith.neural.model;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
@@ -121,30 +127,17 @@ public class NeuralNetwork {
 			fromLayer = layers[i];
 			toLayer = layers[i + 1];
 
+			List<Future<Void>> futures = new ArrayList<>(toLayer.getNeurons().length);
+
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				Neuron nextOutputNeuron = toLayer.getNeurons()[j];
+				futures.add(processNeuron(j, toLayer, fromLayer));
+			}
 
-				if (nextOutputNeuron.isBias()) {
-					nextOutputNeuron.setActivationValue(biasWeight);
-
-					// There is no synapse going into a bias neuron
-					continue;
-				}
-
-				BigDecimal sum = BigDecimal.ZERO;
-
-				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
-					Neuron nextInputNeuron = fromLayer.getNeurons()[k];
-
-					Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
-
-					sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
-				}
-
-				nextOutputNeuron.setOutputSum(sum);
-
-				if (problemType == ProblemType.REGRESSION || toLayer != this.getOutputLayer()) {
-					nextOutputNeuron.setActivationValue(hiddenActivationFunction.transformInputSignal(sum));
+			for (Future<Void> future : futures) {
+				try {
+					future.get();
+				} catch (InterruptedException | ExecutionException e) {
+					throw new IllegalStateException("Unable to process neuron.", e);
 				}
 			}
 		}
@@ -164,6 +157,36 @@ public class NeuralNetwork {
 				nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));
 			}
 		}
+	}
+
+	@Async
+	protected Future<Void> processNeuron(int j, Layer toLayer, Layer fromLayer) {
+		Neuron nextOutputNeuron = toLayer.getNeurons()[j];
+
+		if (nextOutputNeuron.isBias()) {
+			nextOutputNeuron.setActivationValue(biasWeight);
+
+			// There is no synapse going into a bias neuron
+			return new AsyncResult<>(null);
+		}
+
+		BigDecimal sum = BigDecimal.ZERO;
+
+		for (int k = 0; k < fromLayer.getNeurons().length; k++) {
+			Neuron nextInputNeuron = fromLayer.getNeurons()[k];
+
+			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
+
+			sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
+		}
+
+		nextOutputNeuron.setOutputSum(sum);
+
+		if (problemType == ProblemType.REGRESSION || toLayer != this.getOutputLayer()) {
+			nextOutputNeuron.setActivationValue(hiddenActivationFunction.transformInputSignal(sum));
+		}
+
+		return new AsyncResult<>(null);
 	}
 
 	/**
