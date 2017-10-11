@@ -68,7 +68,7 @@ network:
     add: true
     weight: 1.0
   trainingSamples:
-    count: 9000
+    count: 10000
   testSamples:
     count: 10000
   learningRate: 0.1

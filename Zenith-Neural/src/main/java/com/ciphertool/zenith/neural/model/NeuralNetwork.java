@@ -20,7 +20,6 @@
 package com.ciphertool.zenith.neural.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -31,13 +30,10 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
 import com.ciphertool.zenith.neural.activation.OutputActivationFunction;
+import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
 
 @Component
 public class NeuralNetwork {
@@ -48,10 +44,10 @@ public class NeuralNetwork {
 	private ProblemType					problemType;
 
 	@Autowired
-	private HiddenActivationFunction	hiddenActivationFunction;
+	private OutputActivationFunction	outputActivationFunction;
 
 	@Autowired
-	private OutputActivationFunction	outputActivationFunction;
+	private FeedForwardNeuronProcessor	neuronProcessor;
 
 	private Layer[]						layers;
 
@@ -130,7 +126,7 @@ public class NeuralNetwork {
 			List<Future<Void>> futures = new ArrayList<>(toLayer.getNeurons().length);
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				futures.add(processNeuron(j, toLayer, fromLayer));
+				futures.add(neuronProcessor.processNeuron(j, toLayer, fromLayer));
 			}
 
 			for (Future<Void> future : futures) {
@@ -157,36 +153,6 @@ public class NeuralNetwork {
 				nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));
 			}
 		}
-	}
-
-	@Async
-	protected Future<Void> processNeuron(int j, Layer toLayer, Layer fromLayer) {
-		Neuron nextOutputNeuron = toLayer.getNeurons()[j];
-
-		if (nextOutputNeuron.isBias()) {
-			nextOutputNeuron.setActivationValue(biasWeight);
-
-			// There is no synapse going into a bias neuron
-			return new AsyncResult<>(null);
-		}
-
-		BigDecimal sum = BigDecimal.ZERO;
-
-		for (int k = 0; k < fromLayer.getNeurons().length; k++) {
-			Neuron nextInputNeuron = fromLayer.getNeurons()[k];
-
-			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
-
-			sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
-		}
-
-		nextOutputNeuron.setOutputSum(sum);
-
-		if (problemType == ProblemType.REGRESSION || toLayer != this.getOutputLayer()) {
-			nextOutputNeuron.setActivationValue(hiddenActivationFunction.transformInputSignal(sum));
-		}
-
-		return new AsyncResult<>(null);
 	}
 
 	/**
