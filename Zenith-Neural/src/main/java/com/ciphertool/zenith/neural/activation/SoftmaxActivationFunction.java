@@ -10,8 +10,6 @@ import com.ciphertool.zenith.math.MathConstants;
 
 @Component
 public class SoftmaxActivationFunction implements OutputActivationFunction {
-	private static final BigDecimal EULERS_NUMBER = BigDecimal.valueOf(Math.E);
-
 	@Override
 	public BigDecimal transformInputSignal(BigDecimal sum, BigDecimal[] allSums) {
 		// Use the maximum input as an arbitrary constant for numerical stability
@@ -21,11 +19,11 @@ public class SoftmaxActivationFunction implements OutputActivationFunction {
 			max = max.max(allSums[i]);
 		}
 
-		BigDecimal numerator = BigDecimalMath.pow(EULERS_NUMBER, sum.subtract(max)).setScale(10, RoundingMode.UP);
+		BigDecimal numerator = BigDecimalMath.exp(sum.subtract(max)).setScale(10, RoundingMode.UP);
 
 		BigDecimal denominator = BigDecimal.ZERO;
 		for (int i = 0; i < allSums.length; i++) {
-			denominator = denominator.add(BigDecimalMath.pow(EULERS_NUMBER, allSums[i].subtract(max)).setScale(10, RoundingMode.UP));
+			denominator = denominator.add(BigDecimalMath.exp(allSums[i].subtract(max)).setScale(10, RoundingMode.UP));
 		}
 
 		return numerator.divide(denominator, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);

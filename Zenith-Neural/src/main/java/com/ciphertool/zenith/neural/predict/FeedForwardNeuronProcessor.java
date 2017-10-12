@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
+import com.ciphertool.zenith.neural.activation.OutputActivationFunction;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
@@ -31,6 +32,9 @@ public class FeedForwardNeuronProcessor {
 
 	@Autowired
 	private HiddenActivationFunction	hiddenActivationFunction;
+
+	@Autowired
+	private OutputActivationFunction	outputActivationFunction;
 
 	@Async
 	public Future<Void> processNeuron(int j, Layer toLayer, Layer fromLayer) {
@@ -58,6 +62,15 @@ public class FeedForwardNeuronProcessor {
 		if (problemType == ProblemType.REGRESSION || toLayer != network.getOutputLayer()) {
 			nextOutputNeuron.setActivationValue(hiddenActivationFunction.transformInputSignal(sum));
 		}
+
+		return new AsyncResult<>(null);
+	}
+
+	@Async
+	public Future<Void> processOutputNeuron(int i, BigDecimal[] allSums) {
+		Neuron nextOutputNeuron = network.getOutputLayer().getNeurons()[i];
+
+		nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));
 
 		return new AsyncResult<>(null);
 	}

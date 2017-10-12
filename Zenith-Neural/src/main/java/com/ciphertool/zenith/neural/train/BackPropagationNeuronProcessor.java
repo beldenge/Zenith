@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +43,7 @@ public class BackPropagationNeuronProcessor {
 		}
 	}
 
+	@Async
 	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] expectedOutputs, BigDecimal[] allSums) {
 		Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
@@ -84,6 +86,7 @@ public class BackPropagationNeuronProcessor {
 		return new AsyncResult<>(null);
 	}
 
+	@Async
 	public Future<Void> processHiddenNeuron(int j, Layer fromLayer, Layer toLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] oldErrorDerivatives, BigDecimal[] oldActivationDerivatives) {
 		Neuron nextToNeuron = toLayer.getNeurons()[j];
 

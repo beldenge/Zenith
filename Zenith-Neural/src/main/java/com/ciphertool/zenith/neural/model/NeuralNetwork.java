@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.neural.activation.OutputActivationFunction;
 import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
 
 @Component
@@ -42,9 +41,6 @@ public class NeuralNetwork {
 
 	@Value("${problem.type}")
 	private ProblemType					problemType;
-
-	@Autowired
-	private OutputActivationFunction	outputActivationFunction;
 
 	@Autowired
 	private FeedForwardNeuronProcessor	neuronProcessor;
@@ -147,10 +143,18 @@ public class NeuralNetwork {
 				allSums[i] = nextOutputNeuron.getOutputSum();
 			}
 
-			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
-				Neuron nextOutputNeuron = this.getOutputLayer().getNeurons()[i];
+			List<Future<Void>> futures = new ArrayList<>(this.getOutputLayer().getNeurons().length);
 
-				nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));
+			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
+				futures.add(neuronProcessor.processOutputNeuron(i, allSums));
+			}
+
+			for (Future<Void> future : futures) {
+				try {
+					future.get();
+				} catch (InterruptedException | ExecutionException e) {
+					throw new IllegalStateException("Unable to process output neuron.", e);
+				}
 			}
 		}
 	}

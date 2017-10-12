@@ -51,7 +51,7 @@ public class SupervisedTrainer {
 	private NeuralNetwork					network;
 
 	@Autowired
-	private BackPropagationNeuronProcessor	backPropagationNeuronProcessor;
+	private BackPropagationNeuronProcessor	neuronProcessor;
 
 	public void train(BigDecimal[][] inputs, BigDecimal[][] outputs) {
 		if (inputs.length != outputs.length) {
@@ -67,9 +67,15 @@ public class SupervisedTrainer {
 
 			network.feedForward(inputs[i]);
 
+			long feedForwardMillis = System.currentTimeMillis() - start;
+			start = System.currentTimeMillis();
+
 			backPropagate(outputs[i]);
 
-			log.info("Finished training sample {} in {}ms.", i + 1, System.currentTimeMillis() - start);
+			long backPropagationMillis = System.currentTimeMillis() - start;
+
+			log.info("Finished training sample {} in {}ms.  Feed-forward: {}ms, Backprop: {}ms", i
+					+ 1, feedForwardMillis + backPropagationMillis, feedForwardMillis, backPropagationMillis);
 
 			progressBar.tick((double) i, (double) inputs.length);
 		}
@@ -90,6 +96,7 @@ public class SupervisedTrainer {
 		// Compute sum of errors
 		BigDecimal errorTotal = BigDecimal.ZERO;
 		BigDecimal outputSumTotal = BigDecimal.ZERO;
+
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
@@ -119,14 +126,14 @@ public class SupervisedTrainer {
 
 		// Compute deltas for output layer using chain rule and subtract them from current weights
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-			futures.add(backPropagationNeuronProcessor.processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, allSums));
+			futures.add(neuronProcessor.processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, allSums));
 		}
 
 		for (Future<Void> future : futures) {
 			try {
 				future.get();
 			} catch (InterruptedException | ExecutionException e) {
-				throw new IllegalStateException("Unable to process neuron.", e);
+				throw new IllegalStateException("Unable to process output neuron.", e);
 			}
 		}
 
@@ -148,7 +155,7 @@ public class SupervisedTrainer {
 			futures = new ArrayList<>(toLayer.getNeurons().length);
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				futures.add(backPropagationNeuronProcessor.processHiddenNeuron(j, fromLayer, toLayer, errorDerivatives, activationDerivatives, oldErrorDerivatives, oldActivationDerivatives));
+				futures.add(neuronProcessor.processHiddenNeuron(j, fromLayer, toLayer, errorDerivatives, activationDerivatives, oldErrorDerivatives, oldActivationDerivatives));
 			}
 
 			for (Future<Void> future : futures) {
@@ -165,7 +172,7 @@ public class SupervisedTrainer {
 		return expected.subtract(actual).pow(2, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).divide(BigDecimal.valueOf(2.0), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 
-	protected static BigDecimal costFunctionClassification(BigDecimal expected, BigDecimal actual) {
+	protected BigDecimal costFunctionClassification(BigDecimal expected, BigDecimal actual) {
 		return BigDecimalMath.log(actual).multiply(expected, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).negate();
 	}
 }

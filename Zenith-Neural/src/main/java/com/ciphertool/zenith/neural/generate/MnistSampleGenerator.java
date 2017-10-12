@@ -47,7 +47,7 @@ import com.ciphertool.zenith.neural.model.NeuralNetwork;
 public class MnistSampleGenerator implements SampleGenerator {
 	private static Logger			log				= LoggerFactory.getLogger(MnistSampleGenerator.class);
 
-	private static final BigDecimal	MAX_PIXEL_VALUE	= BigDecimal.valueOf(256);
+	private static final BigDecimal	MAX_PIXEL_VALUE	= BigDecimal.valueOf(255);
 
 	@Value("${task.mnist.directory.trainingImages}")
 	private String					trainingImagesFile;
