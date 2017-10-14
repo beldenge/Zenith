@@ -18,7 +18,7 @@
 
 spring:
   profiles:
-    active: mnist
+    active: xor
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -42,16 +42,12 @@ network:
     hidden: 3
     output: 1
   bias:
-    add: true
     weight: 1.0
   trainingSamples:
     count: 10000
   testSamples:
     count: 100
   learningRate: 0.1
-
-problem:
-  type: REGRESSION
 
 ---
 
@@ -65,16 +61,12 @@ network:
     hidden: 392
     output: 10
   bias:
-    add: true
     weight: 1.0
   trainingSamples:
     count: 60000
   testSamples:
     count: 10000
   learningRate: 0.2
-
-problem:
-  type: CLASSIFICATION
 
 task:
   mnist:

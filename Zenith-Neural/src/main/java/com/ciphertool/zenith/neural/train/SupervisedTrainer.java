@@ -30,7 +30,6 @@ import org.nevec.rjm.BigDecimalMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
@@ -45,9 +44,6 @@ public class SupervisedTrainer {
 	private static Logger					log						= LoggerFactory.getLogger(SupervisedTrainer.class);
 
 	private static final boolean			COMPUTE_SUM_OF_ERRORS	= false;
-
-	@Value("${problem.type}")
-	private ProblemType						problemType;
 
 	@Autowired
 	private NeuralNetwork					network;
@@ -103,7 +99,7 @@ public class SupervisedTrainer {
 			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
-				if (problemType == ProblemType.REGRESSION) {
+				if (network.getProblemType() == ProblemType.REGRESSION) {
 					errorTotal = errorTotal.add(costFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
 				} else {
 					errorTotal = errorTotal.add(costFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
@@ -118,7 +114,7 @@ public class SupervisedTrainer {
 
 		BigDecimal[] allSums = new BigDecimal[outputLayer.getNeurons().length];
 
-		if (problemType == ProblemType.CLASSIFICATION) {
+		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 

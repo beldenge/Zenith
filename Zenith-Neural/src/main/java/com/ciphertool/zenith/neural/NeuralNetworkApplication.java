@@ -35,6 +35,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.DataSet;
+import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import com.ciphertool.zenith.neural.train.SupervisedTrainer;
@@ -61,8 +62,8 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${network.testSamples.count}")
 	private int						numberOfTests;
 
-	@Value("${problem.type}")
-	private ProblemType				problemType;
+	@Autowired
+	private NeuralNetwork			network;
 
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
@@ -130,7 +131,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 				log.debug("Expected: {}, Prediction: {}", expected, prediction);
 
-				if (problemType == ProblemType.CLASSIFICATION) {
+				if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 					if (highestProbability.compareTo(prediction) < 0) {
 						highestProbability = prediction;
 						indexOfHighestProbability = j;
@@ -143,7 +144,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 				}
 			}
 
-			if (problemType == ProblemType.CLASSIFICATION
+			if (network.getProblemType() == ProblemType.CLASSIFICATION
 					&& BigDecimal.ONE.equals(testData.getOutputs()[i][indexOfHighestProbability])) {
 				bestProbabilityCount++;
 			}
@@ -158,7 +159,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("Percentage incorrect: " + (int) ((((double) (numberOfTests - correctCount) / (double) numberOfTests)
 				* 100.0) + 0.5));
 
-		if (problemType == ProblemType.CLASSIFICATION) {
+		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			log.info("Classification achieved " + bestProbabilityCount + " most probable out of " + numberOfTests
 					+ " total.");
 			log.info("Percentage most probable: " + (int) ((((double) bestProbabilityCount / (double) numberOfTests)

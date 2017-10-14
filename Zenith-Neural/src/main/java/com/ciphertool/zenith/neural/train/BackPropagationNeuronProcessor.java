@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
 import com.ciphertool.zenith.neural.model.Layer;
+import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.model.Synapse;
@@ -23,11 +24,11 @@ import com.ciphertool.zenith.neural.model.Synapse;
 public class BackPropagationNeuronProcessor {
 	private boolean						factorLearningRate;
 
-	@Value("${problem.type}")
-	private ProblemType					problemType;
-
 	@Value("${network.learningRate}")
 	private BigDecimal					learningRate;
+
+	@Autowired
+	private NeuralNetwork				network;
 
 	@Autowired
 	private HiddenActivationFunction	hiddenActivationFunction;
@@ -45,7 +46,7 @@ public class BackPropagationNeuronProcessor {
 
 		BigDecimal errorDerivative;
 
-		if (problemType == ProblemType.REGRESSION) {
+		if (network.getProblemType() == ProblemType.REGRESSION) {
 			errorDerivative = derivativeOfCostFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
 		} else {
 			errorDerivative = derivativeOfCostFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue());
@@ -55,7 +56,7 @@ public class BackPropagationNeuronProcessor {
 
 		BigDecimal activationDerivative;
 
-		if (problemType == ProblemType.CLASSIFICATION) {
+		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			activationDerivative = BigDecimal.ONE;
 		} else {
 			activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());

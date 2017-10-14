@@ -36,10 +36,8 @@ import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
 
 @Component
 public class NeuralNetwork {
-	@Value("${network.bias.weight}")
 	private BigDecimal					biasWeight;
 
-	@Value("${problem.type}")
 	private ProblemType					problemType;
 
 	@Autowired
@@ -49,6 +47,8 @@ public class NeuralNetwork {
 
 	@PostConstruct
 	public void init() {
+		problemType = this.getOutputLayer().neurons.length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
+
 		Layer fromLayer;
 		Layer toLayer;
 
@@ -84,7 +84,11 @@ public class NeuralNetwork {
 
 	public NeuralNetwork(@Value("${network.layers.input}") int inputLayerNeurons,
 			@Value("${network.layers.hidden}") int[] hiddenLayersNeurons,
-			@Value("${network.layers.output}") int outputLayerNeurons, @Value("${network.bias.add}") boolean addBias) {
+			@Value("${network.layers.output}") int outputLayerNeurons,
+			@Value("${network.bias.weight}") BigDecimal biasWeight) {
+		this.biasWeight = biasWeight;
+		boolean addBias = biasWeight != null ? true : false;
+
 		layers = new Layer[hiddenLayersNeurons.length + 2];
 
 		layers[0] = new Layer(inputLayerNeurons, addBias);
@@ -157,6 +161,13 @@ public class NeuralNetwork {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return the problemType
+	 */
+	public ProblemType getProblemType() {
+		return problemType;
 	}
 
 	/**

@@ -24,9 +24,6 @@ public class FeedForwardNeuronProcessor {
 	@Value("${network.bias.weight}")
 	private BigDecimal					biasWeight;
 
-	@Value("${problem.type}")
-	private ProblemType					problemType;
-
 	@Autowired
 	private NeuralNetwork				network;
 
@@ -41,8 +38,6 @@ public class FeedForwardNeuronProcessor {
 		Neuron nextOutputNeuron = toLayer.getNeurons()[j];
 
 		if (nextOutputNeuron.isBias()) {
-			nextOutputNeuron.setActivationValue(biasWeight);
-
 			// There is no synapse going into a bias neuron
 			return new AsyncResult<>(null);
 		}
@@ -59,7 +54,7 @@ public class FeedForwardNeuronProcessor {
 
 		nextOutputNeuron.setOutputSum(sum);
 
-		if (problemType == ProblemType.REGRESSION || toLayer != network.getOutputLayer()) {
+		if (network.getProblemType() == ProblemType.REGRESSION || toLayer != network.getOutputLayer()) {
 			nextOutputNeuron.setActivationValue(hiddenActivationFunction.transformInputSignal(sum));
 		}
 
