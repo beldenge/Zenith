@@ -48,6 +48,8 @@ network:
   testSamples:
     count: 100
   learningRate: 0.1
+  output:
+    fileName: /Users/george/Desktop/network-xor.json
 
 ---
 
@@ -67,6 +69,8 @@ network:
   testSamples:
     count: 10000
   learningRate: 0.2
+  output:
+    fileName: /Users/george/Desktop/network-mnist.json
 
 task:
   mnist:

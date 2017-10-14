@@ -21,9 +21,14 @@ package com.ciphertool.zenith.neural.model;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Synapse {
 	private BigDecimal	weight;
+
+	@JsonIgnore
 	private BigDecimal	oldWeight;
+
 	private Neuron		outGoingNeuron;
 
 	/**

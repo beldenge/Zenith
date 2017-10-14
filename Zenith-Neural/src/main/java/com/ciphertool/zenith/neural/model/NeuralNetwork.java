@@ -19,7 +19,11 @@
 
 package com.ciphertool.zenith.neural.model;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -28,17 +32,25 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class NeuralNetwork {
+	private static Logger				log	= LoggerFactory.getLogger(NeuralNetwork.class);
+
 	private BigDecimal					biasWeight;
 
 	private ProblemType					problemType;
+
+	@Value("${network.output.fileName}")
+	private String						outputFileName;
 
 	@Autowired
 	private FeedForwardNeuronProcessor	neuronProcessor;
@@ -160,6 +172,26 @@ public class NeuralNetwork {
 					throw new IllegalStateException("Unable to process output neuron.", e);
 				}
 			}
+		}
+	}
+
+	public void saveToFile() {
+		ObjectMapper mapper = new ObjectMapper();
+
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+		String dateText = now.format(formatter);
+
+		String extension = outputFileName.substring(outputFileName.indexOf('.'));
+		String beforeExtension = outputFileName.replace(extension, "");
+		String fileNameWithDate = beforeExtension + "-" + dateText + extension;
+
+		log.info("Saving network to file: {}", fileNameWithDate);
+
+		try {
+			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileNameWithDate), this);
+		} catch (IOException ioe) {
+			throw new IllegalStateException("Unable to write network parameters to file: " + fileNameWithDate, ioe);
 		}
 	}
 

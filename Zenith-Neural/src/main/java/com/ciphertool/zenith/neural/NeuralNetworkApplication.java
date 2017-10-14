@@ -156,17 +156,15 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
 		log.info("Percentage correct: " + (int) ((((double) correctCount / (double) numberOfTests) * 100.0) + 0.5));
-		log.info("Percentage incorrect: " + (int) ((((double) (numberOfTests - correctCount) / (double) numberOfTests)
-				* 100.0) + 0.5));
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			log.info("Classification achieved " + bestProbabilityCount + " most probable out of " + numberOfTests
 					+ " total.");
 			log.info("Percentage most probable: " + (int) ((((double) bestProbabilityCount / (double) numberOfTests)
 					* 100.0) + 0.5));
-			log.info("Percentage not most probable: " + (int) ((((double) (numberOfTests - bestProbabilityCount)
-					/ (double) numberOfTests) * 100.0) + 0.5));
 		}
+
+		network.saveToFile();
 	}
 
 	@Bean
