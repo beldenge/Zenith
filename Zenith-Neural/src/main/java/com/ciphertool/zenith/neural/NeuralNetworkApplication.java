@@ -35,6 +35,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.DataSet;
+import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 
@@ -59,6 +60,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 	@Value("${network.testSamples.count}")
 	private int						numberOfTests;
+
+	@Value("${problem.type}")
+	private ProblemType				problemType;
 
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
@@ -108,27 +112,40 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		int correctCount = 0;
-		int incorrectCount = 0;
+		int bestProbabilityCount = 0;
 		boolean wasIncorrect;
 		for (int i = 0; i < predictions.length; i++) {
 			wasIncorrect = false;
 
 			BigDecimal[] inputs = testData.getInputs()[i];
 
-			log.info("Inputs: " + Arrays.toString(inputs));
+			log.debug("Inputs: {}", Arrays.toString(inputs));
+
+			BigDecimal highestProbability = BigDecimal.ZERO;
+			int indexOfHighestProbability = -1;
 
 			for (int j = 0; j < predictions[i].length; j++) {
 				BigDecimal prediction = predictions[i][j];
 				BigDecimal expected = testData.getOutputs()[i][j];
 
-				log.info("Expected: " + expected + ", Prediction: " + prediction);
+				log.debug("Expected: {}, Prediction: {}", expected, prediction);
+
+				if (problemType == ProblemType.CLASSIFICATION) {
+					if (highestProbability.compareTo(prediction) < 0) {
+						highestProbability = prediction;
+						indexOfHighestProbability = j;
+					}
+				}
 
 				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
 				if (!wasIncorrect && prediction.subtract(expected).abs().compareTo(ACCEPTABLE_MARGIN_OF_ERROR) > 0) {
-					incorrectCount++;
-
 					wasIncorrect = true;
 				}
+			}
+
+			if (problemType == ProblemType.CLASSIFICATION
+					&& BigDecimal.ONE.equals(testData.getOutputs()[i][indexOfHighestProbability])) {
+				bestProbabilityCount++;
 			}
 
 			if (!wasIncorrect) {
@@ -138,7 +155,17 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 		log.info("Neural network achieved " + correctCount + " correct out of " + numberOfTests + " total.");
 		log.info("Percentage correct: " + (int) ((((double) correctCount / (double) numberOfTests) * 100.0) + 0.5));
-		log.info("Percentage incorrect: " + (int) ((((double) incorrectCount / (double) numberOfTests) * 100.0) + 0.5));
+		log.info("Percentage incorrect: " + (int) ((((double) (numberOfTests - correctCount) / (double) numberOfTests)
+				* 100.0) + 0.5));
+
+		if (problemType == ProblemType.CLASSIFICATION) {
+			log.info("Classification achieved " + bestProbabilityCount + " most probable out of " + numberOfTests
+					+ " total.");
+			log.info("Percentage most probable: " + (int) ((((double) bestProbabilityCount / (double) numberOfTests)
+					* 100.0) + 0.5));
+			log.info("Percentage not most probable: " + (int) ((((double) (numberOfTests - bestProbabilityCount)
+					/ (double) numberOfTests) * 100.0) + 0.5));
+		}
 	}
 
 	@Bean
