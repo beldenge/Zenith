@@ -62,15 +62,15 @@ network:
   layers:
     input: 784
     # The hidden layer takes a comma-separated list of integers representing the number of neurons per hidden layer
-    hidden: 784
+    hidden: 392
     output: 10
   bias:
     add: true
     weight: 1.0
   trainingSamples:
-    count: 1000
+    count: 60000
   testSamples:
-    count: 100
+    count: 10000
   learningRate: 0.1
 
 problem:

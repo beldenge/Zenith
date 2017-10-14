@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
-import com.ciphertool.zenith.neural.activation.OutputActivationFunction;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.Neuron;
 import com.ciphertool.zenith.neural.model.ProblemType;
@@ -32,9 +31,6 @@ public class BackPropagationNeuronProcessor {
 
 	@Autowired
 	private HiddenActivationFunction	hiddenActivationFunction;
-
-	@Autowired
-	private OutputActivationFunction	outputActivationFunction;
 
 	@PostConstruct
 	public void init() {
@@ -60,9 +56,9 @@ public class BackPropagationNeuronProcessor {
 		BigDecimal activationDerivative;
 
 		if (problemType == ProblemType.CLASSIFICATION) {
-			activationDerivative = outputActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum(), allSums);
-		} else {
 			activationDerivative = BigDecimal.ONE;
+		} else {
+			activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
 		}
 
 		activationDerivatives[i] = activationDerivative;
