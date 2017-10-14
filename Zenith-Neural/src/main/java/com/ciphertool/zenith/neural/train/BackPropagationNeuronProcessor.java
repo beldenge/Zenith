@@ -62,7 +62,7 @@ public class BackPropagationNeuronProcessor {
 		if (problemType == ProblemType.CLASSIFICATION) {
 			activationDerivative = outputActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum(), allSums);
 		} else {
-			activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+			activationDerivative = BigDecimal.ONE;
 		}
 
 		activationDerivatives[i] = activationDerivative;

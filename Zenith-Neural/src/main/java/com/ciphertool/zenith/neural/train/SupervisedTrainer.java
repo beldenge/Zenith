@@ -42,7 +42,9 @@ import com.ciphertool.zenith.neural.model.ProblemType;
 
 @Component
 public class SupervisedTrainer {
-	private static Logger					log	= LoggerFactory.getLogger(SupervisedTrainer.class);
+	private static Logger					log						= LoggerFactory.getLogger(SupervisedTrainer.class);
+
+	private static final boolean			COMPUTE_SUM_OF_ERRORS	= false;
 
 	@Value("${problem.type}")
 	private ProblemType						problemType;
@@ -93,20 +95,22 @@ public class SupervisedTrainer {
 		Layer[] layers = network.getLayers();
 		Layer fromLayer = layers[layers.length - 2];
 
-		// Compute sum of errors
-		BigDecimal errorTotal = BigDecimal.ZERO;
-		BigDecimal outputSumTotal = BigDecimal.ZERO;
+		if (COMPUTE_SUM_OF_ERRORS) {
+			// Compute sum of errors
+			BigDecimal errorTotal = BigDecimal.ZERO;
+			BigDecimal outputSumTotal = BigDecimal.ZERO;
 
-		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-			Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
+			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
+				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
-			if (problemType == ProblemType.REGRESSION) {
-				errorTotal = errorTotal.add(costFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
-			} else {
-				errorTotal = errorTotal.add(costFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+				if (problemType == ProblemType.REGRESSION) {
+					errorTotal = errorTotal.add(costFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+				} else {
+					errorTotal = errorTotal.add(costFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+				}
+
+				outputSumTotal = outputSumTotal.add(nextOutputNeuron.getOutputSum());
 			}
-
-			outputSumTotal = outputSumTotal.add(nextOutputNeuron.getOutputSum());
 		}
 
 		BigDecimal[] errorDerivatives = new BigDecimal[outputLayer.getNeurons().length];

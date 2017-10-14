@@ -62,7 +62,7 @@ network:
   layers:
     input: 784
     # The hidden layer takes a comma-separated list of integers representing the number of neurons per hidden layer
-    hidden: 392,196
+    hidden: 784
     output: 10
   bias:
     add: true
