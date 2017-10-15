@@ -18,7 +18,7 @@
 
 spring:
   profiles:
-    active: xor
+    active: mnist
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -38,9 +38,9 @@ spring:
 network:
   layers:
     input: 2
-    # The hidden layer takes a comma-separated list of integers representing the number of neurons per hidden layer
-    hidden: 3
-    output: 1
+    # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
+    hidden: 3:LEAKY_RELU
+    output: 1:LEAKY_RELU
   bias:
     weight: 1.0
   trainingSamples:
@@ -59,16 +59,16 @@ spring:
 network:
   layers:
     input: 784
-    # The hidden layer takes a comma-separated list of integers representing the number of neurons per hidden layer
-    hidden: 392
-    output: 10
+    # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
+    hidden: 392:LEAKY_RELU
+    output: 10:SOFTMAX
   bias:
     weight: 1.0
   trainingSamples:
     count: 60000
   testSamples:
     count: 10000
-  learningRate: 0.2
+  learningRate: 0.1
   output:
     fileName: /Users/george/Desktop/network-mnist.json
 

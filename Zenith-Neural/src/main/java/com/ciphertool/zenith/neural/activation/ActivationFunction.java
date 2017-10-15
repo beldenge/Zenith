@@ -21,7 +21,7 @@ package com.ciphertool.zenith.neural.activation;
 
 import java.math.BigDecimal;
 
-public interface OutputActivationFunction {
+public interface ActivationFunction {
 	public BigDecimal transformInputSignal(BigDecimal sum, BigDecimal[] allSums);
 
 	public BigDecimal calculateDerivative(BigDecimal sum, BigDecimal[] allSums);

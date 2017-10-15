@@ -91,6 +91,10 @@ public class SupervisedTrainer {
 		Layer[] layers = network.getLayers();
 		Layer fromLayer = layers[layers.length - 2];
 
+		/*
+		 * The sum of errors is not actually used by the backpropagation algorithm, but it may be useful for debugging
+		 * purposes
+		 */
 		if (COMPUTE_SUM_OF_ERRORS) {
 			// Compute sum of errors
 			BigDecimal errorTotal = BigDecimal.ZERO;

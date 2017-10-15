@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
 import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,7 +60,7 @@ public class NeuralNetwork {
 
 	@PostConstruct
 	public void init() {
-		problemType = this.getOutputLayer().neurons.length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
+		problemType = this.getOutputLayer().getNeurons().length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
 
 		Layer fromLayer;
 		Layer toLayer;
@@ -95,21 +96,45 @@ public class NeuralNetwork {
 	}
 
 	public NeuralNetwork(@Value("${network.layers.input}") int inputLayerNeurons,
-			@Value("${network.layers.hidden}") int[] hiddenLayersNeurons,
-			@Value("${network.layers.output}") int outputLayerNeurons,
+			@Value("${network.layers.hidden}") String[] hiddenLayers,
+			@Value("${network.layers.output}") String outputLayer,
 			@Value("${network.bias.weight}") BigDecimal biasWeight) {
 		this.biasWeight = biasWeight;
 		boolean addBias = biasWeight != null ? true : false;
 
-		layers = new Layer[hiddenLayersNeurons.length + 2];
+		layers = new Layer[hiddenLayers.length + 2];
 
 		layers[0] = new Layer(inputLayerNeurons, addBias);
 
-		for (int i = 1; i <= hiddenLayersNeurons.length; i++) {
-			layers[i] = new Layer(hiddenLayersNeurons[i - 1], addBias);
+		for (int i = 1; i <= hiddenLayers.length; i++) {
+			int separatorIndex = hiddenLayers[i - 1].indexOf(':');
+
+			if (separatorIndex < 0) {
+				throw new IllegalArgumentException(
+						"The hidden layers must be represented as a comma-separated list of numberOfNeurons:activationFunctionType pairs.");
+			}
+
+			int numberOfNeurons = Integer.parseInt(hiddenLayers[i - 1].substring(0, separatorIndex));
+
+			ActivationFunctionType activationFunctionType = ActivationFunctionType.valueOf(hiddenLayers[i
+					- 1].substring(separatorIndex + 1));
+
+			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias);
 		}
 
-		layers[layers.length - 1] = new Layer(outputLayerNeurons, false);
+		int separatorIndex = outputLayer.indexOf(':');
+
+		if (separatorIndex < 0) {
+			throw new IllegalArgumentException(
+					"The output layer must be represented as a numberOfNeurons:activationFunctionType pair.");
+		}
+
+		int numberOfNeurons = Integer.parseInt(outputLayer.substring(0, separatorIndex));
+
+		ActivationFunctionType activationFunctionType = ActivationFunctionType.valueOf(outputLayer.substring(separatorIndex
+				+ 1));
+
+		layers[layers.length - 1] = new Layer(numberOfNeurons, activationFunctionType, false);
 	}
 
 	public void feedForward(BigDecimal[] inputs) {

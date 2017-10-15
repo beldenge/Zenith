@@ -1,3 +1,22 @@
+/**
+ * Copyright 2017 George Belden
+ * 
+ * This file is part of Zenith.
+ * 
+ * Zenith is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * Zenith is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * Zenith. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.ciphertool.zenith.neural.train;
 
 import java.math.BigDecimal;
@@ -13,7 +32,6 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
@@ -22,16 +40,13 @@ import com.ciphertool.zenith.neural.model.Synapse;
 
 @Component
 public class BackPropagationNeuronProcessor {
-	private boolean						factorLearningRate;
+	private boolean			factorLearningRate;
 
 	@Value("${network.learningRate}")
-	private BigDecimal					learningRate;
+	private BigDecimal		learningRate;
 
 	@Autowired
-	private NeuralNetwork				network;
-
-	@Autowired
-	private HiddenActivationFunction	hiddenActivationFunction;
+	private NeuralNetwork	network;
 
 	@PostConstruct
 	public void init() {
@@ -57,9 +72,10 @@ public class BackPropagationNeuronProcessor {
 		BigDecimal activationDerivative;
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
+			// For softmax/cross entropy loss, the activationDerivative is accounted for in the errorDerivative
 			activationDerivative = BigDecimal.ONE;
 		} else {
-			activationDerivative = hiddenActivationFunction.calculateDerivative(nextOutputNeuron.getOutputSum());
+			activationDerivative = outputLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(nextOutputNeuron.getOutputSum(), null);
 		}
 
 		activationDerivatives[i] = activationDerivative;
@@ -92,7 +108,7 @@ public class BackPropagationNeuronProcessor {
 			return new AsyncResult<>(null);
 		}
 
-		BigDecimal activationDerivative = hiddenActivationFunction.calculateDerivative(nextToNeuron.getOutputSum());
+		BigDecimal activationDerivative = toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(nextToNeuron.getOutputSum(), null);
 		activationDerivatives[j] = activationDerivative;
 
 		BigDecimal errorDerivative = BigDecimal.ZERO;

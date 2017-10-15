@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.math;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
@@ -26,4 +27,6 @@ public class MathConstants {
 	public static final MathContext	PREC_10_HALF_UP	= new MathContext(10, RoundingMode.HALF_UP);
 
 	public static final MathContext	PREC_5_HALF_UP	= new MathContext(5, RoundingMode.HALF_UP);
+
+	public static final BigDecimal	EULERS_CONSTANT	= BigDecimal.valueOf(Math.E);
 }

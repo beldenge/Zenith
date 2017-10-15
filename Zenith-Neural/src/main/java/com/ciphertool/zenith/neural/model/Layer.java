@@ -19,9 +19,12 @@
 
 package com.ciphertool.zenith.neural.model;
 
+import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
+
 public class Layer {
-	protected Neuron[]	neurons;
-	protected boolean	hasBias;
+	private Neuron[]				neurons;
+	private boolean					hasBias;
+	private ActivationFunctionType	activationFunctionType;
 
 	public Layer(int neurons, boolean hasBias) {
 		this.hasBias = hasBias;
@@ -37,11 +40,24 @@ public class Layer {
 		}
 	}
 
+	public Layer(int neurons, ActivationFunctionType activationFunctionType, boolean hasBias) {
+		this(neurons, hasBias);
+
+		this.activationFunctionType = activationFunctionType;
+	}
+
 	/**
 	 * @return the neurons
 	 */
 	public Neuron[] getNeurons() {
 		return neurons;
+	}
+
+	/**
+	 * @return the activationFunctionType
+	 */
+	public ActivationFunctionType getActivationFunctionType() {
+		return activationFunctionType;
 	}
 
 	/**

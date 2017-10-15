@@ -19,10 +19,21 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-import java.math.BigDecimal;
+public enum ActivationFunctionType {
+	LEAKY_RELU(new LeakyReLuActivationFunction()),
+	SIGMOID(new SigmoidActivationFunction()),
+	SOFTMAX(new SoftmaxActivationFunction());
 
-public interface HiddenActivationFunction {
-	public BigDecimal transformInputSignal(BigDecimal sum);
+	private ActivationFunction activationFunction;
 
-	public BigDecimal calculateDerivative(BigDecimal sum);
+	private ActivationFunctionType(ActivationFunction activationFunction) {
+		this.activationFunction = activationFunction;
+	}
+
+	/**
+	 * @return the activationFunction
+	 */
+	public ActivationFunction getActivationFunction() {
+		return activationFunction;
+	}
 }

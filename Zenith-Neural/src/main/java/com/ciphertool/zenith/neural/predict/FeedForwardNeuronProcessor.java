@@ -1,3 +1,22 @@
+/**
+ * Copyright 2017 George Belden
+ * 
+ * This file is part of Zenith.
+ * 
+ * Zenith is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * Zenith is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * Zenith. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.ciphertool.zenith.neural.predict;
 
 import java.math.BigDecimal;
@@ -11,8 +30,6 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.neural.activation.HiddenActivationFunction;
-import com.ciphertool.zenith.neural.activation.OutputActivationFunction;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
@@ -22,16 +39,10 @@ import com.ciphertool.zenith.neural.model.Synapse;
 @Component
 public class FeedForwardNeuronProcessor {
 	@Value("${network.bias.weight}")
-	private BigDecimal					biasWeight;
+	private BigDecimal		biasWeight;
 
 	@Autowired
-	private NeuralNetwork				network;
-
-	@Autowired
-	private HiddenActivationFunction	hiddenActivationFunction;
-
-	@Autowired
-	private OutputActivationFunction	outputActivationFunction;
+	private NeuralNetwork	network;
 
 	@Async
 	public Future<Void> processNeuron(int j, Layer toLayer, Layer fromLayer) {
@@ -55,7 +66,7 @@ public class FeedForwardNeuronProcessor {
 		nextOutputNeuron.setOutputSum(sum);
 
 		if (network.getProblemType() == ProblemType.REGRESSION || toLayer != network.getOutputLayer()) {
-			nextOutputNeuron.setActivationValue(hiddenActivationFunction.transformInputSignal(sum));
+			nextOutputNeuron.setActivationValue(toLayer.getActivationFunctionType().getActivationFunction().transformInputSignal(sum, null));
 		}
 
 		return new AsyncResult<>(null);
@@ -65,7 +76,7 @@ public class FeedForwardNeuronProcessor {
 	public Future<Void> processOutputNeuron(int i, BigDecimal[] allSums) {
 		Neuron nextOutputNeuron = network.getOutputLayer().getNeurons()[i];
 
-		nextOutputNeuron.setActivationValue(outputActivationFunction.transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));
+		nextOutputNeuron.setActivationValue(network.getOutputLayer().getActivationFunctionType().getActivationFunction().transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));
 
 		return new AsyncResult<>(null);
 	}

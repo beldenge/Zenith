@@ -22,32 +22,22 @@ package com.ciphertool.zenith.neural.activation;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.nevec.rjm.BigDecimalMath;
+
 import com.ciphertool.zenith.math.MathConstants;
 
-public class LeakyReLuActivationFunction implements ActivationFunction {
-	private static final BigDecimal SLOPE_CLOSE_TO_ZERO = BigDecimal.valueOf(0.01);
-
+public class SigmoidActivationFunction implements ActivationFunction {
 	@Override
 	public BigDecimal transformInputSignal(BigDecimal sum, BigDecimal[] allSums) {
-		if (BigDecimal.ZERO.compareTo(sum) < 0) {
-			return sum;
-		}
+		BigDecimal denominator = BigDecimal.ONE.add(BigDecimalMath.pow(MathConstants.EULERS_CONSTANT, sum.negate()).setScale(10, RoundingMode.UP));
 
-		return SLOPE_CLOSE_TO_ZERO.multiply(sum, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		return BigDecimal.ONE.divide(denominator, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 
 	@Override
 	public BigDecimal calculateDerivative(BigDecimal sum, BigDecimal[] allSums) {
-		if (BigDecimal.ZERO.compareTo(sum) < 0) {
-			return BigDecimal.ONE;
-		} else if (BigDecimal.ZERO.compareTo(sum) > 0) {
-			return SLOPE_CLOSE_TO_ZERO;
-		}
+		BigDecimal sigmoid = transformInputSignal(sum, null);
 
-		/*
-		 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to just
-		 * return zero.
-		 */
-		return BigDecimal.ZERO;
+		return sigmoid.multiply(BigDecimal.ONE.subtract(sigmoid), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 }
