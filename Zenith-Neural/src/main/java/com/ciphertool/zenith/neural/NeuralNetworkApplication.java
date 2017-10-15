@@ -164,7 +164,11 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 					* 100.0) + 0.5));
 		}
 
-		network.saveToFile();
+		/*
+		 * FIXME: This is creating way too huge of a file because I need to change the way synapses link to neurons --
+		 * as of now there is recursive duplication
+		 */
+		// network.saveToFile();
 	}
 
 	@Bean

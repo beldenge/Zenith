@@ -60,7 +60,7 @@ network:
   layers:
     input: 784
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-    hidden: 392:LEAKY_RELU
+    hidden: 98:LEAKY_RELU
     output: 10:SOFTMAX
   bias:
     weight: 1.0
@@ -68,7 +68,8 @@ network:
     count: 60000
   testSamples:
     count: 10000
-  learningRate: 0.1
+  #learningRate: 0.00005  #this seems to work well with two hidden layers, albeit still not as good as a single layer for some reason
+  learningRate: 0.01
   output:
     fileName: /Users/george/Desktop/network-mnist.json
 
