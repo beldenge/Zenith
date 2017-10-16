@@ -22,6 +22,7 @@ package com.ciphertool.zenith.neural.model;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
 import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +54,9 @@ public class NeuralNetwork {
 
 	@Value("${network.output.fileName}")
 	private String						outputFileName;
+
+	@Value("${network.batchSize}")
+	private int							batchSize;
 
 	@Autowired
 	private FeedForwardNeuronProcessor	neuronProcessor;
@@ -89,7 +94,7 @@ public class NeuralNetwork {
 
 					BigDecimal initialWeight = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble());
 
-					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight);
+					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight, batchSize);
 				}
 			}
 		}
@@ -200,6 +205,32 @@ public class NeuralNetwork {
 		}
 	}
 
+	public void applyAccumulatedDeltas() {
+		for (int i = 0; i < layers.length - 1; i++) {
+			Layer fromLayer = layers[i];
+
+			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
+				Neuron nextNeuron = fromLayer.getNeurons()[j];
+
+				for (int k = 0; k < nextNeuron.getOutgoingSynapses().length; k++) {
+					Synapse nextSynapse = nextNeuron.getOutgoingSynapses()[k];
+
+					BigDecimal sum = BigDecimal.ZERO;
+
+					for (BigDecimal delta : nextSynapse.getAccumulatedDeltas()) {
+						sum = sum.add(delta);
+					}
+
+					BigDecimal averageDelta = sum.divide(BigDecimal.valueOf(nextSynapse.getAccumulatedDeltas().size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
+					nextSynapse.setWeight(nextSynapse.getWeight().subtract(averageDelta));
+
+					nextSynapse.clearAccumulatedDeltas();
+				}
+			}
+		}
+	}
+
 	public void saveToFile() {
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -246,5 +277,12 @@ public class NeuralNetwork {
 	 */
 	public Layer getOutputLayer() {
 		return layers[layers.length - 1];
+	}
+
+	/**
+	 * @return the batchSize
+	 */
+	public int getBatchSize() {
+		return batchSize;
 	}
 }

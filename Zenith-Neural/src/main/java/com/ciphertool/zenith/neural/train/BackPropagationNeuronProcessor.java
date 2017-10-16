@@ -92,8 +92,7 @@ public class BackPropagationNeuronProcessor {
 			}
 
 			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
-			nextSynapse.setOldWeight(nextSynapse.getWeight());
-			nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
+			nextSynapse.addDelta(delta);
 		}
 
 		return new AsyncResult<>(null);
@@ -118,7 +117,7 @@ public class BackPropagationNeuronProcessor {
 
 			BigDecimal partialErrorDerivative = oldErrorDerivatives[l].multiply(oldActivationDerivatives[l], MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
-			BigDecimal weightDerivative = nextSynapse.getOldWeight();
+			BigDecimal weightDerivative = nextSynapse.getWeight();
 
 			errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
 		}
@@ -139,8 +138,7 @@ public class BackPropagationNeuronProcessor {
 			}
 
 			Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
-			nextSynapse.setOldWeight(nextSynapse.getWeight());
-			nextSynapse.setWeight(nextSynapse.getWeight().subtract(delta));
+			nextSynapse.addDelta(delta);
 		}
 
 		return new AsyncResult<>(null);

@@ -46,8 +46,10 @@ network:
   trainingSamples:
     count: 10000
   testSamples:
-    count: 100
+    count: 1000
   learningRate: 0.1
+  epochs: 1
+  batchSize: 1
   output:
     fileName: /Users/george/Desktop/network-xor.json
 
@@ -70,6 +72,8 @@ network:
     count: 10000
   #learningRate: 0.00005  #this seems to work well with two hidden layers, albeit still not as good as a single layer for some reason
   learningRate: 0.01
+  epochs: 1
+  batchSize: 1
   output:
     fileName: /Users/george/Desktop/network-mnist.json
 

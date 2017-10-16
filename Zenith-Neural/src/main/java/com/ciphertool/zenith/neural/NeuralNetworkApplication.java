@@ -62,6 +62,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${network.testSamples.count}")
 	private int						numberOfTests;
 
+	@Value("${network.epochs}")
+	private int						epochs;
+
 	@Autowired
 	private NeuralNetwork			network;
 
@@ -92,15 +95,20 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
-		log.info("Generating " + numberOfSamples + " training samples...");
-		long start = System.currentTimeMillis();
-		DataSet trainingData = generator.generateTrainingSamples(numberOfSamples);
-		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
-
 		log.info("Training network...");
-		start = System.currentTimeMillis();
-		trainer.train(trainingData.getInputs(), trainingData.getOutputs());
-		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
+		long start = System.currentTimeMillis();
+
+		for (int i = 1; i <= epochs; i++) {
+			log.info("Generating " + numberOfSamples + " training samples...");
+			long startGeneration = System.currentTimeMillis();
+			DataSet trainingData = generator.generateTrainingSamples(numberOfSamples);
+			log.info("Finished sample generation in " + (System.currentTimeMillis() - startGeneration) + "ms.");
+
+			trainer.train(trainingData.getInputs(), trainingData.getOutputs());
+			log.info("Completed epoch {}", i);
+		}
+
+		log.info("Finished training in " + (System.currentTimeMillis() - start) + "ms.");
 
 		log.info("Generating " + numberOfTests + " test samples...");
 		start = System.currentTimeMillis();
