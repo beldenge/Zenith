@@ -63,40 +63,39 @@ public class SupervisedTrainer {
 		int currentBatchSize = 0;
 
 		int i;
-		long feedForwardMillis = 0;
-		long backPropagationMillis = 0;
+		long batchStart = System.currentTimeMillis();
 		for (i = 0; i < inputs.length; i++) {
 			long start = System.currentTimeMillis();
 
 			network.feedForward(inputs[i]);
 
-			feedForwardMillis = System.currentTimeMillis() - start;
+			log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
 
 			start = System.currentTimeMillis();
 
 			backPropagate(outputs[i]);
 
-			backPropagationMillis = System.currentTimeMillis() - start;
+			log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
 
 			currentBatchSize++;
 
 			if (currentBatchSize == network.getBatchSize()) {
 				network.applyAccumulatedDeltas();
 
-				log.info("Finished training batch {} in {}ms.  Feed-forward: {}ms, Backprop: {}ms", (int) ((i + 1)
-						/ network.getBatchSize()), feedForwardMillis
-								+ backPropagationMillis, feedForwardMillis, backPropagationMillis);
+				log.info("Finished training batch {} in {}ms.", (int) ((i + 1)
+						/ network.getBatchSize()), (System.currentTimeMillis() - batchStart));
 
 				currentBatchSize = 0;
+
+				batchStart = System.currentTimeMillis();
 			}
 
 			progressBar.tick((double) i, (double) inputs.length);
 		}
 
 		if (currentBatchSize > 0) {
-			log.info("Finished training batch {} in {}ms.  Feed-forward: {}ms, Backprop: {}ms", (int) ((i + 1)
-					/ network.getBatchSize()), feedForwardMillis
-							+ backPropagationMillis, feedForwardMillis, backPropagationMillis);
+			log.info("Finished training batch {} in {}ms.", (int) ((i + 1)
+					/ network.getBatchSize()), (System.currentTimeMillis() - batchStart));
 
 			network.applyAccumulatedDeltas();
 		}
