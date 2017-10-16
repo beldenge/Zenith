@@ -32,19 +32,27 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
 import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Validated
 @Component
+@ConfigurationProperties
 public class NeuralNetwork {
 	private static Logger				log	= LoggerFactory.getLogger(NeuralNetwork.class);
 
@@ -52,11 +60,22 @@ public class NeuralNetwork {
 
 	private ProblemType					problemType;
 
+	@DecimalMin("0.0")
+	@Value("${network.learningRate}")
+	private BigDecimal					learningRate;
+
+	@NotBlank
 	@Value("${network.output.fileName}")
 	private String						outputFileName;
 
+	@Min(1)
 	@Value("${network.batchSize}")
 	private int							batchSize;
+
+	@DecimalMin("0.0")
+	@DecimalMax("1.0")
+	@Value("${network.weightDecay}")
+	private BigDecimal					weightDecayPercent;
 
 	@Autowired
 	private FeedForwardNeuronProcessor	neuronProcessor;
@@ -100,9 +119,9 @@ public class NeuralNetwork {
 		}
 	}
 
-	public NeuralNetwork(@Value("${network.layers.input}") int inputLayerNeurons,
-			@Value("${network.layers.hidden}") String[] hiddenLayers,
-			@Value("${network.layers.output}") String outputLayer,
+	public NeuralNetwork(@Min(1) @Value("${network.layers.input}") int inputLayerNeurons,
+			@NotBlank @Value("${network.layers.hidden}") String[] hiddenLayers,
+			@NotBlank @Value("${network.layers.output}") String outputLayer,
 			@Value("${network.bias.weight}") BigDecimal biasWeight) {
 		this.biasWeight = biasWeight;
 		boolean addBias = biasWeight != null ? true : false;
@@ -168,7 +187,7 @@ public class NeuralNetwork {
 			List<Future<Void>> futures = new ArrayList<>(toLayer.getNeurons().length);
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				futures.add(neuronProcessor.processNeuron(j, toLayer, fromLayer));
+				futures.add(neuronProcessor.processNeuron(this, j, toLayer, fromLayer));
 			}
 
 			for (Future<Void> future : futures) {
@@ -192,7 +211,7 @@ public class NeuralNetwork {
 			List<Future<Void>> futures = new ArrayList<>(this.getOutputLayer().getNeurons().length);
 
 			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
-				futures.add(neuronProcessor.processOutputNeuron(i, allSums));
+				futures.add(neuronProcessor.processOutputNeuron(this, i, allSums));
 			}
 
 			for (Future<Void> future : futures) {
@@ -223,7 +242,21 @@ public class NeuralNetwork {
 
 					BigDecimal averageDelta = sum.divide(BigDecimal.valueOf(nextSynapse.getAccumulatedDeltas().size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
-					nextSynapse.setWeight(nextSynapse.getWeight().subtract(averageDelta));
+					if (learningRate != null) {
+						averageDelta = averageDelta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+					}
+
+					BigDecimal regularization = BigDecimal.ZERO;
+
+					if (weightDecayPercent != null && !nextNeuron.isBias()) {
+						regularization = nextSynapse.getWeight().multiply(weightDecayPercent, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+
+						if (learningRate != null) {
+							regularization = regularization.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+						}
+					}
+
+					nextSynapse.setWeight(nextSynapse.getWeight().subtract(averageDelta).subtract(regularization));
 
 					nextSynapse.clearAccumulatedDeltas();
 				}

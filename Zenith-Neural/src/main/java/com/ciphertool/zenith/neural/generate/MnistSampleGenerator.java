@@ -31,33 +31,42 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.DataSet;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 
+@Validated
 @Component
 @Profile("mnist")
+@ConfigurationProperties
 public class MnistSampleGenerator implements SampleGenerator {
 	private static Logger			log				= LoggerFactory.getLogger(MnistSampleGenerator.class);
 
 	private static final BigDecimal	MAX_PIXEL_VALUE	= BigDecimal.valueOf(255);
 
+	@NotBlank
 	@Value("${task.mnist.directory.trainingImages}")
 	private String					trainingImagesFile;
 
+	@NotBlank
 	@Value("${task.mnist.directory.trainingLabels}")
 	private String					trainingLabelsFile;
 
+	@NotBlank
 	@Value("${task.mnist.directory.testImages}")
 	private String					testImagesFile;
 
+	@NotBlank
 	@Value("${task.mnist.directory.testLabels}")
 	private String					testLabelsFile;
 

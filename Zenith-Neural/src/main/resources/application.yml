@@ -50,6 +50,7 @@ network:
   learningRate: 0.1
   epochs: 1
   batchSize: 1
+  weightDecay: 0.0
   output:
     fileName: /Users/george/Desktop/network-xor.json
 
@@ -74,6 +75,7 @@ network:
   learningRate: 0.01
   epochs: 1
   batchSize: 1
+  weightDecay: 0.00
   output:
     fileName: /Users/george/Desktop/network-mnist.json
 

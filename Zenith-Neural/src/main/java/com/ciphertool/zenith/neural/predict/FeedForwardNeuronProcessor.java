@@ -23,8 +23,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.concurrent.Future;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
@@ -38,14 +36,8 @@ import com.ciphertool.zenith.neural.model.Synapse;
 
 @Component
 public class FeedForwardNeuronProcessor {
-	@Value("${network.bias.weight}")
-	private BigDecimal		biasWeight;
-
-	@Autowired
-	private NeuralNetwork	network;
-
 	@Async
-	public Future<Void> processNeuron(int j, Layer toLayer, Layer fromLayer) {
+	public Future<Void> processNeuron(NeuralNetwork network, int j, Layer toLayer, Layer fromLayer) {
 		Neuron nextOutputNeuron = toLayer.getNeurons()[j];
 
 		if (nextOutputNeuron.isBias()) {
@@ -73,7 +65,7 @@ public class FeedForwardNeuronProcessor {
 	}
 
 	@Async
-	public Future<Void> processOutputNeuron(int i, BigDecimal[] allSums) {
+	public Future<Void> processOutputNeuron(NeuralNetwork network, int i, BigDecimal[] allSums) {
 		Neuron nextOutputNeuron = network.getOutputLayer().getNeurons()[i];
 
 		nextOutputNeuron.setActivationValue(network.getOutputLayer().getActivationFunctionType().getActivationFunction().transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));

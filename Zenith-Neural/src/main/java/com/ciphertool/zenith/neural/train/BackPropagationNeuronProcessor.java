@@ -23,10 +23,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.concurrent.Future;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
@@ -40,20 +37,8 @@ import com.ciphertool.zenith.neural.model.Synapse;
 
 @Component
 public class BackPropagationNeuronProcessor {
-	private boolean			factorLearningRate;
-
-	@Value("${network.learningRate}")
-	private BigDecimal		learningRate;
-
 	@Autowired
-	private NeuralNetwork	network;
-
-	@PostConstruct
-	public void init() {
-		if (learningRate != null && learningRate.compareTo(BigDecimal.ONE) != 0) {
-			factorLearningRate = true;
-		}
-	}
+	private NeuralNetwork network;
 
 	@Async
 	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] expectedOutputs, BigDecimal[] allSums) {
@@ -86,10 +71,6 @@ public class BackPropagationNeuronProcessor {
 			BigDecimal outputSumDerivative = nextInputNeuron.getActivationValue();
 
 			BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-
-			if (factorLearningRate) {
-				delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-			}
 
 			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
 			nextSynapse.addDelta(delta);
@@ -132,10 +113,6 @@ public class BackPropagationNeuronProcessor {
 			BigDecimal outputSumDerivative = nextFromNeuron.getActivationValue();
 
 			BigDecimal delta = errorTimesActivation.multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-
-			if (factorLearningRate) {
-				delta = delta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
-			}
 
 			Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
 			nextSynapse.addDelta(delta);

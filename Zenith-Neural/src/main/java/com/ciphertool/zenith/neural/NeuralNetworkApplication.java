@@ -22,6 +22,8 @@ package com.ciphertool.zenith.neural;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+import javax.validation.constraints.Min;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +31,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.DataSet;
@@ -41,6 +45,8 @@ import com.ciphertool.zenith.neural.predict.Predictor;
 import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 
 @EnableAsync
+@Validated
+@ConfigurationProperties
 @SpringBootApplication
 public class NeuralNetworkApplication implements CommandLineRunner {
 	private static Logger			log							= LoggerFactory.getLogger(NeuralNetworkApplication.class);
@@ -53,17 +59,21 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						maxPoolSize;
 
+	@Min(1)
 	@Value("${taskExecutor.queueCapacity}")
 	private int						queueCapacity;
 
+	@Min(1)
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
 
+	@Min(1)
 	@Value("${network.testSamples.count}")
 	private int						numberOfTests;
 
+	@Min(1)
 	@Value("${network.epochs}")
-	private int						epochs;
+	private int						epochs						= 1;
 
 	@Autowired
 	private NeuralNetwork			network;
