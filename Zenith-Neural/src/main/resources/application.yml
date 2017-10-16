@@ -86,3 +86,32 @@ task:
       trainingLabels: /Users/george/Desktop/MNIST/train-labels-idx1-ubyte/train-labels.idx1-ubyte
       testImages: /Users/george/Desktop/MNIST/t10k-images-idx3-ubyte/t10k-images.idx3-ubyte
       testLabels: /Users/george/Desktop/MNIST/t10k-labels-idx1-ubyte/t10k-labels.idx1-ubyte
+
+---
+
+spring:
+  profiles: zodiac408
+
+network:
+  layers:
+    input: 391
+    # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
+    hidden: 1000:LEAKY_RELU
+    output: 2:SOFTMAX
+  bias:
+    weight: 1.0
+  trainingSamples:
+    count: 10000
+  testSamples:
+    count: 1000
+  learningRate: 0.006
+  epochs: 15
+  batchSize: 128
+  weightDecay: 0.0001
+  output:
+    fileName: /Users/george/Desktop/network-zodiac408.json
+
+task:
+  zodiac408:
+    directory:
+      trainingTextDirectory: /Users/george/Desktop/zenith-transformed

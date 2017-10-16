@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
@@ -104,11 +105,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		trainingLabels = loadLabels(trainingLabelsBytes);
 
-		DataSet shuffledTrainingData = shuffleArrays(trainingImages, trainingLabels);
-
-		trainingImages = shuffledTrainingData.getInputs();
-		trainingLabels = shuffledTrainingData.getOutputs();
-
 		for (int i = 0; i < trainingImages.length; i++) {
 			log.debug("Test image {}: {}", i + 1, Arrays.toString(trainingImages[i]));
 			log.debug("Test label {}: {}", i + 1, trainingLabels[i]);
@@ -137,11 +133,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 		}
 
 		testLabels = loadLabels(testLabelsBytes);
-
-		DataSet shuffledTestData = shuffleArrays(testImages, testLabels);
-
-		testImages = shuffledTestData.getInputs();
-		testLabels = shuffledTestData.getOutputs();
 
 		for (int i = 0; i < testImages.length; i++) {
 			log.debug("Test image {}: {}", i + 1, Arrays.toString(testImages[i]));
@@ -217,11 +208,14 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		int arrayLength = imagesArray.length;
 
-		for (int i = 0; i < arrayLength; i++) {
-			int randomIndex = ThreadLocalRandom.current().nextInt(imagesArray.length);
+		List<BigDecimal[]> imagesList = Arrays.asList(imagesArray);
+		List<BigDecimal[]> labelsList = Arrays.asList(labelsArray);
 
-			shuffledImagesArray[i] = imagesArray[randomIndex];
-			shuffledLabelsArray[i] = labelsArray[randomIndex];
+		for (int i = 0; i < arrayLength; i++) {
+			int randomIndex = ThreadLocalRandom.current().nextInt(imagesList.size());
+
+			shuffledImagesArray[i] = imagesList.remove(randomIndex);
+			shuffledLabelsArray[i] = labelsList.remove(randomIndex);
 		}
 
 		return new DataSet(shuffledImagesArray, shuffledLabelsArray);
@@ -229,11 +223,21 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSamples(int count) {
+		DataSet shuffledTrainingData = shuffleArrays(trainingImages, trainingLabels);
+
+		trainingImages = shuffledTrainingData.getInputs();
+		trainingLabels = shuffledTrainingData.getOutputs();
+
 		return generate(count, trainingImages, trainingLabels);
 	}
 
 	@Override
 	public DataSet generateTestSamples(int count) {
+		DataSet shuffledTestData = shuffleArrays(testImages, testLabels);
+
+		testImages = shuffledTestData.getInputs();
+		testLabels = shuffledTestData.getOutputs();
+
 		return generate(count, testImages, testLabels);
 	}
 
