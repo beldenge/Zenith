@@ -121,7 +121,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		int arrayLength = arrayToShuffle.length;
 
-		List<BigDecimal[]> arrayList = Arrays.asList(arrayToShuffle);
+		List<BigDecimal[]> arrayList = new ArrayList<>(Arrays.asList(arrayToShuffle));
 
 		for (int i = 0; i < arrayLength; i++) {
 			int randomIndex = ThreadLocalRandom.current().nextInt(arrayList.size());

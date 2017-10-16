@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -208,8 +209,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		int arrayLength = imagesArray.length;
 
-		List<BigDecimal[]> imagesList = Arrays.asList(imagesArray);
-		List<BigDecimal[]> labelsList = Arrays.asList(labelsArray);
+		List<BigDecimal[]> imagesList = new ArrayList<>(Arrays.asList(imagesArray));
+		List<BigDecimal[]> labelsList = new ArrayList<>(Arrays.asList(labelsArray));
 
 		for (int i = 0; i < arrayLength; i++) {
 			int randomIndex = ThreadLocalRandom.current().nextInt(imagesList.size());
