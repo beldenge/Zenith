@@ -44,6 +44,8 @@ public class ProcessedTextFileParser {
 	public Future<List<BigDecimal[]>> parse(Path path, int sampleSize) {
 		log.debug("Importing file {}", path.toString());
 
+		long start = System.currentTimeMillis();
+
 		List<String> sentencesToAdd = new ArrayList<>();
 
 		try {
@@ -74,7 +76,7 @@ public class ProcessedTextFileParser {
 
 			int j = 0;
 
-			while (sample.length() < sampleSize || (i + j) > sentencesToAdd.size() - 1) {
+			while (sample.length() < sampleSize && (i + j) < sentencesToAdd.size() - 1) {
 				sample.append(sentencesToAdd.get(i + j));
 
 				j++;
@@ -98,6 +100,8 @@ public class ProcessedTextFileParser {
 
 			numericSamples.add(numericSample);
 		}
+
+		log.info("Completed parsing file {} in {}ms.", path.toString(), (System.currentTimeMillis() - start));
 
 		return new AsyncResult<>(numericSamples);
 	}

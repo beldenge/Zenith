@@ -99,7 +99,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		samples = shuffleArray(samples);
 
-		List<BigDecimal[]> samplesList = Arrays.asList(samples);
+		List<BigDecimal[]> samplesList = new ArrayList<>(Arrays.asList(samples));
 
 		englishTestSamples = new BigDecimal[testSampleCount / 2][inputLayerSize];
 
@@ -113,7 +113,8 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			englishTrainingSamples[i] = samplesList.remove(samplesList.size() - 1);
 		}
 
-		log.info("Finished importing training text in " + (System.currentTimeMillis() - start) + "ms");
+		log.info("Finished importing {} samples from training text in {}ms.", samples.length, (System.currentTimeMillis()
+				- start));
 	}
 
 	protected static BigDecimal[][] shuffleArray(BigDecimal[][] arrayToShuffle) {
@@ -162,7 +163,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				outputs[i] = new BigDecimal[] { BigDecimal.ONE, BigDecimal.ZERO };
 			} else {
 				samples[i] = generateRandomSample();
-				outputs[i] = new BigDecimal[] { BigDecimal.ONE, BigDecimal.ZERO };
+				outputs[i] = new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ONE };
 			}
 
 			even = !even;

@@ -18,7 +18,7 @@
 
 spring:
   profiles:
-    active: mnist
+    active: zodiac408
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -104,9 +104,9 @@ network:
     count: 10000
   testSamples:
     count: 1000
-  learningRate: 0.006
-  epochs: 15
-  batchSize: 128
+  learningRate: 0.1
+  epochs: 1
+  batchSize: 1
   weightDecay: 0.0001
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
