@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -44,8 +45,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.neural.io.ProcessedTextFileParser;
 import com.ciphertool.zenith.neural.model.DataSet;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
 
 @Component
 @Profile("zodiac408")
@@ -55,15 +56,16 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	private static final String		EXTENSION		= ".txt";
 	private static final int		ALPHABET_SIZE	= 26;
 
+	@Min(1)
+	@Value("${network.layers.input}")
+	private int						inputLayerNeurons;
+
 	@Value("${network.testSamples.count}")
 	private int						testSampleCount;
 
 	@NotBlank
 	@Value("${task.zodiac408.directory.trainingTextDirectory}")
 	private String					trainingTextDirectory;
-
-	@Autowired
-	private NeuralNetwork			network;
 
 	@Autowired
 	private ProcessedTextFileParser	fileParser;
@@ -77,7 +79,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		Path trainingTextDirectoryPath = Paths.get(trainingTextDirectory);
 
-		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
+		int inputLayerSize = inputLayerNeurons;
 
 		long start = System.currentTimeMillis();
 
@@ -157,9 +159,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 					+ ") exceeds the maximum number of samples available (" + samplesToUse.length * 2 + ").");
 		}
 
-		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
-
-		BigDecimal[][] samples = new BigDecimal[count][inputLayerSize];
+		BigDecimal[][] samples = new BigDecimal[count][inputLayerNeurons];
 		BigDecimal[][] outputs = new BigDecimal[count][2];
 
 		boolean even = true;
@@ -179,7 +179,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected BigDecimal[] generateRandomSample() {
-		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
+		int inputLayerSize = inputLayerNeurons;
 
 		BigDecimal[] randomSample = new BigDecimal[inputLayerSize];
 

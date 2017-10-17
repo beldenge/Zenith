@@ -21,13 +21,24 @@ package com.ciphertool.zenith.neural.model;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Neuron {
+	@JsonIgnore
 	private BigDecimal	activationValue;
+
+	@JsonIgnore
 	private BigDecimal	outputSum;
+
 	private Synapse[]	outgoingSynapses;
+
+	@JsonProperty(value = "isBias")
 	private boolean		isBias;
 
-	public Neuron() {
+	@SuppressWarnings("unused")
+	private Neuron() {
+		// Exists purely for Jackson deserialization
 	}
 
 	/**

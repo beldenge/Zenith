@@ -20,11 +20,20 @@
 package com.ciphertool.zenith.neural.model;
 
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Layer {
 	private Neuron[]				neurons;
+
+	@JsonProperty(value = "hasBias")
 	private boolean					hasBias;
+
 	private ActivationFunctionType	activationFunctionType;
+
+	@SuppressWarnings("unused")
+	private Layer() {
+		// Exists purely for Jackson deserialization
+	}
 
 	public Layer(int neurons, boolean hasBias) {
 		this.hasBias = hasBias;
@@ -32,7 +41,7 @@ public class Layer {
 		this.neurons = new Neuron[neurons + (hasBias ? 1 : 0)];
 
 		for (int i = 0; i < neurons; i++) {
-			this.neurons[i] = new Neuron();
+			this.neurons[i] = new Neuron(false);
 		}
 
 		if (hasBias) {

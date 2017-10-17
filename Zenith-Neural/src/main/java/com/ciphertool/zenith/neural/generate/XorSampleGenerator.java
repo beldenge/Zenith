@@ -22,18 +22,24 @@ package com.ciphertool.zenith.neural.generate;
 import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.validation.constraints.Min;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.neural.model.DataSet;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
 
 @Component
 @Profile("xor")
 public class XorSampleGenerator implements SampleGenerator {
-	@Autowired
-	private NeuralNetwork network;
+	@Min(1)
+	@Value("${network.layers.input}")
+	private int	inputLayerNeurons;
+
+	@Min(1)
+	@Value("${network.layers.output}")
+	private int	outputLayerNeurons;
 
 	@Override
 	public DataSet generateTrainingSamples(int count) {
@@ -46,8 +52,8 @@ public class XorSampleGenerator implements SampleGenerator {
 	}
 
 	protected DataSet generate(int count) {
-		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
-		int outputLayerSize = network.getOutputLayer().getNeurons().length;
+		int inputLayerSize = inputLayerNeurons;
+		int outputLayerSize = outputLayerNeurons;
 
 		BigDecimal[][] inputs = new BigDecimal[count][inputLayerSize];
 		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];

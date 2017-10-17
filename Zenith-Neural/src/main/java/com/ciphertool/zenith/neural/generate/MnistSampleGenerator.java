@@ -32,11 +32,11 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
@@ -45,7 +45,6 @@ import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.DataSet;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
 
 @Validated
 @Component
@@ -72,13 +71,18 @@ public class MnistSampleGenerator implements SampleGenerator {
 	@Value("${task.mnist.directory.testLabels}")
 	private String					testLabelsFile;
 
+	@Min(1)
+	@Value("${network.layers.input}")
+	private int						inputLayerNeurons;
+
+	@Min(1)
+	@Value("${network.layers.output}")
+	private int						outputLayerNeurons;
+
 	private BigDecimal[][]			trainingImages;
 	private BigDecimal[][]			trainingLabels;
 	private BigDecimal[][]			testImages;
 	private BigDecimal[][]			testLabels;
-
-	@Autowired
-	private NeuralNetwork			network;
 
 	@PostConstruct
 	public void init() {
@@ -184,12 +188,12 @@ public class MnistSampleGenerator implements SampleGenerator {
 		// The second four bytes is the number of items
 		int numberOfItems = byteBuffer.getInt();
 
-		BigDecimal[][] labels = new BigDecimal[numberOfItems][network.getOutputLayer().getNeurons().length];
+		BigDecimal[][] labels = new BigDecimal[numberOfItems][outputLayerNeurons];
 
 		for (int i = 0; i < numberOfItems; i++) {
 			int label = Byte.toUnsignedInt(byteBuffer.get());
 
-			for (int j = 0; j < network.getOutputLayer().getNeurons().length; j++) {
+			for (int j = 0; j < outputLayerNeurons; j++) {
 				labels[i][j] = (label == j) ? BigDecimal.ONE : BigDecimal.ZERO;
 			}
 		}
@@ -248,11 +252,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 					+ ") exceeds the maximum number of samples available (" + images.length + ").");
 		}
 
-		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
-		int outputLayerSize = network.getOutputLayer().getNeurons().length;
-
-		BigDecimal[][] inputs = new BigDecimal[count][inputLayerSize];
-		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];
+		BigDecimal[][] inputs = new BigDecimal[count][inputLayerNeurons];
+		BigDecimal[][] outputs = new BigDecimal[count][outputLayerNeurons];
 
 		for (int i = 0; i < count; i++) {
 			inputs[i] = images[i];

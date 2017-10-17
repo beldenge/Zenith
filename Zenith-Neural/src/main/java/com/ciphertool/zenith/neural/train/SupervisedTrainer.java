@@ -26,10 +26,15 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+
 import org.nevec.rjm.BigDecimalMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
@@ -38,20 +43,31 @@ import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
 import com.ciphertool.zenith.neural.model.ProblemType;
+import com.ciphertool.zenith.neural.predict.Predictor;
 
 @Component
+@ConfigurationProperties
 public class SupervisedTrainer {
 	private static Logger					log						= LoggerFactory.getLogger(SupervisedTrainer.class);
 
 	private static final boolean			COMPUTE_SUM_OF_ERRORS	= false;
 
+	@DecimalMin("0.0")
+	@Value("${network.learningRate}")
+	private BigDecimal						learningRate;
+
+	@DecimalMin("0.0")
+	@DecimalMax("1.0")
+	@Value("${network.weightDecay}")
+	private BigDecimal						weightDecayPercent;
+
 	@Autowired
-	private NeuralNetwork					network;
+	private Predictor						predictor;
 
 	@Autowired
 	private BackPropagationNeuronProcessor	neuronProcessor;
 
-	public void train(BigDecimal[][] inputs, BigDecimal[][] outputs) {
+	public void train(NeuralNetwork network, int batchSize, BigDecimal[][] inputs, BigDecimal[][] outputs) {
 		if (inputs.length != outputs.length) {
 			throw new IllegalArgumentException("The sample inputs size of " + inputs.length
 					+ " does not match the sample outputs size of " + outputs.length
@@ -67,23 +83,23 @@ public class SupervisedTrainer {
 		for (i = 0; i < inputs.length; i++) {
 			long start = System.currentTimeMillis();
 
-			network.feedForward(inputs[i]);
+			predictor.feedForward(network, inputs[i]);
 
 			log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
 
 			start = System.currentTimeMillis();
 
-			backPropagate(outputs[i]);
+			backPropagate(network, outputs[i]);
 
 			log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
 
 			currentBatchSize++;
 
-			if (currentBatchSize == network.getBatchSize()) {
-				network.applyAccumulatedDeltas();
+			if (currentBatchSize == batchSize) {
+				network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
 
-				log.info("Finished training batch {} in {}ms.", (int) ((i + 1)
-						/ network.getBatchSize()), (System.currentTimeMillis() - batchStart));
+				log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
+						- batchStart));
 
 				currentBatchSize = 0;
 
@@ -94,14 +110,14 @@ public class SupervisedTrainer {
 		}
 
 		if (currentBatchSize > 0) {
-			log.info("Finished training batch {} in {}ms.", (int) ((i + 1)
-					/ network.getBatchSize()), (System.currentTimeMillis() - batchStart));
+			log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
+					- batchStart));
 
-			network.applyAccumulatedDeltas();
+			network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
 		}
 	}
 
-	protected void backPropagate(BigDecimal[] expectedOutputs) {
+	protected void backPropagate(NeuralNetwork network, BigDecimal[] expectedOutputs) {
 		Layer outputLayer = network.getOutputLayer();
 
 		if (expectedOutputs.length != outputLayer.getNeurons().length) {
@@ -152,7 +168,7 @@ public class SupervisedTrainer {
 
 		// Compute deltas for output layer using chain rule and subtract them from current weights
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-			futures.add(neuronProcessor.processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, allSums));
+			futures.add(neuronProcessor.processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, allSums, network.getProblemType()));
 		}
 
 		for (Future<Void> future : futures) {

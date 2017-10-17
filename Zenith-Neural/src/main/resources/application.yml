@@ -18,7 +18,7 @@
 
 spring:
   profiles:
-    active: zodiac408
+    active: mnist
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -40,7 +40,7 @@ network:
     input: 2
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 3:LEAKY_RELU
-    output: 1:LEAKY_RELU
+    output: 1
   bias:
     weight: 1.0
   trainingSamples:
@@ -53,6 +53,8 @@ network:
   weightDecay: 0.0
   output:
     fileName: /Users/george/Desktop/network-xor.json
+  input:
+    fileName: /Users/george/Desktop/network-xor-20171017-185135.json
 
 ---
 
@@ -64,7 +66,7 @@ network:
     input: 784
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 98:LEAKY_RELU
-    output: 10:SOFTMAX
+    output: 10
   bias:
     weight: 1.0
   trainingSamples:
@@ -75,9 +77,11 @@ network:
   learningRate: 0.01
   epochs: 1
   batchSize: 1
-  weightDecay: 0.00
+  weightDecay: 0.0
   output:
     fileName: /Users/george/Desktop/network-mnist.json
+  input:
+    fileName:
 
 task:
   mnist:
@@ -97,19 +101,21 @@ network:
     input: 391
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 200:LEAKY_RELU
-    output: 2:SOFTMAX
+    output: 2
   bias:
     weight: 1.0
   trainingSamples:
-    count: 10000
+    count: 250000
   testSamples:
-    count: 1000
+    count: 50000
   learningRate: 0.1
   epochs: 1
   batchSize: 1
   weightDecay: 0.0
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
+  input:
+    fileName: /Users/george/Desktop/network-zodiac408-20171017-110402.json
 
 task:
   zodiac408:

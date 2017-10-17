@@ -24,6 +24,8 @@ import java.util.Arrays;
 
 import javax.validation.constraints.Min;
 
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.model.DataSet;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.ProblemType;
@@ -49,9 +52,7 @@ import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 @ConfigurationProperties
 @SpringBootApplication
 public class NeuralNetworkApplication implements CommandLineRunner {
-	private static Logger			log							= LoggerFactory.getLogger(NeuralNetworkApplication.class);
-
-	private static final BigDecimal	ACCEPTABLE_MARGIN_OF_ERROR	= BigDecimal.valueOf(0.01);
+	private static Logger			log	= LoggerFactory.getLogger(NeuralNetworkApplication.class);
 
 	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;
@@ -63,6 +64,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${taskExecutor.queueCapacity}")
 	private int						queueCapacity;
 
+	@Value("${network.testSamples.marginOfError:0.01}")
+	private BigDecimal				marginOfErrorRegression;
+
 	@Min(1)
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
@@ -72,11 +76,37 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	private int						numberOfTests;
 
 	@Min(1)
-	@Value("${network.epochs}")
-	private int						epochs						= 1;
+	@Value("${network.epochs:1}")
+	private int						epochs;
 
-	@Autowired
-	private NeuralNetwork			network;
+	@Value("${network.input.fileName}")
+	private String					inputFileName;
+
+	@Value("${network.training.continue:false}")
+	private boolean					continueTraining;
+
+	@NotBlank
+	@Value("${network.output.fileName}")
+	private String					outputFileName;
+
+	@Min(1)
+	@Value("${network.batchSize}")
+	private int						batchSize;
+
+	@Min(1)
+	@Value("${network.layers.input}")
+	private int						inputLayerNeurons;
+
+	@NotEmpty
+	@Value("${network.layers.hidden}")
+	private String[]				hiddenLayers;
+
+	@Min(1)
+	@Value("${network.layers.output}")
+	private int						outputLayerNeurons;
+
+	@Value("${network.bias.weight}")
+	private BigDecimal				biasWeight;
 
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
@@ -105,20 +135,30 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
-		log.info("Training network...");
-		long start = System.currentTimeMillis();
+		NeuralNetwork network = new NeuralNetwork(inputLayerNeurons, hiddenLayers, outputLayerNeurons, biasWeight,
+				batchSize);
 
-		for (int i = 1; i <= epochs; i++) {
-			log.info("Generating " + numberOfSamples + " training samples...");
-			long startGeneration = System.currentTimeMillis();
-			DataSet trainingData = generator.generateTrainingSamples(numberOfSamples);
-			log.info("Finished sample generation in " + (System.currentTimeMillis() - startGeneration) + "ms.");
-
-			trainer.train(trainingData.getInputs(), trainingData.getOutputs());
-			log.info("Completed epoch {}", i);
+		if (inputFileName != null && !inputFileName.isEmpty()) {
+			network.replaceWithExisting(NetworkMapper.loadFromFile(inputFileName));
 		}
 
-		log.info("Finished training in " + (System.currentTimeMillis() - start) + "ms.");
+		long start = System.currentTimeMillis();
+
+		if (inputFileName == null || inputFileName.isEmpty() || continueTraining) {
+			log.info("Training network...");
+
+			for (int i = 1; i <= epochs; i++) {
+				log.info("Generating " + numberOfSamples + " training samples...");
+				long startGeneration = System.currentTimeMillis();
+				DataSet trainingData = generator.generateTrainingSamples(numberOfSamples);
+				log.info("Finished sample generation in " + (System.currentTimeMillis() - startGeneration) + "ms.");
+
+				trainer.train(network, batchSize, trainingData.getInputs(), trainingData.getOutputs());
+				log.info("Completed epoch {}", i);
+			}
+
+			log.info("Finished training in " + (System.currentTimeMillis() - start) + "ms.");
+		}
 
 		log.info("Generating " + numberOfTests + " test samples...");
 		start = System.currentTimeMillis();
@@ -127,7 +167,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 		log.info("Testing predictions...");
 		start = System.currentTimeMillis();
-		BigDecimal[][] predictions = predictor.predict(testData.getInputs());
+		BigDecimal[][] predictions = predictor.predict(network, testData.getInputs());
 		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		int correctCount = 0;
@@ -157,7 +197,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 				}
 
 				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
-				if (!wasIncorrect && prediction.subtract(expected).abs().compareTo(ACCEPTABLE_MARGIN_OF_ERROR) > 0) {
+				if (!wasIncorrect && prediction.subtract(expected).abs().compareTo(marginOfErrorRegression) > 0) {
 					wasIncorrect = true;
 				}
 			}
@@ -182,11 +222,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 					* 100.0) + 0.5));
 		}
 
-		/*
-		 * FIXME: This is creating way too huge of a file because I need to change the way synapses link to neurons --
-		 * as of now there is recursive duplication
-		 */
-		// network.saveToFile();
+		if (inputFileName == null || inputFileName.isEmpty() || continueTraining) {
+			NetworkMapper.saveToFile(network, outputFileName);
+		}
 	}
 
 	@Bean

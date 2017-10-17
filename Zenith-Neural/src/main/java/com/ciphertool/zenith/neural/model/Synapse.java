@@ -32,7 +32,13 @@ public class Synapse {
 	@JsonIgnore
 	private List<BigDecimal>	accumulatedDeltas;
 
+	@JsonIgnore
 	private Neuron				outGoingNeuron;
+
+	@SuppressWarnings("unused")
+	private Synapse() {
+		// Exists purely for Jackson deserialization
+	}
 
 	/**
 	 * @param outGoingNeuron
@@ -51,6 +57,14 @@ public class Synapse {
 	 */
 	public Neuron getOutGoingNeuron() {
 		return outGoingNeuron;
+	}
+
+	/**
+	 * @param outGoingNeuron
+	 *            the outGoingNeuron to set
+	 */
+	public void setOutGoingNeuron(Neuron outGoingNeuron) {
+		this.outGoingNeuron = outGoingNeuron;
 	}
 
 	/**

@@ -19,71 +19,23 @@
 
 package com.ciphertool.zenith.neural.model;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 
-import javax.annotation.PostConstruct;
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Min;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
-import com.ciphertool.zenith.neural.predict.FeedForwardNeuronProcessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Validated
-@Component
-@ConfigurationProperties
 public class NeuralNetwork {
-	private static Logger				log	= LoggerFactory.getLogger(NeuralNetwork.class);
+	private BigDecimal	biasWeight;
 
-	private BigDecimal					biasWeight;
+	private ProblemType	problemType;
 
-	private ProblemType					problemType;
+	private Layer[]		layers;
 
-	@DecimalMin("0.0")
-	@Value("${network.learningRate}")
-	private BigDecimal					learningRate;
-
-	@NotBlank
-	@Value("${network.output.fileName}")
-	private String						outputFileName;
-
-	@Min(1)
-	@Value("${network.batchSize}")
-	private int							batchSize;
-
-	@DecimalMin("0.0")
-	@DecimalMax("1.0")
-	@Value("${network.weightDecay}")
-	private BigDecimal					weightDecayPercent;
-
-	@Autowired
-	private FeedForwardNeuronProcessor	neuronProcessor;
-
-	private Layer[]						layers;
-
-	@PostConstruct
-	public void init() {
+	protected void init(int batchSize) {
 		problemType = this.getOutputLayer().getNeurons().length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
 
 		Layer fromLayer;
@@ -119,10 +71,15 @@ public class NeuralNetwork {
 		}
 	}
 
-	public NeuralNetwork(@Min(1) @Value("${network.layers.input}") int inputLayerNeurons,
-			@NotBlank @Value("${network.layers.hidden}") String[] hiddenLayers,
-			@NotBlank @Value("${network.layers.output}") String outputLayer,
-			@Value("${network.bias.weight}") BigDecimal biasWeight) {
+	@SuppressWarnings("unused")
+	private NeuralNetwork() {
+		// Exists purely for Jackson deserialization
+		System.out.println("");
+	}
+
+	@Autowired
+	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, BigDecimal biasWeight,
+			int batchSize) {
 		this.biasWeight = biasWeight;
 		boolean addBias = biasWeight != null ? true : false;
 
@@ -146,85 +103,20 @@ public class NeuralNetwork {
 			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias);
 		}
 
-		int separatorIndex = outputLayer.indexOf(':');
+		ActivationFunctionType activationFunctionType = outputLayerNeurons == 1 ? ActivationFunctionType.LEAKY_RELU : ActivationFunctionType.SOFTMAX;
 
-		if (separatorIndex < 0) {
-			throw new IllegalArgumentException(
-					"The output layer must be represented as a numberOfNeurons:activationFunctionType pair.");
-		}
+		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false);
 
-		int numberOfNeurons = Integer.parseInt(outputLayer.substring(0, separatorIndex));
-
-		ActivationFunctionType activationFunctionType = ActivationFunctionType.valueOf(outputLayer.substring(separatorIndex
-				+ 1));
-
-		layers[layers.length - 1] = new Layer(numberOfNeurons, activationFunctionType, false);
+		init(batchSize);
 	}
 
-	public void feedForward(BigDecimal[] inputs) {
-		Layer inputLayer = this.getInputLayer();
-
-		int nonBiasNeurons = inputLayer.getNeurons().length - (inputLayer.hasBias() ? 1 : 0);
-
-		if (inputs.length != nonBiasNeurons) {
-			throw new IllegalArgumentException("The sample input size of " + inputs.length
-					+ " does not match the input layer size of " + inputLayer.getNeurons().length
-					+ ".  Unable to continue with feed forward step.");
-		}
-
-		for (int i = 0; i < nonBiasNeurons; i++) {
-			inputLayer.getNeurons()[i].setActivationValue(inputs[i]);
-		}
-
-		Layer fromLayer;
-		Layer toLayer;
-		Layer[] layers = this.getLayers();
-
-		for (int i = 0; i < layers.length - 1; i++) {
-			fromLayer = layers[i];
-			toLayer = layers[i + 1];
-
-			List<Future<Void>> futures = new ArrayList<>(toLayer.getNeurons().length);
-
-			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				futures.add(neuronProcessor.processNeuron(this, j, toLayer, fromLayer));
-			}
-
-			for (Future<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException | ExecutionException e) {
-					throw new IllegalStateException("Unable to process neuron.", e);
-				}
-			}
-		}
-
-		if (problemType == ProblemType.CLASSIFICATION) {
-			BigDecimal[] allSums = new BigDecimal[this.getOutputLayer().getNeurons().length];
-
-			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
-				Neuron nextOutputNeuron = this.getOutputLayer().getNeurons()[i];
-
-				allSums[i] = nextOutputNeuron.getOutputSum();
-			}
-
-			List<Future<Void>> futures = new ArrayList<>(this.getOutputLayer().getNeurons().length);
-
-			for (int i = 0; i < this.getOutputLayer().getNeurons().length; i++) {
-				futures.add(neuronProcessor.processOutputNeuron(this, i, allSums));
-			}
-
-			for (Future<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException | ExecutionException e) {
-					throw new IllegalStateException("Unable to process output neuron.", e);
-				}
-			}
-		}
+	public void replaceWithExisting(NeuralNetwork network) {
+		setLayers(network.getLayers());
+		setBiasWeight(network.getBiasWeight());
+		setProblemType(network.getProblemType());
 	}
 
-	public void applyAccumulatedDeltas() {
+	public void applyAccumulatedDeltas(BigDecimal learningRate, BigDecimal weightDecayPercent) {
 		for (int i = 0; i < layers.length - 1; i++) {
 			Layer fromLayer = layers[i];
 
@@ -264,26 +156,6 @@ public class NeuralNetwork {
 		}
 	}
 
-	public void saveToFile() {
-		ObjectMapper mapper = new ObjectMapper();
-
-		LocalDateTime now = LocalDateTime.now();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
-		String dateText = now.format(formatter);
-
-		String extension = outputFileName.substring(outputFileName.indexOf('.'));
-		String beforeExtension = outputFileName.replace(extension, "");
-		String fileNameWithDate = beforeExtension + "-" + dateText + extension;
-
-		log.info("Saving network to file: {}", fileNameWithDate);
-
-		try {
-			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileNameWithDate), this);
-		} catch (IOException ioe) {
-			throw new IllegalStateException("Unable to write network parameters to file: " + fileNameWithDate, ioe);
-		}
-	}
-
 	/**
 	 * @return the problemType
 	 */
@@ -313,9 +185,33 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * @return the batchSize
+	 * @return the biasWeight
 	 */
-	public int getBatchSize() {
-		return batchSize;
+	public BigDecimal getBiasWeight() {
+		return biasWeight;
+	}
+
+	/**
+	 * @param biasWeight
+	 *            the biasWeight to set
+	 */
+	public void setBiasWeight(BigDecimal biasWeight) {
+		this.biasWeight = biasWeight;
+	}
+
+	/**
+	 * @param problemType
+	 *            the problemType to set
+	 */
+	public void setProblemType(ProblemType problemType) {
+		this.problemType = problemType;
+	}
+
+	/**
+	 * @param layers
+	 *            the layers to set
+	 */
+	public void setLayers(Layer[] layers) {
+		this.layers = layers;
 	}
 }

@@ -23,30 +23,25 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.concurrent.Future;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.Layer;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.model.Synapse;
 
 @Component
 public class BackPropagationNeuronProcessor {
-	@Autowired
-	private NeuralNetwork network;
-
 	@Async
-	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] expectedOutputs, BigDecimal[] allSums) {
+	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] expectedOutputs, BigDecimal[] allSums, ProblemType problemType) {
 		Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
 		BigDecimal errorDerivative;
 
-		if (network.getProblemType() == ProblemType.REGRESSION) {
+		if (problemType == ProblemType.REGRESSION) {
 			errorDerivative = derivativeOfCostFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
 		} else {
 			errorDerivative = derivativeOfCostFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue());
@@ -56,7 +51,7 @@ public class BackPropagationNeuronProcessor {
 
 		BigDecimal activationDerivative;
 
-		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
+		if (problemType == ProblemType.CLASSIFICATION) {
 			// For softmax/cross entropy loss, the activationDerivative is accounted for in the errorDerivative
 			activationDerivative = BigDecimal.ONE;
 		} else {
