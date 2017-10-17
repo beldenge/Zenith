@@ -111,7 +111,7 @@ public class NeuralNetwork {
 						continue;
 					}
 
-					BigDecimal initialWeight = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble());
+					BigDecimal initialWeight = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble()).subtract(BigDecimal.valueOf(0.5));
 
 					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight, batchSize);
 				}

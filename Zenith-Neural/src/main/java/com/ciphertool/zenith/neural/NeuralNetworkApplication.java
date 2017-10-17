@@ -138,7 +138,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 			BigDecimal[] inputs = testData.getInputs()[i];
 
-			log.debug("Inputs: {}", Arrays.toString(inputs));
+			log.info("Inputs: {}", Arrays.toString(inputs));
 
 			BigDecimal highestProbability = BigDecimal.ZERO;
 			int indexOfHighestProbability = -1;
@@ -147,7 +147,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 				BigDecimal prediction = predictions[i][j];
 				BigDecimal expected = testData.getOutputs()[i][j];
 
-				log.debug("Expected: {}, Prediction: {}", expected, prediction);
+				log.info("Expected: {}, Prediction: {}", expected, prediction);
 
 				if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 					if (highestProbability.compareTo(prediction) < 0) {
