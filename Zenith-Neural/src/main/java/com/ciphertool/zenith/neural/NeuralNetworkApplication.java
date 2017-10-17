@@ -135,11 +135,12 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
-		NeuralNetwork network = new NeuralNetwork(inputLayerNeurons, hiddenLayers, outputLayerNeurons, biasWeight,
-				batchSize);
+		NeuralNetwork network;
 
 		if (inputFileName != null && !inputFileName.isEmpty()) {
-			network.replaceWithExisting(NetworkMapper.loadFromFile(inputFileName));
+			network = new NeuralNetwork(NetworkMapper.loadFromFile(inputFileName));
+		} else {
+			network = new NeuralNetwork(inputLayerNeurons, hiddenLayers, outputLayerNeurons, biasWeight, batchSize);
 		}
 
 		long start = System.currentTimeMillis();

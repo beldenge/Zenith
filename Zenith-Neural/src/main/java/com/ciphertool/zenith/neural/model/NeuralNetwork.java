@@ -23,8 +23,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
 
@@ -77,7 +75,6 @@ public class NeuralNetwork {
 		System.out.println("");
 	}
 
-	@Autowired
 	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, BigDecimal biasWeight,
 			int batchSize) {
 		this.biasWeight = biasWeight;
@@ -110,10 +107,10 @@ public class NeuralNetwork {
 		init(batchSize);
 	}
 
-	public void replaceWithExisting(NeuralNetwork network) {
-		setLayers(network.getLayers());
-		setBiasWeight(network.getBiasWeight());
-		setProblemType(network.getProblemType());
+	public NeuralNetwork(NeuralNetwork network) {
+		this.layers = network.getLayers();
+		this.biasWeight = network.getBiasWeight();
+		this.problemType = network.getProblemType();
 	}
 
 	public void applyAccumulatedDeltas(BigDecimal learningRate, BigDecimal weightDecayPercent) {
