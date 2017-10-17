@@ -21,6 +21,7 @@ package com.ciphertool.zenith.neural.generate;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,6 +43,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.DataSet;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 
@@ -109,7 +111,9 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		englishTrainingSamples = new BigDecimal[samplesList.size()][inputLayerSize];
 
-		for (int i = 0; i < samplesList.size(); i++) {
+		int samplesLeft = samplesList.size();
+
+		for (int i = 0; i < samplesLeft; i++) {
 			englishTrainingSamples[i] = samplesList.remove(samplesList.size() - 1);
 		}
 
@@ -135,11 +139,15 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSamples(int count) {
+		englishTrainingSamples = shuffleArray(englishTrainingSamples);
+
 		return generate(count, englishTrainingSamples);
 	}
 
 	@Override
 	public DataSet generateTestSamples(int count) {
+		englishTestSamples = shuffleArray(englishTestSamples);
+
 		return generate(count, englishTestSamples);
 	}
 
@@ -148,8 +156,6 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			throw new IllegalArgumentException("The number of samples to generate (" + count
 					+ ") exceeds the maximum number of samples available (" + samplesToUse.length * 2 + ").");
 		}
-
-		samplesToUse = shuffleArray(samplesToUse);
 
 		int inputLayerSize = network.getInputLayer().getNeurons().length - (network.getInputLayer().hasBias() ? 1 : 0);
 
@@ -178,7 +184,8 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		BigDecimal[] randomSample = new BigDecimal[inputLayerSize];
 
 		for (int i = 0; i < inputLayerSize; i++) {
-			randomSample[i] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(ALPHABET_SIZE) + 1);
+			randomSample[i] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(ALPHABET_SIZE)
+					+ 1).divide(BigDecimal.valueOf(ALPHABET_SIZE), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 		}
 
 		return randomSample;

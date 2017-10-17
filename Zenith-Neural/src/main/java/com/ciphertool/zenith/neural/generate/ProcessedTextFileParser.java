@@ -2,6 +2,7 @@ package com.ciphertool.zenith.neural.generate;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 /**
  * Copyright 2017 George Belden
@@ -32,18 +33,18 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
+import com.ciphertool.zenith.math.MathConstants;
+
 @Component
 public class ProcessedTextFileParser {
 	private static Logger		log						= LoggerFactory.getLogger(ProcessedTextFileParser.class);
 
+	private static final int	ALPHABET_SIZE			= 26;
 	private static final int	CHAR_TO_NUMERIC_OFFSET	= 9;
 	private static final String	NON_ALPHA				= "[^a-zA-Z]";
-	private static final String	NON_ALPHA_OR_SPACE		= "[^a-zA-Z ]";
 
 	@Async
 	public Future<List<BigDecimal[]>> parse(Path path, int sampleSize) {
-		log.debug("Importing file {}", path.toString());
-
 		long start = System.currentTimeMillis();
 
 		List<String> sentencesToAdd = new ArrayList<>();
@@ -54,10 +55,7 @@ public class ProcessedTextFileParser {
 			String[] sentences = content.split("(\n|\r|\r\n)+");
 
 			for (int i = 0; i < sentences.length; i++) {
-				sentences[i] = (" " + sentences[i].replaceAll(NON_ALPHA_OR_SPACE, "").replaceAll("\\s+", " ").trim()
-						+ " ").toLowerCase();
-
-				sentences[i] = sentences[i].replaceAll(NON_ALPHA, "");
+				sentences[i] = (sentences[i].replaceAll(NON_ALPHA, "").trim()).toLowerCase();
 
 				if (sentences[i].trim().length() == 0) {
 					continue;
@@ -71,31 +69,29 @@ public class ProcessedTextFileParser {
 
 		List<String> samples = new ArrayList<>();
 
+		StringBuilder sample = new StringBuilder();
+
 		for (int i = 0; i < sentencesToAdd.size(); i++) {
-			StringBuilder sample = new StringBuilder();
-
-			int j = 0;
-
-			while (sample.length() < sampleSize && (i + j) < sentencesToAdd.size() - 1) {
-				sample.append(sentencesToAdd.get(i + j));
-
-				j++;
-			}
+			sample.append(sentencesToAdd.get(i));
 
 			if (sample.length() >= sampleSize) {
 				samples.add(sample.toString().substring(0, sampleSize));
+
+				sample.delete(0, sample.length());
 			}
 		}
 
 		List<BigDecimal[]> numericSamples = new ArrayList<>(samples.size());
+		char[] nextSample;
 
-		for (int i = 0; i < samples.size(); i++) {
-			char[] nextSample = samples.get(i).toCharArray();
+		// TODO: for now we are stepping by fours because it is taking up too much memory otherwise
+		for (int i = 0; i < samples.size(); i += 4) {
+			nextSample = samples.get(i).toCharArray();
 
 			BigDecimal[] numericSample = new BigDecimal[sampleSize];
 
 			for (int j = 0; j < nextSample.length; j++) {
-				numericSample[j] = charToBigDecimal(nextSample[j]);
+				numericSample[j] = charToBigDecimal(nextSample[j]).divide(BigDecimal.valueOf(ALPHABET_SIZE), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 			}
 
 			numericSamples.add(numericSample);
