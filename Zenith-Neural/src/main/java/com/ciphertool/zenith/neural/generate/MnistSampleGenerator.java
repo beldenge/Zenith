@@ -88,6 +88,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 	public void init() {
 		Path trainingImagesPath = Paths.get(trainingImagesFile);
 
+		if (!Files.isDirectory(trainingImagesPath)) {
+			throw new IllegalArgumentException("Property \"task.mnist.directory.trainingImages\" must be a directory.");
+		}
+
 		byte[] trainingImagesBytes;
 
 		try {
@@ -99,6 +103,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 		trainingImages = loadImages(trainingImagesBytes);
 
 		Path trainingLabelsPath = Paths.get(trainingLabelsFile);
+
+		if (!Files.isDirectory(trainingLabelsPath)) {
+			throw new IllegalArgumentException("Property \"task.mnist.directory.trainingLabels\" must be a directory.");
+		}
 
 		byte[] trainingLabelsBytes;
 
@@ -117,6 +125,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		Path testImagesPath = Paths.get(testImagesFile);
 
+		if (!Files.isDirectory(testImagesPath)) {
+			throw new IllegalArgumentException("Property \"task.mnist.directory.testImages\" must be a directory.");
+		}
+
 		byte[] testImagesBytes;
 
 		try {
@@ -128,6 +140,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 		testImages = loadImages(testImagesBytes);
 
 		Path testLabelsPath = Paths.get(testLabelsFile);
+
+		if (!Files.isDirectory(testLabelsPath)) {
+			throw new IllegalArgumentException("Property \"task.mnist.directory.testLabels\" must be a directory.");
+		}
 
 		byte[] testLabelsBytes;
 

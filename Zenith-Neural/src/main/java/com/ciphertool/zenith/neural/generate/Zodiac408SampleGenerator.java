@@ -79,6 +79,11 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		Path trainingTextDirectoryPath = Paths.get(trainingTextDirectory);
 
+		if (!Files.isDirectory(trainingTextDirectoryPath)) {
+			throw new IllegalArgumentException(
+					"Property \"task.zodiac408.directory.trainingTextDirectory\" must be a directory.");
+		}
+
 		int inputLayerSize = inputLayerNeurons;
 
 		long start = System.currentTimeMillis();
@@ -215,7 +220,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				}
 			}
 		} catch (IOException ioe) {
-			log.error("Unable to parse files due to:" + ioe.getMessage(), ioe);
+			log.error("Unable to parse files.", ioe);
 		}
 
 		return tasks;

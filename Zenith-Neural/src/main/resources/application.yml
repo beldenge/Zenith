@@ -18,7 +18,7 @@
 
 spring:
   profiles:
-    active: mnist
+    active: xor
 
 # ---------------------------------------
 # Spring Concurrency Properties
