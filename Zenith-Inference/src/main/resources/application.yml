@@ -36,10 +36,10 @@ markov:
   corpus:
     directory: /Users/george/Desktop/zenith-transformed
   letter:
-    order: 7
+    order: 5
     include:
       word:
-        boundaries: true
+        boundaries: false
   minimum:
     count: 2
 
@@ -96,3 +96,7 @@ collection:
     count:
       sum:
         name: nGramCount_levelSums
+
+network:
+  input:
+    fileName: /Users/george/Desktop/network-zodiac408-20171017-110402.json

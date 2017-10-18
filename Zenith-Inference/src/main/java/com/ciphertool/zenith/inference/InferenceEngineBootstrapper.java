@@ -35,9 +35,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.neural.predict.Predictor;
 
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, MathCache.class,
-		LetterNGramDao.class })
+		LetterNGramDao.class, Predictor.class })
 @EnableCaching
 public class InferenceEngineBootstrapper implements CommandLineRunner {
 	private static Logger			log	= LoggerFactory.getLogger(InferenceEngineBootstrapper.class);

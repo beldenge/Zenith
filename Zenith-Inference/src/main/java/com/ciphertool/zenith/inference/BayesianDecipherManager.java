@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,16 +46,13 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.NeuralNetworkPlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.BoundaryProbability;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
 @Component
 public class BayesianDecipherManager {
@@ -133,13 +131,10 @@ public class BayesianDecipherManager {
 	private boolean							letterTypeSamplingEnabled;
 
 	@Autowired
-	private PlaintextEvaluator				plaintextEvaluator;
+	private NeuralNetworkPlaintextEvaluator	plaintextEvaluator;
 
 	@Autowired
 	private CipherDao						cipherDao;
-
-	@Autowired
-	private LetterNGramDao					letterNGramDao;
 
 	@Autowired(required = false)
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
@@ -149,8 +144,49 @@ public class BayesianDecipherManager {
 
 	private Cipher							cipher;
 	private int								cipherKeySize;
-	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>();
-	private TreeMarkovModel					letterMarkovModel;
+	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>(26);
+
+	/**
+	 * @see <a href="https://en.wikipedia.org/wiki/Letter_frequency">https://en.wikipedia.org/wiki/Letter_frequency</a>
+	 */
+	static {
+		letterUnigramProbabilities.add(new LetterProbability('a', BigDecimal.valueOf(0.08167)));
+		letterUnigramProbabilities.add(new LetterProbability('b', BigDecimal.valueOf(0.01492)));
+		letterUnigramProbabilities.add(new LetterProbability('c', BigDecimal.valueOf(0.02782)));
+		letterUnigramProbabilities.add(new LetterProbability('d', BigDecimal.valueOf(0.04523)));
+		letterUnigramProbabilities.add(new LetterProbability('e', BigDecimal.valueOf(0.12702)));
+		letterUnigramProbabilities.add(new LetterProbability('f', BigDecimal.valueOf(0.02228)));
+		letterUnigramProbabilities.add(new LetterProbability('g', BigDecimal.valueOf(0.02015)));
+		letterUnigramProbabilities.add(new LetterProbability('h', BigDecimal.valueOf(0.06094)));
+		letterUnigramProbabilities.add(new LetterProbability('i', BigDecimal.valueOf(0.06996)));
+		letterUnigramProbabilities.add(new LetterProbability('j', BigDecimal.valueOf(0.00153)));
+		letterUnigramProbabilities.add(new LetterProbability('k', BigDecimal.valueOf(0.00772)));
+		letterUnigramProbabilities.add(new LetterProbability('l', BigDecimal.valueOf(0.04025)));
+		letterUnigramProbabilities.add(new LetterProbability('m', BigDecimal.valueOf(0.02406)));
+		letterUnigramProbabilities.add(new LetterProbability('n', BigDecimal.valueOf(0.06749)));
+		letterUnigramProbabilities.add(new LetterProbability('o', BigDecimal.valueOf(0.07507)));
+		letterUnigramProbabilities.add(new LetterProbability('p', BigDecimal.valueOf(0.01929)));
+		letterUnigramProbabilities.add(new LetterProbability('q', BigDecimal.valueOf(0.00095)));
+		letterUnigramProbabilities.add(new LetterProbability('r', BigDecimal.valueOf(0.05987)));
+		letterUnigramProbabilities.add(new LetterProbability('s', BigDecimal.valueOf(0.06327)));
+		letterUnigramProbabilities.add(new LetterProbability('t', BigDecimal.valueOf(0.09056)));
+		letterUnigramProbabilities.add(new LetterProbability('u', BigDecimal.valueOf(0.02758)));
+		letterUnigramProbabilities.add(new LetterProbability('v', BigDecimal.valueOf(0.00978)));
+		letterUnigramProbabilities.add(new LetterProbability('w', BigDecimal.valueOf(0.02360)));
+		letterUnigramProbabilities.add(new LetterProbability('x', BigDecimal.valueOf(0.00150)));
+		letterUnigramProbabilities.add(new LetterProbability('y', BigDecimal.valueOf(0.01974)));
+		letterUnigramProbabilities.add(new LetterProbability('z', BigDecimal.valueOf(0.00074)));
+
+		BigDecimal sum = BigDecimal.ZERO;
+
+		for (LetterProbability probability : letterUnigramProbabilities) {
+			sum = sum.add(probability.getProbability());
+		}
+
+		for (LetterProbability probability : letterUnigramProbabilities) {
+			probability.setProbability(probability.getProbability().divide(sum, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
+		}
+	}
 
 	@PostConstruct
 	public void setUp() {
@@ -164,55 +200,6 @@ public class BayesianDecipherManager {
 		}
 
 		cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
-
-		long startFindAll = System.currentTimeMillis();
-		log.info("Beginning retrieval of all n-grams with{} spaces.", (includeWordBoundaries ? "" : "out"));
-
-		/*
-		 * Begin setting up letter n-gram model
-		 */
-		List<TreeNGram> nGramNodes = letterNGramDao.findAll(minimumCount, includeWordBoundaries);
-
-		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
-				- startFindAll));
-
-		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder);
-
-		long startAdding = System.currentTimeMillis();
-		log.info("Adding nodes to the model.", minimumCount);
-
-		for (TreeNGram nGramNode : nGramNodes) {
-			this.letterMarkovModel.addNode(nGramNode);
-		}
-
-		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
-
-		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
-
-		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(rootNodeCount), MathConstants.PREC_10_HALF_UP);
-		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-
-		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis()
-				- startAdding));
-
-		long total = firstOrderNodes.stream().filter(node -> !node.getCumulativeString().equals(" ")
-				&& !node.getCumulativeString().equals(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR)).mapToLong(TreeNGram::getCount).sum();
-
-		BigDecimal probability;
-		for (TreeNGram node : firstOrderNodes) {
-			if (!node.getCumulativeString().equals(" ")
-					&& !node.getCumulativeString().equals(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR)) {
-				probability = BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
-
-				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0),
-						probability));
-
-				log.info(node.getCumulativeString().charAt(0) + ": "
-						+ probability.toString().substring(0, Math.min(7, probability.toString().length())));
-			}
-		}
-
-		log.info("unknownLetterNGramProbability: {}", this.letterMarkovModel.getUnknownLetterNGramProbability());
 	}
 
 	public void run() {
@@ -222,7 +209,6 @@ public class BayesianDecipherManager {
 		RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
 		Collections.sort(letterUnigramProbabilities);
 		BigDecimal totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
-		Double wordBoundaryProbability = (double) 1.0 / (double) LanguageConstants.AVERAGE_WORD_SIZE;
 
 		cipher.getCiphertextCharacters().stream().map(ciphertext -> ciphertext.getValue()).distinct().forEach(ciphertext -> {
 			// Pick a plaintext at random according to the language model
@@ -232,6 +218,8 @@ public class BayesianDecipherManager {
 		});
 
 		if (includeWordBoundaries) {
+			Double wordBoundaryProbability = (double) 1.0 / (double) LanguageConstants.AVERAGE_WORD_SIZE;
+
 			for (int i = 0; i < cipher.getCiphertextCharacters().size() - 1; i++) {
 				if (ThreadLocalRandom.current().nextDouble() < wordBoundaryProbability) {
 					initialSolution.addWordBoundary(i);
@@ -239,7 +227,7 @@ public class BayesianDecipherManager {
 			}
 		}
 
-		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
+		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(initialSolution, null);
 		initialSolution.setProbability(initialPlaintextResults.getProbability());
 		initialSolution.setLogProbability(initialPlaintextResults.getLogProbability());
 
@@ -282,7 +270,7 @@ public class BayesianDecipherManager {
 			next = runGibbsLetterSampler(temperature, next);
 			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, next, null);
+			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(next, null);
 			next.setProbability(fullPlaintextResults.getProbability());
 			next.setLogProbability(fullPlaintextResults.getLogProbability());
 
@@ -348,17 +336,13 @@ public class BayesianDecipherManager {
 
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, original, nextEntry.getKey());
+			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(original, nextEntry.getKey());
 			original.setProbability(fullPlaintextResults.getProbability());
 			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
 			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
-
-			for (int j = 0; j < ModelConstants.LOWERCASE_LETTERS.size(); j++) {
-				plaintextDistribution.get(j).setProbability(letterProbabilities[j]);
-			}
 
 			totalProbability = rouletteSampler.reIndex(plaintextDistribution);
 
@@ -402,7 +386,7 @@ public class BayesianDecipherManager {
 			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
 
 			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, conditionalSolution, ciphertextKey);
+			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(conditionalSolution, ciphertextKey);
 			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
 
 			conditionalSolution.setProbability(remainingPlaintextResults.getProbability());
@@ -470,7 +454,7 @@ public class BayesianDecipherManager {
 			addProposal = solution.clone();
 			if (!addProposal.getWordBoundaries().contains(nextBoundary)) {
 				addProposal.addWordBoundary(nextBoundary);
-				addPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, addProposal, null);
+				addPlaintextResults = plaintextEvaluator.evaluate(addProposal, null);
 				addProposal.setProbability(addPlaintextResults.getProbability());
 				addProposal.setLogProbability(addPlaintextResults.getLogProbability());
 			}
@@ -478,7 +462,7 @@ public class BayesianDecipherManager {
 			removeProposal = solution.clone();
 			if (removeProposal.getWordBoundaries().contains(nextBoundary)) {
 				removeProposal.removeWordBoundary(nextBoundary);
-				removePlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, removeProposal, null);
+				removePlaintextResults = plaintextEvaluator.evaluate(removeProposal, null);
 				removeProposal.setProbability(removePlaintextResults.getProbability());
 				removeProposal.setLogProbability(removePlaintextResults.getLogProbability());
 			}
