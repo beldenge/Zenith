@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.evaluator;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import javax.annotation.PostConstruct;
 
@@ -32,26 +33,28 @@ import org.springframework.stereotype.Component;
 import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.math.MathCache;
+import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.predict.Predictor;
 
 @Component
 public class NeuralNetworkPlaintextEvaluator {
-	private Logger				log						= LoggerFactory.getLogger(getClass());
+	private Logger					log						= LoggerFactory.getLogger(getClass());
 
-	private static final int	CHAR_TO_NUMERIC_OFFSET	= 9;
+	private static final BigDecimal	ALPHABET_SIZE			= BigDecimal.valueOf(26);
+	private static final int		CHAR_TO_NUMERIC_OFFSET	= 9;
 
 	@Value("${network.input.fileName}")
-	private String				inputFileName;
+	private String					inputFileName;
 
 	@Autowired
-	private MathCache			bigDecimalFunctions;
+	private MathCache				bigDecimalFunctions;
 
 	@Autowired
-	private Predictor			predictor;
+	private Predictor				predictor;
 
-	private NeuralNetwork		network;
+	private NeuralNetwork			network;
 
 	@PostConstruct
 	public void init() {
@@ -82,6 +85,6 @@ public class NeuralNetworkPlaintextEvaluator {
 	protected BigDecimal charToBigDecimal(char c) {
 		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
 
-		return BigDecimal.valueOf(numericValue);
+		return BigDecimal.valueOf(numericValue).divide(ALPHABET_SIZE, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 }
