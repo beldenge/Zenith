@@ -29,8 +29,23 @@ You should have received a copy of the GNU General Public License along with Zen
 		</rollingPolicy>
 	</appender>
 
+	<appender name="BAD_PREDICTION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<pattern>%m%n</pattern>
+		</encoder>
+		<file>log/bad-predictions.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>log/bad-predictions-%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>10</maxHistory>
+		</rollingPolicy>
+	</appender>
+
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
 		<appender-ref ref="FILE" />
 	</root>
+
+	<logger name="com.ciphertool.zenith.inference.badPredictionLog" level="INFO">
+		<appender-ref ref="BAD_PREDICTION_FILE" />
+	</logger>
 </configuration>

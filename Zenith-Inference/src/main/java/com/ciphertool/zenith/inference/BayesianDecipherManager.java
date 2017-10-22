@@ -57,6 +57,7 @@ import com.ciphertool.zenith.model.ModelConstants;
 @Component
 public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
+	private Logger				badPredictionLog		= LoggerFactory.getLogger("com.ciphertool.zenith.inference.badPredictionLog");
 
 	private static BigDecimal[]	letterProbabilities		= new BigDecimal[ModelConstants.LOWERCASE_LETTERS.size()];
 	private static BigDecimal[]	vowelProbabilities		= new BigDecimal[ModelConstants.LOWERCASE_VOWELS.size()];
@@ -283,6 +284,11 @@ public class BayesianDecipherManager {
 			if (knownPlaintextEvaluator != null) {
 				knownProximity = knownPlaintextEvaluator.evaluate(next);
 				next.setKnownSolutionProximity(BigDecimal.valueOf(knownProximity));
+
+				if (next.getKnownSolutionProximity().compareTo(BigDecimal.valueOf(0.05)) < 0
+						&& next.getProbability().compareTo(BigDecimal.valueOf(0.99)) > 0) {
+					badPredictionLog.info(next.asSingleLineString());
+				}
 
 				if (maxKnown.getKnownSolutionProximity().compareTo(BigDecimal.valueOf(knownProximity)) < 0) {
 					maxKnown = next;
