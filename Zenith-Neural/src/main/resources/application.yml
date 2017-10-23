@@ -18,7 +18,7 @@
 
 spring:
   profiles:
-    active: xor
+    active: zodiac408
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -105,13 +105,15 @@ network:
   bias:
     weight: 1.0
   trainingSamples:
-    count: 250000
+    count: 3900
   testSamples:
-    count: 50000
+    count: 500
   learningRate: 0.1
-  epochs: 1
+  epochs: 10
   batchSize: 1
   weightDecay: 0.0
+  training:
+    continue: true
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
@@ -120,4 +122,6 @@ network:
 task:
   zodiac408:
     directory:
-      trainingTextDirectory: /Users/george/Desktop/zenith-transformed
+      trainingTextDirectory:
+        valid: /Users/george/Desktop/zenith-transformed
+        invalid: /Users/george/Desktop/bad-predictions

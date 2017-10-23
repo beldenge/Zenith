@@ -41,19 +41,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.io.ProcessedTextFileParser;
 import com.ciphertool.zenith.neural.model.DataSet;
 
 @Component
+@Validated
+@ConfigurationProperties
 @Profile("zodiac408")
 public class Zodiac408SampleGenerator implements SampleGenerator {
 	private static Logger			log				= LoggerFactory.getLogger(Zodiac408SampleGenerator.class);
 
-	private static final String		EXTENSION		= ".txt";
 	private static final int		ALPHABET_SIZE	= 26;
 
 	@Min(1)
@@ -64,67 +67,123 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	private int						testSampleCount;
 
 	@NotBlank
-	@Value("${task.zodiac408.directory.trainingTextDirectory}")
-	private String					trainingTextDirectory;
+	@Value("${task.zodiac408.directory.trainingTextDirectory.valid}")
+	private String					validTrainingTextDirectory;
+
+	@Value("${task.zodiac408.directory.trainingTextDirectory.invalid}")
+	private String					invalidTrainingTextDirectory;
 
 	@Autowired
 	private ProcessedTextFileParser	fileParser;
 
 	private BigDecimal[][]			englishTrainingSamples;
+	private BigDecimal[][]			nonEnglishTrainingSamples;
 	private BigDecimal[][]			englishTestSamples;
 
 	@PostConstruct
 	public void init() {
 		log.info("Starting training text import...");
 
-		Path trainingTextDirectoryPath = Paths.get(trainingTextDirectory);
+		Path validTrainingTextDirectoryPath = Paths.get(validTrainingTextDirectory);
 
-		if (!Files.isDirectory(trainingTextDirectoryPath)) {
+		if (!Files.isDirectory(validTrainingTextDirectoryPath)) {
 			throw new IllegalArgumentException(
-					"Property \"task.zodiac408.directory.trainingTextDirectory\" must be a directory.");
+					"Property \"task.zodiac408.directory.trainingTextDirectory.valid\" must be a directory.");
+		}
+
+		Path invalidTrainingTextDirectoryPath = null;
+
+		if (invalidTrainingTextDirectory != null && !invalidTrainingTextDirectory.isEmpty()) {
+			invalidTrainingTextDirectoryPath = Paths.get(invalidTrainingTextDirectory);
+
+			if (!Files.isDirectory(invalidTrainingTextDirectoryPath)) {
+				throw new IllegalArgumentException(
+						"Property \"task.zodiac408.directory.trainingTextDirectory.invalid\" must be a directory.");
+			}
 		}
 
 		int inputLayerSize = inputLayerNeurons;
 
+		// Load English training data
+
 		long start = System.currentTimeMillis();
 
-		List<Future<List<BigDecimal[]>>> futures = parseFiles(trainingTextDirectoryPath, inputLayerSize);
+		List<Future<List<BigDecimal[]>>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerSize, 4);
 
-		List<BigDecimal[]> paragraphs = new ArrayList<>();
+		List<BigDecimal[]> englishParagraphs = new ArrayList<>();
 
 		for (Future<List<BigDecimal[]>> future : futures) {
 			try {
-				paragraphs.addAll(future.get());
+				englishParagraphs.addAll(future.get());
 			} catch (InterruptedException | ExecutionException e) {
 				log.error("Caught Exception while waiting for ParseFileTask ", e);
 			}
 		}
 
-		BigDecimal[][] samples = new BigDecimal[paragraphs.size()][inputLayerSize];
+		BigDecimal[][] englishSamples = new BigDecimal[englishParagraphs.size()][inputLayerSize];
 
-		for (int i = 0; i < paragraphs.size(); i++) {
-			samples[i] = paragraphs.get(i);
+		for (int i = 0; i < englishParagraphs.size(); i++) {
+			englishSamples[i] = englishParagraphs.get(i);
 		}
 
-		samples = shuffleArray(samples);
+		englishSamples = shuffleArray(englishSamples);
 
-		List<BigDecimal[]> samplesList = new ArrayList<>(Arrays.asList(samples));
+		List<BigDecimal[]> englishSamplesList = new ArrayList<>(Arrays.asList(englishSamples));
 
 		englishTestSamples = new BigDecimal[testSampleCount / 2][inputLayerSize];
 
 		for (int i = 0; i < testSampleCount / 2; i++) {
-			englishTestSamples[i] = samplesList.remove(samplesList.size() - 1);
+			englishTestSamples[i] = englishSamplesList.remove(englishSamplesList.size() - 1);
 		}
 
-		englishTrainingSamples = new BigDecimal[samplesList.size()][inputLayerSize];
+		englishTrainingSamples = new BigDecimal[englishSamplesList.size()][inputLayerSize];
 
-		int samplesLeft = samplesList.size();
+		int samplesLeft = englishSamplesList.size();
 
 		for (int i = 0; i < samplesLeft; i++) {
-			englishTrainingSamples[i] = samplesList.remove(samplesList.size() - 1);
+			englishTrainingSamples[i] = englishSamplesList.remove(englishSamplesList.size() - 1);
 		}
 
-		log.info("Finished importing {} samples from training text in {}ms.", samples.length, (System.currentTimeMillis()
+		log.info("Finished importing {} samples from English training text in {}ms.", englishSamples.length, (System.currentTimeMillis()
+				- start));
+
+		// Load non-English training data (if provided)
+
+		if (invalidTrainingTextDirectoryPath == null) {
+			return;
+		}
+
+		start = System.currentTimeMillis();
+
+		futures = parseFiles(invalidTrainingTextDirectoryPath, inputLayerSize, 1);
+
+		List<BigDecimal[]> nonEnglishParagraphs = new ArrayList<>();
+
+		for (Future<List<BigDecimal[]>> future : futures) {
+			try {
+				nonEnglishParagraphs.addAll(future.get());
+			} catch (InterruptedException | ExecutionException e) {
+				log.error("Caught Exception while waiting for ParseFileTask ", e);
+			}
+		}
+
+		BigDecimal[][] nonEnglishSamples = new BigDecimal[nonEnglishParagraphs.size()][inputLayerSize];
+
+		for (int i = 0; i < nonEnglishParagraphs.size(); i++) {
+			nonEnglishSamples[i] = nonEnglishParagraphs.get(i);
+		}
+
+		nonEnglishSamples = shuffleArray(nonEnglishSamples);
+
+		List<BigDecimal[]> nonEnglishSamplesList = new ArrayList<>(Arrays.asList(nonEnglishSamples));
+
+		nonEnglishTrainingSamples = new BigDecimal[nonEnglishSamplesList.size()][inputLayerSize];
+
+		for (int i = 0; i < nonEnglishSamplesList.size(); i++) {
+			nonEnglishTrainingSamples[i] = nonEnglishSamplesList.get(i);
+		}
+
+		log.info("Finished importing {} samples from non-English training text in {}ms.", nonEnglishSamples.length, (System.currentTimeMillis()
 				- start));
 	}
 
@@ -173,7 +232,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				samples[i] = samplesToUse[i / 2];
 				outputs[i] = new BigDecimal[] { BigDecimal.ONE, BigDecimal.ZERO };
 			} else {
-				samples[i] = generateRandomSample();
+				samples[i] = generateInvalidSample(i / 2);
 				outputs[i] = new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ONE };
 			}
 
@@ -183,39 +242,39 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return new DataSet(samples, outputs);
 	}
 
-	protected BigDecimal[] generateRandomSample() {
+	protected BigDecimal[] generateInvalidSample(int i) {
+		if (nonEnglishTrainingSamples != null) {
+			if (i > nonEnglishTrainingSamples.length - 1) {
+				throw new IllegalArgumentException(
+						"The invalid training samples file was specified, but the number of training samples exceeds the total available of "
+								+ nonEnglishTrainingSamples.length + ".");
+			}
+
+			return nonEnglishTrainingSamples[i];
+		}
+
 		int inputLayerSize = inputLayerNeurons;
 
 		BigDecimal[] randomSample = new BigDecimal[inputLayerSize];
 
-		for (int i = 0; i < inputLayerSize; i++) {
-			randomSample[i] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(ALPHABET_SIZE)
+		for (int j = 0; j < inputLayerSize; j++) {
+			randomSample[j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(ALPHABET_SIZE)
 					+ 1).divide(BigDecimal.valueOf(ALPHABET_SIZE), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 		}
 
 		return randomSample;
 	}
 
-	protected List<Future<List<BigDecimal[]>>> parseFiles(Path path, int inputLayerSize) {
+	protected List<Future<List<BigDecimal[]>>> parseFiles(Path path, int inputLayerSize, int stepLimit) {
 		List<Future<List<BigDecimal[]>>> tasks = new ArrayList<Future<List<BigDecimal[]>>>();
 		Future<List<BigDecimal[]>> task;
-		String filename;
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, inputLayerSize));
+					tasks.addAll(parseFiles(entry, inputLayerSize, stepLimit));
 				} else {
-					filename = entry.toString();
-					String ext = filename.substring(filename.lastIndexOf('.'));
-
-					if (!ext.equals(EXTENSION)) {
-						log.info("Skipping file with unexpected file extension: " + filename);
-
-						continue;
-					}
-
-					task = fileParser.parse(entry, inputLayerSize);
+					task = fileParser.parse(entry, inputLayerSize, stepLimit);
 					tasks.add(task);
 				}
 			}

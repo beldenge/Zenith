@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
@@ -46,6 +47,7 @@ import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.Predictor;
 
 @Component
+@Validated
 @ConfigurationProperties
 public class SupervisedTrainer {
 	private static Logger					log						= LoggerFactory.getLogger(SupervisedTrainer.class);

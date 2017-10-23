@@ -63,7 +63,12 @@ public class ProcessedTextFileParser {
 	private static final String	NON_ALPHA				= "[^a-zA-Z]";
 
 	@Async
-	public Future<List<BigDecimal[]>> parse(Path path, int sampleSize) {
+	public Future<List<BigDecimal[]>> parse(Path path, int sampleSize, int stepLimit) {
+		if (stepLimit < 1) {
+			throw new IllegalArgumentException(
+					"A step limit less than one will cause an infinit loop.  Unable to continue.");
+		}
+
 		long start = System.currentTimeMillis();
 
 		List<String> sentencesToAdd = new ArrayList<>();
@@ -104,7 +109,7 @@ public class ProcessedTextFileParser {
 		char[] nextSample;
 
 		// TODO: for now we are stepping by fours because it is taking up too much memory otherwise
-		for (int i = 0; i < samples.size(); i += 4) {
+		for (int i = 0; i < samples.size(); i += stepLimit) {
 			nextSample = samples.get(i).toCharArray();
 
 			BigDecimal[] numericSample = new BigDecimal[sampleSize];

@@ -30,7 +30,7 @@ public class Synapse {
 	private BigDecimal			weight;
 
 	@JsonIgnore
-	private List<BigDecimal>	accumulatedDeltas;
+	private List<BigDecimal>	accumulatedDeltas	= new ArrayList<>(1);
 
 	@JsonIgnore
 	private Neuron				outGoingNeuron;

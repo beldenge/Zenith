@@ -25,12 +25,16 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.validation.constraints.Min;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.neural.model.DataSet;
 
 @Component
+@Validated
+@ConfigurationProperties
 @Profile("xor")
 public class XorSampleGenerator implements SampleGenerator {
 	@Min(1)
