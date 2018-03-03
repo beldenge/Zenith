@@ -72,7 +72,6 @@ public class NeuralNetwork {
 	@SuppressWarnings("unused")
 	private NeuralNetwork() {
 		// Exists purely for Jackson deserialization
-		System.out.println("");
 	}
 
 	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, BigDecimal biasWeight,

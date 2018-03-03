@@ -67,7 +67,6 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${network.testSamples.marginOfError:0.01}")
 	private BigDecimal				marginOfErrorRegression;
 
-	@Min(1)
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
 

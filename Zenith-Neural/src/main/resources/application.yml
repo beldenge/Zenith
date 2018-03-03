@@ -105,23 +105,30 @@ network:
   bias:
     weight: 1.0
   trainingSamples:
-    count: 3900
+    #count: 3900
+    count: 0
   testSamples:
-    count: 500
+    #count: 500
+    count: 2
   learningRate: 0.1
-  epochs: 10
+  #epochs: 10
+  epochs: 1
   batchSize: 1
   weightDecay: 0.0
   training:
-    continue: true
+    #continue: true
+    continue: false
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
-    fileName: /Users/george/Desktop/network-zodiac408-20171017-110402.json
+    #fileName: /Users/george/Desktop/network-zodiac408-20171017-110402.json
+    fileName: /Users/george/Desktop/network-zodiac408-20171023-004835.json
 
 task:
   zodiac408:
     directory:
       trainingTextDirectory:
-        valid: /Users/george/Desktop/zenith-transformed
-        invalid: /Users/george/Desktop/bad-predictions
+        #valid: /Users/george/Desktop/zenith-transformed
+        valid: /Users/george/Desktop/3
+        #invalid: /Users/george/Desktop/bad-predictions
+        invalid: 

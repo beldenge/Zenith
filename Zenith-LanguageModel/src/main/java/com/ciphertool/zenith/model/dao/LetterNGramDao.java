@@ -69,7 +69,7 @@ public class LetterNGramDao {
 	private MongoOperations		mongoOperations;
 
 	public List<TreeNGram> findAll(Integer minimumCount, Boolean includeWordBoundaries) {
-		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+		DBCollection collection = (DBCollection) mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
 
 		List<TreeNGram> nodesToReturn = Collections.synchronizedList(new ArrayList<>());

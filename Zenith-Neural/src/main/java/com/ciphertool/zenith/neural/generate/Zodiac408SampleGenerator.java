@@ -108,6 +108,12 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		long start = System.currentTimeMillis();
 
+		/*
+		 * TODO: For now we are stepping by fours because it is taking up too much memory otherwise -- ought to look
+		 * into streaming this whole process, which would have to happen at a higher level. We'd need to load in samples
+		 * in batches and train/predict on them before going to the next batch instead of loading all samples into
+		 * memory and training on the whole thing.
+		 */
 		List<Future<List<BigDecimal[]>>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerSize, 4);
 
 		List<BigDecimal[]> englishParagraphs = new ArrayList<>();
