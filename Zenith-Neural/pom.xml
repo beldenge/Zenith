@@ -28,8 +28,12 @@ You should have received a copy of the GNU General Public License along with Zen
 		<dependency>
 			<groupId>com.ciphertool.zenith</groupId>
 			<artifactId>Zenith-Math</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<scope>compile</scope>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ciphertool.zenith</groupId>
+			<artifactId>Zenith-LanguageModel</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
