@@ -25,6 +25,8 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Random;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -43,9 +45,9 @@ public class MarkovModelTest {
 	// @BeforeClass
 	public static void setUp() {
 		ThreadPoolTaskExecutor taskExecutorSpy = spy(new ThreadPoolTaskExecutor());
-		taskExecutorSpy.setCorePoolSize(4);
-		taskExecutorSpy.setMaxPoolSize(4);
-		taskExecutorSpy.setQueueCapacity(100);
+		taskExecutorSpy.setCorePoolSize(8);
+		taskExecutorSpy.setMaxPoolSize(8);
+		taskExecutorSpy.setQueueCapacity(100000);
 		taskExecutorSpy.setKeepAliveSeconds(1);
 		taskExecutorSpy.setAllowCoreThreadTimeOut(true);
 		taskExecutorSpy.initialize();
@@ -54,7 +56,7 @@ public class MarkovModelTest {
 
 		Field corpusDirectoryField = ReflectionUtils.findField(LetterNGramMarkovImporter.class, "corpusDirectory");
 		ReflectionUtils.makeAccessible(corpusDirectoryField);
-		ReflectionUtils.setField(corpusDirectoryField, importer, "/Users/george/Desktop/corpus");
+		ReflectionUtils.setField(corpusDirectoryField, importer, "/Users/george/Desktop/zenith-transformed");
 
 		Field taskExecutorField = ReflectionUtils.findField(LetterNGramMarkovImporter.class, "taskExecutor");
 		ReflectionUtils.makeAccessible(taskExecutorField);
@@ -64,13 +66,13 @@ public class MarkovModelTest {
 		ReflectionUtils.makeAccessible(orderField);
 		ReflectionUtils.setField(orderField, importer, ORDER);
 
-		// model = importer.importCorpus(false, false);
+		model = importer.importCorpus(false);
 	}
 
 	// @Test
 	public void generate() {
 		StringBuilder sb = new StringBuilder();
-		String root = "happyh";
+		String root = "happy";
 		sb.append(root);
 
 		for (int i = 0; i < 100; i++) {

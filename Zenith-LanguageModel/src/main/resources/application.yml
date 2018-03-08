@@ -34,10 +34,10 @@ letter:
   ngrams:
     with:
       spaces:
-        enabled: true
+        enabled: false
     without:
       spaces:
-        enabled: false
+        enabled: true
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -76,7 +76,3 @@ collection:
       without:
         spaces:
           name: letterNGrams_withoutSpaces
-  ngram:
-    count:
-      sum:
-        name: nGramCount_levelSums

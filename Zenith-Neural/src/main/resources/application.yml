@@ -122,13 +122,14 @@ network:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
     #fileName: /Users/george/Desktop/network-zodiac408-20171017-110402.json
-    fileName: /Users/george/Desktop/network-zodiac408-20171023-004835.json
+    #fileName: /Users/george/Desktop/network-zodiac408-20171023-004835.json
+    fileName:
 
 task:
   zodiac408:
     directory:
       trainingTextDirectory:
-        #valid: /Users/george/Desktop/zenith-transformed
-        valid: /Users/george/Desktop/3
+        valid: /Users/george/Desktop/zenith-transformed
+        #valid: /Users/george/Desktop/3
         #invalid: /Users/george/Desktop/bad-predictions
         invalid: 
