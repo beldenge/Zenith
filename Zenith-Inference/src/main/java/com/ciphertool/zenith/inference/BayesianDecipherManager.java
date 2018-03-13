@@ -48,9 +48,9 @@ import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.NeuralNetworkPlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.BoundaryProbability;
-import com.ciphertool.zenith.inference.probability.LetterProbability;
+import com.ciphertool.zenith.model.probability.LetterProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
-import com.ciphertool.zenith.inference.selection.RouletteSampler;
+import com.ciphertool.zenith.math.sampling.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 

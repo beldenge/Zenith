@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.inference.probability;
 
+import com.ciphertool.zenith.math.probability.Probability;
+
 import java.math.BigDecimal;
 
 public class BoundaryProbability implements Probability<Boolean>, Comparable<BoundaryProbability> {

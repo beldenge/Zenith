@@ -22,9 +22,11 @@ package com.ciphertool.zenith.model.markov;
 import static org.mockito.Mockito.spy;
 
 import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Random;
+import java.math.BigDecimal;
+import java.util.*;
 
+import com.ciphertool.zenith.math.sampling.RouletteSampler;
+import com.ciphertool.zenith.model.probability.LetterProbability;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,12 +39,13 @@ import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
 
 public class MarkovModelTest {
 	private Logger								log		= LoggerFactory.getLogger(getClass());
-	private static final int					ORDER	= 6;
+	private static final int					ORDER	= 5;
+	private static final char[] A_TO_Z = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
 	private static LetterNGramMarkovImporter	importer;
 	private static TreeMarkovModel				model;
 
-	// @BeforeClass
+	@BeforeClass
 	public static void setUp() {
 		ThreadPoolTaskExecutor taskExecutorSpy = spy(new ThreadPoolTaskExecutor());
 		taskExecutorSpy.setCorePoolSize(8);
@@ -69,54 +72,46 @@ public class MarkovModelTest {
 		model = importer.importCorpus(false);
 	}
 
-	// @Test
+	@Test
 	public void generate() {
 		StringBuilder sb = new StringBuilder();
-		String root = "happy";
+		String root = "happ";
 		sb.append(root);
 
 		for (int i = 0; i < 100; i++) {
 			TreeNGram match = model.findLongest(root);
 
-			Map<Character, TreeNGram> transitions = null;
+			LetterProbability chosen = sampleNextTransitionFromDistribution(match);
 
-			if (match != null) {
-				transitions = match.getTransitions();
-			}
-
-			if (transitions == null || transitions.isEmpty()) {
-				log.info("Could not find transition for root: " + root);
-
-				break;
-			}
-
-			int count = 0;
-			for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
-				if (entry.getValue() != null) {
-					count++;
-				}
-			}
-
-			char[] tempArray = new char[count];
-
-			count = 0;
-			for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
-				if (entry.getValue() != null) {
-					tempArray[count] = entry.getKey();
-
-					count++;
-				}
-			}
-
-			Random rand = new Random();
-			int randomIndex = rand.nextInt(tempArray.length);
-
-			char nextSymbol = tempArray[randomIndex];
+			char nextSymbol = chosen.getValue();
 			sb.append(nextSymbol);
 
 			root = root.substring(1) + nextSymbol;
 		}
 
 		log.info(sb.toString());
+	}
+
+	protected LetterProbability sampleNextTransitionFromDistribution(TreeNGram match) {
+		RouletteSampler sampler = new RouletteSampler();
+
+		List<LetterProbability> probabilities = new ArrayList<>(26);
+
+		for (Map.Entry<Character, TreeNGram> entry : match.getTransitions().entrySet()) {
+			LetterProbability probability = new LetterProbability(entry.getKey(), entry.getValue().getConditionalProbability());
+
+			probabilities.add(probability);
+		}
+
+		sampler.reIndex(probabilities);
+
+		// Should always equal 1, but do a summation anyway
+		BigDecimal totalProbability = probabilities.stream().map(p -> p.getProbability()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
+
+		LetterProbability chosen = probabilities.get(nextIndex);
+
+		return chosen;
 	}
 }

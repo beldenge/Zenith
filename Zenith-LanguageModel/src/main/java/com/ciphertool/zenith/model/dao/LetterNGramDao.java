@@ -85,7 +85,7 @@ public class LetterNGramDao {
 					nextNode = new TreeNGram((String) next.get(CUMULATIVE_STRING_KEY));
 
 					nextNode.setId((ObjectId) next.get(ID_KEY));
-					nextNode.setCount((long) next.get(COUNT_KEY));
+					nextNode.setCount(new BigDecimal((String) next.get(COUNT_KEY)));
 					nextNode.setOrder((int) next.get(ORDER_KEY));
 
 					if (next.containsField(PROBABILITY_KEY)) {

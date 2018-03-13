@@ -28,7 +28,7 @@ corpus:
 
 markov:
   letter:
-    order: 7
+    order: 5
 
 letter:
   ngrams:

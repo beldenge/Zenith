@@ -79,15 +79,15 @@ public class TreeMarkovModel {
 		return true;
 	}
 
-	public boolean addLetterTransition(String nGramString) {
-		return populateLetterNode(rootNode, nGramString, 1);
+	public boolean addLetterTransition(String nGramString, BigDecimal amountToIncrement) {
+		return populateLetterNode(rootNode, nGramString, 1, amountToIncrement);
 	}
 
-	protected boolean populateLetterNode(TreeNGram currentNode, String nGramString, Integer order) {
-		boolean isNew = currentNode.addOrIncrementChildAsync(nGramString, order);
+	protected boolean populateLetterNode(TreeNGram currentNode, String nGramString, Integer order, BigDecimal amountToIncrement) {
+		boolean isNew = currentNode.addOrIncrementChildAsync(nGramString, order, amountToIncrement);
 
 		if (order < nGramString.length()) {
-			return populateLetterNode(currentNode.getChild(nGramString.charAt(order - 1)), nGramString, order + 1);
+			return populateLetterNode(currentNode.getChild(nGramString.charAt(order - 1)), nGramString, order + 1, amountToIncrement);
 		}
 
 		return isNew && order == this.order;
@@ -179,11 +179,11 @@ public class TreeMarkovModel {
 
 			BigDecimal occurences = null;
 			for (Map.Entry<Character, TreeNGram> entry : this.rootNode.getTransitions().entrySet()) {
-				occurences = BigDecimal.valueOf(entry.getValue().getCount());
+				occurences = entry.getValue().getCount();
 				this.indexOfCoincidence = this.indexOfCoincidence.add(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP));
 			}
 
-			occurences = BigDecimal.valueOf(this.rootNode.getCount());
+			occurences = this.rootNode.getCount();
 			this.indexOfCoincidence = this.indexOfCoincidence.divide(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
 		}
 
@@ -355,7 +355,7 @@ public class TreeMarkovModel {
 
 	protected void normalizeTerminal(TreeNGram node, int order, long total) {
 		if (node.getCumulativeString().length() == order) {
-			node.setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
+			node.setProbability(node.getCount().divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
 
 			return;
 		}

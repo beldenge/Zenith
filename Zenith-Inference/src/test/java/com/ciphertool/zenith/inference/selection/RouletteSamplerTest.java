@@ -29,11 +29,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ciphertool.zenith.math.sampling.RouletteSampler;
 import org.junit.Test;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.probability.LetterProbability;
+import com.ciphertool.zenith.model.probability.LetterProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
 
 public class RouletteSamplerTest {

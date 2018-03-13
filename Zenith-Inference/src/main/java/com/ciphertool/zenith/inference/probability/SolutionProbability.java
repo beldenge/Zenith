@@ -22,6 +22,7 @@ package com.ciphertool.zenith.inference.probability;
 import java.math.BigDecimal;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.math.probability.Probability;
 
 public class SolutionProbability implements Probability<CipherSolution>, Comparable<SolutionProbability> {
 	private CipherSolution	solution;

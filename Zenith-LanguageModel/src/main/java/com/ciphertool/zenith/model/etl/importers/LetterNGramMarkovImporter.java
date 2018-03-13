@@ -52,6 +52,7 @@ public class LetterNGramMarkovImporter {
 	private static final String	EXTENSION			= ".txt";
 	private static final String	NON_ALPHA			= "[^a-zA-Z]";
 	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
+	private static final BigDecimal SINGLE_LETTER_RANDOM_PROBABILITY = BigDecimal.ONE.divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP);
 
 	@Autowired
 	private TaskExecutor		taskExecutor;
@@ -99,6 +100,8 @@ public class LetterNGramMarkovImporter {
 		log.info("Imported " + unique + " distinct letter N-Grams out of " + total + " total in "
 				+ (System.currentTimeMillis() - start) + "ms");
 
+		smoothMissingTransitions(letterMarkovModel);
+
 		computeConditionalProbabilityAsync(letterMarkovModel);
 
 		letterMarkovModel.normalize(order, total, taskExecutor);
@@ -106,7 +109,81 @@ public class LetterNGramMarkovImporter {
 		return letterMarkovModel;
 	}
 
-	public void computeConditionalProbabilityAsync(TreeMarkovModel letterMarkovModel) {
+	protected void smoothMissingTransitions(TreeMarkovModel letterMarkovModel) {
+		long start = System.currentTimeMillis();
+
+		log.info("Starting smoothing of missing transitions...");
+
+		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		FutureTask<Void> task;
+
+		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+			task = new FutureTask<Void>(new SmoothTransitionsTask(letterMarkovModel, letterMarkovModel.getRootNode(), "", letter));
+			futures.add(task);
+			this.taskExecutor.execute(task);
+		}
+
+		for (FutureTask<Void> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException ie) {
+				log.error("Caught InterruptedException while waiting for SmoothTransitionsTask ", ie);
+			} catch (ExecutionException ee) {
+				log.error("Caught ExecutionException while waiting for SmoothTransitionsTask ", ee);
+			}
+		}
+
+		log.info("Finished smoothing of missing transitions in {}ms", (System.currentTimeMillis() - start));
+	}
+
+	/**
+	 * A concurrent task for smoothing out the probability distribution for missing transitions.
+	 */
+	protected class SmoothTransitionsTask implements Callable<Void> {
+		private TreeMarkovModel model;
+		private TreeNGram parentNode;
+		private String nGram;
+		private Character	letter;
+
+		/**
+		 * @param model
+		 *            the TreeMarkovModel to set
+		 * @param parentNode
+		 *            the parent TreeNGram to set
+		 * @param nGram
+		 *            the nGram String to set
+		 * @param letter
+		 *            the letter to set
+		 */
+		public SmoothTransitionsTask(TreeMarkovModel model, TreeNGram parentNode, String nGram, Character letter) {
+			this.model = model;
+			this.parentNode = parentNode;
+			this.nGram = nGram;
+			this.letter = letter;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			smoothTransitions(this.model, this.parentNode, this.nGram, this.letter);
+
+			return null;
+		}
+
+		protected void smoothTransitions(TreeMarkovModel model, TreeNGram parentNode, String nGram, Character letter) {
+			String nextNGram = nGram + letter;
+			if (!parentNode.getTransitions().containsKey(letter)) {
+				model.addLetterTransition(nextNGram, SINGLE_LETTER_RANDOM_PROBABILITY);
+			}
+
+			if (nextNGram.length() < order) {
+				for (Character nextLetter : ModelConstants.LOWERCASE_LETTERS) {
+					smoothTransitions(model, parentNode.getTransitions().get(letter), nextNGram, nextLetter);
+				}
+			}
+		}
+	}
+
+	protected void computeConditionalProbabilityAsync(TreeMarkovModel letterMarkovModel) {
 		long start = System.currentTimeMillis();
 
 		log.info("Starting calculation of conditional probabilities...");
@@ -118,7 +195,7 @@ public class LetterNGramMarkovImporter {
 
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
 
-		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
+		BigDecimal rootNodeCount = firstOrderNodes.stream().map(TreeNGram::getCount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
 			if (entry.getValue() != null) {
@@ -132,9 +209,9 @@ public class LetterNGramMarkovImporter {
 			try {
 				future.get();
 			} catch (InterruptedException ie) {
-				log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
+				log.error("Caught InterruptedException while waiting for ComputeConditionalTask ", ie);
 			} catch (ExecutionException ee) {
-				log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
+				log.error("Caught ExecutionException while waiting for ComputeConditionalTask ", ee);
 			}
 		}
 
@@ -146,7 +223,7 @@ public class LetterNGramMarkovImporter {
 	 */
 	protected class ComputeConditionalTask implements Callable<Void> {
 		private TreeNGram	node;
-		private long		parentCount;
+		private BigDecimal	parentCount;
 
 		/**
 		 * @param node
@@ -154,7 +231,7 @@ public class LetterNGramMarkovImporter {
 		 * @param parentCount
 		 *            the parentCount to set
 		 */
-		public ComputeConditionalTask(TreeNGram node, long parentCount) {
+		public ComputeConditionalTask(TreeNGram node, BigDecimal parentCount) {
 			this.node = node;
 			this.parentCount = parentCount;
 		}
@@ -166,8 +243,8 @@ public class LetterNGramMarkovImporter {
 			return null;
 		}
 
-		protected void computeConditionalProbability(TreeNGram node, long parentCount) {
-			node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
+		protected void computeConditionalProbability(TreeNGram node, BigDecimal parentCount) {
+			node.setConditionalProbability(node.getCount().divide(parentCount, MathConstants.PREC_10_HALF_UP));
 
 			Map<Character, TreeNGram> transitions = node.getTransitions();
 
@@ -245,7 +322,7 @@ public class LetterNGramMarkovImporter {
 					for (int j = 0; j < sentence.length() - order; j++) {
 						String nGramString = sentence.substring(j, j + order);
 
-						unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
+						unique += (letterMarkovModel.addLetterTransition(nGramString, BigDecimal.ONE) ? 1 : 0);
 
 						total++;
 					}

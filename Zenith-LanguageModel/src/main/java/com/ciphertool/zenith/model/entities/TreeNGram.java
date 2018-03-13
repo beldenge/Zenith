@@ -36,7 +36,8 @@ public class TreeNGram {
 	@Id
 	protected ObjectId					id;
 
-	protected long						count						= 0L;
+	// Count is BigDecimal to allow flexibility with smoothing methods
+	protected BigDecimal				count						= BigDecimal.ZERO;
 
 	protected BigDecimal				probability;
 
@@ -73,13 +74,17 @@ public class TreeNGram {
 	}
 
 	public void increment() {
-		this.count += 1L;
+		increment(BigDecimal.ONE);
+	}
+
+	public void increment(BigDecimal amount) {
+		this.count = this.count.add(amount);
 	}
 
 	/**
 	 * @return the count
 	 */
-	public long getCount() {
+	public BigDecimal getCount() {
 		return this.count;
 	}
 
@@ -87,7 +92,7 @@ public class TreeNGram {
 	 * @param count
 	 *            the count to set
 	 */
-	public void setCount(long count) {
+	public void setCount(BigDecimal count) {
 		this.count = count;
 	}
 
@@ -180,7 +185,7 @@ public class TreeNGram {
 		return this.getTransitions().get(c);
 	}
 
-	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order) {
+	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order, BigDecimal amountToIncrement) {
 		Character firstLetter = nGramString.charAt(order - 1);
 
 		TreeNGram child = this.getChild(firstLetter);
@@ -195,7 +200,7 @@ public class TreeNGram {
 			isNew = true;
 		}
 
-		child.increment();
+		child.increment(amountToIncrement ==  null ? BigDecimal.ONE : amountToIncrement);
 
 		return isNew;
 	}
