@@ -45,7 +45,7 @@ public class MarkovModelTest {
 	private static LetterNGramMarkovImporter	importer;
 	private static TreeMarkovModel				model;
 
-	@BeforeClass
+	//@BeforeClass
 	public static void setUp() {
 		ThreadPoolTaskExecutor taskExecutorSpy = spy(new ThreadPoolTaskExecutor());
 		taskExecutorSpy.setCorePoolSize(8);
@@ -72,7 +72,7 @@ public class MarkovModelTest {
 		model = importer.importCorpus(false);
 	}
 
-	@Test
+	//@Test
 	public void generate() {
 		StringBuilder sb = new StringBuilder();
 		String root = "happ";

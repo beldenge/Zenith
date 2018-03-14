@@ -106,10 +106,10 @@ network:
     weight: 1.0
   trainingSamples:
     #count: 3900
-    count: 0
+    count: 10000
   testSamples:
     #count: 500
-    count: 2
+    count: 2000
   learningRate: 0.1
   #epochs: 10
   epochs: 1
@@ -127,9 +127,5 @@ network:
 
 task:
   zodiac408:
-    directory:
-      trainingTextDirectory:
-        valid: /Users/george/Desktop/zenith-transformed
-        #valid: /Users/george/Desktop/3
-        #invalid: /Users/george/Desktop/bad-predictions
-        invalid: 
+    sourceDirectory: /Users/george/Desktop/zenith-transformed
+    samplesFile: /Users/george/Desktop/zenith-zodiac408-samples.txt

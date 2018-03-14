@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
@@ -57,76 +58,115 @@ import com.ciphertool.zenith.neural.model.DataSet;
 public class Zodiac408SampleGenerator implements SampleGenerator {
 	private static Logger			log				= LoggerFactory.getLogger(Zodiac408SampleGenerator.class);
 
-	private static final int		ALPHABET_SIZE	= 26;
+	private static final int	ALPHABET_SIZE			= 26;
+	private static final int	CHAR_TO_NUMERIC_OFFSET	= 9;
 
 	@Min(1)
 	@Value("${network.layers.input}")
 	private int						inputLayerNeurons;
 
+	@Min(2)
+	@Value("${network.layers.output}")
+	private int						outputLayerNeurons;
+
 	@Value("${network.testSamples.count}")
 	private int						testSampleCount;
 
+	@Value("${network.trainingSamples.count}")
+	private int						trainingSampleCount;
+
 	@NotBlank
-	@Value("${task.zodiac408.directory.trainingTextDirectory.valid}")
+	@Value("${task.zodiac408.sourceDirectory}")
 	private String					validTrainingTextDirectory;
 
-	@Value("${task.zodiac408.directory.trainingTextDirectory.invalid}")
-	private String					invalidTrainingTextDirectory;
+	@NotBlank
+	@Value("${task.zodiac408.samplesFile}")
+	private String					samplesFile;
 
 	@Autowired
 	private ProcessedTextFileParser	fileParser;
 
 	private BigDecimal[][]			englishTrainingSamples;
-	private BigDecimal[][]			nonEnglishTrainingSamples;
 	private BigDecimal[][]			englishTestSamples;
 
 	@PostConstruct
-	public void init() {
+	public void init() throws IOException {
 		log.info("Starting training text import...");
 
 		Path validTrainingTextDirectoryPath = Paths.get(validTrainingTextDirectory);
 
 		if (!Files.isDirectory(validTrainingTextDirectoryPath)) {
 			throw new IllegalArgumentException(
-					"Property \"task.zodiac408.directory.trainingTextDirectory.valid\" must be a directory.");
+					"Property \"task.zodiac408.sourceDirectory\" must be a directory.");
 		}
 
-		Path invalidTrainingTextDirectoryPath = null;
+		Path samplesFilePath = Paths.get(samplesFile);
 
-		if (invalidTrainingTextDirectory != null && !invalidTrainingTextDirectory.isEmpty()) {
-			invalidTrainingTextDirectoryPath = Paths.get(invalidTrainingTextDirectory);
-
-			if (!Files.isDirectory(invalidTrainingTextDirectoryPath)) {
+		if (Files.exists(samplesFilePath)) {
+			if (!Files.isRegularFile(samplesFilePath)) {
 				throw new IllegalArgumentException(
-						"Property \"task.zodiac408.directory.trainingTextDirectory.invalid\" must be a directory.");
+						"Property \"task.zodiac408.samplesFile\" must be a file.");
 			}
+		} else {
+			Files.createFile(samplesFilePath);
+
+			// Load English training data
+
+			long start = System.currentTimeMillis();
+
+			List<Future<Void>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerNeurons);
+
+			for (Future<Void> future : futures) {
+				try {
+					future.get();
+				} catch (InterruptedException | ExecutionException e) {
+					log.error("Caught Exception while waiting for ParseFileTask ", e);
+				}
+			}
+
+			log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
 		}
 
-		int inputLayerSize = inputLayerNeurons;
+		List<BigDecimal[]> englishParagraphs = importSamples(samplesFilePath);
 
-		// Load English training data
+		if (englishParagraphs.size() < (testSampleCount + trainingSampleCount)) {
+			throw new IllegalStateException("Requested " + testSampleCount + " test samples and " + trainingSampleCount + " training samples, but only " + englishParagraphs.size() + " total samples are available.");
+		}
 
+		buildTrainingAndTestSets(englishParagraphs);
+	}
+
+	protected List<BigDecimal[]> importSamples(Path samplesFilePath) throws IOException {
 		long start = System.currentTimeMillis();
 
-		/*
-		 * TODO: For now we are stepping by fours because it is taking up too much memory otherwise -- ought to look
-		 * into streaming this whole process, which would have to happen at a higher level. We'd need to load in samples
-		 * in batches and train/predict on them before going to the next batch instead of loading all samples into
-		 * memory and training on the whole thing.
-		 */
-		List<Future<List<BigDecimal[]>>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerSize, 4);
+		List<BigDecimal[]> numericSamples;
 
-		List<BigDecimal[]> englishParagraphs = new ArrayList<>();
+		try(Stream<String> lines = Files.lines(samplesFilePath)) {
+			numericSamples = new ArrayList<>();
 
-		for (Future<List<BigDecimal[]>> future : futures) {
-			try {
-				englishParagraphs.addAll(future.get());
-			} catch (InterruptedException | ExecutionException e) {
-				log.error("Caught Exception while waiting for ParseFileTask ", e);
-			}
+			lines.filter(line -> line != null && !line.isEmpty())
+					// One in 10 chance of using a record to keep memory usage manageable
+					.filter(line -> ThreadLocalRandom.current().nextInt(10) == 1)
+					.forEach(line -> {
+				char[] nextSample = line.substring(0, inputLayerNeurons).toCharArray();
+
+				BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
+
+				for (int j = 0; j < nextSample.length; j++) {
+					numericSample[j] = charToBigDecimal(nextSample[j]).divide(BigDecimal.valueOf(ALPHABET_SIZE), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+				}
+
+				numericSamples.add(numericSample);
+			});
 		}
 
-		BigDecimal[][] englishSamples = new BigDecimal[englishParagraphs.size()][inputLayerSize];
+		log.info("Finished importing {} samples in {}ms.", numericSamples.size(), (System.currentTimeMillis() - start));
+
+		return numericSamples;
+	}
+
+	protected void buildTrainingAndTestSets(List<BigDecimal[]> englishParagraphs) {
+		BigDecimal[][] englishSamples = new BigDecimal[englishParagraphs.size()][inputLayerNeurons];
 
 		for (int i = 0; i < englishParagraphs.size(); i++) {
 			englishSamples[i] = englishParagraphs.get(i);
@@ -136,61 +176,25 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		List<BigDecimal[]> englishSamplesList = new ArrayList<>(Arrays.asList(englishSamples));
 
-		englishTestSamples = new BigDecimal[testSampleCount / 2][inputLayerSize];
+		englishTestSamples = new BigDecimal[testSampleCount][inputLayerNeurons];
 
-		for (int i = 0; i < testSampleCount / 2; i++) {
+		for (int i = 0; i < testSampleCount; i++) {
 			englishTestSamples[i] = englishSamplesList.remove(englishSamplesList.size() - 1);
 		}
 
-		englishTrainingSamples = new BigDecimal[englishSamplesList.size()][inputLayerSize];
+		englishTrainingSamples = new BigDecimal[englishSamplesList.size()][inputLayerNeurons];
 
 		int samplesLeft = englishSamplesList.size();
 
 		for (int i = 0; i < samplesLeft; i++) {
 			englishTrainingSamples[i] = englishSamplesList.remove(englishSamplesList.size() - 1);
 		}
+	}
 
-		log.info("Finished importing {} samples from English training text in {}ms.", englishSamples.length, (System.currentTimeMillis()
-				- start));
+	protected BigDecimal charToBigDecimal(char c) {
+		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
 
-		// Load non-English training data (if provided)
-
-		if (invalidTrainingTextDirectoryPath == null) {
-			return;
-		}
-
-		start = System.currentTimeMillis();
-
-		futures = parseFiles(invalidTrainingTextDirectoryPath, inputLayerSize, 1);
-
-		List<BigDecimal[]> nonEnglishParagraphs = new ArrayList<>();
-
-		for (Future<List<BigDecimal[]>> future : futures) {
-			try {
-				nonEnglishParagraphs.addAll(future.get());
-			} catch (InterruptedException | ExecutionException e) {
-				log.error("Caught Exception while waiting for ParseFileTask ", e);
-			}
-		}
-
-		BigDecimal[][] nonEnglishSamples = new BigDecimal[nonEnglishParagraphs.size()][inputLayerSize];
-
-		for (int i = 0; i < nonEnglishParagraphs.size(); i++) {
-			nonEnglishSamples[i] = nonEnglishParagraphs.get(i);
-		}
-
-		nonEnglishSamples = shuffleArray(nonEnglishSamples);
-
-		List<BigDecimal[]> nonEnglishSamplesList = new ArrayList<>(Arrays.asList(nonEnglishSamples));
-
-		nonEnglishTrainingSamples = new BigDecimal[nonEnglishSamplesList.size()][inputLayerSize];
-
-		for (int i = 0; i < nonEnglishSamplesList.size(); i++) {
-			nonEnglishTrainingSamples[i] = nonEnglishSamplesList.get(i);
-		}
-
-		log.info("Finished importing {} samples from non-English training text in {}ms.", nonEnglishSamples.length, (System.currentTimeMillis()
-				- start));
+		return BigDecimal.valueOf(numericValue);
 	}
 
 	protected static BigDecimal[][] shuffleArray(BigDecimal[][] arrayToShuffle) {
@@ -224,41 +228,51 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected DataSet generate(int count, BigDecimal[][] samplesToUse) {
-		if (count > samplesToUse.length * 2) {
+		if (count > samplesToUse.length) {
 			throw new IllegalArgumentException("The number of samples to generate (" + count
-					+ ") exceeds the maximum number of samples available (" + samplesToUse.length * 2 + ").");
+					+ ") exceeds the maximum number of samples available (" + samplesToUse.length + ").");
 		}
 
-		BigDecimal[][] samples = new BigDecimal[count][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[count][2];
+		BigDecimal[][] samples = new BigDecimal[count * outputLayerNeurons][inputLayerNeurons];
+		BigDecimal[][] outputs = new BigDecimal[count * outputLayerNeurons][outputLayerNeurons];
 
-		boolean even = true;
 		for (int i = 0; i < count; i++) {
-			if (even) {
-				samples[i] = samplesToUse[i / 2];
-				outputs[i] = new BigDecimal[] { BigDecimal.ONE, BigDecimal.ZERO };
-			} else {
-				samples[i] = generateInvalidSample(i / 2);
-				outputs[i] = new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ONE };
-			}
+			samples[i] = generateRandomSample();
+			outputs[i] = new BigDecimal[outputLayerNeurons];
+			outputs[i][0] = BigDecimal.ONE;
 
-			even = !even;
+			for (int j = 1; j < outputLayerNeurons; j ++) {
+				outputs[i][j] = BigDecimal.ZERO;
+			}
+		}
+
+		for (int h = 1; h < outputLayerNeurons - 1; h ++) {
+			int endSampleSet = count + (count * h);
+			for (int i = count; i < endSampleSet; i++) {
+				samples[i] = generateRandomSample(); //TODO: generate from MarkovModel
+				outputs[i] = new BigDecimal[outputLayerNeurons];
+
+				for (int j = 0; j < outputLayerNeurons; j ++) {
+					outputs[i][j] = (h == j) ? BigDecimal.ONE : BigDecimal.ZERO;
+				}
+			}
+		}
+
+		int beginFinalSampleSet = count * (outputLayerNeurons - 1);
+		for (int i = beginFinalSampleSet; i < count * outputLayerNeurons; i++) {
+			samples[i] = samplesToUse[i - beginFinalSampleSet];
+			outputs[i] = new BigDecimal[outputLayerNeurons];
+			outputs[i][outputLayerNeurons - 1] = BigDecimal.ONE;
+
+			for (int j = 0; j < outputLayerNeurons - 1; j ++) {
+				outputs[i][j] = BigDecimal.ZERO;
+			}
 		}
 
 		return new DataSet(samples, outputs);
 	}
 
-	protected BigDecimal[] generateInvalidSample(int i) {
-		if (nonEnglishTrainingSamples != null) {
-			if (i > nonEnglishTrainingSamples.length - 1) {
-				throw new IllegalArgumentException(
-						"The invalid training samples file was specified, but the number of training samples exceeds the total available of "
-								+ nonEnglishTrainingSamples.length + ".");
-			}
-
-			return nonEnglishTrainingSamples[i];
-		}
-
+	protected BigDecimal[] generateRandomSample() {
 		int inputLayerSize = inputLayerNeurons;
 
 		BigDecimal[] randomSample = new BigDecimal[inputLayerSize];
@@ -271,16 +285,16 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return randomSample;
 	}
 
-	protected List<Future<List<BigDecimal[]>>> parseFiles(Path path, int inputLayerSize, int stepLimit) {
-		List<Future<List<BigDecimal[]>>> tasks = new ArrayList<Future<List<BigDecimal[]>>>();
-		Future<List<BigDecimal[]>> task;
+	protected List<Future<Void>> parseFiles(Path path, int inputLayerSize) {
+		List<Future<Void>> tasks = new ArrayList<>();
+		Future<Void> task;
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, inputLayerSize, stepLimit));
+					tasks.addAll(parseFiles(entry, inputLayerSize));
 				} else {
-					task = fileParser.parse(entry, inputLayerSize, stepLimit);
+					task = fileParser.parse(entry, inputLayerSize);
 					tasks.add(task);
 				}
 			}
