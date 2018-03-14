@@ -30,6 +30,31 @@ taskExecutor:
   poolSize:
     #override:
 
+collection:
+  letter:
+    ngram:
+      with:
+        spaces:
+          name: letterNGrams_withSpaces
+      without:
+        spaces:
+          name: letterNGrams_withoutSpaces
+
+#----------------------------------------
+# MongoDB Properties
+#----------------------------------------
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: Zenith
+
+mongodb:
+  parallelScan:
+    batchSize: 2500
+    numCursors: 25
+
 ---
 
 spring:

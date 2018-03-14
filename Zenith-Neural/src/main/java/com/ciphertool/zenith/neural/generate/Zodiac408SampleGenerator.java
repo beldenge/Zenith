@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
@@ -37,6 +38,12 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
 
+import com.ciphertool.zenith.math.sampling.RouletteSampler;
+import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import com.ciphertool.zenith.model.probability.LetterProbability;
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +65,6 @@ import com.ciphertool.zenith.neural.model.DataSet;
 public class Zodiac408SampleGenerator implements SampleGenerator {
 	private static Logger			log				= LoggerFactory.getLogger(Zodiac408SampleGenerator.class);
 
-	private static final int	ALPHABET_SIZE			= 26;
 	private static final int	CHAR_TO_NUMERIC_OFFSET	= 9;
 
 	@Min(1)
@@ -84,8 +90,12 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	private String					samplesFile;
 
 	@Autowired
+	private LetterNGramDao letterNGramDao;
+
+	@Autowired
 	private ProcessedTextFileParser	fileParser;
 
+	private TreeMarkovModel letterMarkovModel;
 	private BigDecimal[][]			englishTrainingSamples;
 	private BigDecimal[][]			englishTestSamples;
 
@@ -133,6 +143,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			throw new IllegalStateException("Requested " + testSampleCount + " test samples and " + trainingSampleCount + " training samples, but only " + englishParagraphs.size() + " total samples are available.");
 		}
 
+		int order = outputLayerNeurons - 2;
+
+		if (order > 0) {
+			letterMarkovModel = new TreeMarkovModel(outputLayerNeurons - 2);
+
+			List<TreeNGram> nodes = letterNGramDao.findAll(1, false);
+
+			// TODO: try parallel stream here
+			nodes.stream().forEach(letterMarkovModel::addNode);
+		}
+
 		buildTrainingAndTestSets(englishParagraphs);
 	}
 
@@ -153,7 +174,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
 
 				for (int j = 0; j < nextSample.length; j++) {
-					numericSample[j] = charToBigDecimal(nextSample[j]).divide(BigDecimal.valueOf(ALPHABET_SIZE), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+					numericSample[j] = charToBigDecimal(nextSample[j]);
 				}
 
 				numericSamples.add(numericSample);
@@ -194,7 +215,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	protected BigDecimal charToBigDecimal(char c) {
 		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
 
-		return BigDecimal.valueOf(numericValue);
+		return BigDecimal.valueOf(numericValue).divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 	}
 
 	protected static BigDecimal[][] shuffleArray(BigDecimal[][] arrayToShuffle) {
@@ -249,7 +270,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		for (int h = 1; h < outputLayerNeurons - 1; h ++) {
 			int endSampleSet = count + (count * h);
 			for (int i = count; i < endSampleSet; i++) {
-				samples[i] = generateRandomSample(); //TODO: generate from MarkovModel
+				samples[i] = generateMarkovModelSample(h);
 				outputs[i] = new BigDecimal[outputLayerNeurons];
 
 				for (int j = 0; j < outputLayerNeurons; j ++) {
@@ -291,14 +312,58 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return new DataSet(shuffledInputs, shuffledOutputs);
 	}
 
+	protected BigDecimal[] generateMarkovModelSample(int markovOrder) {
+		BigDecimal[] sample = new BigDecimal[inputLayerNeurons];
+
+		TreeNGram rootNode = letterMarkovModel.getRootNode();
+		TreeNGram match;
+
+		String root = "";
+		for (int i = 0; i < inputLayerNeurons; i++) {
+			match = (root == "" || markovOrder == 1) ? rootNode : letterMarkovModel.findLongest(root);
+
+			LetterProbability chosen = sampleNextTransitionFromDistribution(match);
+
+			char nextSymbol = chosen.getValue();
+			sample[i] = charToBigDecimal(nextSymbol);
+
+			root = ((root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
+		}
+
+		return sample;
+	}
+
+	protected static LetterProbability sampleNextTransitionFromDistribution(TreeNGram match) {
+		RouletteSampler sampler = new RouletteSampler();
+
+		List<LetterProbability> probabilities = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+
+		for (Map.Entry<Character, TreeNGram> entry : match.getTransitions().entrySet()) {
+			LetterProbability probability = new LetterProbability(entry.getKey(), entry.getValue().getConditionalProbability());
+
+			probabilities.add(probability);
+		}
+
+		sampler.reIndex(probabilities);
+
+		// Should always equal 1, but do a summation anyway
+		BigDecimal totalProbability = probabilities.stream().map(p -> p.getProbability()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
+
+		LetterProbability chosen = probabilities.get(nextIndex);
+
+		return chosen;
+	}
+
 	protected BigDecimal[] generateRandomSample() {
 		int inputLayerSize = inputLayerNeurons;
 
 		BigDecimal[] randomSample = new BigDecimal[inputLayerSize];
 
 		for (int j = 0; j < inputLayerSize; j++) {
-			randomSample[j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(ALPHABET_SIZE)
-					+ 1).divide(BigDecimal.valueOf(ALPHABET_SIZE), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+			randomSample[j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size())
+					+ 1).divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 		}
 
 		return randomSample;
