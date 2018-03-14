@@ -269,7 +269,26 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			}
 		}
 
-		return new DataSet(samples, outputs);
+		return shuffleDataSet(new DataSet(samples, outputs));
+	}
+
+	protected static DataSet shuffleDataSet(DataSet dataSetToShuffle) {
+		BigDecimal[][] shuffledInputs = new BigDecimal[dataSetToShuffle.getInputs().length][];
+		BigDecimal[][] shuffledOutputs = new BigDecimal[dataSetToShuffle.getOutputs().length][];
+
+		int arrayLength = dataSetToShuffle.getInputs().length;
+
+		List<BigDecimal[]> inputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getInputs()));
+		List<BigDecimal[]> outputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getOutputs()));
+
+		for (int i = 0; i < arrayLength; i++) {
+			int randomIndex = ThreadLocalRandom.current().nextInt(inputsArrayList.size());
+
+			shuffledInputs[i] = inputsArrayList.remove(randomIndex);
+			shuffledOutputs[i] = outputsArrayList.remove(randomIndex);
+		}
+
+		return new DataSet(shuffledInputs, shuffledOutputs);
 	}
 
 	protected BigDecimal[] generateRandomSample() {
