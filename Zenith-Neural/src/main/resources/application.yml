@@ -126,15 +126,15 @@ network:
     input: 391
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 200:LEAKY_RELU
-    output: 2
+    output: 3
   bias:
     weight: 1.0
   trainingSamples:
     #count: 3900
-    count: 5000
+    count: 1000
   testSamples:
     #count: 500
-    count: 1000
+    count: 200
   learningRate: 0.1
   #epochs: 10
   epochs: 1
