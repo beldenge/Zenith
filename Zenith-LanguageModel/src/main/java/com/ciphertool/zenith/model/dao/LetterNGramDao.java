@@ -66,7 +66,23 @@ public class LetterNGramDao {
 	@Autowired
 	private MongoOperations		mongoOperations;
 
-	public List<TreeNGram> findAll(Integer minimumCount, Boolean includeWordBoundaries) {
+	// TODO: right now we are not using the minimumCount at all -- as the query was not returning anything
+    public List<TreeNGram> findAll(int minimumCount, boolean includeWordBoundaries) {
+        long startCount = System.currentTimeMillis();
+        log.info("Finding nodes with counts greater than or equal to the minimum of {}.", minimumCount);
+
+        BasicQuery query = new BasicQuery("{ count : { $gte : " + minimumCount + " } }");
+
+        List<TreeNGram> nGrams = mongoOperations.findAll(TreeNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));//.find(query, TreeNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+
+        log.info("Finished finding nodes greater than or equal to the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
+                - startCount));
+
+        return nGrams;
+    }
+
+    // TODO: the parallel scan seems to no longer work in Spring Data MongoDB 2.0
+	public List<TreeNGram> findAllParallel(Integer minimumCount, Boolean includeWordBoundaries) {
 		DBCollection collection = ((MongoTemplate) mongoOperations).getMongoDbFactory().getLegacyDb().getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());

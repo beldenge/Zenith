@@ -48,7 +48,7 @@ public class RouletteSampler<T extends Probability<?>> {
 			}
 
 			if (probabilities.get(i).getProbability() == null) {
-				log.warn("Attempted to spin roulette wheel but an individual was found with a null fitness value.  Please make a call to evaluateFitness() before attempting to spin the roulette wheel. "
+				log.warn("Attempted to spin roulette wheel but an element was found with a null probability. "
 						+ probabilities.get(i));
 
 				continue;
@@ -91,7 +91,7 @@ public class RouletteSampler<T extends Probability<?>> {
 			return -1;
 		}
 
-		if (BigDecimal.ONE.subtract(totalProbability).abs().compareTo(BigDecimal.valueOf(0.0001)) > 0) {
+		if (BigDecimal.ONE.subtract(totalProbability).abs().compareTo(BigDecimal.valueOf(0.1)) > 0) {
 			log.error("Attempted to select from a probability distribution that does not sum to 1.  The sum is "
 					+ totalProbability.toPlainString() + ".  Unable to continue.");
 

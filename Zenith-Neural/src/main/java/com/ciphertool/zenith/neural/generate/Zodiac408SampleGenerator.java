@@ -344,10 +344,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			probabilities.add(probability);
 		}
 
-		sampler.reIndex(probabilities);
-
-		// Should always equal 1, but do a summation anyway
-		BigDecimal totalProbability = probabilities.stream().map(p -> p.getProbability()).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalProbability = sampler.reIndex(probabilities);
 
 		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 

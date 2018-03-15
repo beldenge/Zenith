@@ -47,14 +47,10 @@ public class CipherDao {
 
 		Query selectByNameQuery = new Query(Criteria.where("name").is(name));
 
-		Cipher cipher = mongoOperations.findOne(selectByNameQuery, Cipher.class);
-
-		return cipher;
+		return mongoOperations.findOne(selectByNameQuery, Cipher.class);
 	}
 
 	public List<Cipher> findAll() {
-		List<Cipher> ciphers = mongoOperations.findAll(Cipher.class);
-
-		return ciphers;
+		return mongoOperations.findAll(Cipher.class);
 	}
 }

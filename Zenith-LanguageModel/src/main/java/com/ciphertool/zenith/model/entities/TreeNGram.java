@@ -52,6 +52,9 @@ public class TreeNGram {
 	@Transient
 	private Map<Character, TreeNGram>	transitions;
 
+	// Required by Spring Data
+	public TreeNGram() {}
+
 	public TreeNGram(String nGramString) {
 		this.cumulativeString = nGramString;
 
