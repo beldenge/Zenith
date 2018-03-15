@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,15 +32,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.mongodb.Cursor;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.ParallelScanOptions;
 
 @Component
 public class LetterNGramDao {
@@ -69,7 +67,8 @@ public class LetterNGramDao {
 	private MongoOperations		mongoOperations;
 
 	public List<TreeNGram> findAll(Integer minimumCount, Boolean includeWordBoundaries) {
-		DBCollection collection = (DBCollection) mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+		DBCollection collection = ((MongoTemplate) mongoOperations).getMongoDbFactory().getLegacyDb().getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
+
 		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
 
 		List<TreeNGram> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
@@ -81,7 +80,7 @@ public class LetterNGramDao {
 			while (cursor.hasNext()) {
 				next = cursor.next();
 
-				if (((long) next.get(COUNT_KEY)) >= minimumCount) {
+				if (new BigDecimal((String) next.get(COUNT_KEY)).compareTo(BigDecimal.valueOf(minimumCount)) == 1) {
 					nextNode = new TreeNGram((String) next.get(CUMULATIVE_STRING_KEY));
 
 					nextNode.setId((ObjectId) next.get(ID_KEY));

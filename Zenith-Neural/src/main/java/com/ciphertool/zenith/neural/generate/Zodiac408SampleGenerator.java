@@ -320,14 +320,14 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		String root = "";
 		for (int i = 0; i < inputLayerNeurons; i++) {
-			match = (root == "" || markovOrder == 1) ? rootNode : letterMarkovModel.findLongest(root);
+			match = (root.isEmpty() || markovOrder == 1) ? rootNode : letterMarkovModel.findLongest(root);
 
 			LetterProbability chosen = sampleNextTransitionFromDistribution(match);
 
 			char nextSymbol = chosen.getValue();
 			sample[i] = charToBigDecimal(nextSymbol);
 
-			root = ((root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
+			root = ((root.isEmpty() || root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
 		}
 
 		return sample;
@@ -351,9 +351,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 
-		LetterProbability chosen = probabilities.get(nextIndex);
-
-		return chosen;
+		return probabilities.get(nextIndex);
 	}
 
 	protected BigDecimal[] generateRandomSample() {

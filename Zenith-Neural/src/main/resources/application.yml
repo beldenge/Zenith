@@ -19,6 +19,16 @@
 spring:
   profiles:
     active: zodiac408
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: Zenith
+
+mongodb:
+  parallelScan:
+    batchSize: 2500
+    numCursors: 25
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -39,21 +49,6 @@ collection:
       without:
         spaces:
           name: letterNGrams_withoutSpaces
-
-#----------------------------------------
-# MongoDB Properties
-#----------------------------------------
-spring:
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: Zenith
-
-mongodb:
-  parallelScan:
-    batchSize: 2500
-    numCursors: 25
 
 ---
 
@@ -126,7 +121,7 @@ network:
     input: 391
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 200:LEAKY_RELU
-    output: 3
+    output: 7
   bias:
     weight: 1.0
   trainingSamples:

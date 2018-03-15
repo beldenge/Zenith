@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import javax.validation.constraints.Min;
 
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 @EnableAsync
 @Validated
 @ConfigurationProperties
-@SpringBootApplication
+@SpringBootApplication(scanBasePackageClasses = { NeuralNetworkApplication.class, LetterNGramDao.class })
 public class NeuralNetworkApplication implements CommandLineRunner {
 	private static Logger			log	= LoggerFactory.getLogger(NeuralNetworkApplication.class);
 
