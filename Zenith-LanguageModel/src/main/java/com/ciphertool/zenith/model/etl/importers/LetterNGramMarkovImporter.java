@@ -114,11 +114,11 @@ public class LetterNGramMarkovImporter {
 
 		log.info("Starting smoothing of missing transitions...");
 
-		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		List<FutureTask<Void>> futures = new ArrayList<>(26);
 		FutureTask<Void> task;
 
 		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
-			task = new FutureTask<Void>(new SmoothTransitionsTask(letterMarkovModel, letterMarkovModel.getRootNode(), "", letter));
+			task = new FutureTask<>(new SmoothTransitionsTask(letterMarkovModel, letterMarkovModel.getRootNode(), "", letter));
 			futures.add(task);
 			this.taskExecutor.execute(task);
 		}
@@ -163,7 +163,7 @@ public class LetterNGramMarkovImporter {
 		}
 
 		@Override
-		public Void call() throws Exception {
+		public Void call() {
 			smoothTransitions(this.model, this.parentNode, this.nGram, this.letter);
 
 			return null;
@@ -195,11 +195,9 @@ public class LetterNGramMarkovImporter {
 
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
 
-		BigDecimal rootNodeCount = firstOrderNodes.stream().map(TreeNGram::getCount).reduce(BigDecimal.ZERO, BigDecimal::add);
-
 		for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
 			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(), rootNodeCount));
+				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(), letterMarkovModel.getRootNode()));
 				futures.add(task);
 				this.taskExecutor.execute(task);
 			}
@@ -223,28 +221,30 @@ public class LetterNGramMarkovImporter {
 	 */
 	protected class ComputeConditionalTask implements Callable<Void> {
 		private TreeNGram	node;
-		private BigDecimal	parentCount;
+		private TreeNGram	parentNode;
 
 		/**
 		 * @param node
 		 *            the NGramIndexNode to set
-		 * @param parentCount
-		 *            the parentCount to set
+		 * @param parentNode
+		 *            the parentNode to set
 		 */
-		public ComputeConditionalTask(TreeNGram node, BigDecimal parentCount) {
+		public ComputeConditionalTask(TreeNGram node, TreeNGram parentNode) {
 			this.node = node;
-			this.parentCount = parentCount;
+			this.parentNode = parentNode;
 		}
 
 		@Override
 		public Void call() throws Exception {
-			computeConditionalProbability(this.node, this.parentCount);
+			computeConditionalProbability(this.node, this.parentNode);
 
 			return null;
 		}
 
-		protected void computeConditionalProbability(TreeNGram node, BigDecimal parentCount) {
-			node.setConditionalProbability(node.getCount().divide(parentCount, MathConstants.PREC_10_HALF_UP));
+		protected void computeConditionalProbability(TreeNGram node, TreeNGram parentNode) {
+		    BigDecimal sum = parentNode.getTransitions().entrySet().stream().map(entry -> entry.getValue().getCount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			node.setConditionalProbability(node.getCount().divide(sum, MathConstants.PREC_10_HALF_UP));
 
 			Map<Character, TreeNGram> transitions = node.getTransitions();
 
@@ -253,7 +253,7 @@ public class LetterNGramMarkovImporter {
 			}
 
 			for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
-				computeConditionalProbability(entry.getValue(), node.getCount());
+				computeConditionalProbability(entry.getValue(), node);
 			}
 		}
 	}

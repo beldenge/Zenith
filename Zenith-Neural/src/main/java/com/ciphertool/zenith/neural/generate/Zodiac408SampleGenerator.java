@@ -238,7 +238,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	public DataSet generateTrainingSamples(int count) {
 		englishTrainingSamples = shuffleArray(englishTrainingSamples);
 
-		return generate(count, englishTrainingSamples);
+		return shuffleDataSet(generate(count, englishTrainingSamples));
 	}
 
 	@Override
@@ -269,7 +269,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		for (int h = 1; h < outputLayerNeurons - 1; h ++) {
 			int endSampleSet = count + (count * h);
-			for (int i = count; i < endSampleSet; i++) {
+			for (int i = (count * h); i < endSampleSet; i++) {
 				samples[i] = generateMarkovModelSample(h);
 				outputs[i] = new BigDecimal[outputLayerNeurons];
 
@@ -290,7 +290,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			}
 		}
 
-		return shuffleDataSet(new DataSet(samples, outputs));
+		return new DataSet(samples, outputs);
 	}
 
 	protected static DataSet shuffleDataSet(DataSet dataSetToShuffle) {
