@@ -53,7 +53,6 @@ public class LetterNGramMarkovImporter {
 	private static final String	EXTENSION			= ".txt";
 	private static final String	NON_ALPHA			= "[^a-zA-Z]";
 	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
-	private static final BigDecimal SINGLE_LETTER_RANDOM_PROBABILITY = BigDecimal.ONE.divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
 	@Autowired
 	private TaskExecutor		taskExecutor;
@@ -173,10 +172,11 @@ public class LetterNGramMarkovImporter {
 		protected void smoothTransitions(TreeMarkovModel model, TreeNGram parentNode, String nGram, Character letter) {
 			String nextNGram = nGram + letter;
 			if (!parentNode.getTransitions().containsKey(letter)) {
-				model.addLetterTransition(nextNGram, SINGLE_LETTER_RANDOM_PROBABILITY);
+				model.addLetterTransition(nextNGram, MathConstants.SINGLE_LETTER_RANDOM_PROBABILITY);
 			}
 
-			if (nextNGram.length() < order) {
+			// If there are zero transitions, then don't add any since they'll all have the same probability which would be a wasteful use of memory
+			if (nextNGram.length() < order && !parentNode.getTransitions().get(letter).getTransitions().isEmpty()) {
 				for (Character nextLetter : ModelConstants.LOWERCASE_LETTERS) {
 					smoothTransitions(model, parentNode.getTransitions().get(letter), nextNGram, nextLetter);
 				}

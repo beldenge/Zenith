@@ -99,6 +99,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	private BigDecimal[][]			englishTrainingSamples;
 	private BigDecimal[][]			englishTestSamples;
 
+	private static RouletteSampler RANDOM_LETTER_SAMPLER = new RouletteSampler();
+	private static List<LetterProbability> RANDOM_LETTER_PROBABILITIES = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+
+	static {
+		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+			RANDOM_LETTER_PROBABILITIES.add(new LetterProbability(letter, MathConstants.SINGLE_LETTER_RANDOM_PROBABILITY));
+		}
+	}
+
+	private static BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+
 	@PostConstruct
 	public void init() throws IOException {
 		log.info("Starting training text import...");
@@ -322,7 +333,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		for (int i = 0; i < inputLayerNeurons; i++) {
 			match = (root.isEmpty() || markovOrder == 1) ? rootNode : letterMarkovModel.findLongest(root);
 
-			LetterProbability chosen = sampleNextTransitionFromDistribution(match);
+			LetterProbability chosen = sampleNextTransitionFromDistribution(match, markovOrder);
 
 			char nextSymbol = chosen.getValue();
 			sample[i] = charToBigDecimal(nextSymbol);
@@ -333,7 +344,11 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return sample;
 	}
 
-	protected static LetterProbability sampleNextTransitionFromDistribution(TreeNGram match) {
+	protected static LetterProbability sampleNextTransitionFromDistribution(TreeNGram match, int markovOrder) {
+		if (match == null || match.getCumulativeString().length() < markovOrder) {
+			return RANDOM_LETTER_PROBABILITIES.get(RANDOM_LETTER_SAMPLER.getNextIndex(RANDOM_LETTER_PROBABILITIES, RANDOM_LETTER_TOTAL_PROBABILITY));
+		}
+
 		RouletteSampler sampler = new RouletteSampler();
 
 		List<LetterProbability> probabilities = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());

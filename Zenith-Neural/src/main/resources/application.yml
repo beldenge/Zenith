@@ -125,10 +125,8 @@ network:
   bias:
     weight: 1.0
   trainingSamples:
-    #count: 3900
     count: 25000
   testSamples:
-    #count: 500
     count: 5000
   learningRate: 0.1
   #epochs: 10
