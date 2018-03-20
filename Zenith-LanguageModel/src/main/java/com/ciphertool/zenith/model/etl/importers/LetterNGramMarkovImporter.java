@@ -21,6 +21,7 @@ package com.ciphertool.zenith.model.etl.importers;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +53,7 @@ public class LetterNGramMarkovImporter {
 	private static final String	EXTENSION			= ".txt";
 	private static final String	NON_ALPHA			= "[^a-zA-Z]";
 	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
-	private static final BigDecimal SINGLE_LETTER_RANDOM_PROBABILITY = BigDecimal.ONE.divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP);
+	private static final BigDecimal SINGLE_LETTER_RANDOM_PROBABILITY = BigDecimal.ONE.divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
 
 	@Autowired
 	private TaskExecutor		taskExecutor;
