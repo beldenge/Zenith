@@ -23,38 +23,32 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
-import org.hibernate.validator.constraints.NotBlank;
+import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraph;
+import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphDao;
+import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphSequenceDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("zodiac408")
 public class ProcessedTextFileParser {
 	private static Logger		log						= LoggerFactory.getLogger(ProcessedTextFileParser.class);
 
 	private static final String	NON_ALPHA				= "[^a-zA-Z]";
 
-	@NotBlank
-	@Value("${task.zodiac408.samplesFile}")
-	private String					samplesFile;
+	@Autowired
+	private EnglishParagraphDao englishParagraphDao;
 
-	private Path samplesFilePath;
+	@Autowired
+	private EnglishParagraphSequenceDao englishParagraphSequenceDao;
 
-	@Async
-	public Future<Void> parse(Path path, int sampleSize) throws IOException {
-		if (samplesFilePath == null) {
-			samplesFilePath = Paths.get(samplesFile);
-		}
-
+	public void parse(Path path, int sampleSize) {
 		long start = System.currentTimeMillis();
 
 		List<String> sentencesToAdd = new ArrayList<>();
@@ -83,18 +77,15 @@ public class ProcessedTextFileParser {
 			sample.append(sentencesToAdd.get(i));
 
 			if (sample.length() >= sampleSize) {
-				writeToFile(sample.toString().substring(0, sampleSize));
+				Long sequence = englishParagraphSequenceDao.getAndIncrement().getSequence();
+				String paragraph = sample.toString().substring(0, sampleSize);
+
+				englishParagraphDao.add(new EnglishParagraph(sequence, paragraph));
 
 				sample.delete(0, sample.length());
 			}
 		}
 
 		log.info("Completed parsing file {} in {}ms.", path.toString(), (System.currentTimeMillis() - start));
-
-		return new AsyncResult<>(null);
-	}
-
-	protected synchronized void writeToFile(String s) throws IOException {
-		Files.write(samplesFilePath, (s + "\n").getBytes(), StandardOpenOption.APPEND);
 	}
 }

@@ -125,9 +125,9 @@ network:
   bias:
     weight: 1.0
   trainingSamples:
-    count: 25000
+    count: 200
   testSamples:
-    count: 5000
+    count: 50
   learningRate: 0.1
   #epochs: 10
   epochs: 1
@@ -143,4 +143,3 @@ network:
 task:
   zodiac408:
     sourceDirectory: /Users/george/Desktop/zenith-transformed
-    samplesFile: /Users/george/Desktop/zenith-zodiac408-samples.txt

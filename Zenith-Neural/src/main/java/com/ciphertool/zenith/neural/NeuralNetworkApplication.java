@@ -131,7 +131,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	}
 
 	@Override
-	public void run(String... arg0) throws Exception {
+	public void run(String... arg0) {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 

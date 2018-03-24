@@ -797,3 +797,6 @@ db.letterNGrams_withoutSpaces.ensureIndex( { "count": -1 } );
 
 db.createCollection("letterNGrams_withSpaces");
 db.letterNGrams_withSpaces.ensureIndex( { "count": -1 } );
+
+db.createCollection("englishParagraphSequence");
+db.englishParagraphSequence.insert({ sequence: 0 });

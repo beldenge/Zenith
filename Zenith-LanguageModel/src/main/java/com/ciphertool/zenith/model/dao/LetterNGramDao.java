@@ -149,7 +149,10 @@ public class LetterNGramDao {
 	public void deleteAll(boolean includeWordBoundaries) {
 		String collection = (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces);
 
-		mongoOperations.dropCollection(collection);
+		if (mongoOperations.collectionExists(collection)) {
+			mongoOperations.dropCollection(collection);
+		}
+
 		mongoOperations.createCollection(collection);
 		mongoOperations.indexOps(collection).ensureIndex(new Index("count", Direction.DESC));
 	}

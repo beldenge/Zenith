@@ -30,12 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
+import java.util.concurrent.*;
 
-import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
 
 import com.ciphertool.zenith.math.sampling.RouletteSampler;
@@ -44,6 +40,9 @@ import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import com.ciphertool.zenith.model.probability.LetterProbability;
+import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraph;
+import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphDao;
+import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphSequenceDao;
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -85,17 +85,24 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	@Value("${task.zodiac408.sourceDirectory}")
 	private String					validTrainingTextDirectory;
 
-	@NotBlank
-	@Value("${task.zodiac408.samplesFile}")
-	private String					samplesFile;
+	@Autowired
+	private ThreadPoolTaskExecutor 	taskExecutor;
 
 	@Autowired
-	private LetterNGramDao letterNGramDao;
+	private LetterNGramDao			 letterNGramDao;
+
+	@Autowired
+	private EnglishParagraphDao		 englishParagraphDao;
+
+	@Autowired
+	private EnglishParagraphSequenceDao englishParagraphSequenceDao;
+
+	private long englishParagraphCount = 0L;
 
 	@Autowired
 	private ProcessedTextFileParser	fileParser;
 
-	private TreeMarkovModel letterMarkovModel;
+	private TreeMarkovModel 		letterMarkovModel;
 	private BigDecimal[][]			englishTrainingSamples;
 	private BigDecimal[][]			englishTestSamples;
 
@@ -110,45 +117,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	private static BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
-	@PostConstruct
-	public void init() throws IOException {
+	public void init() {
 		log.info("Starting training text import...");
 
-		Path validTrainingTextDirectoryPath = Paths.get(validTrainingTextDirectory);
-
-		if (!Files.isDirectory(validTrainingTextDirectoryPath)) {
-			throw new IllegalArgumentException(
-					"Property \"task.zodiac408.sourceDirectory\" must be a directory.");
-		}
-
-		Path samplesFilePath = Paths.get(samplesFile);
-
-		if (Files.exists(samplesFilePath)) {
-			if (!Files.isRegularFile(samplesFilePath)) {
-				throw new IllegalArgumentException(
-						"Property \"task.zodiac408.samplesFile\" must be a file.");
-			}
-		} else {
-			Files.createFile(samplesFilePath);
-
-			// Load English training data
-
-			long start = System.currentTimeMillis();
-
-			List<Future<Void>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerNeurons);
-
-			for (Future<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException | ExecutionException e) {
-					log.error("Caught Exception while waiting for ParseFileTask ", e);
-				}
-			}
-
-			log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
-		}
-
-		List<BigDecimal[]> englishParagraphs = importSamples(samplesFilePath);
+		List<BigDecimal[]> englishParagraphs = persistSamples();
 
 		if (englishParagraphs.size() < (testSampleCount + trainingSampleCount)) {
 			throw new IllegalStateException("Requested " + testSampleCount + " test samples and " + trainingSampleCount + " training samples, but only " + englishParagraphs.size() + " total samples are available.");
@@ -168,28 +140,52 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		buildTrainingAndTestSets(englishParagraphs);
 	}
 
-	protected List<BigDecimal[]> importSamples(Path samplesFilePath) throws IOException {
+	protected List<BigDecimal[]> persistSamples() {
+		Path validTrainingTextDirectoryPath = Paths.get(validTrainingTextDirectory);
+
+		if (!Files.isDirectory(validTrainingTextDirectoryPath)) {
+			throw new IllegalArgumentException(
+					"Property \"task.zodiac408.sourceDirectory\" must be a directory.");
+		}
+
+		if (!englishParagraphDao.exists()) {
+			englishParagraphDao.reinitialize();
+			englishParagraphSequenceDao.reinitialize();
+
+			// Load English training data
+			long start = System.currentTimeMillis();
+
+            List<CompletableFuture<Void>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerNeurons);
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
+
+			log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
+		}
+
+		return importSamples();
+	}
+
+	protected List<BigDecimal[]> importSamples() {
+		englishParagraphCount = englishParagraphDao.count();
+
 		long start = System.currentTimeMillis();
 
-		List<BigDecimal[]> numericSamples;
+		List<BigDecimal[]> numericSamples = new ArrayList<>();;
 
-		try(Stream<String> lines = Files.lines(samplesFilePath)) {
-			numericSamples = new ArrayList<>();
+		for (int i = 0; i < (testSampleCount + trainingSampleCount); i ++) {
+			Long randomIndex = ThreadLocalRandom.current().nextLong(englishParagraphCount);
 
-			lines.filter(line -> line != null && !line.isEmpty())
-					// One in 10 chance of using a record to keep memory usage manageable
-					.filter(line -> ThreadLocalRandom.current().nextInt(10) == 1)
-					.forEach(line -> {
-				char[] nextSample = line.substring(0, inputLayerNeurons).toCharArray();
+			EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
 
-				BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
+			char[] nextSample = nextParagraph.getParagraph().substring(0, inputLayerNeurons).toCharArray();
 
-				for (int j = 0; j < nextSample.length; j++) {
-					numericSample[j] = charToBigDecimal(nextSample[j]);
-				}
+			BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
 
-				numericSamples.add(numericSample);
-			});
+			for (int j = 0; j < nextSample.length; j++) {
+				numericSample[j] = charToBigDecimal(nextSample[j]);
+			}
+
+			numericSamples.add(numericSample);
 		}
 
 		log.info("Finished importing {} samples in {}ms.", numericSamples.size(), (System.currentTimeMillis() - start));
@@ -247,6 +243,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSamples(int count) {
+		if (englishTrainingSamples == null) {
+			init();
+		}
+
 		englishTrainingSamples = shuffleArray(englishTrainingSamples);
 
 		return shuffleDataSet(generate(count, englishTrainingSamples));
@@ -254,6 +254,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTestSamples(int count) {
+		if (englishTestSamples == null) {
+			init();
+		}
+
 		englishTestSamples = shuffleArray(englishTestSamples);
 
 		return generate(count, englishTestSamples);
@@ -379,16 +383,16 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return randomSample;
 	}
 
-	protected List<Future<Void>> parseFiles(Path path, int inputLayerSize) {
-		List<Future<Void>> tasks = new ArrayList<>();
-		Future<Void> task;
+	protected List<CompletableFuture<Void>> parseFiles(Path path, int inputLayerSize) {
+		List<CompletableFuture<Void>> tasks = new ArrayList<>();
+        CompletableFuture<Void> task;
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
 					tasks.addAll(parseFiles(entry, inputLayerSize));
 				} else {
-					task = fileParser.parse(entry, inputLayerSize);
+					task = CompletableFuture.runAsync(() -> fileParser.parse(entry, inputLayerSize), taskExecutor);
 					tasks.add(task);
 				}
 			}
