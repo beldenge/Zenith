@@ -21,50 +21,111 @@ package com.ciphertool.zenith.neural.predict;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
-import com.ciphertool.zenith.neural.model.Layer;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.Neuron;
-import com.ciphertool.zenith.neural.model.ProblemType;
+
+import javax.validation.constraints.Min;
 
 @Component
 public class Predictor {
 	private static Logger				log	= LoggerFactory.getLogger(Predictor.class);
 
+	@Min(1)
+	@Value("${network.testSamples.count}")
+	private int						numberOfTests;
+
+	@Value("${network.testSamples.marginOfError:0.01}")
+	private BigDecimal				marginOfErrorRegression;
+
+	@Autowired
+	private SampleGenerator generator;
+
 	@Autowired
 	private FeedForwardNeuronProcessor	neuronProcessor;
 
-	public BigDecimal[][] predict(NeuralNetwork network, BigDecimal[][] inputs) {
-		Neuron[] outputLayerNeurons = network.getOutputLayer().getNeurons();
+	public PredictionStats predict(NeuralNetwork network) {
+		PredictionStats stats = new PredictionStats(0, 0, 0);
 
-		BigDecimal[][] predictions = new BigDecimal[inputs.length][outputLayerNeurons.length];
+		Neuron[] outputLayerNeurons = network.getOutputLayer().getNeurons();
 
 		ConsoleProgressBar progressBar = new ConsoleProgressBar();
 
-		for (int i = 0; i < inputs.length; i++) {
+		for (int i = 0; i < numberOfTests; i++) {
 			long start = System.currentTimeMillis();
 
-			feedForward(network, inputs[i]);
+			DataSet nextSample = generator.generateTestSample();
 
-			for (int j = 0; j < outputLayerNeurons.length; j++) {
-				predictions[i][j] = outputLayerNeurons[j].getActivationValue();
+			int sampleSize = nextSample.getInputs().length;
+
+			BigDecimal[][] predictions = new BigDecimal[sampleSize][outputLayerNeurons.length];
+
+			for (int j = 0; j < sampleSize; j ++) {
+				feedForward(network, nextSample.getInputs()[j]);
+
+				for (int k = 0; k < outputLayerNeurons.length; k++) {
+					predictions[j][k] = outputLayerNeurons[k].getActivationValue();
+				}
+
+				log.info("Finished predicting sample {} in {}ms.", (i * sampleSize) + j + 1, System.currentTimeMillis() - start);
+
+				compareExpectationToPrediction(network, nextSample.getInputs()[j], nextSample.getOutputs()[j], predictions[j], stats);
 			}
 
-			log.info("Finished predicting sample {} in {}ms.", i + 1, System.currentTimeMillis() - start);
-
-			progressBar.tick((double) i, (double) inputs.length);
+			progressBar.tick((double) i, (double) numberOfTests);
 		}
 
-		return predictions;
+		return stats;
+	}
+
+	private void compareExpectationToPrediction(NeuralNetwork network, BigDecimal[] inputs, BigDecimal[] outputs, BigDecimal[] predictions, PredictionStats stats) {
+		boolean wasIncorrect = false;
+
+		log.info("Inputs: {}", Arrays.toString(inputs));
+
+		BigDecimal highestProbability = BigDecimal.ZERO;
+		int indexOfHighestProbability = -1;
+
+		for (int j = 0; j < predictions.length; j++) {
+			BigDecimal prediction = predictions[j];
+			BigDecimal expected = outputs[j];
+
+			log.info("Expected: {}, Prediction: {}", expected, prediction);
+
+			if (network.getProblemType() == ProblemType.CLASSIFICATION) {
+				if (highestProbability.compareTo(prediction) < 0) {
+					highestProbability = prediction;
+					indexOfHighestProbability = j;
+				}
+			}
+
+			// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
+			if (!wasIncorrect && prediction.subtract(expected).abs().compareTo(marginOfErrorRegression) > 0) {
+				wasIncorrect = true;
+			}
+		}
+
+		if (network.getProblemType() == ProblemType.CLASSIFICATION
+				&& BigDecimal.ONE.equals(outputs[indexOfHighestProbability])) {
+			stats.incrementBestProbabilityCount();
+		}
+
+		if (!wasIncorrect) {
+			stats.incrementCorrectCount();
+		}
+
+		stats.incrementTotalPredictions();
 	}
 
 	public void feedForward(NeuralNetwork network, BigDecimal[] inputs) {

@@ -29,6 +29,8 @@ import java.util.concurrent.Future;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 
+import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.model.*;
 import org.nevec.rjm.BigDecimalMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +42,6 @@ import org.springframework.validation.annotation.Validated;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
-import com.ciphertool.zenith.neural.model.Layer;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.Neuron;
-import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.Predictor;
 
 @Component
@@ -63,37 +61,41 @@ public class SupervisedTrainer {
 	@Value("${network.weightDecay}")
 	private BigDecimal						weightDecayPercent;
 
+	@Value("${network.trainingSamples.count}")
+	private int						numberOfSamples;
+
+	@Autowired
+	private SampleGenerator generator;
+
 	@Autowired
 	private Predictor						predictor;
 
 	@Autowired
 	private BackPropagationNeuronProcessor	neuronProcessor;
 
-	public void train(NeuralNetwork network, int batchSize, BigDecimal[][] inputs, BigDecimal[][] outputs) {
-		if (inputs.length != outputs.length) {
-			throw new IllegalArgumentException("The sample inputs size of " + inputs.length
-					+ " does not match the sample outputs size of " + outputs.length
-					+ ".  Unable to continue with training.");
-		}
-
+	public void train(NeuralNetwork network, int batchSize) {
 		ConsoleProgressBar progressBar = new ConsoleProgressBar();
 
 		int currentBatchSize = 0;
 
 		int i;
 		long batchStart = System.currentTimeMillis();
-		for (i = 0; i < inputs.length; i++) {
+		for (i = 0; i < numberOfSamples; i++) {
 			long start = System.currentTimeMillis();
 
-			predictor.feedForward(network, inputs[i]);
+			DataSet nextSample = generator.generateTrainingSample();
 
-			log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
+			for (int j = 0; j < nextSample.getInputs().length; j ++) {
+				predictor.feedForward(network, nextSample.getInputs()[j]);
 
-			start = System.currentTimeMillis();
+				log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
 
-			backPropagate(network, outputs[i]);
+				start = System.currentTimeMillis();
 
-			log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
+				backPropagate(network, nextSample.getOutputs()[j]);
+
+				log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
+			}
 
 			currentBatchSize++;
 
@@ -108,7 +110,7 @@ public class SupervisedTrainer {
 				batchStart = System.currentTimeMillis();
 			}
 
-			progressBar.tick((double) i, (double) inputs.length);
+			progressBar.tick((double) i, (double) numberOfSamples);
 		}
 
 		if (currentBatchSize > 0) {

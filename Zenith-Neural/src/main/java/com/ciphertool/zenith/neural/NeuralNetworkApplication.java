@@ -20,11 +20,11 @@
 package com.ciphertool.zenith.neural;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 import javax.validation.constraints.Min;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.neural.predict.PredictionStats;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
@@ -40,9 +40,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 
-import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.io.NetworkMapper;
-import com.ciphertool.zenith.neural.model.DataSet;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.Predictor;
@@ -64,16 +62,6 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Min(1)
 	@Value("${taskExecutor.queueCapacity}")
 	private int						queueCapacity;
-
-	@Value("${network.testSamples.marginOfError:0.01}")
-	private BigDecimal				marginOfErrorRegression;
-
-	@Value("${network.trainingSamples.count}")
-	private int						numberOfSamples;
-
-	@Min(1)
-	@Value("${network.testSamples.count}")
-	private int						numberOfTests;
 
 	@Min(1)
 	@Value("${network.epochs:1}")
@@ -112,9 +100,6 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	private ThreadPoolTaskExecutor	taskExecutor;
 
 	@Autowired
-	private SampleGenerator			generator;
-
-	@Autowired
 	private SupervisedTrainer		trainer;
 
 	@Autowired
@@ -149,77 +134,25 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 			log.info("Training network...");
 
 			for (int i = 1; i <= epochs; i++) {
-				log.info("Generating " + numberOfSamples + " training samples...");
-				long startGeneration = System.currentTimeMillis();
-				DataSet trainingData = generator.generateTrainingSamples(numberOfSamples);
-				log.info("Finished sample generation in " + (System.currentTimeMillis() - startGeneration) + "ms.");
-
-				trainer.train(network, batchSize, trainingData.getInputs(), trainingData.getOutputs());
+				trainer.train(network, batchSize);
 				log.info("Completed epoch {}", i);
 			}
 
 			log.info("Finished training in " + (System.currentTimeMillis() - start) + "ms.");
 		}
 
-		log.info("Generating " + numberOfTests + " test samples...");
-		start = System.currentTimeMillis();
-		DataSet testData = generator.generateTestSamples(numberOfTests);
-		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
-
 		log.info("Testing predictions...");
 		start = System.currentTimeMillis();
-		BigDecimal[][] predictions = predictor.predict(network, testData.getInputs());
+		PredictionStats predictionStats = predictor.predict(network);
 		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
-		int correctCount = 0;
-		int bestProbabilityCount = 0;
-		boolean wasIncorrect;
-		for (int i = 0; i < predictions.length; i++) {
-			wasIncorrect = false;
-
-			BigDecimal[] inputs = testData.getInputs()[i];
-
-			log.info("Inputs: {}", Arrays.toString(inputs));
-
-			BigDecimal highestProbability = BigDecimal.ZERO;
-			int indexOfHighestProbability = -1;
-
-			for (int j = 0; j < predictions[i].length; j++) {
-				BigDecimal prediction = predictions[i][j];
-				BigDecimal expected = testData.getOutputs()[i][j];
-
-				log.info("Expected: {}, Prediction: {}", expected, prediction);
-
-				if (network.getProblemType() == ProblemType.CLASSIFICATION) {
-					if (highestProbability.compareTo(prediction) < 0) {
-						highestProbability = prediction;
-						indexOfHighestProbability = j;
-					}
-				}
-
-				// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
-				if (!wasIncorrect && prediction.subtract(expected).abs().compareTo(marginOfErrorRegression) > 0) {
-					wasIncorrect = true;
-				}
-			}
-
-			if (network.getProblemType() == ProblemType.CLASSIFICATION
-					&& BigDecimal.ONE.equals(testData.getOutputs()[i][indexOfHighestProbability])) {
-				bestProbabilityCount++;
-			}
-
-			if (!wasIncorrect) {
-				correctCount++;
-			}
-		}
-
-		log.info("Neural network achieved " + correctCount + " correct out of " + predictions.length + " total.");
-		log.info("Percentage correct: " + (int) ((((double) correctCount / (double) predictions.length) * 100.0) + 0.5));
+		log.info("Neural network achieved " + predictionStats.getCorrectCount() + " correct out of " + predictionStats.getTotalPredictions() + " total.");
+		log.info("Percentage correct: " + (int) ((((double) predictionStats.getCorrectCount() / (double) predictionStats.getTotalPredictions()) * 100.0) + 0.5));
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
-			log.info("Classification achieved " + bestProbabilityCount + " most probable out of " + predictions.length
+			log.info("Classification achieved " + predictionStats.getBestProbabilityCount() + " most probable out of " + predictionStats.getTotalPredictions()
 					+ " total.");
-			log.info("Percentage most probable: " + (int) ((((double) bestProbabilityCount / (double) predictions.length)
+			log.info("Percentage most probable: " + (int) ((((double) predictionStats.getBestProbabilityCount() / (double) predictionStats.getTotalPredictions())
 					* 100.0) + 0.5));
 		}
 
