@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
@@ -78,6 +79,9 @@ public class MnistSampleGenerator implements SampleGenerator {
 	@Min(1)
 	@Value("${network.layers.output}")
 	private int						outputLayerNeurons;
+
+	private static AtomicInteger nextTrainingIndex;
+	private static AtomicInteger nextTestIndex;
 
 	private BigDecimal[][]			trainingImages;
 	private BigDecimal[][]			trainingLabels;
@@ -244,37 +248,80 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSamples(int count) {
+		if (count > testImages.length) {
+			throw new IllegalArgumentException("The number of training samples to generate (" + count
+					+ ") exceeds the maximum number of training samples available (" + testImages.length + ").");
+		}
+
+		nextTrainingIndex = new AtomicInteger(0);
+
 		DataSet shuffledTrainingData = shuffleArrays(trainingImages, trainingLabels);
 
 		trainingImages = shuffledTrainingData.getInputs();
 		trainingLabels = shuffledTrainingData.getOutputs();
 
-		return generate(count, trainingImages, trainingLabels);
+		BigDecimal[][] inputs = new BigDecimal[count][inputLayerNeurons];
+		BigDecimal[][] outputs = new BigDecimal[count][outputLayerNeurons];
+
+		for (int i = 0; i < count; i++) {
+			DataSet next = generateTrainingSample();
+
+			inputs[i] = next.getInputs()[0];
+			outputs[i] = next.getOutputs()[0];
+		}
+
+		return new DataSet(inputs, outputs);
+	}
+
+	@Override
+	public DataSet generateTrainingSample() {
+		BigDecimal[][] inputs = new BigDecimal[1][inputLayerNeurons];
+		BigDecimal[][] outputs = new BigDecimal[1][outputLayerNeurons];
+
+		int next = nextTrainingIndex.getAndIncrement();
+
+		inputs[0] = trainingImages[next];
+		outputs[0] = trainingLabels[next];
+
+		return new DataSet(inputs, outputs);
 	}
 
 	@Override
 	public DataSet generateTestSamples(int count) {
+		if (count > testImages.length) {
+			throw new IllegalArgumentException("The number of test samples to generate (" + count
+					+ ") exceeds the maximum number of test samples available (" + testImages.length + ").");
+		}
+
+		nextTestIndex = new AtomicInteger(0);
+
 		DataSet shuffledTestData = shuffleArrays(testImages, testLabels);
 
 		testImages = shuffledTestData.getInputs();
 		testLabels = shuffledTestData.getOutputs();
 
-		return generate(count, testImages, testLabels);
-	}
-
-	protected DataSet generate(int count, BigDecimal[][] images, BigDecimal[][] labels) {
-		if (count > images.length) {
-			throw new IllegalArgumentException("The number of samples to generate (" + count
-					+ ") exceeds the maximum number of samples available (" + images.length + ").");
-		}
-
 		BigDecimal[][] inputs = new BigDecimal[count][inputLayerNeurons];
 		BigDecimal[][] outputs = new BigDecimal[count][outputLayerNeurons];
 
 		for (int i = 0; i < count; i++) {
-			inputs[i] = images[i];
-			outputs[i] = labels[i];
+			DataSet next = generateTestSample();
+
+			inputs[i] = next.getInputs()[0];
+			outputs[i] = next.getOutputs()[0];
 		}
+
+		return new DataSet(inputs, outputs);
+	}
+
+	@Override
+	public DataSet generateTestSample() {
+		BigDecimal[][] inputs = new BigDecimal[1][inputLayerNeurons];
+		BigDecimal[][] outputs = new BigDecimal[1][outputLayerNeurons];
+
+		int next = nextTestIndex.getAndIncrement();
+
+		inputs[0] = testImages[next];
+		outputs[0] = testLabels[next];
 
 		return new DataSet(inputs, outputs);
 	}

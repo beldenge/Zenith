@@ -51,8 +51,18 @@ public class XorSampleGenerator implements SampleGenerator {
 	}
 
 	@Override
+	public DataSet generateTrainingSample() {
+		return generateOne();
+	}
+
+	@Override
 	public DataSet generateTestSamples(int count) {
 		return generate(count);
+	}
+
+	@Override
+	public DataSet generateTestSample() {
+		return generateOne();
 	}
 
 	protected DataSet generate(int count) {
@@ -63,12 +73,27 @@ public class XorSampleGenerator implements SampleGenerator {
 		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];
 
 		for (int i = 0; i < count; i++) {
-			for (int j = 0; j < inputLayerSize; j++) {
-				inputs[i][j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(2));
-			}
+			DataSet next = generateOne();
 
-			outputs[i] = new BigDecimal[] { xor(inputs[i]) };
+			inputs[i] = next.getInputs()[0];
+			outputs[i] = next.getOutputs()[0];
 		}
+
+		return new DataSet(inputs, outputs);
+	}
+
+	public DataSet generateOne() {
+		int inputLayerSize = inputLayerNeurons;
+		int outputLayerSize = outputLayerNeurons;
+
+		BigDecimal[][] inputs = new BigDecimal[1][inputLayerSize];
+		BigDecimal[][] outputs = new BigDecimal[1][outputLayerSize];
+
+		for (int j = 0; j < inputLayerSize; j++) {
+			inputs[0][j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(2));
+		}
+
+		outputs[0] = new BigDecimal[] { xor(inputs[0]) };
 
 		return new DataSet(inputs, outputs);
 	}

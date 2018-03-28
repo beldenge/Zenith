@@ -24,5 +24,9 @@ import com.ciphertool.zenith.neural.model.DataSet;
 public interface SampleGenerator {
 	public DataSet generateTrainingSamples(int count);
 
+	public DataSet generateTrainingSample();
+
 	public DataSet generateTestSamples(int count);
+
+	public DataSet generateTestSample();
 }

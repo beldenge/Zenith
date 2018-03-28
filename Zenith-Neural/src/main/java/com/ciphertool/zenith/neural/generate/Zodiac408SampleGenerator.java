@@ -67,6 +67,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	private static final int	CHAR_TO_NUMERIC_OFFSET	= 9;
 
+	private static final RouletteSampler RANDOM_LETTER_SAMPLER = new RouletteSampler();
+	private static final List<LetterProbability> RANDOM_LETTER_PROBABILITIES = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+
+	static {
+		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+			RANDOM_LETTER_PROBABILITIES.add(new LetterProbability(letter, MathConstants.SINGLE_LETTER_RANDOM_PROBABILITY));
+		}
+	}
+
+	private static final BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+
 	@Min(1)
 	@Value("${network.layers.input}")
 	private int						inputLayerNeurons;
@@ -75,15 +86,15 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	@Value("${network.layers.output}")
 	private int						outputLayerNeurons;
 
+	@NotBlank
+	@Value("${task.zodiac408.sourceDirectory}")
+	private String					validTrainingTextDirectory;
+
 	@Value("${network.testSamples.count}")
 	private int						testSampleCount;
 
 	@Value("${network.trainingSamples.count}")
 	private int						trainingSampleCount;
-
-	@NotBlank
-	@Value("${task.zodiac408.sourceDirectory}")
-	private String					validTrainingTextDirectory;
 
 	@Autowired
 	private ThreadPoolTaskExecutor 	taskExecutor;
@@ -97,33 +108,24 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	@Autowired
 	private EnglishParagraphSequenceDao englishParagraphSequenceDao;
 
-	private long englishParagraphCount = 0L;
-
 	@Autowired
 	private ProcessedTextFileParser	fileParser;
 
 	private TreeMarkovModel 		letterMarkovModel;
-	private BigDecimal[][]			englishTrainingSamples;
-	private BigDecimal[][]			englishTestSamples;
 
-	private static RouletteSampler RANDOM_LETTER_SAMPLER = new RouletteSampler();
-	private static List<LetterProbability> RANDOM_LETTER_PROBABILITIES = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+	private long englishParagraphCount = 0L;
 
-	static {
-		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
-			RANDOM_LETTER_PROBABILITIES.add(new LetterProbability(letter, MathConstants.SINGLE_LETTER_RANDOM_PROBABILITY));
-		}
-	}
-
-	private static BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+	private boolean intialized = false;
 
 	public void init() {
 		log.info("Starting training text import...");
 
-		List<BigDecimal[]> englishParagraphs = persistSamples();
+		persistSamples();
 
-		if (englishParagraphs.size() < (testSampleCount + trainingSampleCount)) {
-			throw new IllegalStateException("Requested " + testSampleCount + " test samples and " + trainingSampleCount + " training samples, but only " + englishParagraphs.size() + " total samples are available.");
+		englishParagraphCount = englishParagraphDao.count();
+
+		if (englishParagraphCount < (testSampleCount + trainingSampleCount)) {
+			throw new IllegalStateException("Requested " + testSampleCount + " test samples and " + trainingSampleCount + " training samples, but only " + englishParagraphCount + " total samples are available.");
 		}
 
 		int order = outputLayerNeurons - 2;
@@ -137,10 +139,14 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			nodes.stream().forEach(letterMarkovModel::addNode);
 		}
 
-		buildTrainingAndTestSets(englishParagraphs);
+		intialized = true;
 	}
 
-	protected List<BigDecimal[]> persistSamples() {
+	protected void persistSamples() {
+		if (englishParagraphDao.exists()) {
+			return;
+		}
+
 		Path validTrainingTextDirectoryPath = Paths.get(validTrainingTextDirectory);
 
 		if (!Files.isDirectory(validTrainingTextDirectoryPath)) {
@@ -148,75 +154,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 					"Property \"task.zodiac408.sourceDirectory\" must be a directory.");
 		}
 
-		if (!englishParagraphDao.exists()) {
-			englishParagraphDao.reinitialize();
-			englishParagraphSequenceDao.reinitialize();
+		englishParagraphDao.reinitialize();
+		englishParagraphSequenceDao.reinitialize();
 
-			// Load English training data
-			long start = System.currentTimeMillis();
-
-            List<CompletableFuture<Void>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerNeurons);
-
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
-
-			log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
-		}
-
-		return importSamples();
-	}
-
-	protected List<BigDecimal[]> importSamples() {
-		englishParagraphCount = englishParagraphDao.count();
-
+		// Load English training data
 		long start = System.currentTimeMillis();
 
-		List<BigDecimal[]> numericSamples = new ArrayList<>();;
+		List<CompletableFuture<Void>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerNeurons);
 
-		for (int i = 0; i < (testSampleCount + trainingSampleCount); i ++) {
-			Long randomIndex = ThreadLocalRandom.current().nextLong(englishParagraphCount);
+		CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
 
-			EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
-
-			char[] nextSample = nextParagraph.getParagraph().substring(0, inputLayerNeurons).toCharArray();
-
-			BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
-
-			for (int j = 0; j < nextSample.length; j++) {
-				numericSample[j] = charToBigDecimal(nextSample[j]);
-			}
-
-			numericSamples.add(numericSample);
-		}
-
-		log.info("Finished importing {} samples in {}ms.", numericSamples.size(), (System.currentTimeMillis() - start));
-
-		return numericSamples;
-	}
-
-	protected void buildTrainingAndTestSets(List<BigDecimal[]> englishParagraphs) {
-		BigDecimal[][] englishSamples = new BigDecimal[englishParagraphs.size()][inputLayerNeurons];
-
-		for (int i = 0; i < englishParagraphs.size(); i++) {
-			englishSamples[i] = englishParagraphs.get(i);
-		}
-
-		englishSamples = shuffleArray(englishSamples);
-
-		List<BigDecimal[]> englishSamplesList = new ArrayList<>(Arrays.asList(englishSamples));
-
-		englishTestSamples = new BigDecimal[testSampleCount][inputLayerNeurons];
-
-		for (int i = 0; i < testSampleCount; i++) {
-			englishTestSamples[i] = englishSamplesList.remove(englishSamplesList.size() - 1);
-		}
-
-		englishTrainingSamples = new BigDecimal[englishSamplesList.size()][inputLayerNeurons];
-
-		int samplesLeft = englishSamplesList.size();
-
-		for (int i = 0; i < samplesLeft; i++) {
-			englishTrainingSamples[i] = englishSamplesList.remove(englishSamplesList.size() - 1);
-		}
+		log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
 	}
 
 	protected BigDecimal charToBigDecimal(char c) {
@@ -243,69 +191,38 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSamples(int count) {
-		if (englishTrainingSamples == null) {
+		if (!intialized) {
 			init();
 		}
 
-		englishTrainingSamples = shuffleArray(englishTrainingSamples);
+		return shuffleDataSet(generate(count));
+	}
 
-		return shuffleDataSet(generate(count, englishTrainingSamples));
+	@Override
+	public DataSet generateTrainingSample() {
+		if (!intialized) {
+			init();
+		}
+
+		return generateOne();
 	}
 
 	@Override
 	public DataSet generateTestSamples(int count) {
-		if (englishTestSamples == null) {
+		if (!intialized) {
 			init();
 		}
 
-		englishTestSamples = shuffleArray(englishTestSamples);
-
-		return generate(count, englishTestSamples);
+		return generate(count);
 	}
 
-	protected DataSet generate(int count, BigDecimal[][] samplesToUse) {
-		if (count > samplesToUse.length) {
-			throw new IllegalArgumentException("The number of samples to generate (" + count
-					+ ") exceeds the maximum number of samples available (" + samplesToUse.length + ").");
+	@Override
+	public DataSet generateTestSample() {
+		if (!intialized) {
+			init();
 		}
 
-		BigDecimal[][] samples = new BigDecimal[count * outputLayerNeurons][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[count * outputLayerNeurons][outputLayerNeurons];
-
-		for (int i = 0; i < count; i++) {
-			samples[i] = generateRandomSample();
-			outputs[i] = new BigDecimal[outputLayerNeurons];
-			outputs[i][0] = BigDecimal.ONE;
-
-			for (int j = 1; j < outputLayerNeurons; j ++) {
-				outputs[i][j] = BigDecimal.ZERO;
-			}
-		}
-
-		for (int h = 1; h < outputLayerNeurons - 1; h ++) {
-			int endSampleSet = count + (count * h);
-			for (int i = (count * h); i < endSampleSet; i++) {
-				samples[i] = generateMarkovModelSample(h);
-				outputs[i] = new BigDecimal[outputLayerNeurons];
-
-				for (int j = 0; j < outputLayerNeurons; j ++) {
-					outputs[i][j] = (h == j) ? BigDecimal.ONE : BigDecimal.ZERO;
-				}
-			}
-		}
-
-		int beginFinalSampleSet = count * (outputLayerNeurons - 1);
-		for (int i = beginFinalSampleSet; i < count * outputLayerNeurons; i++) {
-			samples[i] = samplesToUse[i - beginFinalSampleSet];
-			outputs[i] = new BigDecimal[outputLayerNeurons];
-			outputs[i][outputLayerNeurons - 1] = BigDecimal.ONE;
-
-			for (int j = 0; j < outputLayerNeurons - 1; j ++) {
-				outputs[i][j] = BigDecimal.ZERO;
-			}
-		}
-
-		return new DataSet(samples, outputs);
+		return generateOne();
 	}
 
 	protected static DataSet shuffleDataSet(DataSet dataSetToShuffle) {
@@ -325,6 +242,79 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 
 		return new DataSet(shuffledInputs, shuffledOutputs);
+	}
+
+	protected DataSet generate(int count) {
+		BigDecimal[][] samples = new BigDecimal[count * outputLayerNeurons][inputLayerNeurons];
+		BigDecimal[][] outputs = new BigDecimal[count * outputLayerNeurons][outputLayerNeurons];
+
+		for (int i = 0; i < count; i++) {
+			DataSet next = generateOne();
+
+			int sampleSize = next.getInputs().length;
+
+			for (int j = 0; j < sampleSize; j ++) {
+				int index = (i * sampleSize) + j;
+
+				samples[index] = next.getInputs()[j];
+				outputs[index] = next.getOutputs()[j];
+			}
+		}
+
+		return new DataSet(samples, outputs);
+	}
+
+	public DataSet generateOne() {
+		BigDecimal[][] samples = new BigDecimal[outputLayerNeurons][inputLayerNeurons];
+		BigDecimal[][] outputs = new BigDecimal[outputLayerNeurons][outputLayerNeurons];
+
+		// Generate a random sample
+		samples[0] = generateRandomSample();
+		outputs[0] = new BigDecimal[outputLayerNeurons];
+		outputs[0][0] = BigDecimal.ONE;
+
+		for (int i = 1; i < outputLayerNeurons; i ++) {
+			outputs[0][i] = BigDecimal.ZERO;
+		}
+
+		// Generate probabilistic samples based on Markov model
+		for (int i = 1; i < outputLayerNeurons - 1; i ++) {
+			samples[i] = generateMarkovModelSample(i);
+			outputs[i] = new BigDecimal[outputLayerNeurons];
+
+			for (int j = 0; j < outputLayerNeurons; j ++) {
+				outputs[i][j] = (i == j) ? BigDecimal.ONE : BigDecimal.ZERO;
+			}
+		}
+
+		// Generate a sample from known English paragraphs
+		int i = outputLayerNeurons - 1;
+
+		samples[i] = getRandomParagraph();
+		outputs[i] = new BigDecimal[outputLayerNeurons];
+		outputs[i][outputLayerNeurons - 1] = BigDecimal.ONE;
+
+		for (int j = 0; j < outputLayerNeurons - 1; j ++) {
+			outputs[i][j] = BigDecimal.ZERO;
+		}
+
+		return new DataSet(samples, outputs);
+	}
+
+	protected BigDecimal[] getRandomParagraph() {
+		Long randomIndex = ThreadLocalRandom.current().nextLong(englishParagraphCount);
+
+		EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
+
+		char[] nextSample = nextParagraph.getParagraph().substring(0, inputLayerNeurons).toCharArray();
+
+		BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
+
+		for (int j = 0; j < nextSample.length; j++) {
+			numericSample[j] = charToBigDecimal(nextSample[j]);
+		}
+
+		return numericSample;
 	}
 
 	protected BigDecimal[] generateMarkovModelSample(int markovOrder) {
