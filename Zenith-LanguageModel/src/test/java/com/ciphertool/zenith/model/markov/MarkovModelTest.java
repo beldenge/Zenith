@@ -25,7 +25,9 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 
+import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.math.sampling.RouletteSampler;
+import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.probability.LetterProbability;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,6 +46,17 @@ public class MarkovModelTest {
 
 	private static LetterNGramMarkovImporter	importer;
 	private static TreeMarkovModel				model;
+
+	private static final RouletteSampler RANDOM_LETTER_SAMPLER = new RouletteSampler();
+	private static final List<LetterProbability> RANDOM_LETTER_PROBABILITIES = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+
+	static {
+		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+			RANDOM_LETTER_PROBABILITIES.add(new LetterProbability(letter, MathConstants.SINGLE_LETTER_RANDOM_PROBABILITY));
+		}
+	}
+
+	private static final BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
 	//@BeforeClass
 	public static void setUp() {
@@ -74,28 +87,37 @@ public class MarkovModelTest {
 
 	//@Test
 	public void generate() {
-		StringBuilder sb = new StringBuilder();
-		String root = "happ";
-		sb.append(root);
+		log.info(generateMarkovModelSample(2));
+	}
 
+	protected String generateMarkovModelSample(int markovOrder) {
+		TreeNGram rootNode = model.getRootNode();
+		TreeNGram match;
+
+		StringBuffer sb = new StringBuffer();
+		String root = "";
 		for (int i = 0; i < 100; i++) {
-			TreeNGram match = model.findLongest(root);
+			match = (root.isEmpty() || markovOrder == 1) ? rootNode : model.findLongest(root);
 
-			LetterProbability chosen = sampleNextTransitionFromDistribution(match);
+			LetterProbability chosen = sampleNextTransitionFromDistribution(match, markovOrder);
 
 			char nextSymbol = chosen.getValue();
 			sb.append(nextSymbol);
 
-			root = root.substring(1) + nextSymbol;
+			root = ((root.isEmpty() || root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
 		}
 
-		log.info(sb.toString());
+		return sb.toString();
 	}
 
-	protected LetterProbability sampleNextTransitionFromDistribution(TreeNGram match) {
+	protected static LetterProbability sampleNextTransitionFromDistribution(TreeNGram match, int markovOrder) {
+        if (match.getTransitions().isEmpty()) {
+            return RANDOM_LETTER_PROBABILITIES.get(RANDOM_LETTER_SAMPLER.getNextIndex(RANDOM_LETTER_PROBABILITIES, RANDOM_LETTER_TOTAL_PROBABILITY));
+        }
+
 		RouletteSampler sampler = new RouletteSampler();
 
-		List<LetterProbability> probabilities = new ArrayList<>(26);
+		List<LetterProbability> probabilities = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
 
 		for (Map.Entry<Character, TreeNGram> entry : match.getTransitions().entrySet()) {
 			LetterProbability probability = new LetterProbability(entry.getKey(), entry.getValue().getConditionalProbability());
@@ -103,15 +125,10 @@ public class MarkovModelTest {
 			probabilities.add(probability);
 		}
 
-		sampler.reIndex(probabilities);
-
-		// Should always equal 1, but do a summation anyway
-		BigDecimal totalProbability = probabilities.stream().map(p -> p.getProbability()).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalProbability = sampler.reIndex(probabilities);
 
 		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 
-		LetterProbability chosen = probabilities.get(nextIndex);
-
-		return chosen;
+		return probabilities.get(nextIndex);
 	}
 }

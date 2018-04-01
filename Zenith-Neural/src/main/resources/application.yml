@@ -74,7 +74,7 @@ network:
   output:
     fileName: /Users/george/Desktop/network-xor.json
   input:
-    fileName: /Users/george/Desktop/network-xor-20171017-185135.json
+    fileName:
 
 ---
 
@@ -125,10 +125,10 @@ network:
   bias:
     weight: 1.0
   trainingSamples:
-    count: 200
+    count: 200000
   testSamples:
-    count: 50
-  learningRate: 0.1
+    count: 40000
+  learningRate: 0.01
   #epochs: 10
   epochs: 1
   batchSize: 1
@@ -139,6 +139,7 @@ network:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
     fileName:
+    #fileName: /Users/george/Desktop/network-zodiac408-20180331-231221.json
 
 task:
   zodiac408:

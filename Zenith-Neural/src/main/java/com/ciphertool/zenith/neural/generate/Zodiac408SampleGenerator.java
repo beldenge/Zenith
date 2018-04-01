@@ -167,6 +167,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
 	}
 
+	// TODO: cache these calculations for crying out loud
 	protected BigDecimal charToBigDecimal(char c) {
 		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
 
@@ -308,6 +309,8 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		char[] nextSample = nextParagraph.getParagraph().substring(0, inputLayerNeurons).toCharArray();
 
+		log.debug("Random paragraph: {}", String.valueOf(nextSample));
+
 		BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
 
 		for (int j = 0; j < nextSample.length; j++) {
@@ -323,6 +326,12 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		TreeNGram rootNode = letterMarkovModel.getRootNode();
 		TreeNGram match;
 
+		StringBuffer sb = null;
+
+		if (log.isDebugEnabled()) {
+			sb = new StringBuffer();
+		}
+
 		String root = "";
 		for (int i = 0; i < inputLayerNeurons; i++) {
 			match = (root.isEmpty() || markovOrder == 1) ? rootNode : letterMarkovModel.findLongest(root);
@@ -330,16 +339,23 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			LetterProbability chosen = sampleNextTransitionFromDistribution(match, markovOrder);
 
 			char nextSymbol = chosen.getValue();
+
+			if (log.isDebugEnabled()) {
+				sb.append(nextSymbol);
+			}
+
 			sample[i] = charToBigDecimal(nextSymbol);
 
 			root = ((root.isEmpty() || root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
 		}
 
+		log.debug("Random sample of order {}: {}", markovOrder, sb.toString());
+
 		return sample;
 	}
 
 	protected static LetterProbability sampleNextTransitionFromDistribution(TreeNGram match, int markovOrder) {
-		if (match == null || match.getCumulativeString().length() < markovOrder) {
+		if (match.getTransitions().isEmpty()) {
 			return RANDOM_LETTER_PROBABILITIES.get(RANDOM_LETTER_SAMPLER.getNextIndex(RANDOM_LETTER_PROBABILITIES, RANDOM_LETTER_TOTAL_PROBABILITY));
 		}
 
@@ -365,10 +381,23 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		BigDecimal[] randomSample = new BigDecimal[inputLayerSize];
 
-		for (int j = 0; j < inputLayerSize; j++) {
-			randomSample[j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size())
-					+ 1).divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		StringBuffer sb = null;
+
+		if (log.isDebugEnabled()) {
+			sb = new StringBuffer();
 		}
+
+		for (int j = 0; j < inputLayerSize; j++) {
+			char nextLetter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size()));
+
+			if (log.isDebugEnabled()) {
+				sb.append(nextLetter);
+			}
+
+			randomSample[j] = charToBigDecimal(nextLetter);
+		}
+
+		log.debug("Random sample: {}", sb.toString());
 
 		return randomSample;
 	}

@@ -337,7 +337,7 @@ public class LetterNGramMarkovImporter {
 	}
 
 	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean includeWordBoundaries, TreeMarkovModel letterMarkovModel) {
-		List<FutureTask<ParseResults>> tasks = new ArrayList<FutureTask<ParseResults>>();
+		List<FutureTask<ParseResults>> tasks = new ArrayList<>();
 		FutureTask<ParseResults> task;
 		String filename;
 
@@ -355,7 +355,7 @@ public class LetterNGramMarkovImporter {
 						continue;
 					}
 
-					task = new FutureTask<ParseResults>(new ParseFileTask(entry, includeWordBoundaries,
+					task = new FutureTask<>(new ParseFileTask(entry, includeWordBoundaries,
 							letterMarkovModel));
 					tasks.add(task);
 					this.taskExecutor.execute(task);

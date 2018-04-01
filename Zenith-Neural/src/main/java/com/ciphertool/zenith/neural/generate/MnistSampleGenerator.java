@@ -80,8 +80,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 	@Value("${network.layers.output}")
 	private int						outputLayerNeurons;
 
-	private static AtomicInteger nextTrainingIndex;
-	private static AtomicInteger nextTestIndex;
+	private static AtomicInteger nextTrainingIndex = new AtomicInteger(0);
+	private static AtomicInteger nextTestIndex = new AtomicInteger(0);
 
 	private BigDecimal[][]			trainingImages;
 	private BigDecimal[][]			trainingLabels;
@@ -91,10 +91,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 	@PostConstruct
 	public void init() {
 		Path trainingImagesPath = Paths.get(trainingImagesFile);
-
-		if (!Files.isDirectory(trainingImagesPath)) {
-			throw new IllegalArgumentException("Property \"task.mnist.directory.trainingImages\" must be a directory.");
-		}
 
 		byte[] trainingImagesBytes;
 
@@ -107,10 +103,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 		trainingImages = loadImages(trainingImagesBytes);
 
 		Path trainingLabelsPath = Paths.get(trainingLabelsFile);
-
-		if (!Files.isDirectory(trainingLabelsPath)) {
-			throw new IllegalArgumentException("Property \"task.mnist.directory.trainingLabels\" must be a directory.");
-		}
 
 		byte[] trainingLabelsBytes;
 
@@ -129,10 +121,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 		Path testImagesPath = Paths.get(testImagesFile);
 
-		if (!Files.isDirectory(testImagesPath)) {
-			throw new IllegalArgumentException("Property \"task.mnist.directory.testImages\" must be a directory.");
-		}
-
 		byte[] testImagesBytes;
 
 		try {
@@ -144,10 +132,6 @@ public class MnistSampleGenerator implements SampleGenerator {
 		testImages = loadImages(testImagesBytes);
 
 		Path testLabelsPath = Paths.get(testLabelsFile);
-
-		if (!Files.isDirectory(testLabelsPath)) {
-			throw new IllegalArgumentException("Property \"task.mnist.directory.testLabels\" must be a directory.");
-		}
 
 		byte[] testLabelsBytes;
 
