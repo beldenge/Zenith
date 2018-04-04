@@ -309,7 +309,9 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		char[] nextSample = nextParagraph.getParagraph().substring(0, inputLayerNeurons).toCharArray();
 
-		log.debug("Random paragraph: {}", String.valueOf(nextSample));
+		if (log.isDebugEnabled()) {
+			log.debug("Random paragraph: {}", String.valueOf(nextSample));
+		}
 
 		BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
 
@@ -349,7 +351,9 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			root = ((root.isEmpty() || root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
 		}
 
-		log.debug("Random sample of order {}: {}", markovOrder, sb.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Random sample of order {}: {}", markovOrder, sb.toString());
+		}
 
 		return sample;
 	}
@@ -397,7 +401,9 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			randomSample[j] = charToBigDecimal(nextLetter);
 		}
 
-		log.debug("Random sample: {}", sb.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Random sample: {}", sb.toString());
+		}
 
 		return randomSample;
 	}
