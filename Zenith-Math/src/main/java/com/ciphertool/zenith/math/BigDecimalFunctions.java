@@ -19,9 +19,6 @@
 
 package com.ciphertool.zenith.math;
 
-import java.math.BigDecimal;
-
-import org.nevec.rjm.BigDecimalMath;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class BigDecimalFunctions implements MathCache {
 	@Override
 	@Cacheable(value = "logarithmCache", key = "#x")
-	public BigDecimal log(BigDecimal x) {
-		return BigDecimalMath.log(x);
+	public Float log(Float x) {
+		return (float) Math.log(x);
 	}
 }
