@@ -19,15 +19,12 @@
 
 package com.ciphertool.zenith.neural.train;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.concurrent.Future;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.Neuron;
 import com.ciphertool.zenith.neural.model.ProblemType;
@@ -36,10 +33,10 @@ import com.ciphertool.zenith.neural.model.Synapse;
 @Component
 public class BackPropagationNeuronProcessor {
 	@Async
-	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] expectedOutputs, BigDecimal[] allSums, ProblemType problemType) {
+	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, Double[] errorDerivatives, Double[] activationDerivatives, Double[] expectedOutputs, Double[] allSums, ProblemType problemType) {
 		Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
-		BigDecimal errorDerivative;
+		Double errorDerivative;
 
 		if (problemType == ProblemType.REGRESSION) {
 			errorDerivative = derivativeOfCostFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
@@ -49,11 +46,11 @@ public class BackPropagationNeuronProcessor {
 
 		errorDerivatives[i] = errorDerivative;
 
-		BigDecimal activationDerivative;
+		Double activationDerivative;
 
 		if (problemType == ProblemType.CLASSIFICATION) {
 			// For softmax/cross entropy loss, the activationDerivative is accounted for in the errorDerivative
-			activationDerivative = BigDecimal.ONE;
+			activationDerivative = 1.0;
 		} else {
 			activationDerivative = outputLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(nextOutputNeuron.getOutputSum(), null);
 		}
@@ -63,9 +60,9 @@ public class BackPropagationNeuronProcessor {
 		for (int j = 0; j < fromLayer.getNeurons().length; j++) {
 			Neuron nextInputNeuron = fromLayer.getNeurons()[j];
 
-			BigDecimal outputSumDerivative = nextInputNeuron.getActivationValue();
+			Double outputSumDerivative = nextInputNeuron.getActivationValue();
 
-			BigDecimal delta = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+			Double delta = errorDerivative * activationDerivative * outputSumDerivative;
 
 			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
 			nextSynapse.addDelta(delta);
@@ -75,7 +72,7 @@ public class BackPropagationNeuronProcessor {
 	}
 
 	@Async
-	public Future<Void> processHiddenNeuron(int j, Layer fromLayer, Layer toLayer, BigDecimal[] errorDerivatives, BigDecimal[] activationDerivatives, BigDecimal[] oldErrorDerivatives, BigDecimal[] oldActivationDerivatives) {
+	public Future<Void> processHiddenNeuron(int j, Layer fromLayer, Layer toLayer, Double[] errorDerivatives, Double[] activationDerivatives, Double[] oldErrorDerivatives, Double[] oldActivationDerivatives) {
 		Neuron nextToNeuron = toLayer.getNeurons()[j];
 
 		if (nextToNeuron.isBias()) {
@@ -83,31 +80,31 @@ public class BackPropagationNeuronProcessor {
 			return new AsyncResult<>(null);
 		}
 
-		BigDecimal activationDerivative = toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(nextToNeuron.getOutputSum(), null);
+		Double activationDerivative = toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(nextToNeuron.getOutputSum(), null);
 		activationDerivatives[j] = activationDerivative;
 
-		BigDecimal errorDerivative = BigDecimal.ZERO;
+		Double errorDerivative = 0.0;
 
 		for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
 			Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
 
-			BigDecimal partialErrorDerivative = oldErrorDerivatives[l].multiply(oldActivationDerivatives[l], MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+			Double partialErrorDerivative = oldErrorDerivatives[l] * oldActivationDerivatives[l];
 
-			BigDecimal weightDerivative = nextSynapse.getWeight();
+			Double weightDerivative = nextSynapse.getWeight();
 
-			errorDerivative = errorDerivative.add(partialErrorDerivative.multiply(weightDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
+			errorDerivative = errorDerivative + (partialErrorDerivative * weightDerivative);
 		}
 
 		errorDerivatives[j] = errorDerivative;
 
-		BigDecimal errorTimesActivation = errorDerivative.multiply(activationDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		Double errorTimesActivation = errorDerivative * activationDerivative;
 
 		for (int k = 0; k < fromLayer.getNeurons().length; k++) {
 			Neuron nextFromNeuron = fromLayer.getNeurons()[k];
 
-			BigDecimal outputSumDerivative = nextFromNeuron.getActivationValue();
+			Double outputSumDerivative = nextFromNeuron.getActivationValue();
 
-			BigDecimal delta = errorTimesActivation.multiply(outputSumDerivative, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+			Double delta = errorTimesActivation * outputSumDerivative;
 
 			Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
 			nextSynapse.addDelta(delta);
@@ -116,11 +113,11 @@ public class BackPropagationNeuronProcessor {
 		return new AsyncResult<>(null);
 	}
 
-	protected static BigDecimal derivativeOfCostFunctionRegression(BigDecimal expected, BigDecimal actual) {
-		return expected.subtract(actual).negate();
+	protected static Double derivativeOfCostFunctionRegression(Double expected, Double actual) {
+		return (expected - actual) * -1.0;
 	}
 
-	protected static BigDecimal derivativeOfCostFunctionClassification(BigDecimal expected, BigDecimal actual) {
-		return actual.subtract(expected);
+	protected static Double derivativeOfCostFunctionClassification(Double expected, Double actual) {
+		return actual - expected;
 	}
 }

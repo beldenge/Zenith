@@ -19,25 +19,20 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import org.nevec.rjm.BigDecimalMath;
-
 import com.ciphertool.zenith.math.MathConstants;
 
 public class SigmoidActivationFunction implements ActivationFunction {
 	@Override
-	public BigDecimal transformInputSignal(BigDecimal sum, BigDecimal[] allSums) {
-		BigDecimal denominator = BigDecimal.ONE.add(BigDecimalMath.pow(MathConstants.EULERS_CONSTANT, sum.negate()).setScale(10, RoundingMode.UP));
+	public Double transformInputSignal(Double sum, Double[] allSums) {
+		Double denominator = 1.0 + Math.pow(MathConstants.EULERS_CONSTANT, sum * -1.0);
 
-		return BigDecimal.ONE.divide(denominator, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		return 1.0 / denominator;
 	}
 
 	@Override
-	public BigDecimal calculateDerivative(BigDecimal sum, BigDecimal[] allSums) {
-		BigDecimal sigmoid = transformInputSignal(sum, null);
+	public Double calculateDerivative(Double sum, Double[] allSums) {
+		Double sigmoid = transformInputSignal(sum, null);
 
-		return sigmoid.multiply(BigDecimal.ONE.subtract(sigmoid), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		return sigmoid * (1.0 - sigmoid);
 	}
 }

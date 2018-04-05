@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.neural.predict;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +46,7 @@ public class Predictor {
 	private int						numberOfTests;
 
 	@Value("${network.testSamples.marginOfError:0.01}")
-	private BigDecimal				marginOfErrorRegression;
+	private Double				marginOfErrorRegression;
 
 	@Autowired
 	private SampleGenerator generator;
@@ -69,7 +68,7 @@ public class Predictor {
 
 			int sampleSize = nextSample.getInputs().length;
 
-			BigDecimal[][] predictions = new BigDecimal[sampleSize][outputLayerNeurons.length];
+			Double[][] predictions = new Double[sampleSize][outputLayerNeurons.length];
 
 			for (int j = 0; j < sampleSize; j ++) {
 				feedForward(network, nextSample.getInputs()[j]);
@@ -89,35 +88,35 @@ public class Predictor {
 		return stats;
 	}
 
-	private void compareExpectationToPrediction(NeuralNetwork network, BigDecimal[] inputs, BigDecimal[] outputs, BigDecimal[] predictions, PredictionStats stats) {
+	private void compareExpectationToPrediction(NeuralNetwork network, Double[] inputs, Double[] outputs, Double[] predictions, PredictionStats stats) {
 		boolean wasIncorrect = false;
 
 		log.info("Inputs: {}", Arrays.toString(inputs));
 
-		BigDecimal highestProbability = BigDecimal.ZERO;
-		int indexOfHighestProbability = -1;
+		Double highestProbability = 0.0;
+		int indexOfHighestProbability = 0;
 
 		for (int j = 0; j < predictions.length; j++) {
-			BigDecimal prediction = predictions[j];
-			BigDecimal expected = outputs[j];
+			Double prediction = predictions[j];
+			Double expected = outputs[j];
 
 			log.info("Expected: {}, Prediction: {}", expected, prediction);
 
 			if (network.getProblemType() == ProblemType.CLASSIFICATION) {
-				if (highestProbability.compareTo(prediction) < 0) {
+				if (highestProbability < prediction) {
 					highestProbability = prediction;
 					indexOfHighestProbability = j;
 				}
 			}
 
 			// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
-			if (!wasIncorrect && prediction.subtract(expected).abs().compareTo(marginOfErrorRegression) > 0) {
+			if (!wasIncorrect && Math.abs(prediction - expected) > marginOfErrorRegression) {
 				wasIncorrect = true;
 			}
 		}
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION
-				&& BigDecimal.ONE.equals(outputs[indexOfHighestProbability])) {
+				&& 1.0 == outputs[indexOfHighestProbability]) {
 			stats.incrementBestProbabilityCount();
 		}
 
@@ -128,7 +127,7 @@ public class Predictor {
 		stats.incrementTotalPredictions();
 	}
 
-	public void feedForward(NeuralNetwork network, BigDecimal[] inputs) {
+	public void feedForward(NeuralNetwork network, Double[] inputs) {
 		Layer inputLayer = network.getInputLayer();
 
 		int nonBiasNeurons = inputLayer.getNeurons().length - (inputLayer.hasBias() ? 1 : 0);
@@ -169,7 +168,7 @@ public class Predictor {
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			Neuron[] outputLayerNeurons = network.getOutputLayer().getNeurons();
 
-			BigDecimal[] allSums = new BigDecimal[outputLayerNeurons.length];
+			Double[] allSums = new Double[outputLayerNeurons.length];
 
 			for (int i = 0; i < outputLayerNeurons.length; i++) {
 				Neuron nextOutputNeuron = outputLayerNeurons[i];

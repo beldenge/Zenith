@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +32,6 @@ import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.WordProbability;
 import com.ciphertool.zenith.math.MathCache;
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
@@ -42,15 +40,12 @@ import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 public class PlaintextEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
 
-	@Autowired
-	private MathCache	bigDecimalFunctions;
-
 	@Value("${markov.letter.include.word.boundaries}")
 	private Boolean		includeWordBoundaries;
 
 	public EvaluationResults evaluate(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
-		BigDecimal interpolatedProbability = BigDecimal.ONE;
-		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
+		Double interpolatedProbability = 1.0;
+		Double interpolatedLogProbability = 0.0;
 
 		long startLetter = System.currentTimeMillis();
 		EvaluationResults letterNGramResults = evaluateLetterNGrams(letterMarkovModel, solution, ciphertextKey);
@@ -71,9 +66,9 @@ public class PlaintextEvaluator {
 					"Unable to evaluate n-grams because the list of words to concatenate is empty.");
 		}
 
-		BigDecimal probability = null;
-		BigDecimal nGramProbability = BigDecimal.ONE;
-		BigDecimal nGramLogProbability = BigDecimal.ZERO;
+		Double probability = null;
+		Double nGramProbability = 1.0;
+		Double nGramLogProbability = 0.0;
 		TreeNGram match = null;
 
 		StringBuilder sb = new StringBuilder();
@@ -122,8 +117,8 @@ public class PlaintextEvaluator {
 						log.debug("No Letter N-Gram Match");
 					}
 
-					nGramProbability = nGramProbability.multiply(probability, MathConstants.PREC_10_HALF_UP);
-					nGramLogProbability = nGramLogProbability.add(bigDecimalFunctions.log(probability), MathConstants.PREC_10_HALF_UP);
+					nGramProbability = nGramProbability * probability;
+					nGramLogProbability = nGramLogProbability + Math.log(probability);
 				}
 
 				lastIndex = end;
@@ -140,8 +135,8 @@ public class PlaintextEvaluator {
 					log.debug("No Letter N-Gram Match");
 				}
 
-				nGramProbability = nGramProbability.multiply(probability, MathConstants.PREC_10_HALF_UP);
-				nGramLogProbability = nGramLogProbability.add(bigDecimalFunctions.log(probability), MathConstants.PREC_10_HALF_UP);
+				nGramProbability = nGramProbability * probability;
+				nGramLogProbability = nGramLogProbability + Math.log(probability);
 			}
 		}
 

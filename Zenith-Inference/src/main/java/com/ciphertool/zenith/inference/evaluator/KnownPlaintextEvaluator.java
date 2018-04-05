@@ -96,7 +96,7 @@ public class KnownPlaintextEvaluator {
 	}
 
 	public Double evaluate(CipherSolution solution) {
-		double total = 0.0;
+		Double total = 0.0;
 
 		if (knownSolution.getMappings().size() != solution.getMappings().size()) {
 			log.error("Current solution size of " + solution.getMappings().size()
@@ -110,7 +110,7 @@ public class KnownPlaintextEvaluator {
 			}
 		}
 
-		double proximityToKnownSolution = (total / (double) solution.getMappings().size());
+		Double proximityToKnownSolution = (total / (double) solution.getMappings().size());
 
 		if (log.isDebugEnabled()) {
 			log.debug("Solution has a confidence level of: " + proximityToKnownSolution);

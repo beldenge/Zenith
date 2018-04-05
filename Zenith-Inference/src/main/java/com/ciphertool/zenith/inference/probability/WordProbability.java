@@ -21,13 +21,11 @@ package com.ciphertool.zenith.inference.probability;
 
 import com.ciphertool.zenith.math.probability.Probability;
 
-import java.math.BigDecimal;
-
 public class WordProbability implements Probability<String> {
 	private Integer		previous;
 	private Integer		next;
-	private BigDecimal	probability;
-	private BigDecimal	logProbability;
+	private Double	probability;
+	private Double	logProbability;
 	private String		value;
 
 	/**
@@ -56,8 +54,8 @@ public class WordProbability implements Probability<String> {
 	 * @param logProbability
 	 *            the log probability
 	 */
-	public WordProbability(Integer previous, Integer next, String value, BigDecimal probability,
-			BigDecimal logProbability) {
+	public WordProbability(Integer previous, Integer next, String value, Double probability,
+						   Double logProbability) {
 		this.previous = previous;
 		this.next = next;
 		this.probability = probability;
@@ -87,7 +85,7 @@ public class WordProbability implements Probability<String> {
 	 * @return the probability
 	 */
 	@Override
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return probability;
 	}
 
@@ -95,7 +93,7 @@ public class WordProbability implements Probability<String> {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(BigDecimal probability) {
+	public void setProbability(Double probability) {
 		this.probability = probability;
 	}
 
@@ -103,7 +101,7 @@ public class WordProbability implements Probability<String> {
 	 * @return the logProbability
 	 */
 	@Override
-	public BigDecimal getLogProbability() {
+	public Double getLogProbability() {
 		return logProbability;
 	}
 
@@ -111,7 +109,7 @@ public class WordProbability implements Probability<String> {
 	 * @param logProbability
 	 *            the logProbability to set
 	 */
-	public void setLogProbability(BigDecimal logProbability) {
+	public void setLogProbability(Double logProbability) {
 		this.logProbability = logProbability;
 	}
 

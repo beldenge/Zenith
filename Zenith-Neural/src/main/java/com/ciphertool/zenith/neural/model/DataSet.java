@@ -19,11 +19,9 @@
 
 package com.ciphertool.zenith.neural.model;
 
-import java.math.BigDecimal;
-
 public class DataSet {
-	private BigDecimal[][]	inputs;
-	private BigDecimal[][]	outputs;
+	private Double[][]	inputs;
+	private Double[][]	outputs;
 
 	/**
 	 * @param inputs
@@ -31,7 +29,7 @@ public class DataSet {
 	 * @param outputs
 	 *            the outputs to set
 	 */
-	public DataSet(BigDecimal[][] inputs, BigDecimal[][] outputs) {
+	public DataSet(Double[][] inputs, Double[][] outputs) {
 		this.inputs = inputs;
 		this.outputs = outputs;
 	}
@@ -39,14 +37,14 @@ public class DataSet {
 	/**
 	 * @return the inputs
 	 */
-	public BigDecimal[][] getInputs() {
+	public Double[][] getInputs() {
 		return inputs;
 	}
 
 	/**
 	 * @return the outputs
 	 */
-	public BigDecimal[][] getOutputs() {
+	public Double[][] getOutputs() {
 		return outputs;
 	}
 }

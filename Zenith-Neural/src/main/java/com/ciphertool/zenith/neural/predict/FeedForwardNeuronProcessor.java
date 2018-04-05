@@ -19,15 +19,12 @@
 
 package com.ciphertool.zenith.neural.predict;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.concurrent.Future;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
@@ -45,14 +42,14 @@ public class FeedForwardNeuronProcessor {
 			return new AsyncResult<>(null);
 		}
 
-		BigDecimal sum = BigDecimal.ZERO;
+		Double sum = 0.0;
 
 		for (int k = 0; k < fromLayer.getNeurons().length; k++) {
 			Neuron nextInputNeuron = fromLayer.getNeurons()[k];
 
 			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
 
-			sum = sum.add(nextInputNeuron.getActivationValue().multiply(nextSynapse.getWeight(), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP));
+			sum = sum + (nextInputNeuron.getActivationValue() * nextSynapse.getWeight());
 		}
 
 		nextOutputNeuron.setOutputSum(sum);
@@ -65,7 +62,7 @@ public class FeedForwardNeuronProcessor {
 	}
 
 	@Async
-	public Future<Void> processOutputNeuron(NeuralNetwork network, int i, BigDecimal[] allSums) {
+	public Future<Void> processOutputNeuron(NeuralNetwork network, int i, Double[] allSums) {
 		Neuron nextOutputNeuron = network.getOutputLayer().getNeurons()[i];
 
 		nextOutputNeuron.setActivationValue(network.getOutputLayer().getActivationFunctionType().getActivationFunction().transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));

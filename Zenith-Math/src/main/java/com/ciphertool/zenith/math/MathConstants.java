@@ -19,16 +19,8 @@
 
 package com.ciphertool.zenith.math;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-
 public class MathConstants {
-	public static final MathContext	PREC_10_HALF_UP	= new MathContext(10, RoundingMode.HALF_UP);
+	public static final Double EULERS_CONSTANT = Math.E;
 
-	public static final MathContext	PREC_5_HALF_UP	= new MathContext(5, RoundingMode.HALF_UP);
-
-	public static final BigDecimal	EULERS_CONSTANT	= BigDecimal.valueOf(Math.E);
-
-	public static final BigDecimal SINGLE_LETTER_RANDOM_PROBABILITY = BigDecimal.ONE.divide(BigDecimal.valueOf(26), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+	public static final Double SINGLE_LETTER_RANDOM_PROBABILITY = 1.0 / 26.0;
 }

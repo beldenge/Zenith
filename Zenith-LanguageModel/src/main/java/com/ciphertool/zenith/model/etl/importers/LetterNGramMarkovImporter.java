@@ -20,8 +20,6 @@
 package com.ciphertool.zenith.model.etl.importers;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -236,16 +234,16 @@ public class LetterNGramMarkovImporter {
 		}
 
 		@Override
-		public Void call() throws Exception {
+		public Void call() {
 			computeConditionalProbability(this.node, this.parentNode);
 
 			return null;
 		}
 
 		protected void computeConditionalProbability(TreeNGram node, TreeNGram parentNode) {
-		    BigDecimal sum = parentNode.getTransitions().entrySet().stream().map(entry -> entry.getValue().getCount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+			Double sum = parentNode.getTransitions().entrySet().stream().map(entry -> entry.getValue().getCount()).reduce(0.0, (a, b) -> a + b);
 
-			node.setConditionalProbability(node.getCount().divide(sum, MathConstants.PREC_10_HALF_UP));
+			node.setConditionalProbability(node.getCount() / sum);
 
 			Map<Character, TreeNGram> transitions = node.getTransitions();
 
@@ -282,7 +280,7 @@ public class LetterNGramMarkovImporter {
 		}
 
 		@Override
-		public ParseResults call() throws Exception {
+		public ParseResults call() {
 			log.debug("Importing file {}", this.path.toString());
 
 			int order = letterMarkovModel.getOrder();
@@ -323,7 +321,7 @@ public class LetterNGramMarkovImporter {
 					for (int j = 0; j < sentence.length() - order; j++) {
 						String nGramString = sentence.substring(j, j + order);
 
-						unique += (letterMarkovModel.addLetterTransition(nGramString, BigDecimal.ONE) ? 1 : 0);
+						unique += (letterMarkovModel.addLetterTransition(nGramString, 1.0) ? 1 : 0);
 
 						total++;
 					}

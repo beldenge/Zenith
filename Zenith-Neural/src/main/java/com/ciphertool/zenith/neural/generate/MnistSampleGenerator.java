@@ -20,8 +20,6 @@
 package com.ciphertool.zenith.neural.generate;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,7 +42,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.model.DataSet;
 
 @Validated
@@ -54,7 +51,7 @@ import com.ciphertool.zenith.neural.model.DataSet;
 public class MnistSampleGenerator implements SampleGenerator {
 	private static Logger			log				= LoggerFactory.getLogger(MnistSampleGenerator.class);
 
-	private static final BigDecimal	MAX_PIXEL_VALUE	= BigDecimal.valueOf(255);
+	private static final Double	MAX_PIXEL_VALUE	= 255.0;
 
 	@NotBlank
 	@Value("${task.mnist.directory.trainingImages}")
@@ -83,10 +80,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 	private static AtomicInteger nextTrainingIndex = new AtomicInteger(0);
 	private static AtomicInteger nextTestIndex = new AtomicInteger(0);
 
-	private BigDecimal[][]			trainingImages;
-	private BigDecimal[][]			trainingLabels;
-	private BigDecimal[][]			testImages;
-	private BigDecimal[][]			testLabels;
+	private Double[][]			trainingImages;
+	private Double[][]			trainingLabels;
+	private Double[][]			testImages;
+	private Double[][]			testLabels;
 
 	@PostConstruct
 	public void init() {
@@ -149,7 +146,7 @@ public class MnistSampleGenerator implements SampleGenerator {
 		}
 	}
 
-	protected BigDecimal[][] loadImages(byte[] imagesBytes) {
+	protected Double[][] loadImages(byte[] imagesBytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(imagesBytes);
 
 		// Skip the first four bytes, as it's a magic number
@@ -163,18 +160,18 @@ public class MnistSampleGenerator implements SampleGenerator {
 		int numberOfColumns = byteBuffer.getInt();
 		int totalPixels = numberOfRows * numberOfColumns;
 
-		BigDecimal[][] images = new BigDecimal[numberOfItems][totalPixels];
+		Double[][] images = new Double[numberOfItems][totalPixels];
 
 		for (int i = 0; i < numberOfItems; i++) {
-			BigDecimal[] pixels = new BigDecimal[totalPixels];
+			Double[] pixels = new Double[totalPixels];
 
 			for (int j = 0; j < totalPixels; j++) {
-				pixels[j] = BigDecimal.valueOf(Byte.toUnsignedInt(byteBuffer.get()));
+				pixels[j] = (double) Byte.toUnsignedInt(byteBuffer.get());
 				/*
-				 * Scale the value so that it is between 0 and 1, as this makes the BigDecimal math during training
+				 * Scale the value so that it is between 0 and 1, as this makes the Double math during training
 				 * orders of magnitude more efficient
 				 */
-				pixels[j] = pixels[j].divide(MAX_PIXEL_VALUE, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+				pixels[j] = pixels[j] / MAX_PIXEL_VALUE;
 			}
 
 			images[i] = pixels;
@@ -183,7 +180,7 @@ public class MnistSampleGenerator implements SampleGenerator {
 		return images;
 	}
 
-	protected BigDecimal[][] loadLabels(byte[] labelsBytes) {
+	protected Double[][] loadLabels(byte[] labelsBytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(labelsBytes);
 
 		// Skip the first four bytes, as it's a magic number
@@ -192,33 +189,33 @@ public class MnistSampleGenerator implements SampleGenerator {
 		// The second four bytes is the number of items
 		int numberOfItems = byteBuffer.getInt();
 
-		BigDecimal[][] labels = new BigDecimal[numberOfItems][outputLayerNeurons];
+		Double[][] labels = new Double[numberOfItems][outputLayerNeurons];
 
 		for (int i = 0; i < numberOfItems; i++) {
 			int label = Byte.toUnsignedInt(byteBuffer.get());
 
 			for (int j = 0; j < outputLayerNeurons; j++) {
-				labels[i][j] = (label == j) ? BigDecimal.ONE : BigDecimal.ZERO;
+				labels[i][j] = (label == j) ? 1.0 : 0.0;
 			}
 		}
 
 		return labels;
 	}
 
-	protected static DataSet shuffleArrays(BigDecimal[][] imagesArray, BigDecimal[][] labelsArray) {
+	protected static DataSet shuffleArrays(Double[][] imagesArray, Double[][] labelsArray) {
 		if (imagesArray.length != labelsArray.length) {
 			throw new IllegalArgumentException("The images array length of " + imagesArray.length
 					+ " does not match the labels array length of " + labelsArray.length
 					+ ".  Unable to shuffle arrays.");
 		}
 
-		BigDecimal[][] shuffledImagesArray = new BigDecimal[imagesArray.length][];
-		BigDecimal[][] shuffledLabelsArray = new BigDecimal[labelsArray.length][];
+		Double[][] shuffledImagesArray = new Double[imagesArray.length][];
+		Double[][] shuffledLabelsArray = new Double[labelsArray.length][];
 
 		int arrayLength = imagesArray.length;
 
-		List<BigDecimal[]> imagesList = new ArrayList<>(Arrays.asList(imagesArray));
-		List<BigDecimal[]> labelsList = new ArrayList<>(Arrays.asList(labelsArray));
+		List<Double[]> imagesList = new ArrayList<>(Arrays.asList(imagesArray));
+		List<Double[]> labelsList = new ArrayList<>(Arrays.asList(labelsArray));
 
 		for (int i = 0; i < arrayLength; i++) {
 			int randomIndex = ThreadLocalRandom.current().nextInt(imagesList.size());
@@ -244,8 +241,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 		trainingImages = shuffledTrainingData.getInputs();
 		trainingLabels = shuffledTrainingData.getOutputs();
 
-		BigDecimal[][] inputs = new BigDecimal[count][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[count][outputLayerNeurons];
+		Double[][] inputs = new Double[count][inputLayerNeurons];
+		Double[][] outputs = new Double[count][outputLayerNeurons];
 
 		for (int i = 0; i < count; i++) {
 			DataSet next = generateTrainingSample();
@@ -259,8 +256,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSample() {
-		BigDecimal[][] inputs = new BigDecimal[1][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[1][outputLayerNeurons];
+		Double[][] inputs = new Double[1][inputLayerNeurons];
+		Double[][] outputs = new Double[1][outputLayerNeurons];
 
 		int next = nextTrainingIndex.getAndIncrement();
 
@@ -284,8 +281,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 		testImages = shuffledTestData.getInputs();
 		testLabels = shuffledTestData.getOutputs();
 
-		BigDecimal[][] inputs = new BigDecimal[count][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[count][outputLayerNeurons];
+		Double[][] inputs = new Double[count][inputLayerNeurons];
+		Double[][] outputs = new Double[count][outputLayerNeurons];
 
 		for (int i = 0; i < count; i++) {
 			DataSet next = generateTestSample();
@@ -299,8 +296,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTestSample() {
-		BigDecimal[][] inputs = new BigDecimal[1][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[1][outputLayerNeurons];
+		Double[][] inputs = new Double[1][inputLayerNeurons];
+		Double[][] outputs = new Double[1][outputLayerNeurons];
 
 		int next = nextTestIndex.getAndIncrement();
 

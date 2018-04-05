@@ -19,14 +19,12 @@
 
 package com.ciphertool.zenith.inference.probability;
 
-import java.math.BigDecimal;
-
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.math.probability.Probability;
 
 public class SolutionProbability implements Probability<CipherSolution>, Comparable<SolutionProbability> {
 	private CipherSolution	solution;
-	private BigDecimal		probability;
+	private Double		probability;
 
 	/**
 	 * @param solution
@@ -34,7 +32,7 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @param probability
 	 *            the probability
 	 */
-	public SolutionProbability(CipherSolution solution, BigDecimal probability) {
+	public SolutionProbability(CipherSolution solution, Double probability) {
 		super();
 		this.solution = solution;
 		this.probability = probability;
@@ -52,7 +50,7 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @return the probability
 	 */
 	@Override
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return probability;
 	}
 
@@ -60,12 +58,12 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(BigDecimal probability) {
+	public void setProbability(Double probability) {
 		this.probability = probability;
 	}
 
 	@Override
-	public BigDecimal getLogProbability() {
+	public Double getLogProbability() {
 		throw new UnsupportedOperationException("Method not implemented!");
 	}
 

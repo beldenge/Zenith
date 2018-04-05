@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.model.markov;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 
@@ -40,8 +38,8 @@ public class TreeMarkovModel {
 
 	private TreeNGram	rootNode	= new TreeNGram("");
 	private Integer		order;
-	private BigDecimal	unknownLetterNGramProbability;
-	private BigDecimal	indexOfCoincidence;
+	private Double	unknownLetterNGramProbability;
+	private Double	indexOfCoincidence;
 
 	public TreeMarkovModel(int order) {
 		this.order = order;
@@ -79,11 +77,11 @@ public class TreeMarkovModel {
 		return true;
 	}
 
-	public boolean addLetterTransition(String nGramString, BigDecimal amountToIncrement) {
+	public boolean addLetterTransition(String nGramString, Double amountToIncrement) {
 		return populateLetterNode(rootNode, nGramString, 1, amountToIncrement);
 	}
 
-	protected boolean populateLetterNode(TreeNGram currentNode, String nGramString, Integer order, BigDecimal amountToIncrement) {
+	protected boolean populateLetterNode(TreeNGram currentNode, String nGramString, Integer order, Double amountToIncrement) {
 		boolean isNew = currentNode.addOrIncrementChildAsync(nGramString, order, amountToIncrement);
 
 		if (order < nGramString.length()) {
@@ -158,7 +156,7 @@ public class TreeMarkovModel {
 	/**
 	 * @return the unknownLetterNGramProbability
 	 */
-	public BigDecimal getUnknownLetterNGramProbability() {
+	public Double getUnknownLetterNGramProbability() {
 		return unknownLetterNGramProbability;
 	}
 
@@ -166,25 +164,25 @@ public class TreeMarkovModel {
 	 * @param unknownLetterNGramProbability
 	 *            the unknownLetterNGramProbability to set
 	 */
-	public void setUnknownLetterNGramProbability(BigDecimal unknownLetterNGramProbability) {
+	public void setUnknownLetterNGramProbability(Double unknownLetterNGramProbability) {
 		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
 	/**
 	 * @return the indexOfCoincidence
 	 */
-	public BigDecimal getIndexOfCoincidence() {
+	public Double getIndexOfCoincidence() {
 		if (this.indexOfCoincidence == null) {
-			this.indexOfCoincidence = BigDecimal.ZERO;
+			this.indexOfCoincidence = 0.0;
 
-			BigDecimal occurences = null;
+			Double occurences;
 			for (Map.Entry<Character, TreeNGram> entry : this.rootNode.getTransitions().entrySet()) {
 				occurences = entry.getValue().getCount();
-				this.indexOfCoincidence = this.indexOfCoincidence.add(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP));
+				this.indexOfCoincidence = this.indexOfCoincidence + (occurences * (occurences - 1.0));
 			}
 
 			occurences = this.rootNode.getCount();
-			this.indexOfCoincidence = this.indexOfCoincidence.divide(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
+			this.indexOfCoincidence = this.indexOfCoincidence / (occurences * (occurences - 1.0));
 		}
 
 		return indexOfCoincidence;
@@ -355,7 +353,7 @@ public class TreeMarkovModel {
 
 	protected void normalizeTerminal(TreeNGram node, int order, long total) {
 		if (node.getCumulativeString().length() == order) {
-			node.setProbability(node.getCount().divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
+			node.setProbability(node.getCount() / (double) total);
 
 			return;
 		}

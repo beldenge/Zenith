@@ -19,28 +19,23 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import com.ciphertool.zenith.math.MathConstants;
-
 public class LeakyReLuActivationFunction implements ActivationFunction {
-	private static final BigDecimal SLOPE_CLOSE_TO_ZERO = BigDecimal.valueOf(0.01);
+	private static final Double SLOPE_CLOSE_TO_ZERO = 0.01;
 
 	@Override
-	public BigDecimal transformInputSignal(BigDecimal sum, BigDecimal[] allSums) {
-		if (BigDecimal.ZERO.compareTo(sum) < 0) {
+	public Double transformInputSignal(Double sum, Double[] allSums) {
+		if (0.0 < sum) {
 			return sum;
 		}
 
-		return SLOPE_CLOSE_TO_ZERO.multiply(sum, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		return SLOPE_CLOSE_TO_ZERO * sum;
 	}
 
 	@Override
-	public BigDecimal calculateDerivative(BigDecimal sum, BigDecimal[] allSums) {
-		if (BigDecimal.ZERO.compareTo(sum) < 0) {
-			return BigDecimal.ONE;
-		} else if (BigDecimal.ZERO.compareTo(sum) > 0) {
+	public Double calculateDerivative(Double sum, Double[] allSums) {
+		if (0.0 < sum) {
+			return 1.0;
+		} else if (0.0 > sum) {
 			return SLOPE_CLOSE_TO_ZERO;
 		}
 
@@ -48,6 +43,6 @@ public class LeakyReLuActivationFunction implements ActivationFunction {
 		 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to just
 		 * return zero.
 		 */
-		return BigDecimal.ZERO;
+		return 0.0;
 	}
 }

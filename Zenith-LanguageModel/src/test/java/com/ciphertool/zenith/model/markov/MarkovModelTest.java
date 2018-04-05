@@ -22,15 +22,12 @@ package com.ciphertool.zenith.model.markov;
 import static org.mockito.Mockito.spy;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.util.*;
 
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.math.sampling.RouletteSampler;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.probability.LetterProbability;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -56,7 +53,7 @@ public class MarkovModelTest {
 		}
 	}
 
-	private static final BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+	private static final Double RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
 	//@BeforeClass
 	public static void setUp() {
@@ -125,7 +122,7 @@ public class MarkovModelTest {
 			probabilities.add(probability);
 		}
 
-		BigDecimal totalProbability = sampler.reIndex(probabilities);
+		Double totalProbability = sampler.reIndex(probabilities);
 
 		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 

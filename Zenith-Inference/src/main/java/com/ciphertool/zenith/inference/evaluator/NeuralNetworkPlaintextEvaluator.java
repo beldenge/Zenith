@@ -19,9 +19,6 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -32,8 +29,6 @@ import org.springframework.stereotype.Component;
 
 import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.math.MathCache;
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.predict.Predictor;
@@ -42,14 +37,11 @@ import com.ciphertool.zenith.neural.predict.Predictor;
 public class NeuralNetworkPlaintextEvaluator {
 	private Logger					log						= LoggerFactory.getLogger(getClass());
 
-	private static final BigDecimal	ALPHABET_SIZE			= BigDecimal.valueOf(26);
+	private static final Double	ALPHABET_SIZE			= 26.0;
 	private static final int		CHAR_TO_NUMERIC_OFFSET	= 9;
 
 	@Value("${network.input.fileName}")
 	private String					inputFileName;
-
-	@Autowired
-	private MathCache				bigDecimalFunctions;
 
 	@Autowired
 	private Predictor				predictor;
@@ -64,10 +56,10 @@ public class NeuralNetworkPlaintextEvaluator {
 	public EvaluationResults evaluate(CipherSolution solution, String ciphertextKey) {
 		String solutionString = solution.asSingleLineString();
 
-		BigDecimal[] inputs = new BigDecimal[solutionString.length()];
+		Double[] inputs = new Double[solutionString.length()];
 
 		for (int i = 0; i < solutionString.length(); i++) {
-			inputs[i] = charToBigDecimal(solutionString.charAt(i));
+			inputs[i] = charToDouble(solutionString.charAt(i));
 		}
 
 		long startFeedForward = System.currentTimeMillis();
@@ -76,15 +68,15 @@ public class NeuralNetworkPlaintextEvaluator {
 
 		log.debug("Feed forward took {}ms.", (System.currentTimeMillis() - startFeedForward));
 
-		BigDecimal interpolatedProbability = network.getOutputLayer().getNeurons()[0].getActivationValue();
-		BigDecimal interpolatedLogProbability = bigDecimalFunctions.log(interpolatedProbability);
+		Double interpolatedProbability = network.getOutputLayer().getNeurons()[0].getActivationValue();
+		Double interpolatedLogProbability = Math.log(interpolatedProbability);
 
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	protected BigDecimal charToBigDecimal(char c) {
+	protected Double charToDouble(char c) {
 		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
 
-		return BigDecimal.valueOf(numericValue).divide(ALPHABET_SIZE, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		return (double) numericValue / ALPHABET_SIZE;
 	}
 }

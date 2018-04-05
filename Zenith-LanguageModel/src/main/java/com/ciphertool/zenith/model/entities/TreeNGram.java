@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.model.entities;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -36,14 +35,14 @@ public class TreeNGram {
 	@Id
 	protected ObjectId					id;
 
-	// Count is BigDecimal to allow flexibility with smoothing methods
-	protected BigDecimal				count						= BigDecimal.ZERO;
+	// Count is Double to allow flexibility with smoothing methods
+	protected Double				count						= 0.0;
 
-	protected BigDecimal				probability;
+	protected Double				probability;
 
-	protected BigDecimal				conditionalProbability;
+	protected Double				conditionalProbability;
 
-	protected BigDecimal				chainedProbability;
+	protected Double				chainedProbability;
 
 	protected String					cumulativeString;
 
@@ -77,17 +76,17 @@ public class TreeNGram {
 	}
 
 	public void increment() {
-		increment(BigDecimal.ONE);
+		increment(1.0);
 	}
 
-	public void increment(BigDecimal amount) {
-		this.count = this.count.add(amount);
+	public void increment(Double amount) {
+		this.count = this.count + amount;
 	}
 
 	/**
 	 * @return the count
 	 */
-	public BigDecimal getCount() {
+	public Double getCount() {
 		return this.count;
 	}
 
@@ -95,14 +94,14 @@ public class TreeNGram {
 	 * @param count
 	 *            the count to set
 	 */
-	public void setCount(BigDecimal count) {
+	public void setCount(Double count) {
 		this.count = count;
 	}
 
 	/**
 	 * @return the probability
 	 */
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return this.probability;
 	}
 
@@ -113,14 +112,14 @@ public class TreeNGram {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public synchronized void setProbability(BigDecimal probability) {
+	public synchronized void setProbability(Double probability) {
 		this.probability = probability;
 	}
 
 	/**
 	 * @return the conditionalProbability
 	 */
-	public BigDecimal getConditionalProbability() {
+	public Double getConditionalProbability() {
 		return conditionalProbability;
 	}
 
@@ -131,14 +130,14 @@ public class TreeNGram {
 	 * @param conditionalProbability
 	 *            the conditionalProbability to set
 	 */
-	public synchronized void setConditionalProbability(BigDecimal conditionalProbability) {
+	public synchronized void setConditionalProbability(Double conditionalProbability) {
 		this.conditionalProbability = conditionalProbability;
 	}
 
 	/**
 	 * @return the chainedProbability
 	 */
-	public BigDecimal getChainedProbability() {
+	public Double getChainedProbability() {
 		return chainedProbability;
 	}
 
@@ -146,7 +145,7 @@ public class TreeNGram {
 	 * @param chainedProbability
 	 *            the chainedProbability to set
 	 */
-	public synchronized void setChainedProbability(BigDecimal chainedProbability) {
+	public synchronized void setChainedProbability(Double chainedProbability) {
 		this.chainedProbability = chainedProbability;
 	}
 
@@ -188,7 +187,7 @@ public class TreeNGram {
 		return this.getTransitions().get(c);
 	}
 
-	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order, BigDecimal amountToIncrement) {
+	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order, Double amountToIncrement) {
 		Character firstLetter = nGramString.charAt(order - 1);
 
 		TreeNGram child = this.getChild(firstLetter);
@@ -203,7 +202,7 @@ public class TreeNGram {
 			isNew = true;
 		}
 
-		child.increment(amountToIncrement ==  null ? BigDecimal.ONE : amountToIncrement);
+		child.increment(amountToIncrement ==  null ? 1.0 : amountToIncrement);
 
 		return isNew;
 	}
@@ -247,7 +246,7 @@ public class TreeNGram {
 	 */
 	public Map<Character, TreeNGram> getTransitions() {
 		if (this.transitions == null) {
-			this.transitions = new HashMap<Character, TreeNGram>(1);
+			this.transitions = new HashMap<>(1);
 		}
 
 		return this.transitions;

@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.neural.generate;
 
-import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.validation.constraints.Min;
@@ -69,8 +68,8 @@ public class XorSampleGenerator implements SampleGenerator {
 		int inputLayerSize = inputLayerNeurons;
 		int outputLayerSize = outputLayerNeurons;
 
-		BigDecimal[][] inputs = new BigDecimal[count][inputLayerSize];
-		BigDecimal[][] outputs = new BigDecimal[count][outputLayerSize];
+		Double[][] inputs = new Double[count][inputLayerSize];
+		Double[][] outputs = new Double[count][outputLayerSize];
 
 		for (int i = 0; i < count; i++) {
 			DataSet next = generateOne();
@@ -86,24 +85,24 @@ public class XorSampleGenerator implements SampleGenerator {
 		int inputLayerSize = inputLayerNeurons;
 		int outputLayerSize = outputLayerNeurons;
 
-		BigDecimal[][] inputs = new BigDecimal[1][inputLayerSize];
-		BigDecimal[][] outputs = new BigDecimal[1][outputLayerSize];
+		Double[][] inputs = new Double[1][inputLayerSize];
+		Double[][] outputs = new Double[1][outputLayerSize];
 
 		for (int j = 0; j < inputLayerSize; j++) {
-			inputs[0][j] = BigDecimal.valueOf(ThreadLocalRandom.current().nextInt(2));
+			inputs[0][j] = (double) ThreadLocalRandom.current().nextInt(2);
 		}
 
-		outputs[0] = new BigDecimal[] { xor(inputs[0]) };
+		outputs[0] = new Double[] { xor(inputs[0]) };
 
 		return new DataSet(inputs, outputs);
 	}
 
-	protected BigDecimal xor(BigDecimal[] values) {
+	protected Double xor(Double[] values) {
 		if (values.length != 2) {
 			throw new IllegalArgumentException("Exclusive or expects only two values, but found " + values.length
 					+ ".  Unable to continue.");
 		}
 
-		return values[0].equals(values[1]) ? BigDecimal.ZERO : BigDecimal.ONE;
+		return values[0] == values[1] ? 0.0 : 1.0;
 	}
 }

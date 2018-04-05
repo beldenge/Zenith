@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.neural.model;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,10 +26,10 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Synapse {
-	private BigDecimal			weight;
+	private Double			weight;
 
 	@JsonIgnore
-	private List<BigDecimal>	accumulatedDeltas	= new ArrayList<>(1);
+	private List<Double>	accumulatedDeltas	= new ArrayList<>(1);
 
 	@JsonIgnore
 	private Neuron				outGoingNeuron;
@@ -46,7 +45,7 @@ public class Synapse {
 	 * @param weight
 	 *            the initial weight to set
 	 */
-	public Synapse(Neuron outGoingNeuron, BigDecimal weight, int batchSize) {
+	public Synapse(Neuron outGoingNeuron, Double weight, int batchSize) {
 		this.outGoingNeuron = outGoingNeuron;
 		this.weight = weight;
 		this.accumulatedDeltas = new ArrayList<>(batchSize);
@@ -70,7 +69,7 @@ public class Synapse {
 	/**
 	 * @return the weight
 	 */
-	public BigDecimal getWeight() {
+	public Double getWeight() {
 		return weight;
 	}
 
@@ -78,7 +77,7 @@ public class Synapse {
 	 * @param weight
 	 *            the weight to set
 	 */
-	public void setWeight(BigDecimal weight) {
+	public void setWeight(Double weight) {
 		this.weight = weight;
 	}
 
@@ -86,14 +85,14 @@ public class Synapse {
 	 * @param delta
 	 *            the delta to add
 	 */
-	public void addDelta(BigDecimal delta) {
+	public void addDelta(Double delta) {
 		this.accumulatedDeltas.add(delta);
 	}
 
 	/**
 	 * @return the accumulatedDeltas
 	 */
-	public List<BigDecimal> getAccumulatedDeltas() {
+	public List<Double> getAccumulatedDeltas() {
 		return Collections.unmodifiableList(accumulatedDeltas);
 	}
 

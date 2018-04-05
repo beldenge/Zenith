@@ -19,15 +19,12 @@
 
 package com.ciphertool.zenith.neural.model;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
 
 public class NeuralNetwork {
-	private BigDecimal	biasWeight;
+	private Double biasWeight;
 
 	private ProblemType	problemType;
 
@@ -61,7 +58,7 @@ public class NeuralNetwork {
 						continue;
 					}
 
-					BigDecimal initialWeight = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble()).subtract(BigDecimal.valueOf(0.5));
+					Double initialWeight = ThreadLocalRandom.current().nextDouble() - 0.5;
 
 					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight, batchSize);
 				}
@@ -74,7 +71,7 @@ public class NeuralNetwork {
 		// Exists purely for Jackson deserialization
 	}
 
-	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, BigDecimal biasWeight,
+	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, Double biasWeight,
 			int batchSize) {
 		this.biasWeight = biasWeight;
 		boolean addBias = biasWeight != null ? true : false;
@@ -112,7 +109,7 @@ public class NeuralNetwork {
 		this.problemType = network.getProblemType();
 	}
 
-	public void applyAccumulatedDeltas(BigDecimal learningRate, BigDecimal weightDecayPercent) {
+	public void applyAccumulatedDeltas(Double learningRate, Double weightDecayPercent) {
 		for (int i = 0; i < layers.length - 1; i++) {
 			Layer fromLayer = layers[i];
 
@@ -122,29 +119,29 @@ public class NeuralNetwork {
 				for (int k = 0; k < nextNeuron.getOutgoingSynapses().length; k++) {
 					Synapse nextSynapse = nextNeuron.getOutgoingSynapses()[k];
 
-					BigDecimal sum = BigDecimal.ZERO;
+					Double sum = 0.0;
 
-					for (BigDecimal delta : nextSynapse.getAccumulatedDeltas()) {
-						sum = sum.add(delta);
+					for (Double delta : nextSynapse.getAccumulatedDeltas()) {
+						sum = sum + delta;
 					}
 
-					BigDecimal averageDelta = sum.divide(BigDecimal.valueOf(nextSynapse.getAccumulatedDeltas().size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+					Double averageDelta = sum / (double) nextSynapse.getAccumulatedDeltas().size();
 
 					if (learningRate != null) {
-						averageDelta = averageDelta.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+						averageDelta = averageDelta * learningRate;
 					}
 
-					BigDecimal regularization = BigDecimal.ZERO;
+					Double regularization = 0.0;
 
 					if (weightDecayPercent != null && !nextNeuron.isBias()) {
-						regularization = nextSynapse.getWeight().multiply(weightDecayPercent, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+						regularization = nextSynapse.getWeight() * weightDecayPercent;
 
 						if (learningRate != null) {
-							regularization = regularization.multiply(learningRate, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+							regularization = regularization * learningRate;
 						}
 					}
 
-					nextSynapse.setWeight(nextSynapse.getWeight().subtract(averageDelta).subtract(regularization));
+					nextSynapse.setWeight(nextSynapse.getWeight() - averageDelta - regularization);
 
 					nextSynapse.clearAccumulatedDeltas();
 				}
@@ -183,7 +180,7 @@ public class NeuralNetwork {
 	/**
 	 * @return the biasWeight
 	 */
-	public BigDecimal getBiasWeight() {
+	public Double getBiasWeight() {
 		return biasWeight;
 	}
 
@@ -191,7 +188,7 @@ public class NeuralNetwork {
 	 * @param biasWeight
 	 *            the biasWeight to set
 	 */
-	public void setBiasWeight(BigDecimal biasWeight) {
+	public void setBiasWeight(Double biasWeight) {
 		this.biasWeight = biasWeight;
 	}
 

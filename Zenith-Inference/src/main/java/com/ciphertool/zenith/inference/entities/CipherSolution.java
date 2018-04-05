@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +33,9 @@ public class CipherSolution {
 
 	protected Cipher				cipher;
 
-	private BigDecimal				probability				= null;
-	private BigDecimal				logProbability			= null;
-	private BigDecimal				knownSolutionProximity	= null;
+	private Double				probability				= null;
+	private Double				logProbability			= null;
+	private Double				knownSolutionProximity	= null;
 
 	private Map<String, Plaintext>	mappings;
 	private Set<Integer>			wordBoundaries;
@@ -75,18 +74,18 @@ public class CipherSolution {
 	/**
 	 * @return the probability
 	 */
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return probability;
 	}
 
-	public void setProbability(BigDecimal score) {
+	public void setProbability(Double score) {
 		this.probability = score;
 	}
 
 	/**
 	 * @return the logProbability
 	 */
-	public BigDecimal getLogProbability() {
+	public Double getLogProbability() {
 		return logProbability;
 	}
 
@@ -94,14 +93,14 @@ public class CipherSolution {
 	 * @param logProbability
 	 *            the logProbability to set
 	 */
-	public void setLogProbability(BigDecimal logProbability) {
+	public void setLogProbability(Double logProbability) {
 		this.logProbability = logProbability;
 	}
 
 	/**
 	 * @return the knownSolutionProximity
 	 */
-	public BigDecimal getKnownSolutionProximity() {
+	public Double getKnownSolutionProximity() {
 		return knownSolutionProximity;
 	}
 
@@ -109,7 +108,7 @@ public class CipherSolution {
 	 * @param knownSolutionProximity
 	 *            the knownSolutionProximity to set
 	 */
-	public void setKnownSolutionProximity(BigDecimal knownSolutionProximity) {
+	public void setKnownSolutionProximity(Double knownSolutionProximity) {
 		this.knownSolutionProximity = knownSolutionProximity;
 	}
 
@@ -306,7 +305,7 @@ public class CipherSolution {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Solution [probability=" + probability + ", logProbability=" + logProbability
 				+ (knownSolutionProximity != null ? ", proximity="
-						+ String.format("%1$,.2f", knownSolutionProximity.doubleValue() * 100.0) + "%" : "") + "]\n");
+						+ String.format("%1$,.2f", knownSolutionProximity * 100.0) + "%" : "") + "]\n");
 
 		if (this.cipher != null) {
 			String nextPlaintext = null;

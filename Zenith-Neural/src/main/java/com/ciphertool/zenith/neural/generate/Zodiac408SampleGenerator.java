@@ -20,8 +20,6 @@
 package com.ciphertool.zenith.neural.generate;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -76,7 +74,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 	}
 
-	private static final BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+	private static final Double RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
 	@Min(1)
 	@Value("${network.layers.input}")
@@ -168,18 +166,18 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	// TODO: cache these calculations for crying out loud
-	protected BigDecimal charToBigDecimal(char c) {
+	protected Double charToDouble(char c) {
 		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
 
-		return BigDecimal.valueOf(numericValue).divide(BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size()), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+		return (double) numericValue / (double) ModelConstants.LOWERCASE_LETTERS.size();
 	}
 
-	protected static BigDecimal[][] shuffleArray(BigDecimal[][] arrayToShuffle) {
-		BigDecimal[][] shuffledArray = new BigDecimal[arrayToShuffle.length][];
+	protected static Double[][] shuffleArray(Double[][] arrayToShuffle) {
+		Double[][] shuffledArray = new Double[arrayToShuffle.length][];
 
 		int arrayLength = arrayToShuffle.length;
 
-		List<BigDecimal[]> arrayList = new ArrayList<>(Arrays.asList(arrayToShuffle));
+		List<Double[]> arrayList = new ArrayList<>(Arrays.asList(arrayToShuffle));
 
 		for (int i = 0; i < arrayLength; i++) {
 			int randomIndex = ThreadLocalRandom.current().nextInt(arrayList.size());
@@ -227,13 +225,13 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected static DataSet shuffleDataSet(DataSet dataSetToShuffle) {
-		BigDecimal[][] shuffledInputs = new BigDecimal[dataSetToShuffle.getInputs().length][];
-		BigDecimal[][] shuffledOutputs = new BigDecimal[dataSetToShuffle.getOutputs().length][];
+		Double[][] shuffledInputs = new Double[dataSetToShuffle.getInputs().length][];
+		Double[][] shuffledOutputs = new Double[dataSetToShuffle.getOutputs().length][];
 
 		int arrayLength = dataSetToShuffle.getInputs().length;
 
-		List<BigDecimal[]> inputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getInputs()));
-		List<BigDecimal[]> outputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getOutputs()));
+		List<Double[]> inputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getInputs()));
+		List<Double[]> outputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getOutputs()));
 
 		for (int i = 0; i < arrayLength; i++) {
 			int randomIndex = ThreadLocalRandom.current().nextInt(inputsArrayList.size());
@@ -246,8 +244,8 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected DataSet generate(int count) {
-		BigDecimal[][] samples = new BigDecimal[count * outputLayerNeurons][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[count * outputLayerNeurons][outputLayerNeurons];
+		Double[][] samples = new Double[count * outputLayerNeurons][inputLayerNeurons];
+		Double[][] outputs = new Double[count * outputLayerNeurons][outputLayerNeurons];
 
 		for (int i = 0; i < count; i++) {
 			DataSet next = generateOne();
@@ -266,25 +264,25 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	public DataSet generateOne() {
-		BigDecimal[][] samples = new BigDecimal[outputLayerNeurons][inputLayerNeurons];
-		BigDecimal[][] outputs = new BigDecimal[outputLayerNeurons][outputLayerNeurons];
+		Double[][] samples = new Double[outputLayerNeurons][inputLayerNeurons];
+		Double[][] outputs = new Double[outputLayerNeurons][outputLayerNeurons];
 
 		// Generate a random sample
 		samples[0] = generateRandomSample();
-		outputs[0] = new BigDecimal[outputLayerNeurons];
-		outputs[0][0] = BigDecimal.ONE;
+		outputs[0] = new Double[outputLayerNeurons];
+		outputs[0][0] = 1.0;
 
 		for (int i = 1; i < outputLayerNeurons; i ++) {
-			outputs[0][i] = BigDecimal.ZERO;
+			outputs[0][i] = 0.0;
 		}
 
 		// Generate probabilistic samples based on Markov model
 		for (int i = 1; i < outputLayerNeurons - 1; i ++) {
 			samples[i] = generateMarkovModelSample(i);
-			outputs[i] = new BigDecimal[outputLayerNeurons];
+			outputs[i] = new Double[outputLayerNeurons];
 
 			for (int j = 0; j < outputLayerNeurons; j ++) {
-				outputs[i][j] = (i == j) ? BigDecimal.ONE : BigDecimal.ZERO;
+				outputs[i][j] = (i == j) ? 1.0 : 0.0;
 			}
 		}
 
@@ -292,17 +290,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		int i = outputLayerNeurons - 1;
 
 		samples[i] = getRandomParagraph();
-		outputs[i] = new BigDecimal[outputLayerNeurons];
-		outputs[i][outputLayerNeurons - 1] = BigDecimal.ONE;
+		outputs[i] = new Double[outputLayerNeurons];
+		outputs[i][outputLayerNeurons - 1] = 1.0;
 
 		for (int j = 0; j < outputLayerNeurons - 1; j ++) {
-			outputs[i][j] = BigDecimal.ZERO;
+			outputs[i][j] = 0.0;
 		}
 
 		return new DataSet(samples, outputs);
 	}
 
-	protected BigDecimal[] getRandomParagraph() {
+	protected Double[] getRandomParagraph() {
 		Long randomIndex = ThreadLocalRandom.current().nextLong(englishParagraphCount);
 
 		EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
@@ -313,17 +311,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			log.debug("Random paragraph: {}", String.valueOf(nextSample));
 		}
 
-		BigDecimal[] numericSample = new BigDecimal[inputLayerNeurons];
+		Double[] numericSample = new Double[inputLayerNeurons];
 
 		for (int j = 0; j < nextSample.length; j++) {
-			numericSample[j] = charToBigDecimal(nextSample[j]);
+			numericSample[j] = charToDouble(nextSample[j]);
 		}
 
 		return numericSample;
 	}
 
-	protected BigDecimal[] generateMarkovModelSample(int markovOrder) {
-		BigDecimal[] sample = new BigDecimal[inputLayerNeurons];
+	protected Double[] generateMarkovModelSample(int markovOrder) {
+		Double[] sample = new Double[inputLayerNeurons];
 
 		TreeNGram rootNode = letterMarkovModel.getRootNode();
 		TreeNGram match;
@@ -346,7 +344,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				sb.append(nextSymbol);
 			}
 
-			sample[i] = charToBigDecimal(nextSymbol);
+			sample[i] = charToDouble(nextSymbol);
 
 			root = ((root.isEmpty() || root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
 		}
@@ -373,17 +371,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			probabilities.add(probability);
 		}
 
-		BigDecimal totalProbability = sampler.reIndex(probabilities);
+		Double totalProbability = sampler.reIndex(probabilities);
 
 		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 
 		return probabilities.get(nextIndex);
 	}
 
-	protected BigDecimal[] generateRandomSample() {
+	protected Double[] generateRandomSample() {
 		int inputLayerSize = inputLayerNeurons;
 
-		BigDecimal[] randomSample = new BigDecimal[inputLayerSize];
+		Double[] randomSample = new Double[inputLayerSize];
 
 		StringBuffer sb = null;
 
@@ -398,7 +396,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				sb.append(nextLetter);
 			}
 
-			randomSample[j] = charToBigDecimal(nextLetter);
+			randomSample[j] = charToDouble(nextLetter);
 		}
 
 		if (log.isDebugEnabled()) {

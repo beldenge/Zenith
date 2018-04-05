@@ -21,11 +21,9 @@ package com.ciphertool.zenith.inference.probability;
 
 import com.ciphertool.zenith.math.probability.Probability;
 
-import java.math.BigDecimal;
-
 public class BoundaryProbability implements Probability<Boolean>, Comparable<BoundaryProbability> {
 	private Boolean		option;
-	private BigDecimal	probability;
+	private Double	probability;
 
 	/**
 	 * @param option
@@ -33,7 +31,7 @@ public class BoundaryProbability implements Probability<Boolean>, Comparable<Bou
 	 * @param probability
 	 *            the probability
 	 */
-	public BoundaryProbability(Boolean option, BigDecimal probability) {
+	public BoundaryProbability(Boolean option, Double probability) {
 		super();
 		this.option = option;
 		this.probability = probability;
@@ -45,12 +43,12 @@ public class BoundaryProbability implements Probability<Boolean>, Comparable<Bou
 	}
 
 	@Override
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return this.probability;
 	}
 
 	@Override
-	public BigDecimal getLogProbability() {
+	public Double getLogProbability() {
 		throw new UnsupportedOperationException("Method not implemented!");
 	}
 

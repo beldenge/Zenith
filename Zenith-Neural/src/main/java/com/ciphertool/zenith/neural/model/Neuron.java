@@ -19,17 +19,15 @@
 
 package com.ciphertool.zenith.neural.model;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Neuron {
 	@JsonIgnore
-	private BigDecimal	activationValue;
+	private Double	activationValue;
 
 	@JsonIgnore
-	private BigDecimal	outputSum;
+	private Double	outputSum;
 
 	private Synapse[]	outgoingSynapses;
 
@@ -66,7 +64,7 @@ public class Neuron {
 	/**
 	 * @return the activationValue
 	 */
-	public BigDecimal getActivationValue() {
+	public Double getActivationValue() {
 		return activationValue;
 	}
 
@@ -74,14 +72,14 @@ public class Neuron {
 	 * @param activationValue
 	 *            the activationValue to set
 	 */
-	public void setActivationValue(BigDecimal activationValue) {
+	public void setActivationValue(Double activationValue) {
 		this.activationValue = activationValue;
 	}
 
 	/**
 	 * @return the outputSum
 	 */
-	public BigDecimal getOutputSum() {
+	public Double getOutputSum() {
 		return outputSum;
 	}
 
@@ -89,7 +87,7 @@ public class Neuron {
 	 * @param outputSum
 	 *            the outputSum to set
 	 */
-	public void setOutputSum(BigDecimal outputSum) {
+	public void setOutputSum(Double outputSum) {
 		this.outputSum = outputSum;
 	}
 

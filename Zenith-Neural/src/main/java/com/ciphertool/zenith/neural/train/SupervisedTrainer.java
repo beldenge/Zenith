@@ -19,8 +19,6 @@
 
 package com.ciphertool.zenith.neural.train;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +29,6 @@ import javax.validation.constraints.DecimalMin;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.*;
-import org.nevec.rjm.BigDecimalMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +37,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.predict.Predictor;
 
@@ -54,12 +50,12 @@ public class SupervisedTrainer {
 
 	@DecimalMin("0.0")
 	@Value("${network.learningRate}")
-	private BigDecimal						learningRate;
+	private Double						learningRate;
 
 	@DecimalMin("0.0")
 	@DecimalMax("1.0")
 	@Value("${network.weightDecay}")
-	private BigDecimal						weightDecayPercent;
+	private Double						weightDecayPercent;
 
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
@@ -121,7 +117,7 @@ public class SupervisedTrainer {
 		}
 	}
 
-	protected void backPropagate(NeuralNetwork network, BigDecimal[] expectedOutputs) {
+	protected void backPropagate(NeuralNetwork network, Double[] expectedOutputs) {
 		Layer outputLayer = network.getOutputLayer();
 
 		if (expectedOutputs.length != outputLayer.getNeurons().length) {
@@ -139,26 +135,26 @@ public class SupervisedTrainer {
 		 */
 		if (COMPUTE_SUM_OF_ERRORS) {
 			// Compute sum of errors
-			BigDecimal errorTotal = BigDecimal.ZERO;
-			BigDecimal outputSumTotal = BigDecimal.ZERO;
+			Double errorTotal = 0.0;
+			Double outputSumTotal = 0.0;
 
 			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
 				if (network.getProblemType() == ProblemType.REGRESSION) {
-					errorTotal = errorTotal.add(costFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+					errorTotal = errorTotal + costFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
 				} else {
-					errorTotal = errorTotal.add(costFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue()));
+					errorTotal = errorTotal + costFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue());
 				}
 
-				outputSumTotal = outputSumTotal.add(nextOutputNeuron.getOutputSum());
+				outputSumTotal = outputSumTotal + nextOutputNeuron.getOutputSum();
 			}
 		}
 
-		BigDecimal[] errorDerivatives = new BigDecimal[outputLayer.getNeurons().length];
-		BigDecimal[] activationDerivatives = new BigDecimal[outputLayer.getNeurons().length];
+		Double[] errorDerivatives = new Double[outputLayer.getNeurons().length];
+		Double[] activationDerivatives = new Double[outputLayer.getNeurons().length];
 
-		BigDecimal[] allSums = new BigDecimal[outputLayer.getNeurons().length];
+		Double[] allSums = new Double[outputLayer.getNeurons().length];
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
@@ -184,8 +180,8 @@ public class SupervisedTrainer {
 		}
 
 		Layer toLayer;
-		BigDecimal[] oldErrorDerivatives;
-		BigDecimal[] oldActivationDerivatives;
+		Double[] oldErrorDerivatives;
+		Double[] oldActivationDerivatives;
 
 		// Compute deltas for hidden layers using chain rule and subtract them from current weights
 		for (int i = layers.length - 2; i > 0; i--) {
@@ -195,8 +191,8 @@ public class SupervisedTrainer {
 			oldErrorDerivatives = errorDerivatives;
 			oldActivationDerivatives = activationDerivatives;
 
-			errorDerivatives = new BigDecimal[toLayer.getNeurons().length];
-			activationDerivatives = new BigDecimal[toLayer.getNeurons().length];
+			errorDerivatives = new Double[toLayer.getNeurons().length];
+			activationDerivatives = new Double[toLayer.getNeurons().length];
 
 			futures = new ArrayList<>(toLayer.getNeurons().length);
 
@@ -214,11 +210,11 @@ public class SupervisedTrainer {
 		}
 	}
 
-	protected static BigDecimal costFunctionRegression(BigDecimal expected, BigDecimal actual) {
-		return expected.subtract(actual).pow(2, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).divide(BigDecimal.valueOf(2.0), MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP);
+	protected static Double costFunctionRegression(Double expected, Double actual) {
+		return Math.pow(expected - actual, 2) / 2.0;
 	}
 
-	protected BigDecimal costFunctionClassification(BigDecimal expected, BigDecimal actual) {
-		return BigDecimalMath.log(actual).multiply(expected, MathConstants.PREC_10_HALF_UP).setScale(10, RoundingMode.UP).negate();
+	protected Double costFunctionClassification(Double expected, Double actual) {
+		return Math.log(actual) * expected;
 	}
 }

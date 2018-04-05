@@ -19,8 +19,6 @@
 
 package com.ciphertool.zenith.neural;
 
-import java.math.BigDecimal;
-
 import javax.validation.constraints.Min;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
@@ -94,7 +92,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	private int						outputLayerNeurons;
 
 	@Value("${network.bias.weight}")
-	private BigDecimal				biasWeight;
+	private Double				biasWeight;
 
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;

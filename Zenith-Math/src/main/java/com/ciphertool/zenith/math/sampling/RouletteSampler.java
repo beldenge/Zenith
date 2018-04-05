@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.math.sampling;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -28,38 +27,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ciphertool.zenith.math.probability.Probability;
-import com.ciphertool.zenith.math.MathConstants;
 
 public class RouletteSampler<T extends Probability<?>> {
 	private Logger				log	= LoggerFactory.getLogger(getClass());
 
 	private BinaryRouletteTree	rouletteWheel;
 
-	public synchronized BigDecimal reIndex(List<T> probabilities) {
+	public synchronized Double reIndex(List<T> probabilities) {
 		this.rouletteWheel = new BinaryRouletteTree();
 
 		List<BinaryRouletteNode> nodes = new ArrayList<BinaryRouletteNode>();
 
-		BigDecimal totalProbability = BigDecimal.ZERO;
+		Double totalProbability = 0.0;
 
 		for (int i = 0; i < probabilities.size(); i++) {
-			if (probabilities.get(i) == null || probabilities.get(i).getProbability().equals(BigDecimal.ZERO)) {
+			if (probabilities.get(i) == null || probabilities.get(i).getProbability() == 0.0) {
 				continue;
 			}
 
-			if (probabilities.get(i).getProbability() == null) {
-				log.warn("Attempted to spin roulette wheel but an element was found with a null probability. "
-						+ probabilities.get(i));
-
-				continue;
-			}
-
-			totalProbability = totalProbability.add(probabilities.get(i).getProbability(), MathConstants.PREC_10_HALF_UP);
+			totalProbability = totalProbability + probabilities.get(i).getProbability();
 
 			nodes.add(new BinaryRouletteNode(i, totalProbability));
 		}
 
-		if (totalProbability.compareTo(BigDecimal.ZERO) > 0) {
+		if (totalProbability > 0.0) {
 			addToTreeBalanced(nodes);
 		}
 
@@ -84,21 +75,21 @@ public class RouletteSampler<T extends Probability<?>> {
 		addToTreeBalanced(nodes.subList(half + 1, nodes.size()));
 	}
 
-	public int getNextIndex(List<T> probabilities, BigDecimal totalProbability) {
+	public int getNextIndex(List<T> probabilities, Double totalProbability) {
 		if (probabilities == null || probabilities.isEmpty()) {
 			log.error("Attempted to select a probability from a null or empty distribution.  Unable to continue.");
 
 			return -1;
 		}
 
-		if (BigDecimal.ONE.subtract(totalProbability).abs().compareTo(BigDecimal.valueOf(0.0001)) > 0) {
+		if (Math.abs(1.0 - totalProbability) > 0.0001) {
 			log.error("Attempted to select from a probability distribution that does not sum to 1.  The sum is "
-					+ totalProbability.toPlainString() + ".  Unable to continue.");
+					+ totalProbability + ".  Unable to continue.");
 
 			return -1;
 		}
 
-		BigDecimal randomIndex = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble()).multiply(totalProbability);
+		Double randomIndex = ThreadLocalRandom.current().nextDouble() * totalProbability;
 
 		BinaryRouletteNode winner = this.rouletteWheel.find(randomIndex);
 

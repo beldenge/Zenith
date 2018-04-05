@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.model.dao;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -96,24 +95,23 @@ public class LetterNGramDao {
 			while (cursor.hasNext()) {
 				next = cursor.next();
 
-				if (new BigDecimal((String) next.get(COUNT_KEY)).compareTo(BigDecimal.valueOf(minimumCount)) == 1) {
+				if (Double.parseDouble((String) next.get(COUNT_KEY)) > (double) minimumCount) {
 					nextNode = new TreeNGram((String) next.get(CUMULATIVE_STRING_KEY));
 
 					nextNode.setId((ObjectId) next.get(ID_KEY));
-					nextNode.setCount(new BigDecimal((String) next.get(COUNT_KEY)));
+					nextNode.setCount(Double.parseDouble((String) next.get(COUNT_KEY)));
 					nextNode.setOrder((int) next.get(ORDER_KEY));
 
 					if (next.containsField(PROBABILITY_KEY)) {
-						nextNode.setProbability(new BigDecimal((String) next.get(PROBABILITY_KEY)));
+						nextNode.setProbability(Double.parseDouble((String) next.get(PROBABILITY_KEY)));
 					}
 
 					if (next.containsField(CONDITIONAL_PROBABILITY_KEY)) {
-						nextNode.setConditionalProbability(new BigDecimal(
-								(String) next.get(CONDITIONAL_PROBABILITY_KEY)));
+						nextNode.setConditionalProbability(Double.parseDouble((String) next.get(CONDITIONAL_PROBABILITY_KEY)));
 					}
 
 					if (next.containsField(CHAINED_PROBABILITY_KEY)) {
-						nextNode.setChainedProbability(new BigDecimal((String) next.get(CHAINED_PROBABILITY_KEY)));
+						nextNode.setChainedProbability(Double.parseDouble((String) next.get(CHAINED_PROBABILITY_KEY)));
 					}
 
 					nodesToReturn.add(nextNode);
