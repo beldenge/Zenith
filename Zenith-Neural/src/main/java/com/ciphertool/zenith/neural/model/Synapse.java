@@ -26,10 +26,10 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Synapse {
-	private Double			weight;
+	private Float			weight;
 
 	@JsonIgnore
-	private List<Double>	accumulatedDeltas	= new ArrayList<>(1);
+	private List<Float>	accumulatedDeltas	= new ArrayList<>(1);
 
 	@JsonIgnore
 	private Neuron				outGoingNeuron;
@@ -45,7 +45,7 @@ public class Synapse {
 	 * @param weight
 	 *            the initial weight to set
 	 */
-	public Synapse(Neuron outGoingNeuron, Double weight, int batchSize) {
+	public Synapse(Neuron outGoingNeuron, Float weight, int batchSize) {
 		this.outGoingNeuron = outGoingNeuron;
 		this.weight = weight;
 		this.accumulatedDeltas = new ArrayList<>(batchSize);
@@ -69,7 +69,7 @@ public class Synapse {
 	/**
 	 * @return the weight
 	 */
-	public Double getWeight() {
+	public Float getWeight() {
 		return weight;
 	}
 
@@ -77,7 +77,7 @@ public class Synapse {
 	 * @param weight
 	 *            the weight to set
 	 */
-	public void setWeight(Double weight) {
+	public void setWeight(Float weight) {
 		this.weight = weight;
 	}
 
@@ -85,14 +85,14 @@ public class Synapse {
 	 * @param delta
 	 *            the delta to add
 	 */
-	public void addDelta(Double delta) {
+	public void addDelta(Float delta) {
 		this.accumulatedDeltas.add(delta);
 	}
 
 	/**
 	 * @return the accumulatedDeltas
 	 */
-	public List<Double> getAccumulatedDeltas() {
+	public List<Float> getAccumulatedDeltas() {
 		return Collections.unmodifiableList(accumulatedDeltas);
 	}
 

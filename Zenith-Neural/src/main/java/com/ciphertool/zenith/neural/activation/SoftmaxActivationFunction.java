@@ -23,32 +23,32 @@ import com.ciphertool.zenith.math.MathConstants;
 
 public class SoftmaxActivationFunction implements ActivationFunction {
 	@Override
-	public Double transformInputSignal(Double sum, Double[] allSums) {
+	public Float transformInputSignal(Float sum, Float[] allSums) {
 		// Use the maximum input as an arbitrary constant for numerical stability
-		Double max = 0.0;
+		Float max = 0.0f;
 
 		for (int i = 0; i < allSums.length; i++) {
 			max = Math.max(max, allSums[i]);
 		}
 
-		Double numerator = Math.pow(MathConstants.EULERS_CONSTANT, sum - max);
+		Float numerator = (float) Math.pow(MathConstants.EULERS_CONSTANT, sum - max);
 
-		Double denominator = 0.0;
+		Float denominator = 0.0f;
 		for (int i = 0; i < allSums.length; i++) {
-			denominator = denominator + Math.pow(MathConstants.EULERS_CONSTANT, allSums[i] - max);
+			denominator = denominator + (float) Math.pow(MathConstants.EULERS_CONSTANT, allSums[i] - max);
 		}
 
 		return numerator / denominator;
 	}
 
 	@Override
-	public Double calculateDerivative(Double sum, Double[] allSums) {
-		Double softMax = transformInputSignal(sum, allSums);
+	public Float calculateDerivative(Float sum, Float[] allSums) {
+		Float softMax = transformInputSignal(sum, allSums);
 
 		/*
 		 * This is only true when the output neuron index equals the index of the softmax of that neuron (i.e. this
 		 * works for the output layer only)
 		 */
-		return softMax * (1.0 - softMax);
+		return softMax * (1.0f - softMax);
 	}
 }

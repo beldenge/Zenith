@@ -51,7 +51,7 @@ import com.ciphertool.zenith.neural.model.DataSet;
 public class MnistSampleGenerator implements SampleGenerator {
 	private static Logger			log				= LoggerFactory.getLogger(MnistSampleGenerator.class);
 
-	private static final Double	MAX_PIXEL_VALUE	= 255.0;
+	private static final Float	MAX_PIXEL_VALUE	= 255.0f;
 
 	@NotBlank
 	@Value("${task.mnist.directory.trainingImages}")
@@ -80,10 +80,10 @@ public class MnistSampleGenerator implements SampleGenerator {
 	private static AtomicInteger nextTrainingIndex = new AtomicInteger(0);
 	private static AtomicInteger nextTestIndex = new AtomicInteger(0);
 
-	private Double[][]			trainingImages;
-	private Double[][]			trainingLabels;
-	private Double[][]			testImages;
-	private Double[][]			testLabels;
+	private Float[][]			trainingImages;
+	private Float[][]			trainingLabels;
+	private Float[][]			testImages;
+	private Float[][]			testLabels;
 
 	@PostConstruct
 	public void init() {
@@ -146,7 +146,7 @@ public class MnistSampleGenerator implements SampleGenerator {
 		}
 	}
 
-	protected Double[][] loadImages(byte[] imagesBytes) {
+	protected Float[][] loadImages(byte[] imagesBytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(imagesBytes);
 
 		// Skip the first four bytes, as it's a magic number
@@ -160,15 +160,15 @@ public class MnistSampleGenerator implements SampleGenerator {
 		int numberOfColumns = byteBuffer.getInt();
 		int totalPixels = numberOfRows * numberOfColumns;
 
-		Double[][] images = new Double[numberOfItems][totalPixels];
+		Float[][] images = new Float[numberOfItems][totalPixels];
 
 		for (int i = 0; i < numberOfItems; i++) {
-			Double[] pixels = new Double[totalPixels];
+			Float[] pixels = new Float[totalPixels];
 
 			for (int j = 0; j < totalPixels; j++) {
-				pixels[j] = (double) Byte.toUnsignedInt(byteBuffer.get());
+				pixels[j] = (float) Byte.toUnsignedInt(byteBuffer.get());
 				/*
-				 * Scale the value so that it is between 0 and 1, as this makes the Double math during training
+				 * Scale the value so that it is between 0 and 1, as this makes the Float math during training
 				 * orders of magnitude more efficient
 				 */
 				pixels[j] = pixels[j] / MAX_PIXEL_VALUE;
@@ -180,7 +180,7 @@ public class MnistSampleGenerator implements SampleGenerator {
 		return images;
 	}
 
-	protected Double[][] loadLabels(byte[] labelsBytes) {
+	protected Float[][] loadLabels(byte[] labelsBytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(labelsBytes);
 
 		// Skip the first four bytes, as it's a magic number
@@ -189,33 +189,33 @@ public class MnistSampleGenerator implements SampleGenerator {
 		// The second four bytes is the number of items
 		int numberOfItems = byteBuffer.getInt();
 
-		Double[][] labels = new Double[numberOfItems][outputLayerNeurons];
+		Float[][] labels = new Float[numberOfItems][outputLayerNeurons];
 
 		for (int i = 0; i < numberOfItems; i++) {
 			int label = Byte.toUnsignedInt(byteBuffer.get());
 
 			for (int j = 0; j < outputLayerNeurons; j++) {
-				labels[i][j] = (label == j) ? 1.0 : 0.0;
+				labels[i][j] = (label == j) ? 1.0f : 0.0f;
 			}
 		}
 
 		return labels;
 	}
 
-	protected static DataSet shuffleArrays(Double[][] imagesArray, Double[][] labelsArray) {
+	protected static DataSet shuffleArrays(Float[][] imagesArray, Float[][] labelsArray) {
 		if (imagesArray.length != labelsArray.length) {
 			throw new IllegalArgumentException("The images array length of " + imagesArray.length
 					+ " does not match the labels array length of " + labelsArray.length
 					+ ".  Unable to shuffle arrays.");
 		}
 
-		Double[][] shuffledImagesArray = new Double[imagesArray.length][];
-		Double[][] shuffledLabelsArray = new Double[labelsArray.length][];
+		Float[][] shuffledImagesArray = new Float[imagesArray.length][];
+		Float[][] shuffledLabelsArray = new Float[labelsArray.length][];
 
 		int arrayLength = imagesArray.length;
 
-		List<Double[]> imagesList = new ArrayList<>(Arrays.asList(imagesArray));
-		List<Double[]> labelsList = new ArrayList<>(Arrays.asList(labelsArray));
+		List<Float[]> imagesList = new ArrayList<>(Arrays.asList(imagesArray));
+		List<Float[]> labelsList = new ArrayList<>(Arrays.asList(labelsArray));
 
 		for (int i = 0; i < arrayLength; i++) {
 			int randomIndex = ThreadLocalRandom.current().nextInt(imagesList.size());
@@ -241,8 +241,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 		trainingImages = shuffledTrainingData.getInputs();
 		trainingLabels = shuffledTrainingData.getOutputs();
 
-		Double[][] inputs = new Double[count][inputLayerNeurons];
-		Double[][] outputs = new Double[count][outputLayerNeurons];
+		Float[][] inputs = new Float[count][inputLayerNeurons];
+		Float[][] outputs = new Float[count][outputLayerNeurons];
 
 		for (int i = 0; i < count; i++) {
 			DataSet next = generateTrainingSample();
@@ -256,8 +256,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTrainingSample() {
-		Double[][] inputs = new Double[1][inputLayerNeurons];
-		Double[][] outputs = new Double[1][outputLayerNeurons];
+		Float[][] inputs = new Float[1][inputLayerNeurons];
+		Float[][] outputs = new Float[1][outputLayerNeurons];
 
 		int next = nextTrainingIndex.getAndIncrement();
 
@@ -281,8 +281,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 		testImages = shuffledTestData.getInputs();
 		testLabels = shuffledTestData.getOutputs();
 
-		Double[][] inputs = new Double[count][inputLayerNeurons];
-		Double[][] outputs = new Double[count][outputLayerNeurons];
+		Float[][] inputs = new Float[count][inputLayerNeurons];
+		Float[][] outputs = new Float[count][outputLayerNeurons];
 
 		for (int i = 0; i < count; i++) {
 			DataSet next = generateTestSample();
@@ -296,8 +296,8 @@ public class MnistSampleGenerator implements SampleGenerator {
 
 	@Override
 	public DataSet generateTestSample() {
-		Double[][] inputs = new Double[1][inputLayerNeurons];
-		Double[][] outputs = new Double[1][outputLayerNeurons];
+		Float[][] inputs = new Float[1][inputLayerNeurons];
+		Float[][] outputs = new Float[1][outputLayerNeurons];
 
 		int next = nextTestIndex.getAndIncrement();
 

@@ -241,7 +241,7 @@ public class LetterNGramMarkovImporter {
 		}
 
 		protected void computeConditionalProbability(TreeNGram node, TreeNGram parentNode) {
-			Double sum = parentNode.getTransitions().entrySet().stream().map(entry -> entry.getValue().getCount()).reduce(0.0, (a, b) -> a + b);
+			Float sum = parentNode.getTransitions().entrySet().stream().map(entry -> entry.getValue().getCount()).reduce(0.0f, (a, b) -> a + b);
 
 			node.setConditionalProbability(node.getCount() / sum);
 
@@ -321,7 +321,7 @@ public class LetterNGramMarkovImporter {
 					for (int j = 0; j < sentence.length() - order; j++) {
 						String nGramString = sentence.substring(j, j + order);
 
-						unique += (letterMarkovModel.addLetterTransition(nGramString, 1.0) ? 1 : 0);
+						unique += (letterMarkovModel.addLetterTransition(nGramString, 1.0f) ? 1 : 0);
 
 						total++;
 					}

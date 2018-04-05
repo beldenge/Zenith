@@ -41,38 +41,38 @@ public class RouletteSamplerTest {
 	public void testSampling() {
 		List<LetterProbability> letterUnigramProbabilities = new ArrayList<>();
 
-		letterUnigramProbabilities.add(new LetterProbability('a', 0.07916));
-		letterUnigramProbabilities.add(new LetterProbability('b', 0.01543));
-		letterUnigramProbabilities.add(new LetterProbability('c', 0.03037));
-		letterUnigramProbabilities.add(new LetterProbability('d', 0.03962));
-		letterUnigramProbabilities.add(new LetterProbability('e', 0.12454));
-		letterUnigramProbabilities.add(new LetterProbability('f', 0.02233));
-		letterUnigramProbabilities.add(new LetterProbability('g', 0.01981));
-		letterUnigramProbabilities.add(new LetterProbability('h', 0.05323));
-		letterUnigramProbabilities.add(new LetterProbability('i', 0.07300));
-		letterUnigramProbabilities.add(new LetterProbability('j', 0.00163));
-		letterUnigramProbabilities.add(new LetterProbability('k', 0.00701));
-		letterUnigramProbabilities.add(new LetterProbability('l', 0.04058));
-		letterUnigramProbabilities.add(new LetterProbability('m', 0.02403));
-		letterUnigramProbabilities.add(new LetterProbability('n', 0.07289));
-		letterUnigramProbabilities.add(new LetterProbability('o', 0.07603));
-		letterUnigramProbabilities.add(new LetterProbability('p', 0.02002));
-		letterUnigramProbabilities.add(new LetterProbability('q', 0.00104));
-		letterUnigramProbabilities.add(new LetterProbability('r', 0.06124));
-		letterUnigramProbabilities.add(new LetterProbability('s', 0.06438));
-		letterUnigramProbabilities.add(new LetterProbability('t', 0.09284));
-		letterUnigramProbabilities.add(new LetterProbability('u', 0.02905));
-		letterUnigramProbabilities.add(new LetterProbability('v', 0.01068));
-		letterUnigramProbabilities.add(new LetterProbability('w', 0.01930));
-		letterUnigramProbabilities.add(new LetterProbability('x', 0.00226));
-		letterUnigramProbabilities.add(new LetterProbability('y', 0.01888));
-		letterUnigramProbabilities.add(new LetterProbability('z', 0.00068));
+		letterUnigramProbabilities.add(new LetterProbability('a', 0.07916f));
+		letterUnigramProbabilities.add(new LetterProbability('b', 0.01543f));
+		letterUnigramProbabilities.add(new LetterProbability('c', 0.03037f));
+		letterUnigramProbabilities.add(new LetterProbability('d', 0.03962f));
+		letterUnigramProbabilities.add(new LetterProbability('e', 0.12454f));
+		letterUnigramProbabilities.add(new LetterProbability('f', 0.02233f));
+		letterUnigramProbabilities.add(new LetterProbability('g', 0.01981f));
+		letterUnigramProbabilities.add(new LetterProbability('h', 0.05323f));
+		letterUnigramProbabilities.add(new LetterProbability('i', 0.07300f));
+		letterUnigramProbabilities.add(new LetterProbability('j', 0.00163f));
+		letterUnigramProbabilities.add(new LetterProbability('k', 0.00701f));
+		letterUnigramProbabilities.add(new LetterProbability('l', 0.04058f));
+		letterUnigramProbabilities.add(new LetterProbability('m', 0.02403f));
+		letterUnigramProbabilities.add(new LetterProbability('n', 0.07289f));
+		letterUnigramProbabilities.add(new LetterProbability('o', 0.07603f));
+		letterUnigramProbabilities.add(new LetterProbability('p', 0.02002f));
+		letterUnigramProbabilities.add(new LetterProbability('q', 0.00104f));
+		letterUnigramProbabilities.add(new LetterProbability('r', 0.06124f));
+		letterUnigramProbabilities.add(new LetterProbability('s', 0.06438f));
+		letterUnigramProbabilities.add(new LetterProbability('t', 0.09284f));
+		letterUnigramProbabilities.add(new LetterProbability('u', 0.02905f));
+		letterUnigramProbabilities.add(new LetterProbability('v', 0.01068f));
+		letterUnigramProbabilities.add(new LetterProbability('w', 0.01930f));
+		letterUnigramProbabilities.add(new LetterProbability('x', 0.00226f));
+		letterUnigramProbabilities.add(new LetterProbability('y', 0.01888f));
+		letterUnigramProbabilities.add(new LetterProbability('z', 0.00068f));
 
 		RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
 
 		Collections.sort(letterUnigramProbabilities);
 
-		Double totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
+		Float totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
 
 		Map<Character, Integer> characterCounts = new HashMap<>();
 		int nextIndex;
@@ -91,15 +91,15 @@ public class RouletteSamplerTest {
 		}
 
 		for (LetterProbability letterProbability : letterUnigramProbabilities) {
-			Double actual = letterProbability.getProbability();
-			Double estimated = (((double) characterCounts.get(letterProbability.getValue())
-					/ (double) i));
-			Double difference = Math.abs(actual - estimated);
+			Float actual = letterProbability.getProbability();
+			Float estimated = (((float) characterCounts.get(letterProbability.getValue())
+					/ (float) i));
+			Float difference = Math.abs(actual - estimated);
 
 			System.out.printf(letterProbability.getValue() + ": actual=" + actual.toString() + ", estimated="
 					+ estimated.toString() + ", difference=" + difference.toString() + "\n");
 
-			assertTrue(difference.compareTo((0.001)) < 0);
+			assertTrue(difference.compareTo((0.001f)) < 0);
 		}
 	}
 
@@ -108,63 +108,63 @@ public class RouletteSamplerTest {
 		List<SolutionProbability> solutionProbabilities = new ArrayList<>();
 
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("1", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("2", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("3", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("4", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("5", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("6", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("7", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("8", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("9", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("10", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("11", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("12", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("13", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("14", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("15", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("16", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("17", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("18", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("19", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("20", 1, 1), 0),
-				(0.999999999999999999999999999975)));
+				(0.9999975f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("21", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("22", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("23", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("24", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("25", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("26", 1, 1), 0),
-				(0.000000000000000000000000000001)));
+				(0.0000001f)));
 
 		RouletteSampler<SolutionProbability> rouletteSampler = new RouletteSampler<>();
 
 		Collections.sort(solutionProbabilities);
 
-		Double totalProbability = rouletteSampler.reIndex(solutionProbabilities);
+		Float totalProbability = rouletteSampler.reIndex(solutionProbabilities);
 
 		Map<CipherSolution, Integer> solutionCounts = new HashMap<>();
 		int nextIndex;
@@ -183,15 +183,15 @@ public class RouletteSamplerTest {
 		}
 
 		for (SolutionProbability solutionProbability : solutionProbabilities) {
-			Double actual = solutionProbability.getProbability();
-			Double estimated = (((double) (solutionCounts.get(solutionProbability.getValue()) == null ? 0 : solutionCounts.get(solutionProbability.getValue()))
-					/ (double) i));
-			Double difference = Math.abs(actual - estimated);
+			Float actual = solutionProbability.getProbability();
+			Float estimated = (((float) (solutionCounts.get(solutionProbability.getValue()) == null ? 0 : solutionCounts.get(solutionProbability.getValue()))
+					/ (float) i));
+			Float difference = Math.abs(actual - estimated);
 
 			System.out.printf(solutionProbability.getValue().getCipher().getName() + ": actual=" + actual.toString()
 					+ ", estimated=" + estimated.toString() + ", difference=" + difference.toString() + "\n");
 
-			assertTrue(difference.compareTo((0.001)) < 0);
+			assertTrue(difference.compareTo((0.001f)) < 0);
 		}
 	}
 }

@@ -37,7 +37,7 @@ import com.ciphertool.zenith.neural.predict.Predictor;
 public class NeuralNetworkPlaintextEvaluator {
 	private Logger					log						= LoggerFactory.getLogger(getClass());
 
-	private static final Double	ALPHABET_SIZE			= 26.0;
+	private static final Float	ALPHABET_SIZE			= 26.0f;
 	private static final int		CHAR_TO_NUMERIC_OFFSET	= 9;
 
 	@Value("${network.input.fileName}")
@@ -56,10 +56,10 @@ public class NeuralNetworkPlaintextEvaluator {
 	public EvaluationResults evaluate(CipherSolution solution, String ciphertextKey) {
 		String solutionString = solution.asSingleLineString();
 
-		Double[] inputs = new Double[solutionString.length()];
+		Float[] inputs = new Float[solutionString.length()];
 
 		for (int i = 0; i < solutionString.length(); i++) {
-			inputs[i] = charToDouble(solutionString.charAt(i));
+			inputs[i] = charToFloat(solutionString.charAt(i));
 		}
 
 		long startFeedForward = System.currentTimeMillis();
@@ -68,15 +68,15 @@ public class NeuralNetworkPlaintextEvaluator {
 
 		log.debug("Feed forward took {}ms.", (System.currentTimeMillis() - startFeedForward));
 
-		Double interpolatedProbability = network.getOutputLayer().getNeurons()[0].getActivationValue();
-		Double interpolatedLogProbability = Math.log(interpolatedProbability);
+		Float interpolatedProbability = network.getOutputLayer().getNeurons()[0].getActivationValue();
+		Float interpolatedLogProbability = (float) Math.log(interpolatedProbability);
 
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	protected Double charToDouble(char c) {
+	protected Float charToFloat(char c) {
 		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
 
-		return (double) numericValue / ALPHABET_SIZE;
+		return (float) numericValue / ALPHABET_SIZE;
 	}
 }

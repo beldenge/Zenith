@@ -33,12 +33,12 @@ public class RouletteSampler<T extends Probability<?>> {
 
 	private BinaryRouletteTree	rouletteWheel;
 
-	public synchronized Double reIndex(List<T> probabilities) {
+	public synchronized Float reIndex(List<T> probabilities) {
 		this.rouletteWheel = new BinaryRouletteTree();
 
 		List<BinaryRouletteNode> nodes = new ArrayList<BinaryRouletteNode>();
 
-		Double totalProbability = 0.0;
+		Float totalProbability = 0.0f;
 
 		for (int i = 0; i < probabilities.size(); i++) {
 			if (probabilities.get(i) == null || probabilities.get(i).getProbability() == 0.0) {
@@ -75,7 +75,7 @@ public class RouletteSampler<T extends Probability<?>> {
 		addToTreeBalanced(nodes.subList(half + 1, nodes.size()));
 	}
 
-	public int getNextIndex(List<T> probabilities, Double totalProbability) {
+	public int getNextIndex(List<T> probabilities, Float totalProbability) {
 		if (probabilities == null || probabilities.isEmpty()) {
 			log.error("Attempted to select a probability from a null or empty distribution.  Unable to continue.");
 
@@ -89,7 +89,7 @@ public class RouletteSampler<T extends Probability<?>> {
 			return -1;
 		}
 
-		Double randomIndex = ThreadLocalRandom.current().nextDouble() * totalProbability;
+		Float randomIndex = ThreadLocalRandom.current().nextFloat() * totalProbability;
 
 		BinaryRouletteNode winner = this.rouletteWheel.find(randomIndex);
 

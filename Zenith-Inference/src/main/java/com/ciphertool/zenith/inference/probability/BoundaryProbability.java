@@ -23,7 +23,7 @@ import com.ciphertool.zenith.math.probability.Probability;
 
 public class BoundaryProbability implements Probability<Boolean>, Comparable<BoundaryProbability> {
 	private Boolean		option;
-	private Double	probability;
+	private Float	probability;
 
 	/**
 	 * @param option
@@ -31,7 +31,7 @@ public class BoundaryProbability implements Probability<Boolean>, Comparable<Bou
 	 * @param probability
 	 *            the probability
 	 */
-	public BoundaryProbability(Boolean option, Double probability) {
+	public BoundaryProbability(Boolean option, Float probability) {
 		super();
 		this.option = option;
 		this.probability = probability;
@@ -43,12 +43,12 @@ public class BoundaryProbability implements Probability<Boolean>, Comparable<Bou
 	}
 
 	@Override
-	public Double getProbability() {
+	public Float getProbability() {
 		return this.probability;
 	}
 
 	@Override
-	public Double getLogProbability() {
+	public Float getLogProbability() {
 		throw new UnsupportedOperationException("Method not implemented!");
 	}
 

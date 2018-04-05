@@ -38,8 +38,8 @@ public class TreeMarkovModel {
 
 	private TreeNGram	rootNode	= new TreeNGram("");
 	private Integer		order;
-	private Double	unknownLetterNGramProbability;
-	private Double	indexOfCoincidence;
+	private Float	unknownLetterNGramProbability;
+	private Float	indexOfCoincidence;
 
 	public TreeMarkovModel(int order) {
 		this.order = order;
@@ -77,11 +77,11 @@ public class TreeMarkovModel {
 		return true;
 	}
 
-	public boolean addLetterTransition(String nGramString, Double amountToIncrement) {
+	public boolean addLetterTransition(String nGramString, Float amountToIncrement) {
 		return populateLetterNode(rootNode, nGramString, 1, amountToIncrement);
 	}
 
-	protected boolean populateLetterNode(TreeNGram currentNode, String nGramString, Integer order, Double amountToIncrement) {
+	protected boolean populateLetterNode(TreeNGram currentNode, String nGramString, Integer order, Float amountToIncrement) {
 		boolean isNew = currentNode.addOrIncrementChildAsync(nGramString, order, amountToIncrement);
 
 		if (order < nGramString.length()) {
@@ -156,7 +156,7 @@ public class TreeMarkovModel {
 	/**
 	 * @return the unknownLetterNGramProbability
 	 */
-	public Double getUnknownLetterNGramProbability() {
+	public Float getUnknownLetterNGramProbability() {
 		return unknownLetterNGramProbability;
 	}
 
@@ -164,25 +164,25 @@ public class TreeMarkovModel {
 	 * @param unknownLetterNGramProbability
 	 *            the unknownLetterNGramProbability to set
 	 */
-	public void setUnknownLetterNGramProbability(Double unknownLetterNGramProbability) {
+	public void setUnknownLetterNGramProbability(Float unknownLetterNGramProbability) {
 		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
 	/**
 	 * @return the indexOfCoincidence
 	 */
-	public Double getIndexOfCoincidence() {
+	public Float getIndexOfCoincidence() {
 		if (this.indexOfCoincidence == null) {
-			this.indexOfCoincidence = 0.0;
+			this.indexOfCoincidence = 0.0f;
 
-			Double occurences;
+			Float occurences;
 			for (Map.Entry<Character, TreeNGram> entry : this.rootNode.getTransitions().entrySet()) {
 				occurences = entry.getValue().getCount();
-				this.indexOfCoincidence = this.indexOfCoincidence + (occurences * (occurences - 1.0));
+				this.indexOfCoincidence = this.indexOfCoincidence + (occurences * (occurences - 1.0f));
 			}
 
 			occurences = this.rootNode.getCount();
-			this.indexOfCoincidence = this.indexOfCoincidence / (occurences * (occurences - 1.0));
+			this.indexOfCoincidence = this.indexOfCoincidence / (occurences * (occurences - 1.0f));
 		}
 
 		return indexOfCoincidence;
@@ -353,7 +353,7 @@ public class TreeMarkovModel {
 
 	protected void normalizeTerminal(TreeNGram node, int order, long total) {
 		if (node.getCumulativeString().length() == order) {
-			node.setProbability(node.getCount() / (double) total);
+			node.setProbability(node.getCount() / (float) total);
 
 			return;
 		}

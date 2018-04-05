@@ -24,10 +24,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Neuron {
 	@JsonIgnore
-	private Double	activationValue;
+	private Float	activationValue;
 
 	@JsonIgnore
-	private Double	outputSum;
+	private Float	outputSum;
 
 	private Synapse[]	outgoingSynapses;
 
@@ -64,7 +64,7 @@ public class Neuron {
 	/**
 	 * @return the activationValue
 	 */
-	public Double getActivationValue() {
+	public Float getActivationValue() {
 		return activationValue;
 	}
 
@@ -72,14 +72,14 @@ public class Neuron {
 	 * @param activationValue
 	 *            the activationValue to set
 	 */
-	public void setActivationValue(Double activationValue) {
+	public void setActivationValue(Float activationValue) {
 		this.activationValue = activationValue;
 	}
 
 	/**
 	 * @return the outputSum
 	 */
-	public Double getOutputSum() {
+	public Float getOutputSum() {
 		return outputSum;
 	}
 
@@ -87,7 +87,7 @@ public class Neuron {
 	 * @param outputSum
 	 *            the outputSum to set
 	 */
-	public void setOutputSum(Double outputSum) {
+	public void setOutputSum(Float outputSum) {
 		this.outputSum = outputSum;
 	}
 

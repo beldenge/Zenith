@@ -28,10 +28,10 @@ public interface Probability<T> {
 	/**
 	 * @return the probability
 	 */
-	Double getProbability();
+	Float getProbability();
 
 	/**
 	 * @return the log probability
 	 */
-	Double getLogProbability();
+	Float getLogProbability();
 }

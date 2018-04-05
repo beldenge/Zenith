@@ -31,14 +31,14 @@ public class ConsoleProgressBar {
 
 	private boolean			complete	= false;
 
-	public void tick(Double current, Double total) {
+	public void tick(Float current, Float total) {
 		if (complete) {
 			return;
 		}
 
-		Double progressPercent = current / total;
+		Float progressPercent = current / total;
 
-		int ticksToPrint = (int) (progressPercent * (double) barLength);
+		int ticksToPrint = (int) (progressPercent * (float) barLength);
 
 		if (ticksToPrint > progress) {
 			this.progress = ticksToPrint;

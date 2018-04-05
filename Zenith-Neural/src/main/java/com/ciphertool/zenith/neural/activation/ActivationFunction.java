@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.neural.activation;
 
 public interface ActivationFunction {
-	Double transformInputSignal(Double sum, Double[] allSums);
+	Float transformInputSignal(Float sum, Float[] allSums);
 
-	Double calculateDerivative(Double sum, Double[] allSums);
+	Float calculateDerivative(Float sum, Float[] allSums);
 }

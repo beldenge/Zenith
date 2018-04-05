@@ -24,8 +24,8 @@ import com.ciphertool.zenith.math.probability.Probability;
 public class WordProbability implements Probability<String> {
 	private Integer		previous;
 	private Integer		next;
-	private Double	probability;
-	private Double	logProbability;
+	private Float	probability;
+	private Float	logProbability;
 	private String		value;
 
 	/**
@@ -54,8 +54,8 @@ public class WordProbability implements Probability<String> {
 	 * @param logProbability
 	 *            the log probability
 	 */
-	public WordProbability(Integer previous, Integer next, String value, Double probability,
-						   Double logProbability) {
+	public WordProbability(Integer previous, Integer next, String value, Float probability,
+						   Float logProbability) {
 		this.previous = previous;
 		this.next = next;
 		this.probability = probability;
@@ -85,7 +85,7 @@ public class WordProbability implements Probability<String> {
 	 * @return the probability
 	 */
 	@Override
-	public Double getProbability() {
+	public Float getProbability() {
 		return probability;
 	}
 
@@ -93,7 +93,7 @@ public class WordProbability implements Probability<String> {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Double probability) {
+	public void setProbability(Float probability) {
 		this.probability = probability;
 	}
 
@@ -101,7 +101,7 @@ public class WordProbability implements Probability<String> {
 	 * @return the logProbability
 	 */
 	@Override
-	public Double getLogProbability() {
+	public Float getLogProbability() {
 		return logProbability;
 	}
 
@@ -109,7 +109,7 @@ public class WordProbability implements Probability<String> {
 	 * @param logProbability
 	 *            the logProbability to set
 	 */
-	public void setLogProbability(Double logProbability) {
+	public void setLogProbability(Float logProbability) {
 		this.logProbability = logProbability;
 	}
 

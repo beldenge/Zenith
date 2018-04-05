@@ -23,7 +23,7 @@ import com.ciphertool.zenith.math.probability.Probability;
 
 public class LetterProbability implements Probability<Character>, Comparable<LetterProbability> {
 	private Character	letter;
-	private Double	probability;
+	private Float	probability;
 
 	/**
 	 * @param letter
@@ -31,7 +31,7 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	 * @param probability
 	 *            the probability
 	 */
-	public LetterProbability(Character letter, Double probability) {
+	public LetterProbability(Character letter, Float probability) {
 		this.letter = letter;
 		this.probability = probability;
 	}
@@ -42,7 +42,7 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	}
 
 	@Override
-	public Double getProbability() {
+	public Float getProbability() {
 		return probability;
 	}
 
@@ -50,12 +50,12 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Double probability) {
+	public void setProbability(Float probability) {
 		this.probability = probability;
 	}
 
 	@Override
-	public Double getLogProbability() {
+	public Float getLogProbability() {
 		throw new UnsupportedOperationException("Method not implemented!");
 	}
 

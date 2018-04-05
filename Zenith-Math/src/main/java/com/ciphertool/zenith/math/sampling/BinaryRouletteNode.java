@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.math.sampling;
 
 public class BinaryRouletteNode {
-	private Double			value;
+	private Float			value;
 	private int					index;
 	private BinaryRouletteNode	lessThan;
 	private BinaryRouletteNode	greaterThan;
@@ -32,7 +32,7 @@ public class BinaryRouletteNode {
 	 * @param value
 	 *            the value to set
 	 */
-	public BinaryRouletteNode(int index, Double value) {
+	public BinaryRouletteNode(int index, Float value) {
 		this.index = index;
 		this.value = value;
 	}
@@ -40,7 +40,7 @@ public class BinaryRouletteNode {
 	/**
 	 * @return the value
 	 */
-	public Double getValue() {
+	public Float getValue() {
 		return value;
 	}
 

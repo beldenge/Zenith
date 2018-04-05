@@ -68,8 +68,8 @@ public class XorSampleGenerator implements SampleGenerator {
 		int inputLayerSize = inputLayerNeurons;
 		int outputLayerSize = outputLayerNeurons;
 
-		Double[][] inputs = new Double[count][inputLayerSize];
-		Double[][] outputs = new Double[count][outputLayerSize];
+		Float[][] inputs = new Float[count][inputLayerSize];
+		Float[][] outputs = new Float[count][outputLayerSize];
 
 		for (int i = 0; i < count; i++) {
 			DataSet next = generateOne();
@@ -85,24 +85,24 @@ public class XorSampleGenerator implements SampleGenerator {
 		int inputLayerSize = inputLayerNeurons;
 		int outputLayerSize = outputLayerNeurons;
 
-		Double[][] inputs = new Double[1][inputLayerSize];
-		Double[][] outputs = new Double[1][outputLayerSize];
+		Float[][] inputs = new Float[1][inputLayerSize];
+		Float[][] outputs = new Float[1][outputLayerSize];
 
 		for (int j = 0; j < inputLayerSize; j++) {
-			inputs[0][j] = (double) ThreadLocalRandom.current().nextInt(2);
+			inputs[0][j] = (float) ThreadLocalRandom.current().nextInt(2);
 		}
 
-		outputs[0] = new Double[] { xor(inputs[0]) };
+		outputs[0] = new Float[] { xor(inputs[0]) };
 
 		return new DataSet(inputs, outputs);
 	}
 
-	protected Double xor(Double[] values) {
+	protected Float xor(Float[] values) {
 		if (values.length != 2) {
 			throw new IllegalArgumentException("Exclusive or expects only two values, but found " + values.length
 					+ ".  Unable to continue.");
 		}
 
-		return values[0] == values[1] ? 0.0 : 1.0;
+		return values[0] == values[1] ? 0.0f : 1.0f;
 	}
 }

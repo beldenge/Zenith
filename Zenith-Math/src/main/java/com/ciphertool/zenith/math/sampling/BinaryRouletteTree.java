@@ -57,11 +57,11 @@ public class BinaryRouletteTree {
 		insertNode(parent.getGreaterThan(), toInsert);
 	}
 
-	public BinaryRouletteNode find(Double value) {
+	public BinaryRouletteNode find(Float value) {
 		return findNode(this.root, value, null);
 	}
 
-	protected BinaryRouletteNode findNode(BinaryRouletteNode current, Double value, BinaryRouletteNode closestSoFar) {
+	protected BinaryRouletteNode findNode(BinaryRouletteNode current, Float value, BinaryRouletteNode closestSoFar) {
 		if (value <= current.getValue()) {
 			if (current.getLessThan() == null) {
 				return current;

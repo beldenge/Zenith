@@ -20,14 +20,14 @@
 package com.ciphertool.zenith.inference.dto;
 
 public class EvaluationResults {
-	private Double	probability;
-	private Double	logProbability;
+	private Float	probability;
+	private Float	logProbability;
 
 	/**
 	 * @param probability
 	 * @param logProbability
 	 */
-	public EvaluationResults(Double probability, Double logProbability) {
+	public EvaluationResults(Float probability, Float logProbability) {
 		this.probability = probability;
 		this.logProbability = logProbability;
 	}
@@ -35,7 +35,7 @@ public class EvaluationResults {
 	/**
 	 * @return the probability
 	 */
-	public Double getProbability() {
+	public Float getProbability() {
 		return probability;
 	}
 
@@ -43,14 +43,14 @@ public class EvaluationResults {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Double probability) {
+	public void setProbability(Float probability) {
 		this.probability = probability;
 	}
 
 	/**
 	 * @return the logProbability
 	 */
-	public Double getLogProbability() {
+	public Float getLogProbability() {
 		return logProbability;
 	}
 
@@ -58,7 +58,7 @@ public class EvaluationResults {
 	 * @param logProbability
 	 *            the logProbability to set
 	 */
-	public void setLogProbability(Double logProbability) {
+	public void setLogProbability(Float logProbability) {
 		this.logProbability = logProbability;
 	}
 

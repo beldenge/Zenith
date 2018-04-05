@@ -20,8 +20,8 @@
 package com.ciphertool.zenith.neural.model;
 
 public class DataSet {
-	private Double[][]	inputs;
-	private Double[][]	outputs;
+	private Float[][]	inputs;
+	private Float[][]	outputs;
 
 	/**
 	 * @param inputs
@@ -29,7 +29,7 @@ public class DataSet {
 	 * @param outputs
 	 *            the outputs to set
 	 */
-	public DataSet(Double[][] inputs, Double[][] outputs) {
+	public DataSet(Float[][] inputs, Float[][] outputs) {
 		this.inputs = inputs;
 		this.outputs = outputs;
 	}
@@ -37,14 +37,14 @@ public class DataSet {
 	/**
 	 * @return the inputs
 	 */
-	public Double[][] getInputs() {
+	public Float[][] getInputs() {
 		return inputs;
 	}
 
 	/**
 	 * @return the outputs
 	 */
-	public Double[][] getOutputs() {
+	public Float[][] getOutputs() {
 		return outputs;
 	}
 }

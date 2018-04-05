@@ -24,7 +24,7 @@ import com.ciphertool.zenith.math.probability.Probability;
 
 public class SolutionProbability implements Probability<CipherSolution>, Comparable<SolutionProbability> {
 	private CipherSolution	solution;
-	private Double		probability;
+	private Float		probability;
 
 	/**
 	 * @param solution
@@ -32,7 +32,7 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @param probability
 	 *            the probability
 	 */
-	public SolutionProbability(CipherSolution solution, Double probability) {
+	public SolutionProbability(CipherSolution solution, Float probability) {
 		super();
 		this.solution = solution;
 		this.probability = probability;
@@ -50,7 +50,7 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @return the probability
 	 */
 	@Override
-	public Double getProbability() {
+	public Float getProbability() {
 		return probability;
 	}
 
@@ -58,12 +58,12 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Double probability) {
+	public void setProbability(Float probability) {
 		this.probability = probability;
 	}
 
 	@Override
-	public Double getLogProbability() {
+	public Float getLogProbability() {
 		throw new UnsupportedOperationException("Method not implemented!");
 	}
 

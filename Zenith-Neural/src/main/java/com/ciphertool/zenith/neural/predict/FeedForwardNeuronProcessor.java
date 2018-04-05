@@ -42,7 +42,7 @@ public class FeedForwardNeuronProcessor {
 			return new AsyncResult<>(null);
 		}
 
-		Double sum = 0.0;
+		Float sum = 0.0f;
 
 		for (int k = 0; k < fromLayer.getNeurons().length; k++) {
 			Neuron nextInputNeuron = fromLayer.getNeurons()[k];
@@ -62,7 +62,7 @@ public class FeedForwardNeuronProcessor {
 	}
 
 	@Async
-	public Future<Void> processOutputNeuron(NeuralNetwork network, int i, Double[] allSums) {
+	public Future<Void> processOutputNeuron(NeuralNetwork network, int i, Float[] allSums) {
 		Neuron nextOutputNeuron = network.getOutputLayer().getNeurons()[i];
 
 		nextOutputNeuron.setActivationValue(network.getOutputLayer().getActivationFunctionType().getActivationFunction().transformInputSignal(nextOutputNeuron.getOutputSum(), allSums));

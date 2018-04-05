@@ -35,14 +35,14 @@ public class TreeNGram {
 	@Id
 	protected ObjectId					id;
 
-	// Count is Double to allow flexibility with smoothing methods
-	protected Double				count						= 0.0;
+	// Count is Float to allow flexibility with smoothing methods
+	protected Float				count						= 0.0f;
 
-	protected Double				probability;
+	protected Float				probability;
 
-	protected Double				conditionalProbability;
+	protected Float				conditionalProbability;
 
-	protected Double				chainedProbability;
+	protected Float				chainedProbability;
 
 	protected String					cumulativeString;
 
@@ -76,17 +76,17 @@ public class TreeNGram {
 	}
 
 	public void increment() {
-		increment(1.0);
+		increment(1.0f);
 	}
 
-	public void increment(Double amount) {
+	public void increment(Float amount) {
 		this.count = this.count + amount;
 	}
 
 	/**
 	 * @return the count
 	 */
-	public Double getCount() {
+	public Float getCount() {
 		return this.count;
 	}
 
@@ -94,14 +94,14 @@ public class TreeNGram {
 	 * @param count
 	 *            the count to set
 	 */
-	public void setCount(Double count) {
+	public void setCount(Float count) {
 		this.count = count;
 	}
 
 	/**
 	 * @return the probability
 	 */
-	public Double getProbability() {
+	public Float getProbability() {
 		return this.probability;
 	}
 
@@ -112,14 +112,14 @@ public class TreeNGram {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public synchronized void setProbability(Double probability) {
+	public synchronized void setProbability(Float probability) {
 		this.probability = probability;
 	}
 
 	/**
 	 * @return the conditionalProbability
 	 */
-	public Double getConditionalProbability() {
+	public Float getConditionalProbability() {
 		return conditionalProbability;
 	}
 
@@ -130,14 +130,14 @@ public class TreeNGram {
 	 * @param conditionalProbability
 	 *            the conditionalProbability to set
 	 */
-	public synchronized void setConditionalProbability(Double conditionalProbability) {
+	public synchronized void setConditionalProbability(Float conditionalProbability) {
 		this.conditionalProbability = conditionalProbability;
 	}
 
 	/**
 	 * @return the chainedProbability
 	 */
-	public Double getChainedProbability() {
+	public Float getChainedProbability() {
 		return chainedProbability;
 	}
 
@@ -145,7 +145,7 @@ public class TreeNGram {
 	 * @param chainedProbability
 	 *            the chainedProbability to set
 	 */
-	public synchronized void setChainedProbability(Double chainedProbability) {
+	public synchronized void setChainedProbability(Float chainedProbability) {
 		this.chainedProbability = chainedProbability;
 	}
 
@@ -187,7 +187,7 @@ public class TreeNGram {
 		return this.getTransitions().get(c);
 	}
 
-	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order, Double amountToIncrement) {
+	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order, Float amountToIncrement) {
 		Character firstLetter = nGramString.charAt(order - 1);
 
 		TreeNGram child = this.getChild(firstLetter);
@@ -202,7 +202,7 @@ public class TreeNGram {
 			isNew = true;
 		}
 
-		child.increment(amountToIncrement ==  null ? 1.0 : amountToIncrement);
+		child.increment(amountToIncrement ==  null ? 1.0f : amountToIncrement);
 
 		return isNew;
 	}

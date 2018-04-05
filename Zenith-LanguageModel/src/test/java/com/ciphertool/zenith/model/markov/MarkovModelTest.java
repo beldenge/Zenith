@@ -53,7 +53,7 @@ public class MarkovModelTest {
 		}
 	}
 
-	private static final Double RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+	private static final Float RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
 	//@BeforeClass
 	public static void setUp() {
@@ -122,7 +122,7 @@ public class MarkovModelTest {
 			probabilities.add(probability);
 		}
 
-		Double totalProbability = sampler.reIndex(probabilities);
+		Float totalProbability = sampler.reIndex(probabilities);
 
 		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 

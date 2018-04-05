@@ -50,12 +50,12 @@ public class SupervisedTrainer {
 
 	@DecimalMin("0.0")
 	@Value("${network.learningRate}")
-	private Double						learningRate;
+	private Float						learningRate;
 
 	@DecimalMin("0.0")
 	@DecimalMax("1.0")
 	@Value("${network.weightDecay}")
-	private Double						weightDecayPercent;
+	private Float						weightDecayPercent;
 
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
@@ -106,7 +106,7 @@ public class SupervisedTrainer {
 				batchStart = System.currentTimeMillis();
 			}
 
-			progressBar.tick((double) i, (double) numberOfSamples);
+			progressBar.tick((float) i, (float) numberOfSamples);
 		}
 
 		if (currentBatchSize > 0) {
@@ -117,7 +117,7 @@ public class SupervisedTrainer {
 		}
 	}
 
-	protected void backPropagate(NeuralNetwork network, Double[] expectedOutputs) {
+	protected void backPropagate(NeuralNetwork network, Float[] expectedOutputs) {
 		Layer outputLayer = network.getOutputLayer();
 
 		if (expectedOutputs.length != outputLayer.getNeurons().length) {
@@ -135,8 +135,8 @@ public class SupervisedTrainer {
 		 */
 		if (COMPUTE_SUM_OF_ERRORS) {
 			// Compute sum of errors
-			Double errorTotal = 0.0;
-			Double outputSumTotal = 0.0;
+			Float errorTotal = 0.0f;
+			Float outputSumTotal = 0.0f;
 
 			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
 				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
@@ -151,10 +151,10 @@ public class SupervisedTrainer {
 			}
 		}
 
-		Double[] errorDerivatives = new Double[outputLayer.getNeurons().length];
-		Double[] activationDerivatives = new Double[outputLayer.getNeurons().length];
+		Float[] errorDerivatives = new Float[outputLayer.getNeurons().length];
+		Float[] activationDerivatives = new Float[outputLayer.getNeurons().length];
 
-		Double[] allSums = new Double[outputLayer.getNeurons().length];
+		Float[] allSums = new Float[outputLayer.getNeurons().length];
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
@@ -180,8 +180,8 @@ public class SupervisedTrainer {
 		}
 
 		Layer toLayer;
-		Double[] oldErrorDerivatives;
-		Double[] oldActivationDerivatives;
+		Float[] oldErrorDerivatives;
+		Float[] oldActivationDerivatives;
 
 		// Compute deltas for hidden layers using chain rule and subtract them from current weights
 		for (int i = layers.length - 2; i > 0; i--) {
@@ -191,8 +191,8 @@ public class SupervisedTrainer {
 			oldErrorDerivatives = errorDerivatives;
 			oldActivationDerivatives = activationDerivatives;
 
-			errorDerivatives = new Double[toLayer.getNeurons().length];
-			activationDerivatives = new Double[toLayer.getNeurons().length];
+			errorDerivatives = new Float[toLayer.getNeurons().length];
+			activationDerivatives = new Float[toLayer.getNeurons().length];
 
 			futures = new ArrayList<>(toLayer.getNeurons().length);
 
@@ -210,11 +210,11 @@ public class SupervisedTrainer {
 		}
 	}
 
-	protected static Double costFunctionRegression(Double expected, Double actual) {
-		return Math.pow(expected - actual, 2) / 2.0;
+	protected static Float costFunctionRegression(Float expected, Float actual) {
+		return (float) Math.pow(expected - actual, 2) / 2.0f;
 	}
 
-	protected Double costFunctionClassification(Double expected, Double actual) {
-		return Math.log(actual) * expected;
+	protected Float costFunctionClassification(Float expected, Float actual) {
+		return (float) Math.log(actual) * expected;
 	}
 }

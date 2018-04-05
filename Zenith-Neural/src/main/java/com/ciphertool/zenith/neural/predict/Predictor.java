@@ -46,7 +46,7 @@ public class Predictor {
 	private int						numberOfTests;
 
 	@Value("${network.testSamples.marginOfError:0.01}")
-	private Double				marginOfErrorRegression;
+	private Float				marginOfErrorRegression;
 
 	@Autowired
 	private SampleGenerator generator;
@@ -68,7 +68,7 @@ public class Predictor {
 
 			int sampleSize = nextSample.getInputs().length;
 
-			Double[][] predictions = new Double[sampleSize][outputLayerNeurons.length];
+			Float[][] predictions = new Float[sampleSize][outputLayerNeurons.length];
 
 			for (int j = 0; j < sampleSize; j ++) {
 				feedForward(network, nextSample.getInputs()[j]);
@@ -82,23 +82,23 @@ public class Predictor {
 				compareExpectationToPrediction(network, nextSample.getInputs()[j], nextSample.getOutputs()[j], predictions[j], stats);
 			}
 
-			progressBar.tick((double) i, (double) numberOfTests);
+			progressBar.tick((float) i, (float) numberOfTests);
 		}
 
 		return stats;
 	}
 
-	private void compareExpectationToPrediction(NeuralNetwork network, Double[] inputs, Double[] outputs, Double[] predictions, PredictionStats stats) {
+	private void compareExpectationToPrediction(NeuralNetwork network, Float[] inputs, Float[] outputs, Float[] predictions, PredictionStats stats) {
 		boolean wasIncorrect = false;
 
 		log.info("Inputs: {}", Arrays.toString(inputs));
 
-		Double highestProbability = 0.0;
+		Float highestProbability = 0.0f;
 		int indexOfHighestProbability = 0;
 
 		for (int j = 0; j < predictions.length; j++) {
-			Double prediction = predictions[j];
-			Double expected = outputs[j];
+			Float prediction = predictions[j];
+			Float expected = outputs[j];
 
 			log.info("Expected: {}, Prediction: {}", expected, prediction);
 
@@ -127,7 +127,7 @@ public class Predictor {
 		stats.incrementTotalPredictions();
 	}
 
-	public void feedForward(NeuralNetwork network, Double[] inputs) {
+	public void feedForward(NeuralNetwork network, Float[] inputs) {
 		Layer inputLayer = network.getInputLayer();
 
 		int nonBiasNeurons = inputLayer.getNeurons().length - (inputLayer.hasBias() ? 1 : 0);
@@ -168,7 +168,7 @@ public class Predictor {
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			Neuron[] outputLayerNeurons = network.getOutputLayer().getNeurons();
 
-			Double[] allSums = new Double[outputLayerNeurons.length];
+			Float[] allSums = new Float[outputLayerNeurons.length];
 
 			for (int i = 0; i < outputLayerNeurons.length; i++) {
 				Neuron nextOutputNeuron = outputLayerNeurons[i];

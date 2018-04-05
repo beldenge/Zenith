@@ -92,7 +92,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	private int						outputLayerNeurons;
 
 	@Value("${network.bias.weight}")
-	private Double				biasWeight;
+	private Float				biasWeight;
 
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
@@ -145,12 +145,12 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
 		log.info("Neural network achieved " + predictionStats.getCorrectCount() + " correct out of " + predictionStats.getTotalPredictions() + " total.");
-		log.info("Percentage correct: " + (int) ((((double) predictionStats.getCorrectCount() / (double) predictionStats.getTotalPredictions()) * 100.0) + 0.5));
+		log.info("Percentage correct: " + (int) ((((float) predictionStats.getCorrectCount() / (float) predictionStats.getTotalPredictions()) * 100.0) + 0.5));
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
 			log.info("Classification achieved " + predictionStats.getBestProbabilityCount() + " most probable out of " + predictionStats.getTotalPredictions()
 					+ " total.");
-			log.info("Percentage most probable: " + (int) ((((double) predictionStats.getBestProbabilityCount() / (double) predictionStats.getTotalPredictions())
+			log.info("Percentage most probable: " + (int) ((((float) predictionStats.getBestProbabilityCount() / (float) predictionStats.getTotalPredictions())
 					* 100.0) + 0.5));
 		}
 

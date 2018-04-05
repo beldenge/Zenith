@@ -33,9 +33,9 @@ public class CipherSolution {
 
 	protected Cipher				cipher;
 
-	private Double				probability				= null;
-	private Double				logProbability			= null;
-	private Double				knownSolutionProximity	= null;
+	private Float				probability				= null;
+	private Float				logProbability			= null;
+	private Float				knownSolutionProximity	= null;
 
 	private Map<String, Plaintext>	mappings;
 	private Set<Integer>			wordBoundaries;
@@ -74,18 +74,18 @@ public class CipherSolution {
 	/**
 	 * @return the probability
 	 */
-	public Double getProbability() {
+	public Float getProbability() {
 		return probability;
 	}
 
-	public void setProbability(Double score) {
+	public void setProbability(Float score) {
 		this.probability = score;
 	}
 
 	/**
 	 * @return the logProbability
 	 */
-	public Double getLogProbability() {
+	public Float getLogProbability() {
 		return logProbability;
 	}
 
@@ -93,14 +93,14 @@ public class CipherSolution {
 	 * @param logProbability
 	 *            the logProbability to set
 	 */
-	public void setLogProbability(Double logProbability) {
+	public void setLogProbability(Float logProbability) {
 		this.logProbability = logProbability;
 	}
 
 	/**
 	 * @return the knownSolutionProximity
 	 */
-	public Double getKnownSolutionProximity() {
+	public Float getKnownSolutionProximity() {
 		return knownSolutionProximity;
 	}
 
@@ -108,7 +108,7 @@ public class CipherSolution {
 	 * @param knownSolutionProximity
 	 *            the knownSolutionProximity to set
 	 */
-	public void setKnownSolutionProximity(Double knownSolutionProximity) {
+	public void setKnownSolutionProximity(Float knownSolutionProximity) {
 		this.knownSolutionProximity = knownSolutionProximity;
 	}
 

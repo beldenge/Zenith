@@ -44,8 +44,8 @@ public class PlaintextEvaluator {
 	private Boolean		includeWordBoundaries;
 
 	public EvaluationResults evaluate(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
-		Double interpolatedProbability = 1.0;
-		Double interpolatedLogProbability = 0.0;
+		Float interpolatedProbability = 1.0f;
+		Float interpolatedLogProbability = 0.0f;
 
 		long startLetter = System.currentTimeMillis();
 		EvaluationResults letterNGramResults = evaluateLetterNGrams(letterMarkovModel, solution, ciphertextKey);
@@ -66,9 +66,9 @@ public class PlaintextEvaluator {
 					"Unable to evaluate n-grams because the list of words to concatenate is empty.");
 		}
 
-		Double probability = null;
-		Double nGramProbability = 1.0;
-		Double nGramLogProbability = 0.0;
+		Float probability = null;
+		Float nGramProbability = 1.0f;
+		Float nGramLogProbability = 0.0f;
 		TreeNGram match = null;
 
 		StringBuilder sb = new StringBuilder();
@@ -118,7 +118,7 @@ public class PlaintextEvaluator {
 					}
 
 					nGramProbability = nGramProbability * probability;
-					nGramLogProbability = nGramLogProbability + Math.log(probability);
+					nGramLogProbability = nGramLogProbability + (float) Math.log(probability);
 				}
 
 				lastIndex = end;
@@ -136,7 +136,7 @@ public class PlaintextEvaluator {
 				}
 
 				nGramProbability = nGramProbability * probability;
-				nGramLogProbability = nGramLogProbability + Math.log(probability);
+				nGramLogProbability = nGramLogProbability + (float) Math.log(probability);
 			}
 		}
 

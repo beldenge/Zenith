@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.math;
 
 public class MathConstants {
-	public static final Double EULERS_CONSTANT = Math.E;
+	public static final Float EULERS_CONSTANT = (float) Math.E;
 
-	public static final Double SINGLE_LETTER_RANDOM_PROBABILITY = 1.0 / 26.0;
+	public static final Float SINGLE_LETTER_RANDOM_PROBABILITY = 1.0f / 26.0f;
 }

@@ -23,16 +23,16 @@ import com.ciphertool.zenith.math.MathConstants;
 
 public class SigmoidActivationFunction implements ActivationFunction {
 	@Override
-	public Double transformInputSignal(Double sum, Double[] allSums) {
-		Double denominator = 1.0 + Math.pow(MathConstants.EULERS_CONSTANT, sum * -1.0);
+	public Float transformInputSignal(Float sum, Float[] allSums) {
+		Float denominator = 1.0f + (float) Math.pow(MathConstants.EULERS_CONSTANT, sum * -1.0);
 
-		return 1.0 / denominator;
+		return 1.0f / denominator;
 	}
 
 	@Override
-	public Double calculateDerivative(Double sum, Double[] allSums) {
-		Double sigmoid = transformInputSignal(sum, null);
+	public Float calculateDerivative(Float sum, Float[] allSums) {
+		Float sigmoid = transformInputSignal(sum, null);
 
-		return sigmoid * (1.0 - sigmoid);
+		return sigmoid * (1.0f - sigmoid);
 	}
 }

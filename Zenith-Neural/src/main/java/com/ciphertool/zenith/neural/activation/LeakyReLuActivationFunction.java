@@ -20,10 +20,10 @@
 package com.ciphertool.zenith.neural.activation;
 
 public class LeakyReLuActivationFunction implements ActivationFunction {
-	private static final Double SLOPE_CLOSE_TO_ZERO = 0.01;
+	private static final Float SLOPE_CLOSE_TO_ZERO = 0.01f;
 
 	@Override
-	public Double transformInputSignal(Double sum, Double[] allSums) {
+	public Float transformInputSignal(Float sum, Float[] allSums) {
 		if (0.0 < sum) {
 			return sum;
 		}
@@ -32,9 +32,9 @@ public class LeakyReLuActivationFunction implements ActivationFunction {
 	}
 
 	@Override
-	public Double calculateDerivative(Double sum, Double[] allSums) {
+	public Float calculateDerivative(Float sum, Float[] allSums) {
 		if (0.0 < sum) {
-			return 1.0;
+			return 1.0f;
 		} else if (0.0 > sum) {
 			return SLOPE_CLOSE_TO_ZERO;
 		}
@@ -43,6 +43,6 @@ public class LeakyReLuActivationFunction implements ActivationFunction {
 		 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to just
 		 * return zero.
 		 */
-		return 0.0;
+		return 0.0f;
 	}
 }
