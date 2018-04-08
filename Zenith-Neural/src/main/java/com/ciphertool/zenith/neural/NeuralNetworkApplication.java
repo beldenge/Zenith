@@ -19,10 +19,14 @@
 
 package com.ciphertool.zenith.neural;
 
-import javax.validation.constraints.Min;
-
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.io.NetworkMapper;
+import com.ciphertool.zenith.neural.model.NeuralNetwork;
+import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.PredictionStats;
+import com.ciphertool.zenith.neural.predict.Predictor;
+import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
@@ -38,11 +42,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 
-import com.ciphertool.zenith.neural.io.NetworkMapper;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.ProblemType;
-import com.ciphertool.zenith.neural.predict.Predictor;
-import com.ciphertool.zenith.neural.train.SupervisedTrainer;
+import javax.validation.constraints.Min;
 
 @EnableAsync
 @Validated
@@ -103,6 +103,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Autowired
 	private Predictor				predictor;
 
+	@Autowired
+	private SampleGenerator generator;
+
 	/**
 	 * Main entry point for the application.
 	 * 
@@ -134,6 +137,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 			for (int i = 1; i <= epochs; i++) {
 				trainer.train(network, batchSize);
 				log.info("Completed epoch {}", i);
+				generator.resetSamples();
 			}
 
 			log.info("Finished training in " + (System.currentTimeMillis() - start) + "ms.");

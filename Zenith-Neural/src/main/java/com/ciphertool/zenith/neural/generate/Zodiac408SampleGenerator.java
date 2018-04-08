@@ -19,19 +19,7 @@
 
 package com.ciphertool.zenith.neural.generate;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
-
-import javax.validation.constraints.Min;
-
+import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.math.sampling.RouletteSampler;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
@@ -41,6 +29,8 @@ import com.ciphertool.zenith.model.probability.LetterProbability;
 import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraph;
 import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphDao;
 import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphSequenceDao;
+import com.ciphertool.zenith.neural.io.ProcessedTextFileParser;
+import com.ciphertool.zenith.neural.model.DataSet;
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +42,18 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.neural.io.ProcessedTextFileParser;
-import com.ciphertool.zenith.neural.model.DataSet;
+import javax.validation.constraints.Min;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @Validated
@@ -114,6 +113,11 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	private long englishParagraphCount = 0L;
 
 	private boolean intialized = false;
+
+	@Override
+	public void resetSamples(){
+		// Nothing to do
+	}
 
 	public void init() {
 		log.info("Starting training text import...");

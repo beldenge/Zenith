@@ -22,11 +22,13 @@ package com.ciphertool.zenith.neural.generate;
 import com.ciphertool.zenith.neural.model.DataSet;
 
 public interface SampleGenerator {
-	public DataSet generateTrainingSamples(int count);
+	void resetSamples();
 
-	public DataSet generateTrainingSample();
+	DataSet generateTrainingSamples(int count);
 
-	public DataSet generateTestSamples(int count);
+	DataSet generateTrainingSample();
 
-	public DataSet generateTestSample();
+	DataSet generateTestSamples(int count);
+
+	DataSet generateTestSample();
 }

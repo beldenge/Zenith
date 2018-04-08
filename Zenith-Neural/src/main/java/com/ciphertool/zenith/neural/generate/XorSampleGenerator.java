@@ -19,17 +19,15 @@
 
 package com.ciphertool.zenith.neural.generate;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-import javax.validation.constraints.Min;
-
+import com.ciphertool.zenith.neural.model.DataSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import com.ciphertool.zenith.neural.model.DataSet;
+import javax.validation.constraints.Min;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @Validated
@@ -62,6 +60,11 @@ public class XorSampleGenerator implements SampleGenerator {
 	@Override
 	public DataSet generateTestSample() {
 		return generateOne();
+	}
+
+	@Override
+	public void resetSamples(){
+		// Nothing to do
 	}
 
 	protected DataSet generate(int count) {

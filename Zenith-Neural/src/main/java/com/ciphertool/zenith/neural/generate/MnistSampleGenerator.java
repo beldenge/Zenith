@@ -19,6 +19,18 @@
 
 package com.ciphertool.zenith.neural.generate;
 
+import com.ciphertool.zenith.neural.model.DataSet;
+import org.hibernate.validator.constraints.NotBlank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
+
+import javax.annotation.PostConstruct;
+import javax.validation.constraints.Min;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -29,20 +41,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.PostConstruct;
-import javax.validation.constraints.Min;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
-
-import com.ciphertool.zenith.neural.model.DataSet;
 
 @Validated
 @Component
@@ -144,6 +142,12 @@ public class MnistSampleGenerator implements SampleGenerator {
 			log.debug("Test image {}: {}", i + 1, Arrays.toString(testImages[i]));
 			log.debug("Test label {}: {}", i + 1, testLabels[i]);
 		}
+	}
+
+	@Override
+	public void resetSamples() {
+		nextTrainingIndex = new AtomicInteger(0);
+		nextTestIndex = new AtomicInteger(0);
 	}
 
 	protected Float[][] loadImages(byte[] imagesBytes) {
