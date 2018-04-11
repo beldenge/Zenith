@@ -19,13 +19,8 @@
 
 package com.ciphertool.zenith.neural.predict;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
-
 import javax.validation.constraints.Min;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Component
 public class Predictor {
@@ -89,12 +87,12 @@ public class Predictor {
 	}
 
 	private void compareExpectationToPrediction(NeuralNetwork network, Float[] inputs, Float[] outputs, Float[] predictions, PredictionStats stats) {
-		boolean wasIncorrect = false;
+		boolean isIncorrect = false;
 
 		log.info("Inputs: {}", Arrays.toString(inputs));
 
 		Float highestProbability = 0.0f;
-		int indexOfHighestProbability = 0;
+		int indexOfHighestProbability = -1;
 
 		for (int j = 0; j < predictions.length; j++) {
 			Float prediction = predictions[j];
@@ -110,17 +108,17 @@ public class Predictor {
 			}
 
 			// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
-			if (!wasIncorrect && Math.abs(prediction - expected) > marginOfErrorRegression) {
-				wasIncorrect = true;
+			if (prediction.isNaN() || expected.isNaN() || Math.abs(prediction - expected) > marginOfErrorRegression) {
+				isIncorrect = true;
 			}
 		}
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION
-				&& 1.0 == outputs[indexOfHighestProbability]) {
+				&& indexOfHighestProbability >= 0 && 1.0 == outputs[indexOfHighestProbability]) {
 			stats.incrementBestProbabilityCount();
 		}
 
-		if (!wasIncorrect) {
+		if (!isIncorrect) {
 			stats.incrementCorrectCount();
 		}
 
