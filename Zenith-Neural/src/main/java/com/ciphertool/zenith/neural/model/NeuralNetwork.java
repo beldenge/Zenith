@@ -19,9 +19,9 @@
 
 package com.ciphertool.zenith.neural.model;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public class NeuralNetwork {
 	private Float biasWeight;
@@ -30,7 +30,7 @@ public class NeuralNetwork {
 
 	private Layer[]		layers;
 
-	protected void init(int batchSize) {
+	protected void init() {
 		problemType = this.getOutputLayer().getNeurons().length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
 
 		Layer fromLayer;
@@ -60,7 +60,7 @@ public class NeuralNetwork {
 
 					Float initialWeight = ThreadLocalRandom.current().nextFloat() - 0.5f;
 
-					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight, batchSize);
+					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight);
 				}
 			}
 		}
@@ -71,8 +71,7 @@ public class NeuralNetwork {
 		// Exists purely for Jackson deserialization
 	}
 
-	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, Float biasWeight,
-			int batchSize) {
+	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, Float biasWeight) {
 		this.biasWeight = biasWeight;
 		boolean addBias = biasWeight != null ? true : false;
 
@@ -100,7 +99,7 @@ public class NeuralNetwork {
 
 		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false);
 
-		init(batchSize);
+		init();
 	}
 
 	public NeuralNetwork(NeuralNetwork network) {
@@ -109,7 +108,9 @@ public class NeuralNetwork {
 		this.problemType = network.getProblemType();
 	}
 
-	public void applyAccumulatedDeltas(Float learningRate, Float weightDecayPercent) {
+	public long applyAccumulatedDeltas(Float learningRate, Float weightDecayPercent) {
+		long start = System.currentTimeMillis();
+
 		for (int i = 0; i < layers.length - 1; i++) {
 			Layer fromLayer = layers[i];
 
@@ -119,13 +120,7 @@ public class NeuralNetwork {
 				for (int k = 0; k < nextNeuron.getOutgoingSynapses().length; k++) {
 					Synapse nextSynapse = nextNeuron.getOutgoingSynapses()[k];
 
-					Float sum = 0.0f;
-
-					for (Float delta : nextSynapse.getAccumulatedDeltas()) {
-						sum = sum + delta;
-					}
-
-					Float averageDelta = sum / (float) nextSynapse.getAccumulatedDeltas().size();
+					Float averageDelta = nextSynapse.getAverageAccumulatedDeltas();
 
 					if (learningRate != null) {
 						averageDelta = averageDelta * learningRate;
@@ -133,7 +128,7 @@ public class NeuralNetwork {
 
 					Float regularization = 0.0f;
 
-					if (weightDecayPercent != null && !nextNeuron.isBias()) {
+					if (weightDecayPercent != null && weightDecayPercent != 0.0f && !nextNeuron.isBias()) {
 						regularization = nextSynapse.getWeight() * weightDecayPercent;
 
 						if (learningRate != null) {
@@ -147,6 +142,8 @@ public class NeuralNetwork {
 				}
 			}
 		}
+
+		return System.currentTimeMillis() - start;
 	}
 
 	/**

@@ -144,6 +144,9 @@ public class MnistSampleGenerator implements SampleGenerator {
 		}
 	}
 
+	/*
+	 * TODO: shuffle the sample sets on each call
+	 */
 	@Override
 	public void resetSamples() {
 		nextTrainingIndex = new AtomicInteger(0);

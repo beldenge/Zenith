@@ -19,16 +19,10 @@
 
 package com.ciphertool.zenith.neural.train;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.model.*;
+import com.ciphertool.zenith.neural.predict.Predictor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +31,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
-import com.ciphertool.zenith.neural.predict.Predictor;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Component
 @Validated
@@ -96,7 +94,8 @@ public class SupervisedTrainer {
 			currentBatchSize++;
 
 			if (currentBatchSize == batchSize) {
-				network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
+				long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
+				log.debug("Took {}ms to apply accumulated deltas.", applyAccumulatedDeltasTime);
 
 				log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
 						- batchStart));
@@ -113,7 +112,8 @@ public class SupervisedTrainer {
 			log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
 					- batchStart));
 
-			network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
+			long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
+			log.debug("Took {}ms to apply accumulated deltas.", applyAccumulatedDeltasTime);
 		}
 	}
 

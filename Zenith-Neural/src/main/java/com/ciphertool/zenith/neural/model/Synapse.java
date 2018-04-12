@@ -19,17 +19,13 @@
 
 package com.ciphertool.zenith.neural.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Synapse {
 	private Float			weight;
 
 	@JsonIgnore
-	private List<Float>	accumulatedDeltas	= new ArrayList<>(1);
+	private AccumulatedDelta	accumulatedDeltas	= new AccumulatedDelta();
 
 	@JsonIgnore
 	private Neuron				outGoingNeuron;
@@ -45,10 +41,9 @@ public class Synapse {
 	 * @param weight
 	 *            the initial weight to set
 	 */
-	public Synapse(Neuron outGoingNeuron, Float weight, int batchSize) {
+	public Synapse(Neuron outGoingNeuron, Float weight) {
 		this.outGoingNeuron = outGoingNeuron;
 		this.weight = weight;
-		this.accumulatedDeltas = new ArrayList<>(batchSize);
 	}
 
 	/**
@@ -86,17 +81,17 @@ public class Synapse {
 	 *            the delta to add
 	 */
 	public void addDelta(Float delta) {
-		this.accumulatedDeltas.add(delta);
+		this.accumulatedDeltas.addDelta(delta);
 	}
 
 	/**
 	 * @return the accumulatedDeltas
 	 */
-	public List<Float> getAccumulatedDeltas() {
-		return Collections.unmodifiableList(accumulatedDeltas);
+	public Float getAverageAccumulatedDeltas() {
+		return accumulatedDeltas.getAverageDelta();
 	}
 
 	public void clearAccumulatedDeltas() {
-		this.accumulatedDeltas.clear();
+		this.accumulatedDeltas.reset();
 	}
 }
