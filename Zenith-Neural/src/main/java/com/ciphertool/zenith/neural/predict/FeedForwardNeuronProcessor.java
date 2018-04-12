@@ -19,17 +19,12 @@
 
 package com.ciphertool.zenith.neural.predict;
 
-import java.util.concurrent.Future;
-
+import com.ciphertool.zenith.neural.model.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.neural.model.Layer;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.Neuron;
-import com.ciphertool.zenith.neural.model.ProblemType;
-import com.ciphertool.zenith.neural.model.Synapse;
+import java.util.concurrent.Future;
 
 @Component
 public class FeedForwardNeuronProcessor {

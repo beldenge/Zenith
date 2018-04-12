@@ -95,7 +95,7 @@ public class SupervisedTrainer {
 
 			if (currentBatchSize == batchSize) {
 				long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
-				log.debug("Took {}ms to apply accumulated deltas.", applyAccumulatedDeltasTime);
+				log.debug("Finished applying accumulated deltas in {}ms", applyAccumulatedDeltasTime);
 
 				log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
 						- batchStart));
@@ -113,7 +113,7 @@ public class SupervisedTrainer {
 					- batchStart));
 
 			long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
-			log.debug("Took {}ms to apply accumulated deltas.", applyAccumulatedDeltasTime);
+			log.debug("Finished applying accumulated deltas in {}ms", applyAccumulatedDeltasTime);
 		}
 	}
 
