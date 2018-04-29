@@ -305,7 +305,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected Float[] getRandomParagraph() {
-		Long randomIndex = ThreadLocalRandom.current().nextLong(englishParagraphCount);
+		Long randomIndex = ThreadLocalRandom.current().nextLong(1, englishParagraphCount + 1);
 
 		EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
 
