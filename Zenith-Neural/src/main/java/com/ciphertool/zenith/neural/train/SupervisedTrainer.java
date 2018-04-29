@@ -154,21 +154,11 @@ public class SupervisedTrainer {
 		Float[] errorDerivatives = new Float[outputLayer.getNeurons().length];
 		Float[] activationDerivatives = new Float[outputLayer.getNeurons().length];
 
-		Float[] allSums = new Float[outputLayer.getNeurons().length];
-
-		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
-			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
-
-				allSums[i] = nextOutputNeuron.getOutputSum();
-			}
-		}
-
 		List<Future<Void>> futures = new ArrayList<>(outputLayer.getNeurons().length);
 
 		// Compute deltas for output layer using chain rule and subtract them from current weights
 		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-			futures.add(neuronProcessor.processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, allSums, network.getProblemType()));
+			futures.add(neuronProcessor.processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, network.getProblemType()));
 		}
 
 		for (Future<Void> future : futures) {

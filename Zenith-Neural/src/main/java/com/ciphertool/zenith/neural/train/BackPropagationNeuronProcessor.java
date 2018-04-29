@@ -19,21 +19,20 @@
 
 package com.ciphertool.zenith.neural.train;
 
-import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.stereotype.Component;
-
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.Neuron;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.model.Synapse;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.Future;
 
 @Component
 public class BackPropagationNeuronProcessor {
 	@Async
-	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, Float[] errorDerivatives, Float[] activationDerivatives, Float[] expectedOutputs, Float[] allSums, ProblemType problemType) {
+	public Future<Void> processOutputNeuron(int i, Layer fromLayer, Layer outputLayer, Float[] errorDerivatives, Float[] activationDerivatives, Float[] expectedOutputs, ProblemType problemType) {
 		Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
 
 		Float errorDerivative;
