@@ -42,16 +42,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -64,8 +62,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	private static final int	CHAR_TO_NUMERIC_OFFSET	= 9;
 
+	private static final int NUM_LETTERS = ModelConstants.LOWERCASE_LETTERS.size();
+
 	private static final RouletteSampler RANDOM_LETTER_SAMPLER = new RouletteSampler();
-	private static final List<LetterProbability> RANDOM_LETTER_PROBABILITIES = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+	private static final List<LetterProbability> RANDOM_LETTER_PROBABILITIES = new ArrayList<>(NUM_LETTERS);
 
 	static {
 		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
@@ -75,9 +75,19 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	private static final Float RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
+	private static final Map<Character, Float[]> SPARSE_CHARACTER_MAP = new HashMap<>(NUM_LETTERS);
+
+	static {
+		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+			SPARSE_CHARACTER_MAP.put(letter, charToFloatArray(letter));
+		}
+	}
+
 	@Min(1)
 	@Value("${network.layers.input}")
 	private int						inputLayerNeurons;
+
+	private static int UNIQUE_INPUT_COUNT;
 
 	@Min(2)
 	@Value("${network.layers.output}")
@@ -113,6 +123,28 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	private long englishParagraphCount = 0L;
 
 	private boolean intialized = false;
+
+	protected static Float[] charToFloatArray(char c) {
+		Float[] sparseRepresentation = new Float[NUM_LETTERS];
+
+		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET - 1;
+
+		Arrays.fill(sparseRepresentation, 0.0f);
+
+		sparseRepresentation[numericValue] = 1.0f;
+
+		return sparseRepresentation;
+	}
+
+	@PostConstruct
+	public void setUp() {
+		if(inputLayerNeurons % NUM_LETTERS != 0) {
+			throw new IllegalStateException("The 'network.layers.input' property must be evenly divisible by " +
+					NUM_LETTERS + " of which the value " + inputLayerNeurons + " is not.");
+		}
+
+		UNIQUE_INPUT_COUNT = inputLayerNeurons / NUM_LETTERS;
+	}
 
 	@Override
 	public void resetSamples(){
@@ -162,18 +194,11 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		// Load English training data
 		long start = System.currentTimeMillis();
 
-		List<CompletableFuture<Void>> futures = parseFiles(validTrainingTextDirectoryPath, inputLayerNeurons);
+		List<CompletableFuture<Void>> futures = parseFiles(validTrainingTextDirectoryPath);
 
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
 
 		log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
-	}
-
-	// TODO: cache these calculations for crying out loud
-	protected Float charToFloat(char c) {
-		int numericValue = Character.getNumericValue(c) - CHAR_TO_NUMERIC_OFFSET;
-
-		return (float) numericValue / (float) ModelConstants.LOWERCASE_LETTERS.size();
 	}
 
 	protected static Float[][] shuffleArray(Float[][] arrayToShuffle) {
@@ -309,7 +334,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
 
-		char[] nextSample = nextParagraph.getParagraph().substring(0, inputLayerNeurons).toCharArray();
+		char[] nextSample = nextParagraph.getParagraph().substring(0, UNIQUE_INPUT_COUNT).toCharArray();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Random paragraph: {}", String.valueOf(nextSample));
@@ -318,7 +343,11 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		Float[] numericSample = new Float[inputLayerNeurons];
 
 		for (int j = 0; j < nextSample.length; j++) {
-			numericSample[j] = charToFloat(nextSample[j]);
+			Float[] sparseCoding = charToFloatArray(nextSample[j]);
+
+			for (int k = 0; k < sparseCoding.length; k ++) {
+				numericSample[(j * NUM_LETTERS) + k] = sparseCoding[k];
+			}
 		}
 
 		return numericSample;
@@ -337,10 +366,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 
 		String root = "";
-		for (int i = 0; i < inputLayerNeurons; i++) {
+		for (int i = 0; i < UNIQUE_INPUT_COUNT; i++) {
 			match = (root.isEmpty() || markovOrder == 1) ? rootNode : letterMarkovModel.findLongest(root);
 
-			LetterProbability chosen = sampleNextTransitionFromDistribution(match, markovOrder);
+			LetterProbability chosen = sampleNextTransitionFromDistribution(match);
 
 			char nextSymbol = chosen.getValue();
 
@@ -348,7 +377,11 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				sb.append(nextSymbol);
 			}
 
-			sample[i] = charToFloat(nextSymbol);
+			Float[] sparseCoding = charToFloatArray(nextSymbol);
+
+			for (int k = 0; k < sparseCoding.length; k ++) {
+				sample[(i * NUM_LETTERS) + k] = sparseCoding[k];
+			}
 
 			root = ((root.isEmpty() || root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
 		}
@@ -360,14 +393,14 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return sample;
 	}
 
-	protected static LetterProbability sampleNextTransitionFromDistribution(TreeNGram match, int markovOrder) {
+	protected static LetterProbability sampleNextTransitionFromDistribution(TreeNGram match) {
 		if (match.getTransitions().isEmpty()) {
 			return RANDOM_LETTER_PROBABILITIES.get(RANDOM_LETTER_SAMPLER.getNextIndex(RANDOM_LETTER_PROBABILITIES, RANDOM_LETTER_TOTAL_PROBABILITY));
 		}
 
 		RouletteSampler sampler = new RouletteSampler();
 
-		List<LetterProbability> probabilities = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+		List<LetterProbability> probabilities = new ArrayList<>(NUM_LETTERS);
 
 		for (Map.Entry<Character, TreeNGram> entry : match.getTransitions().entrySet()) {
 			LetterProbability probability = new LetterProbability(entry.getKey(), entry.getValue().getConditionalProbability());
@@ -383,9 +416,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected Float[] generateRandomSample() {
-		int inputLayerSize = inputLayerNeurons;
-
-		Float[] randomSample = new Float[inputLayerSize];
+		Float[] randomSample = new Float[inputLayerNeurons];
 
 		StringBuffer sb = null;
 
@@ -393,14 +424,18 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			sb = new StringBuffer();
 		}
 
-		for (int j = 0; j < inputLayerSize; j++) {
-			char nextLetter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size()));
+		for (int j = 0; j < UNIQUE_INPUT_COUNT; j++) {
+			char nextLetter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(NUM_LETTERS));
 
 			if (log.isDebugEnabled()) {
 				sb.append(nextLetter);
 			}
 
-			randomSample[j] = charToFloat(nextLetter);
+			Float[] sparseCoding = charToFloatArray(nextLetter);
+
+			for (int k = 0; k < sparseCoding.length; k ++) {
+				randomSample[(j * NUM_LETTERS) + k] = sparseCoding[k];
+			}
 		}
 
 		if (log.isDebugEnabled()) {
@@ -410,16 +445,16 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return randomSample;
 	}
 
-	protected List<CompletableFuture<Void>> parseFiles(Path path, int inputLayerSize) {
+	protected List<CompletableFuture<Void>> parseFiles(Path path) {
 		List<CompletableFuture<Void>> tasks = new ArrayList<>();
         CompletableFuture<Void> task;
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, inputLayerSize));
+					tasks.addAll(parseFiles(entry));
 				} else {
-					task = CompletableFuture.runAsync(() -> fileParser.parse(entry, inputLayerSize), taskExecutor);
+					task = CompletableFuture.runAsync(() -> fileParser.parse(entry, UNIQUE_INPUT_COUNT), taskExecutor);
 					tasks.add(task);
 				}
 			}

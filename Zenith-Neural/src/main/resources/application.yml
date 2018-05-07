@@ -118,28 +118,28 @@ spring:
 
 network:
   layers:
-    input: 391
+    # 391 positions of 26 possible letters each
+    input: 10166
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-    hidden: 200:LEAKY_RELU
+    hidden: 1000:LEAKY_RELU
     output: 7
   bias:
     weight: 1.0
   trainingSamples:
-    count: 200000
+    count: 10000
   testSamples:
-    count: 40000
+    count: 2000
   learningRate: 0.01
   #epochs: 10
   epochs: 1
   batchSize: 1
   weightDecay: 0.0
   training:
-    continue: false
+    continue: true
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
-    fileName:
-    #fileName: /Users/george/Desktop/network-zodiac408-20180331-231221.json
+    fileName: /Users/george/Desktop/network-zodiac408-20180506-153627.json
 
 task:
   zodiac408:
