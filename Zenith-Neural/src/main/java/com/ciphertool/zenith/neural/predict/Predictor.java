@@ -89,7 +89,7 @@ public class Predictor {
 	private void compareExpectationToPrediction(NeuralNetwork network, Float[] inputs, Float[] outputs, Float[] predictions, PredictionStats stats) {
 		boolean isIncorrect = false;
 
-		log.info("Inputs: {}", Arrays.toString(inputs));
+		log.debug("Inputs: {}", Arrays.toString(inputs));
 
 		Float highestProbability = 0.0f;
 		int indexOfHighestProbability = -1;
