@@ -121,14 +121,14 @@ network:
     # 391 positions of 26 possible letters each
     input: 10166
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-    hidden: 1000:LEAKY_RELU
-    output: 7
+    hidden: 100:LEAKY_RELU
+    output: 4
   bias:
     weight: 1.0
   trainingSamples:
-    count: 10000
+    count: 100000
   testSamples:
-    count: 2000
+    count: 20000
   learningRate: 0.01
   #epochs: 10
   epochs: 1
@@ -139,7 +139,7 @@ network:
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
-    fileName: /Users/george/Desktop/network-zodiac408-20180506-153627.json
+    fileName: /Users/george/Desktop/network-zodiac408-20180508-164724.json
 
 task:
   zodiac408:
