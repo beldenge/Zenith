@@ -19,16 +19,6 @@
 
 package com.ciphertool.zenith.neural.io;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.Neuron;
@@ -36,11 +26,18 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class NetworkMapper {
 	private static Logger log = LoggerFactory.getLogger(NetworkMapper.class);
 
-	public static void saveToFile(NeuralNetwork network, String outputFileName) {
+	public static String saveToFile(NeuralNetwork network, String outputFileName) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
 		mapper.setVisibility(PropertyAccessor.IS_GETTER, Visibility.NONE);
@@ -49,21 +46,15 @@ public class NetworkMapper {
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
-		LocalDateTime now = LocalDateTime.now();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
-		String dateText = now.format(formatter);
-
-		String extension = outputFileName.substring(outputFileName.indexOf('.'));
-		String beforeExtension = outputFileName.replace(extension, "");
-		String fileNameWithDate = beforeExtension + "-" + dateText + extension;
-
-		log.info("Saving network to file: {}", fileNameWithDate);
+		log.info("Saving network to file: {}", outputFileName);
 
 		try {
-			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileNameWithDate), network);
+			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(outputFileName), network);
 		} catch (IOException ioe) {
-			throw new IllegalStateException("Unable to write network parameters to file: " + fileNameWithDate, ioe);
+			throw new IllegalStateException("Unable to write network parameters to file: " + outputFileName, ioe);
 		}
+
+		return outputFileName;
 	}
 
 	public static NeuralNetwork loadFromFile(String fileName) {

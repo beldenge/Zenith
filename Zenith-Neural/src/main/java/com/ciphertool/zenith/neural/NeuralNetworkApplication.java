@@ -27,11 +27,10 @@ import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.PredictionStats;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import com.ciphertool.zenith.neural.train.SupervisedTrainer;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -43,6 +42,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @EnableAsync
 @Validated
@@ -68,7 +71,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${network.input.fileName}")
 	private String					inputFileName;
 
-	@Value("${network.training.continue:false}")
+	@Value("${network.training.continue:true}")
 	private boolean					continueTraining;
 
 	@NotBlank
@@ -157,10 +160,25 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 			log.info("Percentage most probable: " + (int) ((((float) predictionStats.getBestProbabilityCount() / (float) predictionStats.getTotalPredictions())
 					* 100.0) + 0.5));
 		}
+	}
 
-		if (inputFileName == null || inputFileName.isEmpty() || continueTraining) {
-			NetworkMapper.saveToFile(network, outputFileName);
+	@Bean
+	@Qualifier("outputFileNameWithDate")
+	public String getFileNameWithDate()
+	{
+		if (outputFileName == null)
+		{
+			return null;
 		}
+
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+		String dateText = now.format(formatter);
+
+		String extension = outputFileName.substring(outputFileName.indexOf('.'));
+		String beforeExtension = outputFileName.replace(extension, "");
+
+		return beforeExtension + "-" + dateText + extension;
 	}
 
 	@Bean

@@ -31,7 +31,6 @@ import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphDao;
 import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphSequenceDao;
 import com.ciphertool.zenith.neural.io.ProcessedTextFileParser;
 import com.ciphertool.zenith.neural.model.DataSet;
-import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +43,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;

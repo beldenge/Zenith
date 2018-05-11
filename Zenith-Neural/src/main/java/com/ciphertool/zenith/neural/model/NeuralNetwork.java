@@ -30,6 +30,8 @@ public class NeuralNetwork {
 
 	private Layer[]		layers;
 
+	private long samplesTrained = 0;
+
 	protected void init() {
 		problemType = this.getOutputLayer().getNeurons().length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
 
@@ -203,5 +205,23 @@ public class NeuralNetwork {
 	 */
 	public void setLayers(Layer[] layers) {
 		this.layers = layers;
+	}
+
+	/**
+	 * @return the number of samples trained
+	 */
+	public long getSamplesTrained() {
+		return samplesTrained;
+	}
+
+	/**
+	 * @param samplesTrained the samplesTrained to set
+	 */
+	public void setSamplesTrained(long samplesTrained) {
+		this.samplesTrained = samplesTrained;
+	}
+
+	public void incrementSamplesTrained() {
+		this.samplesTrained ++;
 	}
 }

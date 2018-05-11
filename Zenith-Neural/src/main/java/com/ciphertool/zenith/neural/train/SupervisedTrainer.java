@@ -20,19 +20,23 @@
 package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.model.*;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import javax.annotation.PostConstruct;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -58,6 +62,14 @@ public class SupervisedTrainer {
 	@Value("${network.trainingSamples.count}")
 	private int						numberOfSamples;
 
+	@Min(0)
+	@Value("${network.iterationsBetweenSaves:0}")
+	private int iterationsBetweenSaves;
+
+	@Autowired
+	@Qualifier("outputFileNameWithDate")
+	private String outputFileNameWithDate;
+
 	@Autowired
 	private SampleGenerator generator;
 
@@ -66,6 +78,15 @@ public class SupervisedTrainer {
 
 	@Autowired
 	private BackPropagationNeuronProcessor	neuronProcessor;
+
+	@PostConstruct
+	public void validate() {
+		if (iterationsBetweenSaves > 0 && outputFileNameWithDate == null) {
+			throw new IllegalArgumentException("Property network.iterationsBetweenSaves was set, but property " +
+					"network.output.fileName was null.  Please set network.output.fileName if saving of the network is " +
+					"desired.");
+		}
+	}
 
 	public void train(NeuralNetwork network, int batchSize) {
 		ConsoleProgressBar progressBar = new ConsoleProgressBar();
@@ -106,6 +127,16 @@ public class SupervisedTrainer {
 			}
 
 			progressBar.tick((float) i, (float) numberOfSamples);
+
+			network.incrementSamplesTrained();
+
+			if (outputFileNameWithDate != null && iterationsBetweenSaves > 0 && ((i + 1) % iterationsBetweenSaves) == 0) {
+				NetworkMapper.saveToFile(network, outputFileNameWithDate);
+			}
+		}
+
+		if (outputFileNameWithDate != null && (iterationsBetweenSaves == 0 || (i % iterationsBetweenSaves) != 0)) {
+			NetworkMapper.saveToFile(network, outputFileNameWithDate);
 		}
 
 		if (currentBatchSize > 0) {
