@@ -137,7 +137,7 @@ network:
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
-    fileName: /Users/george/Desktop/network-zodiac408-20180510-162015
+    fileName: /Users/george/Desktop/network-zodiac408-20180510-162015.json
   iterationsBetweenSaves: 1000
 
 task:

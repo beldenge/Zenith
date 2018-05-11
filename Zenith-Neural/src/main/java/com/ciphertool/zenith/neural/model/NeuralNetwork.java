@@ -108,6 +108,7 @@ public class NeuralNetwork {
 		this.layers = network.getLayers();
 		this.biasWeight = network.getBiasWeight();
 		this.problemType = network.getProblemType();
+		this.samplesTrained = network.getSamplesTrained();
 	}
 
 	public long applyAccumulatedDeltas(Float learningRate, Float weightDecayPercent) {
