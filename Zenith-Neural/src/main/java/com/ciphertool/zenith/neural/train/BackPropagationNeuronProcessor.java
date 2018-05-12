@@ -61,7 +61,8 @@ public class BackPropagationNeuronProcessor {
 
 			Float outputSumDerivative = nextInputNeuron.getActivationValue();
 
-			Float delta = errorDerivative * activationDerivative * outputSumDerivative;
+			// For sparsely coded inputs, skipping this gives a meaningful performance gain
+			Float delta = outputSumDerivative == 0.0f ? 0.0f : (errorDerivative * activationDerivative * outputSumDerivative);
 
 			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[i];
 			nextSynapse.addDelta(delta);
@@ -103,7 +104,8 @@ public class BackPropagationNeuronProcessor {
 
 			Float outputSumDerivative = nextFromNeuron.getActivationValue();
 
-			Float delta = errorTimesActivation * outputSumDerivative;
+			// For sparsely coded inputs, skipping this gives a meaningful performance gain
+			Float delta = outputSumDerivative == 0.0f ? 0.0f : (errorTimesActivation * outputSumDerivative);
 
 			Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
 			nextSynapse.addDelta(delta);

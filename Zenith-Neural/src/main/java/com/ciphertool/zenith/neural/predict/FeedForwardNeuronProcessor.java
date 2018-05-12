@@ -44,7 +44,10 @@ public class FeedForwardNeuronProcessor {
 
 			Synapse nextSynapse = nextInputNeuron.getOutgoingSynapses()[j];
 
-			sum = sum + (nextInputNeuron.getActivationValue() * nextSynapse.getWeight());
+			// For sparsely coded inputs, skipping this gives a meaningful performance gain
+			if (nextInputNeuron.getActivationValue() != 0.0f) {
+				sum = sum + (nextInputNeuron.getActivationValue() * nextSynapse.getWeight());
+			}
 		}
 
 		nextOutputNeuron.setOutputSum(sum);

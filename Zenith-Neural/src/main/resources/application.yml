@@ -128,7 +128,7 @@ network:
   trainingSamples:
     count: 100000
   testSamples:
-    count: 20000
+    count: 1000 #20000
   learningRate: 0.01
   #epochs: 10
   epochs: 1
@@ -137,8 +137,10 @@ network:
   output:
     fileName: /Users/george/Desktop/network-zodiac408.json
   input:
-    fileName: /Users/george/Desktop/network-zodiac408-20180510-162015.json
+    fileName: /Users/george/Desktop/network-zodiac408-20180512-015409.json
   iterationsBetweenSaves: 1000
+  training:
+    continue: false
 
 task:
   zodiac408:
