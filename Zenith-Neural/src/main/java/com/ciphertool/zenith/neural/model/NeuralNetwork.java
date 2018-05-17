@@ -20,10 +20,20 @@
 package com.ciphertool.zenith.neural.model;
 
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
-
-import java.util.concurrent.ThreadLocalRandom;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class NeuralNetwork {
+	@JsonIgnore
+	private INDArray[] activationLayers;
+
+	@JsonIgnore
+	private INDArray[] weightLayers;
+
+	@JsonIgnore
+	private INDArray[] accumulatedDeltaLayers;
+
 	private Float biasWeight;
 
 	private ProblemType	problemType;
@@ -31,42 +41,6 @@ public class NeuralNetwork {
 	private Layer[]		layers;
 
 	private long samplesTrained = 0;
-
-	protected void init() {
-		problemType = this.getOutputLayer().getNeurons().length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
-
-		Layer fromLayer;
-		Layer toLayer;
-
-		for (int i = 0; i < layers.length - 1; i++) {
-			fromLayer = layers[i];
-			toLayer = layers[i + 1];
-
-			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
-				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
-				nextInputNeuron.setOutgoingSynapses(new Synapse[toLayer.getNeurons().length
-						- (toLayer.hasBias() ? 1 : 0)]);
-
-				if (nextInputNeuron.isBias()) {
-					// The bias activation value is static and should never change
-					nextInputNeuron.setActivationValue(biasWeight);
-				}
-
-				for (int k = 0; k < toLayer.getNeurons().length; k++) {
-					Neuron nextOutputNeuron = toLayer.getNeurons()[k];
-
-					if (nextOutputNeuron.isBias()) {
-						// We don't want to create a synapse going into a bias neuron
-						continue;
-					}
-
-					Float initialWeight = ThreadLocalRandom.current().nextFloat() - 0.5f;
-
-					nextInputNeuron.getOutgoingSynapses()[k] = new Synapse(nextOutputNeuron, initialWeight);
-				}
-			}
-		}
-	}
 
 	@SuppressWarnings("unused")
 	private NeuralNetwork() {
@@ -80,6 +54,13 @@ public class NeuralNetwork {
 		layers = new Layer[hiddenLayers.length + 2];
 
 		layers[0] = new Layer(inputLayerNeurons, addBias);
+
+		activationLayers = new INDArray[hiddenLayers.length + 2];
+		accumulatedDeltaLayers = new INDArray[hiddenLayers.length + 1];
+		weightLayers = new INDArray[hiddenLayers.length + 1];
+
+		int biasCount = addBias ? 1 : 0;
+		activationLayers[0] = Nd4j.create(1, inputLayerNeurons + biasCount);
 
 		for (int i = 1; i <= hiddenLayers.length; i++) {
 			int separatorIndex = hiddenLayers[i - 1].indexOf(':');
@@ -95,20 +76,65 @@ public class NeuralNetwork {
 					- 1].substring(separatorIndex + 1));
 
 			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias);
+
+			activationLayers[i] = Nd4j.create(1, numberOfNeurons + biasCount);
+			accumulatedDeltaLayers[i - 1] = Nd4j.create(activationLayers[i - 1].size(1), numberOfNeurons);
+			weightLayers[i - 1] = Nd4j.create(activationLayers[i - 1].size(1), numberOfNeurons);
 		}
 
 		ActivationFunctionType activationFunctionType = outputLayerNeurons == 1 ? ActivationFunctionType.LEAKY_RELU : ActivationFunctionType.SOFTMAX;
 
 		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false);
 
+		activationLayers[layers.length - 1] = Nd4j.create(1, outputLayerNeurons);
+		accumulatedDeltaLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
+		weightLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
+
 		init();
 	}
 
+	protected void init() {
+		problemType = this.getOutputLayer().getNeurons().length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
+
+		Layer fromLayer;
+		Layer toLayer;
+
+		for (int i = 0; i < layers.length - 1; i++) {
+			fromLayer = layers[i];
+			toLayer = layers[i + 1];
+
+			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
+				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
+				nextInputNeuron.setOutgoingSynapses(new Synapse[toLayer.getNeurons().length
+						- (toLayer.hasBias() ? 1 : 0)]);
+			}
+		}
+
+		if (biasWeight != null) {
+			for (int i = 0; i < layers.length - 1; i++) {
+				activationLayers[i].putScalar(activationLayers[i].size(0) - 1, biasWeight);
+			}
+		}
+
+		for (int i = 0; i < layers.length - 1; i++) {
+			weightLayers[i] = Nd4j.rand(weightLayers[i].shape());
+			weightLayers[i].subi(0.5f);
+		}
+	}
+
+	/**
+	 * Construct a NeuralNetwork loaded from file.
+	 *
+	 * @param network the NeuralNetwork from file
+	 */
 	public NeuralNetwork(NeuralNetwork network) {
-		this.layers = network.getLayers();
-		this.biasWeight = network.getBiasWeight();
-		this.problemType = network.getProblemType();
-		this.samplesTrained = network.getSamplesTrained();
+		this.activationLayers = network.activationLayers;
+		this.weightLayers = network.weightLayers;
+		this.accumulatedDeltaLayers = network.accumulatedDeltaLayers;
+		this.layers = network.layers;
+		this.biasWeight = network.biasWeight;
+		this.problemType = network.problemType;
+		this.samplesTrained = network.samplesTrained;
 	}
 
 	public long applyAccumulatedDeltas(Float learningRate, Float weightDecayPercent) {
@@ -224,5 +250,29 @@ public class NeuralNetwork {
 
 	public void incrementSamplesTrained() {
 		this.samplesTrained ++;
+	}
+
+	public INDArray[] getActivationLayers() {
+		return activationLayers;
+	}
+
+	public void setActivationLayers(INDArray[] activationLayers) {
+		this.activationLayers = activationLayers;
+	}
+
+	public INDArray[] getWeightLayers() {
+		return weightLayers;
+	}
+
+	public void setWeightLayers(INDArray[] weightLayers) {
+		this.weightLayers = weightLayers;
+	}
+
+	public INDArray[] getAccumulatedDeltaLayers() {
+		return accumulatedDeltaLayers;
+	}
+
+	public void setAccumulatedDeltaLayers(INDArray[] accumulatedDeltaLayers) {
+		this.accumulatedDeltaLayers = accumulatedDeltaLayers;
 	}
 }

@@ -18,12 +18,19 @@
 
 spring:
   profiles:
-    active: zodiac408
+    active: mnist
   data:
     mongodb:
       host: localhost
       port: 27017
       database: Zenith
+logging:
+  level:
+    com:
+      ciphertool:
+        zenith:
+          neural:
+            generate: INFO
 
 mongodb:
   parallelScan:

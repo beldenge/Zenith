@@ -19,30 +19,28 @@
 
 package com.ciphertool.zenith.neural.activation;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.indexing.BooleanIndexing;
+import org.nd4j.linalg.indexing.conditions.Conditions;
+
 public class LeakyReLuActivationFunction implements ActivationFunction {
 	private static final Float SLOPE_CLOSE_TO_ZERO = 0.01f;
 
 	@Override
-	public Float transformInputSignal(Float sum, Float[] allSums) {
-		if (0.0 < sum) {
-			return sum;
-		}
-
-		return SLOPE_CLOSE_TO_ZERO * sum;
+	public void transformInputSignal(INDArray layer) {
+		BooleanIndexing.applyWhere(layer, Conditions.lessThanOrEqual(0.0f), value -> value.floatValue() * SLOPE_CLOSE_TO_ZERO);
 	}
 
 	@Override
-	public Float calculateDerivative(Float sum, Float[] allSums) {
-		if (0.0 < sum) {
-			return 1.0f;
-		} else if (0.0 > sum) {
-			return SLOPE_CLOSE_TO_ZERO;
-		}
+	public void calculateDerivative(INDArray layer) {
+		BooleanIndexing.applyWhere(layer, Conditions.greaterThan(0.0f), 1.0f);
+
+		BooleanIndexing.applyWhere(layer, Conditions.lessThan(0.0f), SLOPE_CLOSE_TO_ZERO);
 
 		/*
 		 * The derivative of ReLU is undefined at zero, but I can't think of any better way to deal with it than to just
 		 * return zero.
 		 */
-		return 0.0f;
+		BooleanIndexing.applyWhere(layer, Conditions.equals(0.0f), 0.0f);
 	}
 }

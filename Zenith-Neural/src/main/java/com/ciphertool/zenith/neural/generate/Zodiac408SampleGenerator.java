@@ -31,6 +31,8 @@ import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphDao;
 import com.ciphertool.zenith.neural.generate.zodiac408.EnglishParagraphSequenceDao;
 import com.ciphertool.zenith.neural.io.ProcessedTextFileParser;
 import com.ciphertool.zenith.neural.model.DataSet;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,31 +203,6 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
 	}
 
-	protected static Float[][] shuffleArray(Float[][] arrayToShuffle) {
-		Float[][] shuffledArray = new Float[arrayToShuffle.length][];
-
-		int arrayLength = arrayToShuffle.length;
-
-		List<Float[]> arrayList = new ArrayList<>(Arrays.asList(arrayToShuffle));
-
-		for (int i = 0; i < arrayLength; i++) {
-			int randomIndex = ThreadLocalRandom.current().nextInt(arrayList.size());
-
-			shuffledArray[i] = arrayList.remove(randomIndex);
-		}
-
-		return shuffledArray;
-	}
-
-	@Override
-	public DataSet generateTrainingSamples(int count) {
-		if (!intialized) {
-			init();
-		}
-
-		return shuffleDataSet(generate(count));
-	}
-
 	@Override
 	public DataSet generateTrainingSample() {
 		if (!intialized) {
@@ -233,15 +210,6 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 
 		return generateOne();
-	}
-
-	@Override
-	public DataSet generateTestSamples(int count) {
-		if (!intialized) {
-			init();
-		}
-
-		return generate(count);
 	}
 
 	@Override
@@ -253,83 +221,41 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return generateOne();
 	}
 
-	protected static DataSet shuffleDataSet(DataSet dataSetToShuffle) {
-		Float[][] shuffledInputs = new Float[dataSetToShuffle.getInputs().length][];
-		Float[][] shuffledOutputs = new Float[dataSetToShuffle.getOutputs().length][];
-
-		int arrayLength = dataSetToShuffle.getInputs().length;
-
-		List<Float[]> inputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getInputs()));
-		List<Float[]> outputsArrayList = new ArrayList<>(Arrays.asList(dataSetToShuffle.getOutputs()));
-
-		for (int i = 0; i < arrayLength; i++) {
-			int randomIndex = ThreadLocalRandom.current().nextInt(inputsArrayList.size());
-
-			shuffledInputs[i] = inputsArrayList.remove(randomIndex);
-			shuffledOutputs[i] = outputsArrayList.remove(randomIndex);
-		}
-
-		return new DataSet(shuffledInputs, shuffledOutputs);
-	}
-
-	protected DataSet generate(int count) {
-		Float[][] samples = new Float[count * outputLayerNeurons][inputLayerNeurons];
-		Float[][] outputs = new Float[count * outputLayerNeurons][outputLayerNeurons];
-
-		for (int i = 0; i < count; i++) {
-			DataSet next = generateOne();
-
-			int sampleSize = next.getInputs().length;
-
-			for (int j = 0; j < sampleSize; j ++) {
-				int index = (i * sampleSize) + j;
-
-				samples[index] = next.getInputs()[j];
-				outputs[index] = next.getOutputs()[j];
-			}
-		}
-
-		return new DataSet(samples, outputs);
-	}
-
 	public DataSet generateOne() {
-		Float[][] samples = new Float[outputLayerNeurons][inputLayerNeurons];
-		Float[][] outputs = new Float[outputLayerNeurons][outputLayerNeurons];
+		INDArray samples = Nd4j.create(outputLayerNeurons, inputLayerNeurons);
+		INDArray outputs = Nd4j.create(outputLayerNeurons, outputLayerNeurons);
 
 		// Generate a random sample
-		samples[0] = generateRandomSample();
-		outputs[0] = new Float[outputLayerNeurons];
-		outputs[0][0] = 1.0f;
+		samples.putRow(0, generateRandomSample());
+		outputs.putScalar(0, 0, 1.0f);
 
 		for (int i = 1; i < outputLayerNeurons; i ++) {
-			outputs[0][i] = 0.0f;
+			outputs.putScalar(0, i, 0.0f);
 		}
 
 		// Generate probabilistic samples based on Markov model
 		for (int i = 1; i < outputLayerNeurons - 1; i ++) {
-			samples[i] = generateMarkovModelSample(i);
-			outputs[i] = new Float[outputLayerNeurons];
+			samples.putRow(i, generateMarkovModelSample(i));
 
 			for (int j = 0; j < outputLayerNeurons; j ++) {
-				outputs[i][j] = (i == j) ? 1.0f : 0.0f;
+				outputs.putScalar(i, j, (i == j) ? 1.0f : 0.0f);
 			}
 		}
 
 		// Generate a sample from known English paragraphs
 		int i = outputLayerNeurons - 1;
 
-		samples[i] = getRandomParagraph();
-		outputs[i] = new Float[outputLayerNeurons];
-		outputs[i][outputLayerNeurons - 1] = 1.0f;
+		samples.putRow(i, getRandomParagraph());
+		outputs.putScalar(i, outputLayerNeurons - 1, 1.0f);
 
 		for (int j = 0; j < outputLayerNeurons - 1; j ++) {
-			outputs[i][j] = 0.0f;
+			outputs.putScalar(i, j, 0.0f);
 		}
 
 		return new DataSet(samples, outputs);
 	}
 
-	protected Float[] getRandomParagraph() {
+	protected INDArray getRandomParagraph() {
 		Long randomIndex = ThreadLocalRandom.current().nextLong(1, englishParagraphCount + 1);
 
 		EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
@@ -340,21 +266,21 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			log.debug("Random paragraph: {}", String.valueOf(nextSample));
 		}
 
-		Float[] numericSample = new Float[inputLayerNeurons];
+		INDArray numericSample = Nd4j.create(inputLayerNeurons);
 
 		for (int j = 0; j < nextSample.length; j++) {
 			Float[] sparseCoding = charToFloatArray(nextSample[j]);
 
 			for (int k = 0; k < sparseCoding.length; k ++) {
-				numericSample[(j * NUM_LETTERS) + k] = sparseCoding[k];
+				numericSample.putScalar((j * NUM_LETTERS) + k, sparseCoding[k]);
 			}
 		}
 
 		return numericSample;
 	}
 
-	protected Float[] generateMarkovModelSample(int markovOrder) {
-		Float[] sample = new Float[inputLayerNeurons];
+	protected INDArray generateMarkovModelSample(int markovOrder) {
+		INDArray sample = Nd4j.create(inputLayerNeurons);
 
 		TreeNGram rootNode = letterMarkovModel.getRootNode();
 		TreeNGram match;
@@ -380,7 +306,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			Float[] sparseCoding = charToFloatArray(nextSymbol);
 
 			for (int k = 0; k < sparseCoding.length; k ++) {
-				sample[(i * NUM_LETTERS) + k] = sparseCoding[k];
+				sample.putScalar((i * NUM_LETTERS) + k, sparseCoding[k]);
 			}
 
 			root = ((root.isEmpty() || root.length() < markovOrder - 1) ? root : root.substring(1)) + nextSymbol;
@@ -415,8 +341,8 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		return probabilities.get(nextIndex);
 	}
 
-	protected Float[] generateRandomSample() {
-		Float[] randomSample = new Float[inputLayerNeurons];
+	protected INDArray generateRandomSample() {
+		INDArray randomSample = Nd4j.create(inputLayerNeurons);
 
 		StringBuffer sb = null;
 
@@ -434,7 +360,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			Float[] sparseCoding = charToFloatArray(nextLetter);
 
 			for (int k = 0; k < sparseCoding.length; k ++) {
-				randomSample[(j * NUM_LETTERS) + k] = sparseCoding[k];
+				randomSample.putScalar((j * NUM_LETTERS) + k, sparseCoding[k]);
 			}
 		}
 

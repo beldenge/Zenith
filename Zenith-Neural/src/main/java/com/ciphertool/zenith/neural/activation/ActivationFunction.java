@@ -19,8 +19,10 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-public interface ActivationFunction {
-	Float transformInputSignal(Float sum, Float[] allSums);
+import org.nd4j.linalg.api.ndarray.INDArray;
 
-	Float calculateDerivative(Float sum, Float[] allSums);
+public interface ActivationFunction {
+	void transformInputSignal(INDArray layer);
+
+	void calculateDerivative(INDArray layer);
 }

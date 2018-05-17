@@ -19,9 +19,11 @@
 
 package com.ciphertool.zenith.neural.model;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+
 public class DataSet {
-	private Float[][]	inputs;
-	private Float[][]	outputs;
+	private INDArray	inputs;
+	private INDArray	outputs;
 
 	/**
 	 * @param inputs
@@ -29,7 +31,7 @@ public class DataSet {
 	 * @param outputs
 	 *            the outputs to set
 	 */
-	public DataSet(Float[][] inputs, Float[][] outputs) {
+	public DataSet(INDArray inputs, INDArray outputs) {
 		this.inputs = inputs;
 		this.outputs = outputs;
 	}
@@ -37,14 +39,14 @@ public class DataSet {
 	/**
 	 * @return the inputs
 	 */
-	public Float[][] getInputs() {
+	public INDArray getInputs() {
 		return inputs;
 	}
 
 	/**
 	 * @return the outputs
 	 */
-	public Float[][] getOutputs() {
+	public INDArray getOutputs() {
 		return outputs;
 	}
 }

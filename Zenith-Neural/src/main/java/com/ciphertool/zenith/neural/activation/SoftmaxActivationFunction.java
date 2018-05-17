@@ -19,36 +19,30 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-import com.ciphertool.zenith.math.MathConstants;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 public class SoftmaxActivationFunction implements ActivationFunction {
 	@Override
-	public Float transformInputSignal(Float sum, Float[] allSums) {
+	public void transformInputSignal(INDArray layer) {
 		// Use the maximum input as an arbitrary constant for numerical stability
-		Float max = 0.0f;
-
-		for (int i = 0; i < allSums.length; i++) {
-			max = Math.max(max, allSums[i]);
-		}
-
-		Float numerator = (float) Math.pow(MathConstants.EULERS_CONSTANT, sum - max);
-
-		Float denominator = 0.0f;
-		for (int i = 0; i < allSums.length; i++) {
-			denominator = denominator + (float) Math.pow(MathConstants.EULERS_CONSTANT, allSums[i] - max);
-		}
-
-		return numerator / denominator;
+		float max = layer.maxNumber().floatValue();
+		layer.subi(max);
+		Transforms.exp(layer, false);
+		INDArray denominators = layer.dup();
+		float denominator = denominators.sumNumber().floatValue();
+		layer.divi(denominator);
 	}
 
 	@Override
-	public Float calculateDerivative(Float sum, Float[] allSums) {
-		Float softMax = transformInputSignal(sum, allSums);
+	public void calculateDerivative(INDArray layer) {
+		transformInputSignal(layer);
 
 		/*
 		 * This is only true when the output neuron index equals the index of the softmax of that neuron (i.e. this
 		 * works for the output layer only)
 		 */
-		return softMax * (1.0f - softMax);
+		INDArray inverse = layer.rsub(1.0f);
+		layer.muli(inverse);
 	}
 }

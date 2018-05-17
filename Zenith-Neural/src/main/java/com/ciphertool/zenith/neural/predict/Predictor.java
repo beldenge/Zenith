@@ -22,6 +22,8 @@ package com.ciphertool.zenith.neural.predict;
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.model.*;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +31,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.Min;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @Component
 public class Predictor {
@@ -49,13 +46,8 @@ public class Predictor {
 	@Autowired
 	private SampleGenerator generator;
 
-	@Autowired
-	private FeedForwardNeuronProcessor	neuronProcessor;
-
 	public PredictionStats predict(NeuralNetwork network) {
 		PredictionStats stats = new PredictionStats(0, 0, 0);
-
-		Neuron[] outputLayerNeurons = network.getOutputLayer().getNeurons();
 
 		ConsoleProgressBar progressBar = new ConsoleProgressBar();
 
@@ -64,20 +56,17 @@ public class Predictor {
 
 			DataSet nextSample = generator.generateTestSample();
 
-			int sampleSize = nextSample.getInputs().length;
-
-			Float[][] predictions = new Float[sampleSize][outputLayerNeurons.length];
+			int sampleSize = nextSample.getInputs().size(0);
 
 			for (int j = 0; j < sampleSize; j ++) {
-				feedForward(network, nextSample.getInputs()[j]);
+				feedForward(network, nextSample.getInputs().getRow(j));
 
-				for (int k = 0; k < outputLayerNeurons.length; k++) {
-					predictions[j][k] = outputLayerNeurons[k].getActivationValue();
-				}
+				INDArray outputLayerActivations = network.getActivationLayers()[network.getActivationLayers().length - 1];
 
 				log.info("Finished predicting sample {} in {}ms.", (i * sampleSize) + j + 1, System.currentTimeMillis() - start);
+				log.debug("Inputs: {}", nextSample.getInputs().getRow(j));
 
-				compareExpectationToPrediction(network, nextSample.getInputs()[j], nextSample.getOutputs()[j], predictions[j], stats);
+				compareExpectationToPrediction(network, nextSample.getOutputs().getRow(j), outputLayerActivations, stats);
 			}
 
 			progressBar.tick((float) i, (float) numberOfTests);
@@ -86,17 +75,15 @@ public class Predictor {
 		return stats;
 	}
 
-	private void compareExpectationToPrediction(NeuralNetwork network, Float[] inputs, Float[] outputs, Float[] predictions, PredictionStats stats) {
+	private void compareExpectationToPrediction(NeuralNetwork network, INDArray outputs, INDArray predictions, PredictionStats stats) {
 		boolean isIncorrect = false;
-
-		log.debug("Inputs: {}", Arrays.toString(inputs));
 
 		Float highestProbability = 0.0f;
 		int indexOfHighestProbability = -1;
 
-		for (int j = 0; j < predictions.length; j++) {
-			Float prediction = predictions[j];
-			Float expected = outputs[j];
+		for (int j = 0; j < predictions.size(0); j++) {
+			Float prediction = predictions.getFloat(j);
+			Float expected = outputs.getFloat(j);
 
 			log.info("Expected: {}, Prediction: {}", expected, prediction);
 
@@ -114,7 +101,7 @@ public class Predictor {
 		}
 
 		if (network.getProblemType() == ProblemType.CLASSIFICATION
-				&& indexOfHighestProbability >= 0 && 1.0 == outputs[indexOfHighestProbability]) {
+				&& indexOfHighestProbability >= 0 && 1.0 == outputs.getFloat(indexOfHighestProbability)) {
 			stats.incrementBestProbabilityCount();
 		}
 
@@ -125,68 +112,36 @@ public class Predictor {
 		stats.incrementTotalPredictions();
 	}
 
-	public void feedForward(NeuralNetwork network, Float[] inputs) {
+	public void feedForward(NeuralNetwork network, INDArray inputs) {
 		Layer inputLayer = network.getInputLayer();
 
 		int nonBiasNeurons = inputLayer.getNeurons().length - (inputLayer.hasBias() ? 1 : 0);
 
-		if (inputs.length != nonBiasNeurons) {
-			throw new IllegalArgumentException("The sample input size of " + inputs.length
-					+ " does not match the input layer size of " + inputLayer.getNeurons().length
+		if (inputs.size(1) != nonBiasNeurons) {
+			throw new IllegalArgumentException("The sample input size of " + inputs.size(1)
+					+ " does not match the input layer size of " + nonBiasNeurons
 					+ ".  Unable to continue with feed forward step.");
 		}
 
-		for (int i = 0; i < nonBiasNeurons; i++) {
-			inputLayer.getNeurons()[i].setActivationValue(inputs[i]);
-		}
+		// Insert the inputs, overwriting all except the bias
+		network.getActivationLayers()[0].put(NDArrayIndex.createCoveringShape(inputs.shape()), inputs);
 
-		Layer fromLayer;
-		Layer toLayer;
+		INDArray fromLayer;
+		INDArray synapticGap;
+		INDArray toLayer;
 		Layer[] layers = network.getLayers();
 
 		for (int i = 0; i < layers.length - 1; i++) {
-			fromLayer = layers[i];
-			toLayer = layers[i + 1];
+			fromLayer = network.getActivationLayers()[i];
+			synapticGap = network.getWeightLayers()[i];
+			toLayer = network.getActivationLayers()[i + 1];
 
-			List<Future<Void>> futures = new ArrayList<>(toLayer.getNeurons().length);
+			INDArray intermediateLayer = fromLayer.mmul(synapticGap);
 
-			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				futures.add(neuronProcessor.processNeuron(network, j, toLayer, fromLayer));
-			}
+			network.getLayers()[i + 1].getActivationFunctionType().getActivationFunction().transformInputSignal(intermediateLayer);
 
-			for (Future<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException | ExecutionException e) {
-					throw new IllegalStateException("Unable to process neuron.", e);
-				}
-			}
-		}
-
-		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
-			Neuron[] outputLayerNeurons = network.getOutputLayer().getNeurons();
-
-			Float[] allSums = new Float[outputLayerNeurons.length];
-
-			for (int i = 0; i < outputLayerNeurons.length; i++) {
-				Neuron nextOutputNeuron = outputLayerNeurons[i];
-
-				allSums[i] = nextOutputNeuron.getOutputSum();
-			}
-
-			List<Future<Void>> futures = new ArrayList<>(outputLayerNeurons.length);
-
-			for (int i = 0; i < outputLayerNeurons.length; i++) {
-				futures.add(neuronProcessor.processOutputNeuron(network, i, allSums));
-			}
-
-			for (Future<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException | ExecutionException e) {
-					throw new IllegalStateException("Unable to process output neuron.", e);
-				}
-			}
+			// Insert the activation values, overwriting all except the bias
+			toLayer.put(NDArrayIndex.createCoveringShape(intermediateLayer.shape()), intermediateLayer);
 		}
 	}
 }

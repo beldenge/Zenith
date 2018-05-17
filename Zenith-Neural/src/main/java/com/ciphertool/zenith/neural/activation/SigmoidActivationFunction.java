@@ -19,20 +19,22 @@
 
 package com.ciphertool.zenith.neural.activation;
 
-import com.ciphertool.zenith.math.MathConstants;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 public class SigmoidActivationFunction implements ActivationFunction {
 	@Override
-	public Float transformInputSignal(Float sum, Float[] allSums) {
-		Float denominator = 1.0f + (float) Math.pow(MathConstants.EULERS_CONSTANT, sum * -1.0);
-
-		return 1.0f / denominator;
+	public void transformInputSignal(INDArray layer) {
+		layer.negi();
+		Transforms.exp(layer, false);
+		layer.addi(1.0f);
+		layer.rdivi(1.0f);
 	}
 
 	@Override
-	public Float calculateDerivative(Float sum, Float[] allSums) {
-		Float sigmoid = transformInputSignal(sum, null);
-
-		return sigmoid * (1.0f - sigmoid);
+	public void calculateDerivative(INDArray layer) {
+		transformInputSignal(layer);
+		INDArray inverse = layer.rsub(1.0f);
+		layer.muli(inverse);
 	}
 }

@@ -20,6 +20,8 @@
 package com.ciphertool.zenith.neural.generate;
 
 import com.ciphertool.zenith.neural.model.DataSet;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
@@ -43,18 +45,8 @@ public class XorSampleGenerator implements SampleGenerator {
 	private int	outputLayerNeurons;
 
 	@Override
-	public DataSet generateTrainingSamples(int count) {
-		return generate(count);
-	}
-
-	@Override
 	public DataSet generateTrainingSample() {
 		return generateOne();
-	}
-
-	@Override
-	public DataSet generateTestSamples(int count) {
-		return generate(count);
 	}
 
 	@Override
@@ -67,45 +59,28 @@ public class XorSampleGenerator implements SampleGenerator {
 		// Nothing to do
 	}
 
-	protected DataSet generate(int count) {
-		int inputLayerSize = inputLayerNeurons;
-		int outputLayerSize = outputLayerNeurons;
-
-		Float[][] inputs = new Float[count][inputLayerSize];
-		Float[][] outputs = new Float[count][outputLayerSize];
-
-		for (int i = 0; i < count; i++) {
-			DataSet next = generateOne();
-
-			inputs[i] = next.getInputs()[0];
-			outputs[i] = next.getOutputs()[0];
-		}
-
-		return new DataSet(inputs, outputs);
-	}
-
 	public DataSet generateOne() {
 		int inputLayerSize = inputLayerNeurons;
 		int outputLayerSize = outputLayerNeurons;
 
-		Float[][] inputs = new Float[1][inputLayerSize];
-		Float[][] outputs = new Float[1][outputLayerSize];
+		INDArray inputs = Nd4j.create(inputLayerSize);
+		INDArray outputs = Nd4j.create(outputLayerSize);
 
 		for (int j = 0; j < inputLayerSize; j++) {
-			inputs[0][j] = (float) ThreadLocalRandom.current().nextInt(2);
+			inputs.putScalar(0, j, (float) ThreadLocalRandom.current().nextInt(2));
 		}
 
-		outputs[0] = new Float[] { xor(inputs[0]) };
+		outputs.putScalar(0, 0, xor(inputs.getRow(0)));
 
 		return new DataSet(inputs, outputs);
 	}
 
-	protected Float xor(Float[] values) {
-		if (values.length != 2) {
-			throw new IllegalArgumentException("Exclusive or expects only two values, but found " + values.length
+	protected Float xor(INDArray values) {
+		if (values.size(1) != 2) {
+			throw new IllegalArgumentException("Exclusive or expects only two values, but found " + values.size(1)
 					+ ".  Unable to continue.");
 		}
 
-		return values[0] == values[1] ? 0.0f : 1.0f;
+		return values.getFloat(0) == values.getFloat(1) ? 0.0f : 1.0f;
 	}
 }
