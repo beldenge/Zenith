@@ -29,6 +29,9 @@ public class NeuralNetwork {
 	private INDArray[] activationLayers;
 
 	@JsonIgnore
+	private INDArray[] outputSumLayers;
+
+	@JsonIgnore
 	private INDArray[] weightLayers;
 
 	@JsonIgnore
@@ -56,11 +59,13 @@ public class NeuralNetwork {
 		layers[0] = new Layer(inputLayerNeurons, addBias);
 
 		activationLayers = new INDArray[hiddenLayers.length + 2];
+		outputSumLayers = new INDArray[hiddenLayers.length + 2];
 		accumulatedDeltaLayers = new INDArray[hiddenLayers.length + 1];
 		weightLayers = new INDArray[hiddenLayers.length + 1];
 
 		int biasCount = addBias ? 1 : 0;
 		activationLayers[0] = Nd4j.create(1, inputLayerNeurons + biasCount);
+		outputSumLayers[0] = Nd4j.create(1, inputLayerNeurons + biasCount);
 
 		for (int i = 1; i <= hiddenLayers.length; i++) {
 			int separatorIndex = hiddenLayers[i - 1].indexOf(':');
@@ -78,6 +83,7 @@ public class NeuralNetwork {
 			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias);
 
 			activationLayers[i] = Nd4j.create(1, numberOfNeurons + biasCount);
+			outputSumLayers[i] = Nd4j.create(1, numberOfNeurons + biasCount);
 			accumulatedDeltaLayers[i - 1] = Nd4j.create(activationLayers[i - 1].size(1), numberOfNeurons);
 			weightLayers[i - 1] = Nd4j.create(activationLayers[i - 1].size(1), numberOfNeurons);
 		}
@@ -87,6 +93,7 @@ public class NeuralNetwork {
 		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false);
 
 		activationLayers[layers.length - 1] = Nd4j.create(1, outputLayerNeurons);
+		outputSumLayers[layers.length - 1] = Nd4j.create(1, outputLayerNeurons);
 		accumulatedDeltaLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
 		weightLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
 
@@ -129,6 +136,7 @@ public class NeuralNetwork {
 	 */
 	public NeuralNetwork(NeuralNetwork network) {
 		this.activationLayers = network.activationLayers;
+		this.outputSumLayers = network.outputSumLayers;
 		this.weightLayers = network.weightLayers;
 		this.accumulatedDeltaLayers = network.accumulatedDeltaLayers;
 		this.layers = network.layers;
@@ -137,39 +145,28 @@ public class NeuralNetwork {
 		this.samplesTrained = network.samplesTrained;
 	}
 
-	public long applyAccumulatedDeltas(Float learningRate, Float weightDecayPercent) {
+	public long applyAccumulatedDeltas(Float learningRate, Float weightDecayPercent, int deltaCount) {
 		long start = System.currentTimeMillis();
 
 		for (int i = 0; i < layers.length - 1; i++) {
-			Layer fromLayer = layers[i];
+			accumulatedDeltaLayers[i].divi(deltaCount);
 
-			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
-				Neuron nextNeuron = fromLayer.getNeurons()[j];
-
-				for (int k = 0; k < nextNeuron.getOutgoingSynapses().length; k++) {
-					Synapse nextSynapse = nextNeuron.getOutgoingSynapses()[k];
-
-					Float averageDelta = nextSynapse.getAverageAccumulatedDeltas();
-
-					if (learningRate != null) {
-						averageDelta = averageDelta * learningRate;
-					}
-
-					Float regularization = 0.0f;
-
-					if (weightDecayPercent != null && weightDecayPercent != 0.0f && !nextNeuron.isBias()) {
-						regularization = nextSynapse.getWeight() * weightDecayPercent;
-
-						if (learningRate != null) {
-							regularization = regularization * learningRate;
-						}
-					}
-
-					nextSynapse.setWeight(nextSynapse.getWeight() - averageDelta - regularization);
-
-					nextSynapse.clearAccumulatedDeltas();
-				}
+			if (learningRate != null) {
+				accumulatedDeltaLayers[i].muli(learningRate);
 			}
+
+			if (weightDecayPercent != null && weightDecayPercent != 0.0f) {
+				INDArray regularization = weightLayers[i].mul(weightDecayPercent);
+
+				if (learningRate != null) {
+					regularization.muli(learningRate);
+				}
+
+				weightLayers[i].subi(regularization);
+			}
+
+			weightLayers[i].subi(accumulatedDeltaLayers[i]);
+			accumulatedDeltaLayers[i].assign(0.0f);
 		}
 
 		return System.currentTimeMillis() - start;
@@ -258,6 +255,14 @@ public class NeuralNetwork {
 
 	public void setActivationLayers(INDArray[] activationLayers) {
 		this.activationLayers = activationLayers;
+	}
+
+	public INDArray[] getOutputSumLayers() {
+		return outputSumLayers;
+	}
+
+	public void setOutputSumLayers(INDArray[] outputSumLayers) {
+		this.outputSumLayers = outputSumLayers;
 	}
 
 	public INDArray[] getWeightLayers() {

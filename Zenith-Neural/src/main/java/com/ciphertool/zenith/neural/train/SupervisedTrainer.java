@@ -20,16 +20,19 @@
 package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
-import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.model.*;
 import com.ciphertool.zenith.neural.predict.Predictor;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -37,10 +40,6 @@ import javax.annotation.PostConstruct;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @Component
 @Validated
@@ -76,9 +75,6 @@ public class SupervisedTrainer {
 	@Autowired
 	private Predictor						predictor;
 
-	@Autowired
-	private BackPropagationNeuronProcessor	neuronProcessor;
-
 	@PostConstruct
 	public void validate() {
 		if (iterationsBetweenSaves > 0 && outputFileNameWithDate == null) {
@@ -100,14 +96,14 @@ public class SupervisedTrainer {
 
 			DataSet nextSample = generator.generateTrainingSample();
 
-			for (int j = 0; j < nextSample.getInputs().length; j ++) {
-				predictor.feedForward(network, nextSample.getInputs()[j]);
+			for (int j = 0; j < nextSample.getInputs().size(0); j ++) {
+				predictor.feedForward(network, nextSample.getInputs().getRow(j));
 
 				log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
 
 				start = System.currentTimeMillis();
 
-				backPropagate(network, nextSample.getOutputs()[j]);
+				backPropagate(network, nextSample.getOutputs().getRow(j));
 
 				log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
 			}
@@ -115,7 +111,7 @@ public class SupervisedTrainer {
 			currentBatchSize++;
 
 			if (currentBatchSize == batchSize) {
-				long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
+				long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent, currentBatchSize);
 				log.debug("Finished applying accumulated deltas in {}ms", applyAccumulatedDeltasTime);
 
 				log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
@@ -131,111 +127,164 @@ public class SupervisedTrainer {
 			network.incrementSamplesTrained();
 
 			if (outputFileNameWithDate != null && iterationsBetweenSaves > 0 && ((i + 1) % iterationsBetweenSaves) == 0) {
-				NetworkMapper.saveToFile(network, outputFileNameWithDate);
+				//NetworkMapper.saveToFile(network, outputFileNameWithDate);
 			}
 		}
 
 		if (outputFileNameWithDate != null && (iterationsBetweenSaves == 0 || (i % iterationsBetweenSaves) != 0)) {
-			NetworkMapper.saveToFile(network, outputFileNameWithDate);
+			//NetworkMapper.saveToFile(network, outputFileNameWithDate);
 		}
 
 		if (currentBatchSize > 0) {
 			log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
 					- batchStart));
 
-			long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent);
+			long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent, currentBatchSize);
 			log.debug("Finished applying accumulated deltas in {}ms", applyAccumulatedDeltasTime);
 		}
 	}
 
-	protected void backPropagate(NeuralNetwork network, Float[] expectedOutputs) {
+	protected void backPropagate(NeuralNetwork network, INDArray expectedOutputs) {
 		Layer outputLayer = network.getOutputLayer();
 
-		if (expectedOutputs.length != outputLayer.getNeurons().length) {
-			throw new IllegalArgumentException("The expected output size of " + expectedOutputs.length
+		if (expectedOutputs.size(1) != outputLayer.getNeurons().length) {
+			throw new IllegalArgumentException("The expected output size of " + expectedOutputs.size(1)
 					+ " does not match the actual output size of " + outputLayer.getNeurons().length
 					+ ".  Unable to continue with back propagation step.");
 		}
-
-		Layer[] layers = network.getLayers();
-		Layer fromLayer = layers[layers.length - 2];
 
 		/*
 		 * The sum of errors is not actually used by the backpropagation algorithm, but it may be useful for debugging
 		 * purposes
 		 */
 		if (COMPUTE_SUM_OF_ERRORS) {
-			// Compute sum of errors
-			Float errorTotal = 0.0f;
-			Float outputSumTotal = 0.0f;
-
-			for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-				Neuron nextOutputNeuron = outputLayer.getNeurons()[i];
-
-				if (network.getProblemType() == ProblemType.REGRESSION) {
-					errorTotal = errorTotal + costFunctionRegression(expectedOutputs[i], nextOutputNeuron.getActivationValue());
-				} else {
-					errorTotal = errorTotal + costFunctionClassification(expectedOutputs[i], nextOutputNeuron.getActivationValue());
-				}
-
-				outputSumTotal = outputSumTotal + nextOutputNeuron.getOutputSum();
-			}
+			computeSumOfErrors(network, expectedOutputs);
 		}
 
-		Float[] errorDerivatives = new Float[outputLayer.getNeurons().length];
-		Float[] activationDerivatives = new Float[outputLayer.getNeurons().length];
+		// START - PROCESS OUTPUT LAYER
+		INDArray errorDerivatives;
+		INDArray activationDerivatives;
 
-		List<Future<Void>> futures = new ArrayList<>(outputLayer.getNeurons().length);
+		INDArray actualOutputs = network.getActivationLayers()[network.getActivationLayers().length - 1].dup();
 
 		// Compute deltas for output layer using chain rule and subtract them from current weights
-		for (int i = 0; i < outputLayer.getNeurons().length; i++) {
-			futures.add(neuronProcessor.processOutputNeuron(i, fromLayer, outputLayer, errorDerivatives, activationDerivatives, expectedOutputs, network.getProblemType()));
+		if (network.getProblemType() == ProblemType.REGRESSION) {
+			derivativeOfCostFunctionRegression(expectedOutputs, actualOutputs);
+		} else {
+			derivativeOfCostFunctionClassification(expectedOutputs, actualOutputs);
 		}
 
-		for (Future<Void> future : futures) {
-			try {
-				future.get();
-			} catch (InterruptedException | ExecutionException e) {
-				throw new IllegalStateException("Unable to process output neuron.", e);
-			}
+		errorDerivatives = actualOutputs;
+
+		INDArray outputSums = network.getOutputSumLayers()[network.getOutputSumLayers().length - 1].dup();
+
+		if (network.getProblemType() == ProblemType.REGRESSION) {
+			outputLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
+
+			activationDerivatives = outputSums;
+		} else {
+			// For CLASSIFICATION, including softmax/cross entropy loss, the activationDerivative is accounted for in the errorDerivative
+			activationDerivatives = Nd4j.ones(outputSums.shape());
 		}
 
-		Layer toLayer;
-		Float[] oldErrorDerivatives;
-		Float[] oldActivationDerivatives;
+		INDArray outputWeights = network.getWeightLayers()[network.getWeightLayers().length - 1];
+		INDArray deltas = Nd4j.ones(outputWeights.shape());
+		INDArray outputSumDerivatives = network.getActivationLayers()[network.getActivationLayers().length - 2];
+		deltas.muliColumnVector(outputSumDerivatives.transpose());
+		deltas.muliRowVector(errorDerivatives);
+		deltas.muliRowVector(activationDerivatives);
+
+		INDArray deltaLayer = network.getAccumulatedDeltaLayers()[network.getAccumulatedDeltaLayers().length - 1];
+		deltaLayer.addi(deltas);
+		// END - PROCESS OUTPUT LAYER
+
+		INDArray toLayer;
+		INDArray oldErrorDerivatives;
+		INDArray oldActivationDerivatives;
 
 		// Compute deltas for hidden layers using chain rule and subtract them from current weights
-		for (int i = layers.length - 2; i > 0; i--) {
-			fromLayer = layers[i - 1];
-			toLayer = layers[i];
+		for (int i = network.getActivationLayers().length - 2; i > 0; i--) {
+			outputSumDerivatives = network.getActivationLayers()[i - 1];
+			toLayer = network.getActivationLayers()[i];
 
 			oldErrorDerivatives = errorDerivatives;
 			oldActivationDerivatives = activationDerivatives;
 
-			errorDerivatives = new Float[toLayer.getNeurons().length];
-			activationDerivatives = new Float[toLayer.getNeurons().length];
-
-			futures = new ArrayList<>(toLayer.getNeurons().length);
+			errorDerivatives = Nd4j.create(toLayer.size(1));
+			activationDerivatives = Nd4j.create(toLayer.size(1));
 
 			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				futures.add(neuronProcessor.processHiddenNeuron(j, fromLayer, toLayer, errorDerivatives, activationDerivatives, oldErrorDerivatives, oldActivationDerivatives));
-			}
+				// ********** PROCESS HIDDEN NEURON **********
+				Neuron nextToNeuron = toLayer.getNeurons()[j];
 
-			for (Future<Void> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException | ExecutionException e) {
-					throw new IllegalStateException("Unable to process neuron.", e);
+				if (nextToNeuron.isBias()) {
+					// There are no synapses going into the bias neuron
+					return new AsyncResult<>(null);
+				}
+
+				Float activationDerivative = toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(nextToNeuron.getOutputSum(), null);
+				activationDerivatives[j] = activationDerivative;
+
+				Float errorDerivative = 0.0f;
+
+				for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
+					Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
+
+					Float partialErrorDerivative = oldErrorDerivatives[l] * oldActivationDerivatives[l];
+
+					Float weightDerivative = nextSynapse.getWeight();
+
+					errorDerivative = errorDerivative + (partialErrorDerivative * weightDerivative);
+				}
+
+				errorDerivatives[j] = errorDerivative;
+
+				Float errorTimesActivation = errorDerivative * activationDerivative;
+
+				for (int k = 0; k < outputSumDerivatives.getNeurons().length; k++) {
+					Neuron nextFromNeuron = outputSumDerivatives.getNeurons()[k];
+
+					Float outputSumDerivative = nextFromNeuron.getActivationValue();
+
+					// For sparsely coded inputs, skipping this gives a meaningful performance gain
+					Float delta = outputSumDerivative == 0.0f ? 0.0f : (errorTimesActivation * outputSumDerivative);
+
+					Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
+					nextSynapse.addDelta(delta);
 				}
 			}
 		}
 	}
 
-	protected static Float costFunctionRegression(Float expected, Float actual) {
-		return (float) Math.pow(expected - actual, 2) / 2.0f;
+	protected static Float computeSumOfErrors(NeuralNetwork network, INDArray expectedOutputs) {
+		INDArray actualOutputs = network.getActivationLayers()[network.getActivationLayers().length - 1].dup();
+
+		if (network.getProblemType() == ProblemType.REGRESSION) {
+			costFunctionRegression(expectedOutputs, actualOutputs);
+		} else {
+			costFunctionClassification(expectedOutputs, actualOutputs);
+		}
+
+		return actualOutputs.sumNumber().floatValue();
 	}
 
-	protected Float costFunctionClassification(Float expected, Float actual) {
-		return (float) Math.log(actual) * expected;
+	protected static void costFunctionRegression(INDArray expectedOutputs, INDArray actualOutputs) {
+		actualOutputs.rsubi(expectedOutputs);
+		Transforms.pow(actualOutputs, 2, false);
+		actualOutputs.divi(2.0f);
+	}
+
+	protected static void costFunctionClassification(INDArray expectedOutputs, INDArray actualOutputs) {
+		Transforms.log(actualOutputs, false);
+		actualOutputs.muli(expectedOutputs);
+	}
+
+	protected static void derivativeOfCostFunctionRegression(INDArray expectedOutputs, INDArray actualOutputs) {
+		actualOutputs.rsubi(expectedOutputs);
+		actualOutputs.negi();
+	}
+
+	protected static void derivativeOfCostFunctionClassification(INDArray expectedOutputs, INDArray actualOutputs) {
+		actualOutputs.subi(expectedOutputs);
 	}
 }

@@ -129,14 +129,17 @@ public class Predictor {
 		INDArray fromLayer;
 		INDArray synapticGap;
 		INDArray toLayer;
+		INDArray outputSumLayer;
 		Layer[] layers = network.getLayers();
 
 		for (int i = 0; i < layers.length - 1; i++) {
 			fromLayer = network.getActivationLayers()[i];
 			synapticGap = network.getWeightLayers()[i];
 			toLayer = network.getActivationLayers()[i + 1];
+			outputSumLayer = network.getOutputSumLayers()[i + 1];
 
 			INDArray intermediateLayer = fromLayer.mmul(synapticGap);
+			outputSumLayer.assign(intermediateLayer.dup());
 
 			network.getLayers()[i + 1].getActivationFunctionType().getActivationFunction().transformInputSignal(intermediateLayer);
 

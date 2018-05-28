@@ -25,9 +25,6 @@ public class Synapse {
 	private Float			weight;
 
 	@JsonIgnore
-	private AccumulatedDelta	accumulatedDeltas	= new AccumulatedDelta();
-
-	@JsonIgnore
 	private Neuron				outGoingNeuron;
 
 	@SuppressWarnings("unused")
@@ -74,24 +71,5 @@ public class Synapse {
 	 */
 	public void setWeight(Float weight) {
 		this.weight = weight;
-	}
-
-	/**
-	 * @param delta
-	 *            the delta to add
-	 */
-	public void addDelta(Float delta) {
-		this.accumulatedDeltas.addDelta(delta);
-	}
-
-	/**
-	 * @return the accumulatedDeltas
-	 */
-	public Float getAverageAccumulatedDeltas() {
-		return accumulatedDeltas.getAverageDelta();
-	}
-
-	public void clearAccumulatedDeltas() {
-		this.accumulatedDeltas.reset();
 	}
 }

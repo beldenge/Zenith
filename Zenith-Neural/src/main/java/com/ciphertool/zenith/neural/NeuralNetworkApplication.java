@@ -21,7 +21,6 @@ package com.ciphertool.zenith.neural;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
-import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.PredictionStats;
@@ -79,7 +78,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	private String					outputFileName;
 
 	@Min(1)
-	@Value("${network.batchSize}")
+	@Value("${network.batchSize:1}")
 	private int						batchSize;
 
 	@Min(1)
@@ -126,11 +125,11 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 		NeuralNetwork network;
 
-		if (inputFileName != null && !inputFileName.isEmpty()) {
-			network = new NeuralNetwork(NetworkMapper.loadFromFile(inputFileName));
-		} else {
-			network = new NeuralNetwork(inputLayerNeurons, hiddenLayers, outputLayerNeurons, biasWeight);
-		}
+		//if (inputFileName != null && !inputFileName.isEmpty()) {
+		//	network = new NeuralNetwork(NetworkMapper.loadFromFile(inputFileName));
+		//} else {
+		network = new NeuralNetwork(inputLayerNeurons, hiddenLayers, outputLayerNeurons, biasWeight);
+		//}
 
 		long start = System.currentTimeMillis();
 
