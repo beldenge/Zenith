@@ -21,7 +21,10 @@ package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
-import com.ciphertool.zenith.neural.model.*;
+import com.ciphertool.zenith.neural.model.DataSet;
+import com.ciphertool.zenith.neural.model.Layer;
+import com.ciphertool.zenith.neural.model.NeuralNetwork;
+import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -32,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -198,61 +200,34 @@ public class SupervisedTrainer {
 		deltaLayer.addi(deltas);
 		// END - PROCESS OUTPUT LAYER
 
-		INDArray toLayer;
+		Layer toLayer;
 		INDArray oldErrorDerivatives;
 		INDArray oldActivationDerivatives;
 
 		// Compute deltas for hidden layers using chain rule and subtract them from current weights
 		for (int i = network.getActivationLayers().length - 2; i > 0; i--) {
 			outputSumDerivatives = network.getActivationLayers()[i - 1];
-			toLayer = network.getActivationLayers()[i];
+			toLayer = network.getLayers()[i];
 
 			oldErrorDerivatives = errorDerivatives;
 			oldActivationDerivatives = activationDerivatives;
 
-			errorDerivatives = Nd4j.create(toLayer.size(1));
-			activationDerivatives = Nd4j.create(toLayer.size(1));
+			outputSums = network.getOutputSumLayers()[i].dup();
+			toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
 
-			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				// ********** PROCESS HIDDEN NEURON **********
-				Neuron nextToNeuron = toLayer.getNeurons()[j];
+			activationDerivatives = outputSums;
 
-				if (nextToNeuron.isBias()) {
-					// There are no synapses going into the bias neuron
-					return new AsyncResult<>(null);
-				}
+			INDArray partialErrorDerivatives = oldErrorDerivatives.mul(oldActivationDerivatives);
+			errorDerivatives = network.getWeightLayers()[i - 1].mmuli(partialErrorDerivatives.transpose());
 
-				Float activationDerivative = toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(nextToNeuron.getOutputSum(), null);
-				activationDerivatives[j] = activationDerivative;
+			outputWeights = network.getWeightLayers()[i - 1];
+			deltas = Nd4j.ones(outputWeights.shape());
+			deltas.muliColumnVector(outputSumDerivatives.transpose());
+			deltas.muliRowVector(errorDerivatives);
+			deltas.muliRowVector(activationDerivatives);
 
-				Float errorDerivative = 0.0f;
-
-				for (int l = 0; l < nextToNeuron.getOutgoingSynapses().length; l++) {
-					Synapse nextSynapse = nextToNeuron.getOutgoingSynapses()[l];
-
-					Float partialErrorDerivative = oldErrorDerivatives[l] * oldActivationDerivatives[l];
-
-					Float weightDerivative = nextSynapse.getWeight();
-
-					errorDerivative = errorDerivative + (partialErrorDerivative * weightDerivative);
-				}
-
-				errorDerivatives[j] = errorDerivative;
-
-				Float errorTimesActivation = errorDerivative * activationDerivative;
-
-				for (int k = 0; k < outputSumDerivatives.getNeurons().length; k++) {
-					Neuron nextFromNeuron = outputSumDerivatives.getNeurons()[k];
-
-					Float outputSumDerivative = nextFromNeuron.getActivationValue();
-
-					// For sparsely coded inputs, skipping this gives a meaningful performance gain
-					Float delta = outputSumDerivative == 0.0f ? 0.0f : (errorTimesActivation * outputSumDerivative);
-
-					Synapse nextSynapse = nextFromNeuron.getOutgoingSynapses()[j];
-					nextSynapse.addDelta(delta);
-				}
-			}
+			deltaLayer = network.getAccumulatedDeltaLayers()[network.getAccumulatedDeltaLayers().length - 1];
+			deltaLayer.addi(deltas);
 		}
 	}
 

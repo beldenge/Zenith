@@ -19,19 +19,19 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import javax.annotation.PostConstruct;
-
+import com.ciphertool.zenith.inference.dto.EvaluationResults;
+import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.neural.io.NetworkMapper;
+import com.ciphertool.zenith.neural.model.NeuralNetwork;
+import com.ciphertool.zenith.neural.predict.Predictor;
+import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.inference.dto.EvaluationResults;
-import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.neural.io.NetworkMapper;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.predict.Predictor;
+import javax.annotation.PostConstruct;
 
 @Component
 public class NeuralNetworkPlaintextEvaluator {
@@ -56,7 +56,7 @@ public class NeuralNetworkPlaintextEvaluator {
 	public EvaluationResults evaluate(CipherSolution solution, String ciphertextKey) {
 		String solutionString = solution.asSingleLineString();
 
-		Float[] inputs = new Float[solutionString.length()];
+		float[] inputs = new float[solutionString.length()];
 
 		for (int i = 0; i < solutionString.length(); i++) {
 			inputs[i] = charToFloat(solutionString.charAt(i));
@@ -64,7 +64,7 @@ public class NeuralNetworkPlaintextEvaluator {
 
 		long startFeedForward = System.currentTimeMillis();
 
-		predictor.feedForward(network, inputs);
+		predictor.feedForward(network, Nd4j.create(inputs));
 
 		log.debug("Feed forward took {}ms.", (System.currentTimeMillis() - startFeedForward));
 
