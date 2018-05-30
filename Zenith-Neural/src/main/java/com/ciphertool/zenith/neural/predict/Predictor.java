@@ -81,7 +81,7 @@ public class Predictor {
 		Float highestProbability = 0.0f;
 		int indexOfHighestProbability = -1;
 
-		for (int j = 0; j < predictions.size(0); j++) {
+		for (int j = 0; j < predictions.size(1); j++) {
 			Float prediction = predictions.getFloat(j);
 			Float expected = outputs.getFloat(j);
 
