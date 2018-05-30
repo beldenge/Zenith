@@ -28,6 +28,7 @@ import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,13 +213,17 @@ public class SupervisedTrainer {
 			oldErrorDerivatives = errorDerivatives;
 			oldActivationDerivatives = activationDerivatives;
 
-			outputSums = network.getOutputSumLayers()[i].dup();
+			INDArray outputSumLayer = network.getOutputSumLayers()[i];
+			// Get a subset of the outputSumLayer so as to skip the bias neuron
+			outputSums = outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, outputSumLayer.size(1) - (toLayer.hasBias() ? 1 : 0))).dup();
 			toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
 
 			activationDerivatives = outputSums;
 
 			INDArray partialErrorDerivatives = oldErrorDerivatives.mul(oldActivationDerivatives);
-			errorDerivatives = network.getWeightLayers()[i - 1].mmuli(partialErrorDerivatives.transpose());
+			INDArray toWeightLayer = network.getWeightLayers()[i];
+			// Get a subset of the toWeightLayer so as to skip the bias neuron
+			errorDerivatives = toWeightLayer.get(NDArrayIndex.interval(0, toWeightLayer.size(0) - (toLayer.hasBias() ? 1 : 0)), NDArrayIndex.all()).mmul(partialErrorDerivatives.transpose()).transpose();
 
 			outputWeights = network.getWeightLayers()[i - 1];
 			deltas = Nd4j.ones(outputWeights.shape());
@@ -226,7 +231,7 @@ public class SupervisedTrainer {
 			deltas.muliRowVector(errorDerivatives);
 			deltas.muliRowVector(activationDerivatives);
 
-			deltaLayer = network.getAccumulatedDeltaLayers()[network.getAccumulatedDeltaLayers().length - 1];
+			deltaLayer = network.getAccumulatedDeltaLayers()[i - 1];
 			deltaLayer.addi(deltas);
 		}
 	}

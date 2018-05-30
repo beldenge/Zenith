@@ -139,7 +139,8 @@ public class Predictor {
 			outputSumLayer = network.getOutputSumLayers()[i + 1];
 
 			INDArray intermediateLayer = fromLayer.mmul(synapticGap);
-			outputSumLayer.assign(intermediateLayer.dup());
+			// Get a subset of the outputSumLayer so as not to overwrite the bias neuron
+			outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, intermediateLayer.size(1))).assign(intermediateLayer.dup());
 
 			network.getLayers()[i + 1].getActivationFunctionType().getActivationFunction().transformInputSignal(intermediateLayer);
 
