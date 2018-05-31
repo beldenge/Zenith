@@ -92,7 +92,7 @@ network:
   layers:
     input: 784
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-    hidden: 98:LEAKY_RELU
+    hidden: 1000:LEAKY_RELU
     output: 10
   bias:
     weight: 1.0
