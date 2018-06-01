@@ -41,7 +41,7 @@ You should have received a copy of the GNU General Public License along with Zen
 		</dependency>
 		<dependency>
 			<groupId>org.nd4j</groupId>
-			<artifactId>nd4j-cuda-8.0-platform</artifactId>
+			<artifactId>nd4j-native-platform</artifactId>
 			<version>0.9.1</version>
 		</dependency>
 	</dependencies>
