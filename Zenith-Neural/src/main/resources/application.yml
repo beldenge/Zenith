@@ -68,13 +68,14 @@ network:
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 3:LEAKY_RELU
     output: 1
+  initialization: UNIFORM
   bias:
     weight: 1.0
   trainingSamples:
     count: 10000
   testSamples:
     count: 1000
-  learningRate: 0.1
+  learningRate: 0.01
   epochs: 1
   batchSize: 1
   weightDecay: 0.0
@@ -94,6 +95,7 @@ network:
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 1000:LEAKY_RELU
     output: 10
+  initialization: UNIFORM
   bias:
     weight: 1.0
   trainingSamples:
@@ -130,12 +132,13 @@ network:
     # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
     hidden: 5000:LEAKY_RELU,2500:LEAKY_RELU
     output: 4
+  initialization: UNIFORM
   bias:
     weight: 1.0
   trainingSamples:
-    count: 100000
+    count: 10000
   testSamples:
-    count: 20000
+    count: 2000
   learningRate: 0.001
   #epochs: 10
   epochs: 1

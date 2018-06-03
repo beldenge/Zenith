@@ -21,6 +21,8 @@ package com.ciphertool.zenith.neural;
 
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.initialize.Initialization;
+import com.ciphertool.zenith.neural.initialize.InitializationType;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.PredictionStats;
@@ -96,6 +98,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Value("${network.bias.weight}")
 	private Float				biasWeight;
 
+	@Value("${network.initialization}")
+	private String initializationType;
+
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
 
@@ -129,6 +134,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		//	network = new NeuralNetwork(NetworkMapper.loadFromFile(inputFileName));
 		//} else {
 		network = new NeuralNetwork(inputLayerNeurons, hiddenLayers, outputLayerNeurons, biasWeight);
+
+		Initialization initialization = InitializationType.valueOf(initializationType).getInitialization();
+		initialization.initialize(network);
 		//}
 
 		long start = System.currentTimeMillis();

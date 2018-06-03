@@ -26,7 +26,7 @@ public enum ActivationFunctionType {
 
 	private ActivationFunction activationFunction;
 
-	private ActivationFunctionType(ActivationFunction activationFunction) {
+	ActivationFunctionType(ActivationFunction activationFunction) {
 		this.activationFunction = activationFunction;
 	}
 

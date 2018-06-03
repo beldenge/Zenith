@@ -122,11 +122,6 @@ public class NeuralNetwork {
 				activationLayers[i].putScalar(activationLayers[i].size(0) - 1, biasWeight);
 			}
 		}
-
-		for (int i = 0; i < layers.length - 1; i++) {
-			weightLayers[i] = Nd4j.rand(weightLayers[i].shape());
-			weightLayers[i].subi(0.5f);
-		}
 	}
 
 	/**
