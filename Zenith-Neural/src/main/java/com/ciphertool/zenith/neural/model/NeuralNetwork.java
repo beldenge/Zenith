@@ -97,25 +97,7 @@ public class NeuralNetwork {
 		accumulatedDeltaLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
 		weightLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
 
-		init();
-	}
-
-	protected void init() {
-		problemType = this.getOutputLayer().getNeurons().length == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
-
-		Layer fromLayer;
-		Layer toLayer;
-
-		for (int i = 0; i < layers.length - 1; i++) {
-			fromLayer = layers[i];
-			toLayer = layers[i + 1];
-
-			for (int j = 0; j < fromLayer.getNeurons().length; j++) {
-				Neuron nextInputNeuron = fromLayer.getNeurons()[j];
-				nextInputNeuron.setOutgoingSynapses(new Synapse[toLayer.getNeurons().length
-						- (toLayer.hasBias() ? 1 : 0)]);
-			}
-		}
+		problemType = outputLayerNeurons == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
 
 		if (biasWeight != null) {
 			for (int i = 0; i < layers.length - 1; i++) {

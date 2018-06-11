@@ -19,9 +19,7 @@
 
 package com.ciphertool.zenith.neural.io;
 
-import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.Neuron;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,30 +68,6 @@ public class NetworkMapper {
 			network = mapper.readValue(networkFilePath.toFile(), NeuralNetwork.class);
 		} catch (IOException ioe) {
 			throw new IllegalStateException("Unable to read network parameters from file: " + fileName, ioe);
-		}
-
-		// Connect Synapses to Neurons
-		for (int i = 0; i < network.getLayers().length - 1; i++) {
-			Layer fromLayer = network.getLayers()[i];
-			Layer toLayer = network.getLayers()[i + 1];
-
-			for (int j = 0; j < toLayer.getNeurons().length; j++) {
-				Neuron toNeuron = toLayer.getNeurons()[j];
-
-				if (toNeuron.isBias()) {
-					continue;
-				}
-
-				for (int k = 0; k < fromLayer.getNeurons().length; k++) {
-					Neuron fromNeuron = fromLayer.getNeurons()[k];
-
-					fromNeuron.getOutgoingSynapses()[j].setOutGoingNeuron(toNeuron);
-
-					if (fromNeuron.isBias() && fromNeuron.getActivationValue() == null) {
-						fromNeuron.setActivationValue(network.getBiasWeight());
-					}
-				}
-			}
 		}
 
 		return network;

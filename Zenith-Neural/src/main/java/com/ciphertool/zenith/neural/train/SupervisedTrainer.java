@@ -150,9 +150,9 @@ public class SupervisedTrainer {
 	protected void backPropagate(NeuralNetwork network, INDArray expectedOutputs) {
 		Layer outputLayer = network.getOutputLayer();
 
-		if (expectedOutputs.size(1) != outputLayer.getNeurons().length) {
+		if (expectedOutputs.size(1) != outputLayer.getNeurons()) {
 			throw new IllegalArgumentException("The expected output size of " + expectedOutputs.size(1)
-					+ " does not match the actual output size of " + outputLayer.getNeurons().length
+					+ " does not match the actual output size of " + outputLayer.getNeurons()
 					+ ".  Unable to continue with back propagation step.");
 		}
 

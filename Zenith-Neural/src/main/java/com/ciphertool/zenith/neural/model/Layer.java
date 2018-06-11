@@ -23,7 +23,7 @@ import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Layer {
-	private Neuron[]				neurons;
+	private int neurons;
 
 	@JsonProperty(value = "hasBias")
 	private boolean					hasBias;
@@ -36,30 +36,14 @@ public class Layer {
 	}
 
 	public Layer(int neurons, boolean hasBias) {
+		this.neurons = neurons + (hasBias ? 1 : 0);
 		this.hasBias = hasBias;
-
-		this.neurons = new Neuron[neurons + (hasBias ? 1 : 0)];
-
-		for (int i = 0; i < neurons; i++) {
-			this.neurons[i] = new Neuron(false);
-		}
-
-		if (hasBias) {
-			this.neurons[this.neurons.length - 1] = new Neuron(true);
-		}
 	}
 
 	public Layer(int neurons, ActivationFunctionType activationFunctionType, boolean hasBias) {
 		this(neurons, hasBias);
 
 		this.activationFunctionType = activationFunctionType;
-	}
-
-	/**
-	 * @return the neurons
-	 */
-	public Neuron[] getNeurons() {
-		return neurons;
 	}
 
 	/**
@@ -74,5 +58,12 @@ public class Layer {
 	 */
 	public boolean hasBias() {
 		return hasBias;
+	}
+
+	/**
+	 * @return the number of neurons in this layer
+	 */
+	public int getNeurons() {
+		return neurons;
 	}
 }

@@ -115,7 +115,7 @@ public class Predictor {
 	public void feedForward(NeuralNetwork network, INDArray inputs) {
 		Layer inputLayer = network.getInputLayer();
 
-		int nonBiasNeurons = inputLayer.getNeurons().length - (inputLayer.hasBias() ? 1 : 0);
+		int nonBiasNeurons = inputLayer.getNeurons() - (inputLayer.hasBias() ? 1 : 0);
 
 		if (inputs.size(1) != nonBiasNeurons) {
 			throw new IllegalArgumentException("The sample input size of " + inputs.size(1)

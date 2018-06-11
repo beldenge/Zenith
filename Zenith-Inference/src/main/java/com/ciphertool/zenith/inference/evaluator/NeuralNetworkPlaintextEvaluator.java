@@ -24,6 +24,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.predict.Predictor;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,9 @@ public class NeuralNetworkPlaintextEvaluator {
 
 		log.debug("Feed forward took {}ms.", (System.currentTimeMillis() - startFeedForward));
 
-		Float interpolatedProbability = network.getOutputLayer().getNeurons()[0].getActivationValue();
+		// Get the activation value of the last neuron in the output layer, which is the English probability
+		INDArray outputLayer = network.getActivationLayers()[network.getActivationLayers().length - 1];
+		Float interpolatedProbability = outputLayer.getFloat(outputLayer.size(1) - 1);
 		Float interpolatedLogProbability = (float) Math.log(interpolatedProbability);
 
 		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
