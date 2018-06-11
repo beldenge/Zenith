@@ -22,7 +22,8 @@ package com.ciphertool.zenith.neural.activation;
 public enum ActivationFunctionType {
 	LEAKY_RELU(new LeakyReLuActivationFunction()),
 	SIGMOID(new SigmoidActivationFunction()),
-	SOFTMAX(new SoftmaxActivationFunction());
+	SOFTMAX(new SoftmaxActivationFunction()),
+	TANH(new TanhActivationFunction());
 
 	private ActivationFunction activationFunction;
 
