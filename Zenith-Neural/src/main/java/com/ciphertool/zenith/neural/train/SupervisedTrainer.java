@@ -20,7 +20,6 @@
 package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
-import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
 import com.ciphertool.zenith.neural.model.DataSet;
 import com.ciphertool.zenith.neural.model.Layer;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
@@ -88,8 +87,6 @@ public class SupervisedTrainer {
 	}
 
 	public void train(NeuralNetwork network, int batchSize) {
-		ConsoleProgressBar progressBar = new ConsoleProgressBar();
-
 		int currentBatchSize = 0;
 
 		int i;
@@ -124,8 +121,6 @@ public class SupervisedTrainer {
 
 				batchStart = System.currentTimeMillis();
 			}
-
-			progressBar.tick((float) i, (float) numberOfSamples);
 
 			network.incrementSamplesTrained();
 

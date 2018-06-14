@@ -20,8 +20,10 @@
 package com.ciphertool.zenith.neural.predict;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
-import com.ciphertool.zenith.neural.log.ConsoleProgressBar;
-import com.ciphertool.zenith.neural.model.*;
+import com.ciphertool.zenith.neural.model.DataSet;
+import com.ciphertool.zenith.neural.model.Layer;
+import com.ciphertool.zenith.neural.model.NeuralNetwork;
+import com.ciphertool.zenith.neural.model.ProblemType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
@@ -49,8 +51,6 @@ public class Predictor {
 	public PredictionStats predict(NeuralNetwork network) {
 		PredictionStats stats = new PredictionStats(0, 0, 0);
 
-		ConsoleProgressBar progressBar = new ConsoleProgressBar();
-
 		for (int i = 0; i < numberOfTests; i++) {
 			long start = System.currentTimeMillis();
 
@@ -68,8 +68,6 @@ public class Predictor {
 
 				compareExpectationToPrediction(network, nextSample.getOutputs().getRow(j), outputLayerActivations, stats);
 			}
-
-			progressBar.tick((float) i, (float) numberOfTests);
 		}
 
 		return stats;
