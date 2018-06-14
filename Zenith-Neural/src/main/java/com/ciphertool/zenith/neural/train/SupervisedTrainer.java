@@ -125,11 +125,13 @@ public class SupervisedTrainer {
 			network.incrementSamplesTrained();
 
 			if (outputFileNameWithDate != null && iterationsBetweenSaves > 0 && ((i + 1) % iterationsBetweenSaves) == 0) {
+				// FIXME: re-implement saving of network to file
 				//NetworkMapper.saveToFile(network, outputFileNameWithDate);
 			}
 		}
 
 		if (outputFileNameWithDate != null && (iterationsBetweenSaves == 0 || (i % iterationsBetweenSaves) != 0)) {
+			// FIXME: re-implement saving of network to file
 			//NetworkMapper.saveToFile(network, outputFileNameWithDate);
 		}
 
@@ -163,7 +165,7 @@ public class SupervisedTrainer {
 		INDArray errorDerivatives;
 		INDArray activationDerivatives;
 
-		INDArray actualOutputs = network.getActivationLayers()[network.getActivationLayers().length - 1].dup();
+		INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
 
 		// Compute deltas for output layer using chain rule and subtract them from current weights
 		if (network.getProblemType() == ProblemType.REGRESSION) {
@@ -174,7 +176,7 @@ public class SupervisedTrainer {
 
 		errorDerivatives = actualOutputs;
 
-		INDArray outputSums = network.getOutputSumLayers()[network.getOutputSumLayers().length - 1].dup();
+		INDArray outputSums = network.getOutputLayer().getOutputSums().dup();
 
 		if (network.getProblemType() == ProblemType.REGRESSION) {
 			outputLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
@@ -185,14 +187,16 @@ public class SupervisedTrainer {
 			activationDerivatives = Nd4j.ones(outputSums.shape());
 		}
 
-		INDArray outputWeights = network.getWeightLayers()[network.getWeightLayers().length - 1];
+		Layer secondToLast = network.getLayers()[network.getLayers().length - 2];
+
+		INDArray outputWeights = secondToLast.getOutgoingWeights();
 		INDArray deltas = Nd4j.ones(outputWeights.shape());
-		INDArray outputSumDerivatives = network.getActivationLayers()[network.getActivationLayers().length - 2];
+		INDArray outputSumDerivatives = secondToLast.getActivations();
 		deltas.muliColumnVector(outputSumDerivatives.transpose());
 		deltas.muliRowVector(errorDerivatives);
 		deltas.muliRowVector(activationDerivatives);
 
-		INDArray deltaLayer = network.getAccumulatedDeltaLayers()[network.getAccumulatedDeltaLayers().length - 1];
+		INDArray deltaLayer = secondToLast.getAccumulatedDeltas();
 		deltaLayer.addi(deltas);
 		// END - PROCESS OUTPUT LAYER
 
@@ -201,14 +205,14 @@ public class SupervisedTrainer {
 		INDArray oldActivationDerivatives;
 
 		// Compute deltas for hidden layers using chain rule and subtract them from current weights
-		for (int i = network.getActivationLayers().length - 2; i > 0; i--) {
-			outputSumDerivatives = network.getActivationLayers()[i - 1];
+		for (int i = network.getLayers().length - 2; i > 0; i--) {
+			outputSumDerivatives = network.getLayers()[i - 1].getActivations();
 			toLayer = network.getLayers()[i];
 
 			oldErrorDerivatives = errorDerivatives;
 			oldActivationDerivatives = activationDerivatives;
 
-			INDArray outputSumLayer = network.getOutputSumLayers()[i];
+			INDArray outputSumLayer = network.getLayers()[i].getOutputSums();
 			// Get a subset of the outputSumLayer so as to skip the bias neuron
 			outputSums = outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, outputSumLayer.size(1) - (toLayer.hasBias() ? 1 : 0))).dup();
 			toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
@@ -216,23 +220,23 @@ public class SupervisedTrainer {
 			activationDerivatives = outputSums;
 
 			INDArray partialErrorDerivatives = oldErrorDerivatives.mul(oldActivationDerivatives);
-			INDArray toWeightLayer = network.getWeightLayers()[i];
+			INDArray toWeightLayer = network.getLayers()[i].getOutgoingWeights();
 			// Get a subset of the toWeightLayer so as to skip the bias neuron
 			errorDerivatives = toWeightLayer.get(NDArrayIndex.interval(0, toWeightLayer.size(0) - (toLayer.hasBias() ? 1 : 0)), NDArrayIndex.all()).mmul(partialErrorDerivatives.transpose()).transpose();
 
-			outputWeights = network.getWeightLayers()[i - 1];
+			outputWeights = network.getLayers()[i - 1].getOutgoingWeights();
 			deltas = Nd4j.ones(outputWeights.shape());
 			deltas.muliColumnVector(outputSumDerivatives.transpose());
 			deltas.muliRowVector(errorDerivatives);
 			deltas.muliRowVector(activationDerivatives);
 
-			deltaLayer = network.getAccumulatedDeltaLayers()[i - 1];
+			deltaLayer = network.getLayers()[i - 1].getAccumulatedDeltas();
 			deltaLayer.addi(deltas);
 		}
 	}
 
 	protected static Float computeSumOfErrors(NeuralNetwork network, INDArray expectedOutputs) {
-		INDArray actualOutputs = network.getActivationLayers()[network.getActivationLayers().length - 1].dup();
+		INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
 
 		if (network.getProblemType() == ProblemType.REGRESSION) {
 			costFunctionRegression(expectedOutputs, actualOutputs);

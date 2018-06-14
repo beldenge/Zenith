@@ -20,19 +20,17 @@
 package com.ciphertool.zenith.neural.initialize;
 
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 public class XavierInitialization implements Initialization {
     @Override
     public void initialize(NeuralNetwork network) {
-        INDArray[] weightLayers = network.getWeightLayers();
-
         for (int i = 0; i < network.getLayers().length - 1; i++) {
-            float inputCount = network.getActivationLayers()[i].length();
+            float inputCount = network.getLayers()[i].getActivations().size(1);
 
-            weightLayers[i] = Nd4j.randn(weightLayers[i].shape());
-            weightLayers[i].divi(inputCount);
+            network.getLayers()[i].setOutgoingWeights(Nd4j.randn(network.getLayers()[i].getOutgoingWeights().shape()));
+
+            network.getLayers()[i].getOutgoingWeights().divi(inputCount);
         }
     }
 }

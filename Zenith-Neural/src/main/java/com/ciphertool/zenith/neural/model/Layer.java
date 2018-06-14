@@ -21,14 +21,19 @@ package com.ciphertool.zenith.neural.model;
 
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class Layer {
-	private int neurons;
-
 	@JsonProperty(value = "hasBias")
 	private boolean					hasBias;
 
 	private ActivationFunctionType	activationFunctionType;
+
+	private INDArray activations;
+	private INDArray outputSums;
+	private INDArray accumulatedDeltas;
+	private INDArray outgoingWeights;
 
 	@SuppressWarnings("unused")
 	private Layer() {
@@ -36,7 +41,8 @@ public class Layer {
 	}
 
 	public Layer(int neurons, boolean hasBias) {
-		this.neurons = neurons + (hasBias ? 1 : 0);
+		this.activations = Nd4j.create(1, neurons + (hasBias ? 1 : 0));
+		this.outputSums = Nd4j.create(1, neurons + (hasBias ? 1 : 0));
 		this.hasBias = hasBias;
 	}
 
@@ -64,6 +70,30 @@ public class Layer {
 	 * @return the number of neurons in this layer
 	 */
 	public int getNeurons() {
-		return neurons;
+		return activations.size(1);
+	}
+
+	public INDArray getActivations() {
+		return activations;
+	}
+
+	public INDArray getOutputSums() {
+		return outputSums;
+	}
+
+	public INDArray getAccumulatedDeltas() {
+		return accumulatedDeltas;
+	}
+
+	public void setAccumulatedDeltas(INDArray accumulatedDeltas) {
+		this.accumulatedDeltas = accumulatedDeltas;
+	}
+
+	public INDArray getOutgoingWeights() {
+		return outgoingWeights;
+	}
+
+	public void setOutgoingWeights(INDArray outgoingWeights) {
+		this.outgoingWeights = outgoingWeights;
 	}
 }

@@ -130,6 +130,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 		NeuralNetwork network;
 
+		// FIXME: re-implement saving of network to file
 		//if (inputFileName != null && !inputFileName.isEmpty()) {
 		//	network = new NeuralNetwork(NetworkMapper.loadFromFile(inputFileName));
 		//} else {

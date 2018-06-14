@@ -75,7 +75,7 @@ network:
     count: 10000
   testSamples:
     count: 1000
-  learningRate: 0.01
+  learningRate: 0.1
   epochs: 1
   batchSize: 1
   weightDecay: 0.0

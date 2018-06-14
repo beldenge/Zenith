@@ -20,23 +20,10 @@
 package com.ciphertool.zenith.neural.model;
 
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 public class NeuralNetwork {
-	@JsonIgnore
-	private INDArray[] activationLayers;
-
-	@JsonIgnore
-	private INDArray[] outputSumLayers;
-
-	@JsonIgnore
-	private INDArray[] weightLayers;
-
-	@JsonIgnore
-	private INDArray[] accumulatedDeltaLayers;
-
 	private Float biasWeight;
 
 	private ProblemType	problemType;
@@ -58,15 +45,6 @@ public class NeuralNetwork {
 
 		layers[0] = new Layer(inputLayerNeurons, addBias);
 
-		activationLayers = new INDArray[hiddenLayers.length + 2];
-		outputSumLayers = new INDArray[hiddenLayers.length + 2];
-		accumulatedDeltaLayers = new INDArray[hiddenLayers.length + 1];
-		weightLayers = new INDArray[hiddenLayers.length + 1];
-
-		int biasCount = addBias ? 1 : 0;
-		activationLayers[0] = Nd4j.create(1, inputLayerNeurons + biasCount);
-		outputSumLayers[0] = Nd4j.create(1, inputLayerNeurons + biasCount);
-
 		for (int i = 1; i <= hiddenLayers.length; i++) {
 			int separatorIndex = hiddenLayers[i - 1].indexOf(':');
 
@@ -82,26 +60,22 @@ public class NeuralNetwork {
 
 			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias);
 
-			activationLayers[i] = Nd4j.create(1, numberOfNeurons + biasCount);
-			outputSumLayers[i] = Nd4j.create(1, numberOfNeurons + biasCount);
-			accumulatedDeltaLayers[i - 1] = Nd4j.create(activationLayers[i - 1].size(1), numberOfNeurons);
-			weightLayers[i - 1] = Nd4j.create(activationLayers[i - 1].size(1), numberOfNeurons);
+			layers[i - 1].setAccumulatedDeltas(Nd4j.create(layers[i - 1].getActivations().size(1), numberOfNeurons));
+			layers[i - 1].setOutgoingWeights(Nd4j.create(layers[i - 1].getActivations().size(1), numberOfNeurons));
 		}
 
 		ActivationFunctionType activationFunctionType = outputLayerNeurons == 1 ? ActivationFunctionType.LEAKY_RELU : ActivationFunctionType.SOFTMAX;
 
 		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false);
 
-		activationLayers[layers.length - 1] = Nd4j.create(1, outputLayerNeurons);
-		outputSumLayers[layers.length - 1] = Nd4j.create(1, outputLayerNeurons);
-		accumulatedDeltaLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
-		weightLayers[layers.length - 2] = Nd4j.create(activationLayers[layers.length - 2].size(1), outputLayerNeurons);
+		layers[layers.length - 2].setAccumulatedDeltas(Nd4j.create(layers[layers.length - 2].getActivations().size(1), outputLayerNeurons));
+		layers[layers.length - 2].setOutgoingWeights(Nd4j.create(layers[layers.length - 2].getActivations().size(1), outputLayerNeurons));
 
 		problemType = outputLayerNeurons == 1 ? ProblemType.REGRESSION : ProblemType.CLASSIFICATION;
 
 		if (biasWeight != null) {
 			for (int i = 0; i < layers.length - 1; i++) {
-				activationLayers[i].putScalar(activationLayers[i].size(0) - 1, biasWeight);
+				layers[i].getActivations().putScalar(layers[i].getActivations().size(1) - 1, biasWeight);
 			}
 		}
 	}
@@ -112,10 +86,6 @@ public class NeuralNetwork {
 	 * @param network the NeuralNetwork from file
 	 */
 	public NeuralNetwork(NeuralNetwork network) {
-		this.activationLayers = network.activationLayers;
-		this.outputSumLayers = network.outputSumLayers;
-		this.weightLayers = network.weightLayers;
-		this.accumulatedDeltaLayers = network.accumulatedDeltaLayers;
 		this.layers = network.layers;
 		this.biasWeight = network.biasWeight;
 		this.problemType = network.problemType;
@@ -126,24 +96,27 @@ public class NeuralNetwork {
 		long start = System.currentTimeMillis();
 
 		for (int i = 0; i < layers.length - 1; i++) {
-			accumulatedDeltaLayers[i].divi(deltaCount);
+			INDArray accumulatedDeltas = layers[i].getAccumulatedDeltas();
+			INDArray weights = layers[i].getOutgoingWeights();
+
+			accumulatedDeltas.divi(deltaCount);
 
 			if (learningRate != null) {
-				accumulatedDeltaLayers[i].muli(learningRate);
+				accumulatedDeltas.muli(learningRate);
 			}
 
 			if (weightDecayPercent != null && weightDecayPercent != 0.0f) {
-				INDArray regularization = weightLayers[i].mul(weightDecayPercent);
+				INDArray regularization = weights.mul(weightDecayPercent);
 
 				if (learningRate != null) {
 					regularization.muli(learningRate);
 				}
 
-				weightLayers[i].subi(regularization);
+				weights.subi(regularization);
 			}
 
-			weightLayers[i].subi(accumulatedDeltaLayers[i]);
-			accumulatedDeltaLayers[i].assign(0.0f);
+			weights.subi(accumulatedDeltas);
+			accumulatedDeltas.assign(0.0f);
 		}
 
 		return System.currentTimeMillis() - start;
@@ -224,37 +197,5 @@ public class NeuralNetwork {
 
 	public void incrementSamplesTrained() {
 		this.samplesTrained ++;
-	}
-
-	public INDArray[] getActivationLayers() {
-		return activationLayers;
-	}
-
-	public void setActivationLayers(INDArray[] activationLayers) {
-		this.activationLayers = activationLayers;
-	}
-
-	public INDArray[] getOutputSumLayers() {
-		return outputSumLayers;
-	}
-
-	public void setOutputSumLayers(INDArray[] outputSumLayers) {
-		this.outputSumLayers = outputSumLayers;
-	}
-
-	public INDArray[] getWeightLayers() {
-		return weightLayers;
-	}
-
-	public void setWeightLayers(INDArray[] weightLayers) {
-		this.weightLayers = weightLayers;
-	}
-
-	public INDArray[] getAccumulatedDeltaLayers() {
-		return accumulatedDeltaLayers;
-	}
-
-	public void setAccumulatedDeltaLayers(INDArray[] accumulatedDeltaLayers) {
-		this.accumulatedDeltaLayers = accumulatedDeltaLayers;
 	}
 }

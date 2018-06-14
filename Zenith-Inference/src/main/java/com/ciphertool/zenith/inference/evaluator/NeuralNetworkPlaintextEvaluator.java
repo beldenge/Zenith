@@ -70,7 +70,7 @@ public class NeuralNetworkPlaintextEvaluator {
 		log.debug("Feed forward took {}ms.", (System.currentTimeMillis() - startFeedForward));
 
 		// Get the activation value of the last neuron in the output layer, which is the English probability
-		INDArray outputLayer = network.getActivationLayers()[network.getActivationLayers().length - 1];
+		INDArray outputLayer = network.getOutputLayer().getActivations();
 		Float interpolatedProbability = outputLayer.getFloat(outputLayer.size(1) - 1);
 		Float interpolatedLogProbability = (float) Math.log(interpolatedProbability);
 

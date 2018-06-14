@@ -61,7 +61,7 @@ public class Predictor {
 			for (int j = 0; j < sampleSize; j ++) {
 				feedForward(network, nextSample.getInputs().getRow(j));
 
-				INDArray outputLayerActivations = network.getActivationLayers()[network.getActivationLayers().length - 1];
+				INDArray outputLayerActivations = network.getOutputLayer().getActivations();
 
 				log.info("Finished predicting sample {} in {}ms.", (i * sampleSize) + j + 1, System.currentTimeMillis() - start);
 				log.debug("Inputs: {}", nextSample.getInputs().getRow(j));
@@ -122,28 +122,28 @@ public class Predictor {
 		}
 
 		// Insert the inputs, overwriting all except the bias
-		network.getActivationLayers()[0].put(NDArrayIndex.createCoveringShape(inputs.shape()), inputs);
+		network.getInputLayer().getActivations().put(NDArrayIndex.createCoveringShape(inputs.shape()), inputs);
 
 		INDArray fromLayer;
 		INDArray synapticGap;
 		INDArray toLayer;
 		INDArray outputSumLayer;
-		Layer[] layers = network.getLayers();
 
-		for (int i = 0; i < layers.length - 1; i++) {
-			fromLayer = network.getActivationLayers()[i];
-			synapticGap = network.getWeightLayers()[i];
-			toLayer = network.getActivationLayers()[i + 1];
-			outputSumLayer = network.getOutputSumLayers()[i + 1];
+		for (int i = 0; i < network.getLayers().length - 1; i++) {
+			fromLayer = network.getLayers()[i].getActivations();
+			synapticGap = network.getLayers()[i].getOutgoingWeights();
+			toLayer = network.getLayers()[i + 1].getActivations();
+			outputSumLayer = network.getLayers()[i + 1].getOutputSums();
 
-			INDArray intermediateLayer = fromLayer.mmul(synapticGap);
+			INDArray newActivations = fromLayer.mmul(synapticGap);
+
 			// Get a subset of the outputSumLayer so as not to overwrite the bias neuron
-			outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, intermediateLayer.size(1))).assign(intermediateLayer.dup());
+			outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, newActivations.size(1))).assign(newActivations.dup());
 
-			network.getLayers()[i + 1].getActivationFunctionType().getActivationFunction().transformInputSignal(intermediateLayer);
+			network.getLayers()[i + 1].getActivationFunctionType().getActivationFunction().transformInputSignal(newActivations);
 
 			// Insert the activation values, overwriting all except the bias
-			toLayer.put(NDArrayIndex.createCoveringShape(intermediateLayer.shape()), intermediateLayer);
+			toLayer.put(NDArrayIndex.createCoveringShape(newActivations.shape()), newActivations);
 		}
 	}
 }

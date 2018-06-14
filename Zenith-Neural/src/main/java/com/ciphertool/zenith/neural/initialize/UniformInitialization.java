@@ -20,17 +20,15 @@
 package com.ciphertool.zenith.neural.initialize;
 
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 public class UniformInitialization implements Initialization {
     @Override
     public void initialize(NeuralNetwork network) {
-        INDArray[] weightLayers = network.getWeightLayers();
-
         for (int i = 0; i < network.getLayers().length - 1; i++) {
-            weightLayers[i] = Nd4j.rand(weightLayers[i].shape());
-            weightLayers[i].subi(0.5f);
+            network.getLayers()[i].setOutgoingWeights(Nd4j.rand(network.getLayers()[i].getOutgoingWeights().shape()));
+
+            network.getLayers()[i].getOutgoingWeights().subi(0.5f);
         }
     }
 }
