@@ -63,26 +63,22 @@ spring:
   profiles: xor
 
 network:
-  layers:
-    input: 2
-    # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-    hidden: 3:LEAKY_RELU
-    output: 1
-  initialization: UNIFORM
-  bias:
-    weight: 1.0
-  trainingSamples:
-    count: 10000
-  testSamples:
-    count: 1000
-  learningRate: 0.1
+  inputLayerNeurons: 2
+  # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
+  hiddenLayers: 3:LEAKY_RELU
+  outputLayerNeurons: 1
+  initializationType: UNIFORM
+  biasWeight: 1.0
   epochs: 1
   batchSize: 1
-  weightDecay: 0.0
-  output:
-    fileName: /Users/george/Desktop/network-xor.json
-  input:
-    fileName:
+  inputFileName:
+  outputFileName: /Users/george/Desktop/network-xor.json
+
+training:
+  weightDecayPercent: 0.0
+  learningRate: 0.1
+  trainingSampleCount: 10000
+  testSampleCount: 1000
 
 ---
 
@@ -90,27 +86,22 @@ spring:
   profiles: mnist
 
 network:
-  layers:
-    input: 784
-    # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-    hidden: 1000:LEAKY_RELU
-    output: 10
-  initialization: UNIFORM
-  bias:
-    weight: 1.0
-  trainingSamples:
-    count: 60000
-  testSamples:
-    count: 10000
-  #learningRate: 0.00005  #this seems to work well with two hidden layers, albeit still not as good as a single layer for some reason
-  learningRate: 0.01
+  inputLayerNeurons: 784
+  # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
+  hiddenLayers: 1000:LEAKY_RELU
+  outputLayerNeurons: 10
+  initializationType: UNIFORM
+  biasWeight: 1.0
   epochs: 1
   batchSize: 1
-  weightDecay: 0.0
-  output:
-    fileName: /Users/george/Desktop/network-mnist.json
-  input:
-    fileName:
+  inputFileName:
+  outputFileName: /Users/george/Desktop/network-mnist.json
+
+training:
+  weightDecayPercent: 0.0
+  learningRate: 0.01
+  trainingSampleCount: 60000
+  testSampleCount: 10000
 
 task:
   mnist:
@@ -126,31 +117,25 @@ spring:
   profiles: zodiac408
 
 network:
-  layers:
-    # 391 positions of 26 possible letters each
-    input: 10166
-    # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-    hidden: 5000:LEAKY_RELU,2500:LEAKY_RELU
-    output: 4
-  initialization: UNIFORM
-  bias:
-    weight: 1.0
-  trainingSamples:
-    count: 10000
-  testSamples:
-    count: 2000
-  learningRate: 0.001
-  #epochs: 10
+  # 391 positions of 26 possible letters each
+  inputLayerNeurons: 10166
+  # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
+  hiddenLayers: 5000:LEAKY_RELU,2500:LEAKY_RELU
+  outputLayerNeurons: 4
+  initializationType: UNIFORM
+  biasWeight: 1.0
   epochs: 1
   batchSize: 1
-  weightDecay: 0.0
-  output:
-    fileName: /Users/george/Desktop/network-zodiac408.json
-  input:
-    fileName: #/Users/george/Desktop/network-zodiac408-20180512-015409.json
+  inputFileName: #/Users/george/Desktop/network-zodiac408-20180512-015409.json
+  outputFileName: /Users/george/Desktop/network-zodiac408.json
+  continueTraining: true
+
+training:
   iterationsBetweenSaves: 1000
-  training:
-    continue: true
+  weightDecayPercent: 0.0
+  learningRate: 0.001
+  trainingSampleCount: 10000
+  testSampleCount: 2000
 
 task:
   zodiac408:

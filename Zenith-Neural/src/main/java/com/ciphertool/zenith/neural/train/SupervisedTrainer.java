@@ -32,7 +32,6 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -42,48 +41,60 @@ import javax.annotation.PostConstruct;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Component
 @Validated
-@ConfigurationProperties
+@ConfigurationProperties(prefix = "training")
 public class SupervisedTrainer {
 	private static Logger					log						= LoggerFactory.getLogger(SupervisedTrainer.class);
 
 	private static final boolean			COMPUTE_SUM_OF_ERRORS	= false;
 
 	@DecimalMin("0.0")
-	@Value("${network.learningRate}")
-	private Float						learningRate;
+	private Float learningRate;
 
 	@DecimalMin("0.0")
 	@DecimalMax("1.0")
-	@Value("${network.weightDecay}")
-	private Float						weightDecayPercent;
+	private Float weightDecayPercent;
 
-	@Value("${network.trainingSamples.count}")
-	private int						numberOfSamples;
+	private int trainingSampleCount;
 
 	@Min(0)
-	@Value("${network.iterationsBetweenSaves:0}")
-	private int iterationsBetweenSaves;
+	private int iterationsBetweenSaves = 0;
 
-	@Autowired
-	@Qualifier("outputFileNameWithDate")
 	private String outputFileNameWithDate;
+
+	@Value("${network.outputFileName}")
+	private String outputFileName;
 
 	@Autowired
 	private SampleGenerator generator;
 
 	@Autowired
-	private Predictor						predictor;
+	private Predictor predictor;
 
 	@PostConstruct
-	public void validate() {
-		if (iterationsBetweenSaves > 0 && outputFileNameWithDate == null) {
-			throw new IllegalArgumentException("Property network.iterationsBetweenSaves was set, but property " +
-					"network.output.fileName was null.  Please set network.output.fileName if saving of the network is " +
-					"desired.");
+	public void init() {
+		if (outputFileName == null) {
+			if (iterationsBetweenSaves > 0) {
+				throw new IllegalArgumentException("Property network.iterationsBetweenSaves was set, but property " +
+						"network.outputFileName was null.  Please set network.outputFileName if saving of the network is " +
+						"desired.");
+			}
+
+			return;
 		}
+
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+		String dateText = now.format(formatter);
+
+		String extension = outputFileName.substring(outputFileName.indexOf('.'));
+		String beforeExtension = outputFileName.replace(extension, "");
+
+		outputFileNameWithDate = beforeExtension + "-" + dateText + extension;
 	}
 
 	public void train(NeuralNetwork network, int batchSize) {
@@ -91,7 +102,7 @@ public class SupervisedTrainer {
 
 		int i;
 		long batchStart = System.currentTimeMillis();
-		for (i = 0; i < numberOfSamples; i++) {
+		for (i = 0; i < trainingSampleCount; i++) {
 			long start = System.currentTimeMillis();
 
 			DataSet nextSample = generator.generateTrainingSample();
@@ -265,5 +276,21 @@ public class SupervisedTrainer {
 
 	protected static void derivativeOfCostFunctionClassification(INDArray expectedOutputs, INDArray actualOutputs) {
 		actualOutputs.subi(expectedOutputs);
+	}
+
+	public void setLearningRate(Float learningRate) {
+		this.learningRate = learningRate;
+	}
+
+	public void setWeightDecayPercent(Float weightDecayPercent) {
+		this.weightDecayPercent = weightDecayPercent;
+	}
+
+	public void setTrainingSampleCount(int trainingSampleCount) {
+		this.trainingSampleCount = trainingSampleCount;
+	}
+
+	public void setIterationsBetweenSaves(int iterationsBetweenSaves) {
+		this.iterationsBetweenSaves = iterationsBetweenSaves;
 	}
 }

@@ -85,24 +85,24 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 	}
 
-	@Min(1)
-	@Value("${network.layers.input}")
-	private int						inputLayerNeurons;
-
 	private static int UNIQUE_INPUT_COUNT;
 
+	@Min(1)
+	@Value("${network.inputLayerNeurons}")
+	private int						inputLayerNeurons;
+
 	@Min(2)
-	@Value("${network.layers.output}")
+	@Value("${network.outputLayerNeurons}")
 	private int						outputLayerNeurons;
 
 	@NotBlank
 	@Value("${task.zodiac408.sourceDirectory}")
 	private String					validTrainingTextDirectory;
 
-	@Value("${network.testSamples.count}")
+	@Value("${training.testSampleCount}")
 	private int						testSampleCount;
 
-	@Value("${network.trainingSamples.count}")
+	@Value("${training.trainingSampleCount}")
 	private int						trainingSampleCount;
 
 	@Autowired

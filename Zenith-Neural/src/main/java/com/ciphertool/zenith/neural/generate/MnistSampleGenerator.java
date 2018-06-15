@@ -66,11 +66,11 @@ public class MnistSampleGenerator implements SampleGenerator {
 	private String					testLabelsFile;
 
 	@Min(1)
-	@Value("${network.layers.input}")
+	@Value("${network.inputLayerNeurons}")
 	private int						inputLayerNeurons;
 
 	@Min(1)
-	@Value("${network.layers.output}")
+	@Value("${network.outputLayerNeurons}")
 	private int						outputLayerNeurons;
 
 	private static AtomicInteger nextTrainingIndex = new AtomicInteger(0);

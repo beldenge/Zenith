@@ -31,13 +31,10 @@ import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
@@ -45,61 +42,39 @@ import org.springframework.validation.annotation.Validated;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @EnableAsync
 @Validated
-@ConfigurationProperties
-@SpringBootApplication(scanBasePackageClasses = { NeuralNetworkApplication.class, LetterNGramDao.class })
+@ConfigurationProperties(prefix = "network")
+@SpringBootApplication(scanBasePackageClasses = { NeuralNetworkApplication.class, LetterNGramDao.class, TaskExecutorConfiguration.class })
 public class NeuralNetworkApplication implements CommandLineRunner {
 	private static Logger			log	= LoggerFactory.getLogger(NeuralNetworkApplication.class);
 
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						corePoolSize;
-
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						maxPoolSize;
-
 	@Min(1)
-	@Value("${taskExecutor.queueCapacity}")
-	private int						queueCapacity;
+	private int						epochs = 1;
 
-	@Min(1)
-	@Value("${network.epochs:1}")
-	private int						epochs;
-
-	@Value("${network.input.fileName}")
 	private String					inputFileName;
 
-	@Value("${network.training.continue:true}")
-	private boolean					continueTraining;
-
 	@NotBlank
-	@Value("${network.output.fileName}")
 	private String					outputFileName;
 
-	@Min(1)
-	@Value("${network.batchSize:1}")
-	private int						batchSize;
+	private boolean					continueTraining = true;
 
 	@Min(1)
-	@Value("${network.layers.input}")
+	private int						batchSize = 1;
+
+	@Min(1)
 	private int						inputLayerNeurons;
 
 	@NotEmpty
-	@Value("${network.layers.hidden}")
 	private String[]				hiddenLayers;
 
 	@Min(1)
-	@Value("${network.layers.output}")
 	private int						outputLayerNeurons;
 
-	@Value("${network.bias.weight}")
-	private Float				biasWeight;
+	private Float					biasWeight;
 
-	@Value("${network.initialization}")
-	private String initializationType;
+	private String 					initializationType;
 
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
@@ -111,7 +86,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	private Predictor				predictor;
 
 	@Autowired
-	private SampleGenerator generator;
+	private SampleGenerator 		generator;
 
 	/**
 	 * Main entry point for the application.
@@ -170,35 +145,43 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		}
 	}
 
-	@Bean
-	@Qualifier("outputFileNameWithDate")
-	public String getFileNameWithDate()
-	{
-		if (outputFileName == null)
-		{
-			return null;
-		}
-
-		LocalDateTime now = LocalDateTime.now();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
-		String dateText = now.format(formatter);
-
-		String extension = outputFileName.substring(outputFileName.indexOf('.'));
-		String beforeExtension = outputFileName.replace(extension, "");
-
-		return beforeExtension + "-" + dateText + extension;
+	public void setEpochs(int epochs) {
+		this.epochs = epochs;
 	}
 
-	@Bean
-	public ThreadPoolTaskExecutor taskExecutor() {
-		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+	public void setInputFileName(String inputFileName) {
+		this.inputFileName = inputFileName;
+	}
 
-		taskExecutor.setCorePoolSize(corePoolSize);
-		taskExecutor.setMaxPoolSize(maxPoolSize);
-		taskExecutor.setQueueCapacity(queueCapacity);
-		taskExecutor.setKeepAliveSeconds(5);
-		taskExecutor.setAllowCoreThreadTimeOut(true);
+	public void setOutputFileName(String outputFileName) {
+		this.outputFileName = outputFileName;
+	}
 
-		return taskExecutor;
+	public void setContinueTraining(boolean continueTraining) {
+		this.continueTraining = continueTraining;
+	}
+
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	public void setInputLayerNeurons(int inputLayerNeurons) {
+		this.inputLayerNeurons = inputLayerNeurons;
+	}
+
+	public void setHiddenLayers(String[] hiddenLayers) {
+		this.hiddenLayers = hiddenLayers;
+	}
+
+	public void setOutputLayerNeurons(int outputLayerNeurons) {
+		this.outputLayerNeurons = outputLayerNeurons;
+	}
+
+	public void setBiasWeight(Float biasWeight) {
+		this.biasWeight = biasWeight;
+	}
+
+	public void setInitializationType(String initializationType) {
+		this.initializationType = initializationType;
 	}
 }

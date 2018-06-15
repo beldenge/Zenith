@@ -29,21 +29,20 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.Min;
 
 @Component
+@ConfigurationProperties(prefix = "training")
 public class Predictor {
 	private static Logger				log	= LoggerFactory.getLogger(Predictor.class);
 
 	@Min(1)
-	@Value("${network.testSamples.count}")
-	private int						numberOfTests;
+	private int testSampleCount;
 
-	@Value("${network.testSamples.marginOfError:0.01}")
-	private Float				marginOfErrorRegression;
+	private Float marginOfError = 0.01f;
 
 	@Autowired
 	private SampleGenerator generator;
@@ -51,7 +50,7 @@ public class Predictor {
 	public PredictionStats predict(NeuralNetwork network) {
 		PredictionStats stats = new PredictionStats(0, 0, 0);
 
-		for (int i = 0; i < numberOfTests; i++) {
+		for (int i = 0; i < testSampleCount; i++) {
 			long start = System.currentTimeMillis();
 
 			DataSet nextSample = generator.generateTestSample();
@@ -93,7 +92,7 @@ public class Predictor {
 			}
 
 			// We can't test the exact values of 1 and 0 since the output from the network is a decimal value
-			if (prediction.isNaN() || expected.isNaN() || Math.abs(prediction - expected) > marginOfErrorRegression) {
+			if (prediction.isNaN() || expected.isNaN() || Math.abs(prediction - expected) > marginOfError) {
 				isIncorrect = true;
 			}
 		}
@@ -145,5 +144,13 @@ public class Predictor {
 			// Insert the activation values, overwriting all except the bias
 			toLayer.put(NDArrayIndex.createCoveringShape(newActivations.shape()), newActivations);
 		}
+	}
+
+	public void setTestSampleCount(int testSampleCount) {
+		this.testSampleCount = testSampleCount;
+	}
+
+	public void setMarginOfError(Float marginOfError) {
+		this.marginOfError = marginOfError;
 	}
 }

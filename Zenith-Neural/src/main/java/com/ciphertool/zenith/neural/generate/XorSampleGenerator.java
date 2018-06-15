@@ -37,11 +37,11 @@ import java.util.concurrent.ThreadLocalRandom;
 @Profile("xor")
 public class XorSampleGenerator implements SampleGenerator {
 	@Min(1)
-	@Value("${network.layers.input}")
+	@Value("${network.inputLayerNeurons}")
 	private int	inputLayerNeurons;
 
 	@Min(1)
-	@Value("${network.layers.output}")
+	@Value("${network.outputLayerNeurons}")
 	private int	outputLayerNeurons;
 
 	@Override
