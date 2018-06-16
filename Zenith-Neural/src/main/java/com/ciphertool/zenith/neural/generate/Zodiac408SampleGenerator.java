@@ -244,10 +244,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			// Generate probabilistic samples based on Markov model
 			for (int i = 1; i < outputLayerNeurons - 1; i++) {
 				if (i == sampleType) {
-					samples.putRow(i, generateMarkovModelSample(i));
+					samples.putRow(0, generateMarkovModelSample(i));
 
 					for (int j = 0; j < outputLayerNeurons; j++) {
-						outputs.putScalar(i, j, (i == j) ? 1.0f : 0.0f);
+						outputs.putScalar(0, j, (i == j) ? 1.0f : 0.0f);
 					}
 				}
 			}
@@ -256,11 +256,11 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			// Generate a sample from known English paragraphs
 			int i = outputLayerNeurons - 1;
 
-			samples.putRow(i, getRandomParagraph());
-			outputs.putScalar(i, outputLayerNeurons - 1, 1.0f);
+			samples.putRow(0, getRandomParagraph());
+			outputs.putScalar(0, outputLayerNeurons - 1, 1.0f);
 
 			for (int j = 0; j < outputLayerNeurons - 1; j++) {
-				outputs.putScalar(i, j, 0.0f);
+				outputs.putScalar(0, j, 0.0f);
 			}
 		}
 
