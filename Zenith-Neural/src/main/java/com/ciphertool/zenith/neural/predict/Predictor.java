@@ -56,7 +56,8 @@ public class Predictor {
 			DataSet nextSample = generator.generateTestSample();
 
 			if (nextSample.getInputs().size(0) > 1) {
-				throw new IllegalStateException(String.format("Only expected one sample to be generated, but %s were generated.", nextSample.getInputs().size(0)));
+				throw new IllegalStateException(String.format("Only expected one sample to be generated, but %s were generated.",
+						nextSample.getInputs().size(0)));
 			}
 
 			feedForward(network, nextSample.getInputs().getRow(0));

@@ -107,17 +107,20 @@ public class SupervisedTrainer {
 
 			DataSet nextSample = generator.generateTrainingSample();
 
-			for (int j = 0; j < nextSample.getInputs().size(0); j ++) {
-				predictor.feedForward(network, nextSample.getInputs().getRow(j));
-
-				log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
-
-				start = System.currentTimeMillis();
-
-				backPropagate(network, nextSample.getOutputs().getRow(j));
-
-				log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
+			if (nextSample.getInputs().size(0) > 1) {
+				throw new IllegalStateException(String.format("Only expected one sample to be generated, but %s were generated.",
+						nextSample.getInputs().size(0)));
 			}
+
+			predictor.feedForward(network, nextSample.getInputs().getRow(0));
+
+			log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
+
+			start = System.currentTimeMillis();
+
+			backPropagate(network, nextSample.getOutputs().getRow(0));
+
+			log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
 
 			currentBatchSize++;
 

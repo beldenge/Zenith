@@ -222,8 +222,8 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	public DataSet generateOne() {
-		INDArray samples = Nd4j.create(outputLayerNeurons, inputLayerNeurons);
-		INDArray outputs = Nd4j.create(outputLayerNeurons, outputLayerNeurons);
+		INDArray samples = Nd4j.create(inputLayerNeurons);
+		INDArray outputs = Nd4j.create(outputLayerNeurons);
 
 		/*
 		 * The idea is to "roll the dice" to determine what type of sample to generate, either a completely random
