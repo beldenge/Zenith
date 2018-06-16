@@ -55,18 +55,18 @@ public class Predictor {
 
 			DataSet nextSample = generator.generateTestSample();
 
-			int sampleSize = nextSample.getInputs().size(0);
-
-			for (int j = 0; j < sampleSize; j ++) {
-				feedForward(network, nextSample.getInputs().getRow(j));
-
-				INDArray outputLayerActivations = network.getOutputLayer().getActivations();
-
-				log.info("Finished predicting sample {} in {}ms.", (i * sampleSize) + j + 1, System.currentTimeMillis() - start);
-				log.debug("Inputs: {}", nextSample.getInputs().getRow(j));
-
-				compareExpectationToPrediction(network, nextSample.getOutputs().getRow(j), outputLayerActivations, stats);
+			if (nextSample.getInputs().size(0) > 1) {
+				throw new IllegalStateException(String.format("Only expected one sample to be generated, but %s were generated.", nextSample.getInputs().size(0)));
 			}
+
+			feedForward(network, nextSample.getInputs().getRow(0));
+
+			INDArray outputLayerActivations = network.getOutputLayer().getActivations();
+
+			log.info("Finished predicting sample {} in {}ms.", i + 1, System.currentTimeMillis() - start);
+			log.debug("Inputs: {}", nextSample.getInputs().getRow(0));
+
+			compareExpectationToPrediction(network, nextSample.getOutputs().getRow(0), outputLayerActivations, stats);
 		}
 
 		return stats;

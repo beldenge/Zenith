@@ -225,31 +225,43 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		INDArray samples = Nd4j.create(outputLayerNeurons, inputLayerNeurons);
 		INDArray outputs = Nd4j.create(outputLayerNeurons, outputLayerNeurons);
 
-		// Generate a random sample
-		samples.putRow(0, generateRandomSample());
-		outputs.putScalar(0, 0, 1.0f);
+		/*
+		 * The idea is to "roll the dice" to determine what type of sample to generate, either a completely random
+		 * sample, a sample based on the Markov model, or a sample from known English paragraphs.
+		 */
+		int sampleType = ThreadLocalRandom.current().nextInt(outputLayerNeurons);
 
-		for (int i = 1; i < outputLayerNeurons; i ++) {
-			outputs.putScalar(0, i, 0.0f);
-		}
+		if (sampleType == 0) {
+			// Generate a random sample
+			samples.putRow(0, generateRandomSample());
+			outputs.putScalar(0, 0, 1.0f);
 
-		// Generate probabilistic samples based on Markov model
-		for (int i = 1; i < outputLayerNeurons - 1; i ++) {
-			samples.putRow(i, generateMarkovModelSample(i));
-
-			for (int j = 0; j < outputLayerNeurons; j ++) {
-				outputs.putScalar(i, j, (i == j) ? 1.0f : 0.0f);
+			for (int i = 1; i < outputLayerNeurons; i++) {
+				outputs.putScalar(0, i, 0.0f);
 			}
 		}
+		else if (sampleType < outputLayerNeurons - 1) {
+			// Generate probabilistic samples based on Markov model
+			for (int i = 1; i < outputLayerNeurons - 1; i++) {
+				if (i == sampleType) {
+					samples.putRow(i, generateMarkovModelSample(i));
 
-		// Generate a sample from known English paragraphs
-		int i = outputLayerNeurons - 1;
+					for (int j = 0; j < outputLayerNeurons; j++) {
+						outputs.putScalar(i, j, (i == j) ? 1.0f : 0.0f);
+					}
+				}
+			}
+		}
+		else {
+			// Generate a sample from known English paragraphs
+			int i = outputLayerNeurons - 1;
 
-		samples.putRow(i, getRandomParagraph());
-		outputs.putScalar(i, outputLayerNeurons - 1, 1.0f);
+			samples.putRow(i, getRandomParagraph());
+			outputs.putScalar(i, outputLayerNeurons - 1, 1.0f);
 
-		for (int j = 0; j < outputLayerNeurons - 1; j ++) {
-			outputs.putScalar(i, j, 0.0f);
+			for (int j = 0; j < outputLayerNeurons - 1; j++) {
+				outputs.putScalar(i, j, 0.0f);
+			}
 		}
 
 		return new DataSet(samples, outputs);
