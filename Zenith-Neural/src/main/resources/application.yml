@@ -64,9 +64,12 @@ spring:
 
 network:
   inputLayerNeurons: 2
-  # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-  hiddenLayers: 3:LEAKY_RELU
   outputLayerNeurons: 1
+  layerConfigurations[0].numberOfNeurons: ${network.inputLayerNeurons}
+  layerConfigurations[1].layerType: FEED_FORWARD
+  layerConfigurations[1].numberOfNeurons: 3
+  layerConfigurations[1].activationType: LEAKY_RELU
+  layerConfigurations[2].numberOfNeurons: ${network.outputLayerNeurons}
   initializationType: UNIFORM
   biasWeight: 1.0
   epochs: 1
@@ -87,9 +90,12 @@ spring:
 
 network:
   inputLayerNeurons: 784
-  # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-  hiddenLayers: 1000:LEAKY_RELU
   outputLayerNeurons: 10
+  layerConfigurations[0].numberOfNeurons: ${network.inputLayerNeurons}
+  layerConfigurations[1].layerType: FEED_FORWARD
+  layerConfigurations[1].numberOfNeurons: 1000
+  layerConfigurations[1].activationType: LEAKY_RELU
+  layerConfigurations[2].numberOfNeurons: ${network.outputLayerNeurons}
   initializationType: UNIFORM
   biasWeight: 1.0
   epochs: 1
@@ -119,9 +125,15 @@ spring:
 network:
   # 391 positions of 26 possible letters each
   inputLayerNeurons: 10166
-  # The hidden layer takes a comma-separated list of integer:function value pairs representing the number of neurons per hidden layer followed by the activation function type
-  hiddenLayers: 5000:LEAKY_RELU,2500:LEAKY_RELU
   outputLayerNeurons: 4
+  layerConfigurations[0].numberOfNeurons: ${network.inputLayerNeurons}
+  layerConfigurations[1].layerType: FEED_FORWARD
+  layerConfigurations[1].numberOfNeurons: 5000
+  layerConfigurations[1].activationType: LEAKY_RELU
+  layerConfigurations[2].layerType: FEED_FORWARD
+  layerConfigurations[2].numberOfNeurons: 2500
+  layerConfigurations[2].activationType: LEAKY_RELU
+  layerConfigurations[3].numberOfNeurons: ${network.outputLayerNeurons}
   initializationType: UNIFORM
   biasWeight: 1.0
   epochs: 1

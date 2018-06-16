@@ -60,13 +60,10 @@ public class XorSampleGenerator implements SampleGenerator {
 	}
 
 	public DataSet generateOne() {
-		int inputLayerSize = inputLayerNeurons;
-		int outputLayerSize = outputLayerNeurons;
+		INDArray inputs = Nd4j.create(inputLayerNeurons);
+		INDArray outputs = Nd4j.create(outputLayerNeurons);
 
-		INDArray inputs = Nd4j.create(inputLayerSize);
-		INDArray outputs = Nd4j.create(outputLayerSize);
-
-		for (int j = 0; j < inputLayerSize; j++) {
+		for (int j = 0; j < inputLayerNeurons; j++) {
 			inputs.putScalar(0, j, (float) ThreadLocalRandom.current().nextInt(2));
 		}
 

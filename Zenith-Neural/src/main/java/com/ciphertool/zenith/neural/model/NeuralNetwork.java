@@ -37,36 +37,33 @@ public class NeuralNetwork {
 		// Exists purely for Jackson deserialization
 	}
 
-	public NeuralNetwork(int inputLayerNeurons, String[] hiddenLayers, int outputLayerNeurons, Float biasWeight) {
+	public NeuralNetwork(LayerConfiguration[] layerConfigurations, Float biasWeight) {
 		this.biasWeight = biasWeight;
 		boolean addBias = biasWeight != null ? true : false;
 
-		layers = new Layer[hiddenLayers.length + 2];
+		layers = new Layer[layerConfigurations.length];
 
-		layers[0] = new Layer(inputLayerNeurons, addBias);
+		layers[0] = new Layer(layerConfigurations[0].getNumberOfNeurons(), addBias, LayerType.FEED_FORWARD);
 
-		for (int i = 1; i <= hiddenLayers.length; i++) {
-			int separatorIndex = hiddenLayers[i - 1].indexOf(':');
+		for (int i = 1; i < layerConfigurations.length - 1; i++) {
+			int numberOfNeurons = layerConfigurations[i].getNumberOfNeurons();
 
-			if (separatorIndex < 0) {
-				throw new IllegalArgumentException(
-						"The hidden layers must be represented as a comma-separated list of numberOfNeurons:activationFunctionType pairs.");
-			}
+			ActivationFunctionType activationFunctionType = layerConfigurations[i].getActivationType();
 
-			int numberOfNeurons = Integer.parseInt(hiddenLayers[i - 1].substring(0, separatorIndex));
+			LayerType layerType = layerConfigurations[i].getLayerType();
 
-			ActivationFunctionType activationFunctionType = ActivationFunctionType.valueOf(hiddenLayers[i
-					- 1].substring(separatorIndex + 1));
-
-			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias);
+			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias, layerType);
 
 			layers[i - 1].setAccumulatedDeltas(Nd4j.create(layers[i - 1].getActivations().size(1), numberOfNeurons));
 			layers[i - 1].setOutgoingWeights(Nd4j.create(layers[i - 1].getActivations().size(1), numberOfNeurons));
 		}
 
+		LayerConfiguration outputLayerConfiguration = layerConfigurations[layerConfigurations.length - 1];
+		int outputLayerNeurons = outputLayerConfiguration.getNumberOfNeurons();
+
 		ActivationFunctionType activationFunctionType = outputLayerNeurons == 1 ? ActivationFunctionType.LEAKY_RELU : ActivationFunctionType.SOFTMAX;
 
-		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false);
+		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false, LayerType.FEED_FORWARD);
 
 		layers[layers.length - 2].setAccumulatedDeltas(Nd4j.create(layers[layers.length - 2].getActivations().size(1), outputLayerNeurons));
 		layers[layers.length - 2].setOutgoingWeights(Nd4j.create(layers[layers.length - 2].getActivations().size(1), outputLayerNeurons));

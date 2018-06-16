@@ -23,6 +23,7 @@ import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.initialize.Initialization;
 import com.ciphertool.zenith.neural.initialize.InitializationType;
+import com.ciphertool.zenith.neural.model.LayerConfiguration;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.PredictionStats;
@@ -63,18 +64,12 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Min(1)
 	private int						batchSize = 1;
 
-	@Min(1)
-	private int						inputLayerNeurons;
-
-	@NotEmpty
-	private String[]				hiddenLayers;
-
-	@Min(1)
-	private int						outputLayerNeurons;
-
 	private Float					biasWeight;
 
 	private String 					initializationType;
+
+	@NotEmpty
+	private LayerConfiguration[]	layerConfigurations;
 
 	@Autowired
 	private ThreadPoolTaskExecutor	taskExecutor;
@@ -109,7 +104,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		//if (inputFileName != null && !inputFileName.isEmpty()) {
 		//	network = new NeuralNetwork(NetworkMapper.loadFromFile(inputFileName));
 		//} else {
-		network = new NeuralNetwork(inputLayerNeurons, hiddenLayers, outputLayerNeurons, biasWeight);
+		network = new NeuralNetwork(layerConfigurations, biasWeight);
 
 		Initialization initialization = InitializationType.valueOf(initializationType).getInitialization();
 		initialization.initialize(network);
@@ -165,23 +160,19 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		this.batchSize = batchSize;
 	}
 
-	public void setInputLayerNeurons(int inputLayerNeurons) {
-		this.inputLayerNeurons = inputLayerNeurons;
-	}
-
-	public void setHiddenLayers(String[] hiddenLayers) {
-		this.hiddenLayers = hiddenLayers;
-	}
-
-	public void setOutputLayerNeurons(int outputLayerNeurons) {
-		this.outputLayerNeurons = outputLayerNeurons;
-	}
-
 	public void setBiasWeight(Float biasWeight) {
 		this.biasWeight = biasWeight;
 	}
 
 	public void setInitializationType(String initializationType) {
 		this.initializationType = initializationType;
+	}
+
+	public LayerConfiguration[] getLayerConfigurations() {
+		return layerConfigurations;
+	}
+
+	public void setLayerConfigurations(LayerConfiguration[] layerConfigurations) {
+		this.layerConfigurations = layerConfigurations;
 	}
 }

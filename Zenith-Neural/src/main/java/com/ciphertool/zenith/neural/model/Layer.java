@@ -26,28 +26,35 @@ import org.nd4j.linalg.factory.Nd4j;
 
 public class Layer {
 	@JsonProperty(value = "hasBias")
-	private boolean					hasBias;
+	private boolean	hasBias;
 
-	private ActivationFunctionType	activationFunctionType;
+	private ActivationFunctionType activationFunctionType;
+
+	private LayerType type;
 
 	private INDArray activations;
 	private INDArray outputSums;
 	private INDArray accumulatedDeltas;
 	private INDArray outgoingWeights;
+	private INDArray recurrentActivations;
+	private INDArray recurrentOutputSums;
+	private INDArray recurrentAccumulatedDeltas;
+	private INDArray recurrentOutgoingWeights;
 
 	@SuppressWarnings("unused")
 	private Layer() {
 		// Exists purely for Jackson deserialization
 	}
 
-	public Layer(int neurons, boolean hasBias) {
+	public Layer(int neurons, boolean hasBias, LayerType type) {
 		this.activations = Nd4j.create(1, neurons + (hasBias ? 1 : 0));
 		this.outputSums = Nd4j.create(1, neurons + (hasBias ? 1 : 0));
 		this.hasBias = hasBias;
+		this.type = type;
 	}
 
-	public Layer(int neurons, ActivationFunctionType activationFunctionType, boolean hasBias) {
-		this(neurons, hasBias);
+	public Layer(int neurons, ActivationFunctionType activationFunctionType, boolean hasBias, LayerType type) {
+		this(neurons, hasBias, type);
 
 		this.activationFunctionType = activationFunctionType;
 	}
