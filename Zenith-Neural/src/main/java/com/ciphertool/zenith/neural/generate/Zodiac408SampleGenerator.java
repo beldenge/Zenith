@@ -171,15 +171,17 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			throw new IllegalStateException("Requested " + testSampleCount + " test samples and " + trainingSampleCount + " training samples, but only " + englishParagraphCount + " total samples are available.");
 		}
 
-		int order = outputLayerNeurons - 2;
+		if (SampleType.ALL == sampleType || SampleType.MARKOV == sampleType) {
+			int order = outputLayerNeurons - 2;
 
-		if (order > 0) {
-			letterMarkovModel = new TreeMarkovModel(outputLayerNeurons - 2);
+			if (order > 0) {
+				letterMarkovModel = new TreeMarkovModel(outputLayerNeurons - 2);
 
-			List<TreeNGram> nodes = letterNGramDao.findAll(1, false);
+				List<TreeNGram> nodes = letterNGramDao.findAll(1, false);
 
-			// TODO: try parallel stream here
-			nodes.stream().forEach(letterMarkovModel::addNode);
+				// TODO: try parallel stream here
+				nodes.stream().forEach(letterMarkovModel::addNode);
+			}
 		}
 
 		intialized = true;

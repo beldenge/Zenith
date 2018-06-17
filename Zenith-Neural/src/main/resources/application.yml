@@ -130,7 +130,7 @@ network:
   layerConfigurations[1].layerType: RECURRENT
   layerConfigurations[1].numberOfNeurons: 5000
   layerConfigurations[1].activationType: TANH
-  layerConfigurations[3].numberOfNeurons: ${network.outputLayerNeurons}
+  layerConfigurations[2].numberOfNeurons: ${network.outputLayerNeurons}
   initializationType: UNIFORM
   biasWeight: 1.0
   epochs: 1
