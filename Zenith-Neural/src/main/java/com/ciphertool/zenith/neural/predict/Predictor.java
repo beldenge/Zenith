@@ -113,6 +113,7 @@ public class Predictor {
 	}
 
 	public void feedForward(NeuralNetwork network, INDArray inputs, INDArray expectedOutputs, boolean computeCost) {
+		network.setAccumulatedCost(null);
 		INDArray toLayerActivations;
 		INDArray outputSumLayer;
 
@@ -190,7 +191,11 @@ public class Predictor {
 					CostFunctions.derivativeOfCostFunctionClassification(expectedOutputs, actualOutputs);
 				}
 
-				network.getAccumulatedCost().addi(actualOutputs);
+				if (network.getAccumulatedCost() == null) {
+					network.setAccumulatedCost(actualOutputs);
+				} else {
+					network.getAccumulatedCost().addi(actualOutputs);
+				}
 			}
         }
 	}
