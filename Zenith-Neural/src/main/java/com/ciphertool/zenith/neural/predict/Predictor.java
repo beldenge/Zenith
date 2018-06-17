@@ -113,8 +113,6 @@ public class Predictor {
 	}
 
 	public void feedForward(NeuralNetwork network, INDArray inputs) {
-		INDArray fromLayerActivations;
-		INDArray synapticGap;
 		INDArray toLayerActivations;
 		INDArray outputSumLayer;
 
@@ -140,10 +138,10 @@ public class Predictor {
 
 				if (LayerType.RECURRENT == toLayer.getType()) {
 					// Add previous hidden-to-hidden activations and weights to the fromLayer and synapticGap matrices
-					int recurrentActivations = fromLayer.getRecurrentActivations().size(1);
+					int recurrentActivations = fromLayer.getRecurrentActivations().peek().size(1);
 					int inputActivations = fromLayer.getActivations().size(1);
 					combinedInput = Nd4j.create(1, recurrentActivations + inputActivations);
-					combinedInput.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, recurrentActivations)}, fromLayer.getRecurrentActivations().dup());
+					combinedInput.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, recurrentActivations)}, fromLayer.getRecurrentActivations().peek().dup());
 					combinedInput.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(recurrentActivations, recurrentActivations + inputActivations)}, fromLayer.getActivations().dup());
 
 					int nextLayerNeurons = toLayer.getNeurons() + (toLayer.hasBias() ? 1 : 0);
@@ -169,7 +167,7 @@ public class Predictor {
 
 				if (LayerType.RECURRENT == toLayer.getType()) {
 					// Update the hidden-to-hidden activation values
-					fromLayer.getRecurrentActivations().assign(newActivations);
+					fromLayer.getRecurrentActivations().push(newActivations);
 				}
 			}
 		}

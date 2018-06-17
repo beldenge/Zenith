@@ -33,7 +33,7 @@ public class XavierInitialization implements Initialization {
             float inputCount = layer.getActivations().size(1);
 
             if(i < network.getLayers().length - 1 && LayerType.RECURRENT == network.getLayers()[i + 1].getType()) {
-                inputCount += layer.getRecurrentActivations().size(1);
+                inputCount += network.getLayers()[i + 1].getActivations().size(1);
             }
 
             layer.setOutgoingWeights(Nd4j.randn(layer.getOutgoingWeights().shape()));

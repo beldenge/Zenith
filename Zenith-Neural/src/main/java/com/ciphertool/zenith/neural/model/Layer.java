@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.util.Stack;
+
 public class Layer {
 	@JsonProperty(value = "hasBias")
 	private boolean	hasBias;
@@ -36,7 +38,7 @@ public class Layer {
 	private INDArray outputSums;
 	private INDArray accumulatedDeltas;
 	private INDArray outgoingWeights;
-	private INDArray recurrentActivations;
+	private Stack<INDArray> recurrentActivations = new Stack<>();
 	private INDArray recurrentAccumulatedDeltas;
 	private INDArray recurrentOutgoingWeights;
 
@@ -107,16 +109,12 @@ public class Layer {
 		return type;
 	}
 
-	public INDArray getRecurrentActivations() {
+	public Stack<INDArray> getRecurrentActivations() {
 		return recurrentActivations;
 	}
 
-	public void setRecurrentActivations(INDArray recurrentActivations) {
+	public void setRecurrentActivations(Stack<INDArray> recurrentActivations) {
 		this.recurrentActivations = recurrentActivations;
-	}
-
-	public INDArray getRecurrentAccumulatedDeltas() {
-		return recurrentAccumulatedDeltas;
 	}
 
 	public void setRecurrentAccumulatedDeltas(INDArray recurrentAccumulatedDeltas) {
