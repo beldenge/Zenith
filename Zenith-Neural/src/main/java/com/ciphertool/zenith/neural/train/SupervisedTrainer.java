@@ -21,7 +21,6 @@ package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.*;
-import com.ciphertool.zenith.neural.predict.CostFunctions;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -270,18 +269,6 @@ public class SupervisedTrainer {
 		}
 
 		return loss;
-	}
-
-	protected static Float computeSumOfErrors(NeuralNetwork network, INDArray expectedOutputs) {
-		INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
-
-		if (network.getProblemType() == ProblemType.REGRESSION) {
-			CostFunctions.costFunctionRegression(expectedOutputs, actualOutputs);
-		} else {
-			CostFunctions.costFunctionClassification(expectedOutputs, actualOutputs);
-		}
-
-		return actualOutputs.sumNumber().floatValue();
 	}
 
 	public void setLearningRate(Float learningRate) {
