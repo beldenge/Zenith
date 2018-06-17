@@ -85,12 +85,6 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 	}
 
-	private static int UNIQUE_INPUT_COUNT;
-
-	@Min(1)
-	@Value("${network.inputLayerNeurons}")
-	private int						inputLayerNeurons;
-
 	@Min(2)
 	@Value("${network.outputLayerNeurons}")
 	private int						outputLayerNeurons;
@@ -112,6 +106,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	@Value("${task.zodiac408.markovOrder:1}")
 	private int markovOrder;
 
+	@Min(1)
+	@Value("${training.sequenceLength}")
+	private int sequenceLength = 1;
+
 	@Autowired
 	private ThreadPoolTaskExecutor 	taskExecutor;
 
@@ -126,6 +124,8 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	@Autowired
 	private ProcessedTextFileParser	fileParser;
+
+	private int totalNeurons;
 
 	private TreeMarkovModel 		letterMarkovModel;
 
@@ -147,12 +147,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 	@PostConstruct
 	public void setUp() {
-		if(inputLayerNeurons % NUM_LETTERS != 0) {
-			throw new IllegalStateException("The 'network.inputLayerNeurons' property must be evenly divisible by " +
-					NUM_LETTERS + " of which the value " + inputLayerNeurons + " is not.");
-		}
-
-		UNIQUE_INPUT_COUNT = inputLayerNeurons / NUM_LETTERS;
+		totalNeurons = NUM_LETTERS * sequenceLength;
 	}
 
 	@Override
@@ -231,7 +226,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	public DataSet generateOne() {
-		INDArray samples = Nd4j.create(inputLayerNeurons);
+		INDArray samples = Nd4j.create(totalNeurons);
 		INDArray outputs = Nd4j.create(outputLayerNeurons);
 
 		/*
@@ -279,13 +274,13 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 
 		EnglishParagraph nextParagraph = englishParagraphDao.findBySequence(randomIndex);
 
-		char[] nextSample = nextParagraph.getParagraph().substring(0, UNIQUE_INPUT_COUNT).toCharArray();
+		char[] nextSample = nextParagraph.getParagraph().substring(0, sequenceLength).toCharArray();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Random paragraph: {}", String.valueOf(nextSample));
 		}
 
-		INDArray numericSample = Nd4j.create(inputLayerNeurons);
+		INDArray numericSample = Nd4j.create(totalNeurons);
 
 		for (int j = 0; j < nextSample.length; j++) {
 			Float[] sparseCoding = charToFloatArray(nextSample[j]);
@@ -299,7 +294,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected INDArray generateMarkovModelSample(int markovOrder) {
-		INDArray sample = Nd4j.create(inputLayerNeurons);
+		INDArray sample = Nd4j.create(totalNeurons);
 
 		TreeNGram rootNode = letterMarkovModel.getRootNode();
 		TreeNGram match;
@@ -311,7 +306,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 
 		String root = "";
-		for (int i = 0; i < UNIQUE_INPUT_COUNT; i++) {
+		for (int i = 0; i < sequenceLength; i++) {
 			match = (root.isEmpty() || markovOrder == 1) ? rootNode : letterMarkovModel.findLongest(root);
 
 			LetterProbability chosen = sampleNextTransitionFromDistribution(match);
@@ -361,7 +356,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	}
 
 	protected INDArray generateRandomSample() {
-		INDArray randomSample = Nd4j.create(inputLayerNeurons);
+		INDArray randomSample = Nd4j.create(totalNeurons);
 
 		StringBuffer sb = null;
 
@@ -369,7 +364,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			sb = new StringBuffer();
 		}
 
-		for (int j = 0; j < UNIQUE_INPUT_COUNT; j++) {
+		for (int j = 0; j < sequenceLength; j++) {
 			char nextLetter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(NUM_LETTERS));
 
 			if (log.isDebugEnabled()) {
@@ -399,7 +394,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				if (Files.isDirectory(entry)) {
 					tasks.addAll(parseFiles(entry));
 				} else {
-					task = CompletableFuture.runAsync(() -> fileParser.parse(entry, UNIQUE_INPUT_COUNT), taskExecutor);
+					task = CompletableFuture.runAsync(() -> fileParser.parse(entry, sequenceLength), taskExecutor);
 					tasks.add(task);
 				}
 			}

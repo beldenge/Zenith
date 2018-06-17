@@ -232,7 +232,7 @@ public class SupervisedTrainer {
 				}
 
 				// Get a subset of the outputSumLayer so as to skip the bias neuron
-				outputSums = outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, outputSumLayer.size(1) - (toLayer.hasBias() ? 1 : 0))).dup();
+				outputSums = outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, outputSumLayer.size(1))).dup();
 				toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
 
 				activationDerivatives = outputSums;
