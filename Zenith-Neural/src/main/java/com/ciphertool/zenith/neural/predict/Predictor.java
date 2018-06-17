@@ -42,7 +42,7 @@ public class Predictor {
 	private int testSampleCount;
 
 	@Min(1)
-	private int sequenceLength;
+	private int sequenceLength = 1;
 
 	private Float marginOfError = 0.01f;
 
@@ -181,5 +181,9 @@ public class Predictor {
 
 	public void setMarginOfError(Float marginOfError) {
 		this.marginOfError = marginOfError;
+	}
+
+	public void setSequenceLength(int sequenceLength) {
+		this.sequenceLength = sequenceLength;
 	}
 }

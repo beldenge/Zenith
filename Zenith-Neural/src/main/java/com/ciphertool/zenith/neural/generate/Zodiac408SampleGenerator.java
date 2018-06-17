@@ -105,6 +105,13 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	@Value("${training.trainingSampleCount}")
 	private int						trainingSampleCount;
 
+	@Value("${task.zodiac408.sampleType:ALL}")
+	private SampleType sampleType;
+
+	@Min(1)
+	@Value("${task.zodiac408.markovOrder:1}")
+	private int markovOrder;
+
 	@Autowired
 	private ThreadPoolTaskExecutor 	taskExecutor;
 
@@ -229,9 +236,9 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		 * The idea is to "roll the dice" to determine what type of sample to generate, either a completely random
 		 * sample, a sample based on the Markov model, or a sample from known English paragraphs.
 		 */
-		int sampleType = ThreadLocalRandom.current().nextInt(outputLayerNeurons);
+		int diceThrow = ThreadLocalRandom.current().nextInt(outputLayerNeurons);
 
-		if (sampleType == 0) {
+		if (SampleType.UNIFORM == sampleType || (SampleType.ALL == sampleType && diceThrow == 0)) {
 			// Generate a random sample
 			samples.putRow(0, generateRandomSample());
 			outputs.putScalar(0, 0, 1.0f);
@@ -240,10 +247,10 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 				outputs.putScalar(0, i, 0.0f);
 			}
 		}
-		else if (sampleType < outputLayerNeurons - 1) {
+		else if (SampleType.MARKOV == sampleType || (SampleType.ALL == sampleType && diceThrow < outputLayerNeurons - 1)) {
 			// Generate probabilistic samples based on Markov model
 			for (int i = 1; i < outputLayerNeurons - 1; i++) {
-				if (i == sampleType) {
+				if (i == diceThrow) {
 					samples.putRow(0, generateMarkovModelSample(i));
 
 					for (int j = 0; j < outputLayerNeurons; j++) {
@@ -399,5 +406,12 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 
 		return tasks;
+	}
+
+	private enum SampleType {
+		UNIFORM,
+		MARKOV,
+		ENGLISH,
+		ALL;
 	}
 }

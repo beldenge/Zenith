@@ -50,7 +50,7 @@ import java.time.format.DateTimeFormatter;
 public class SupervisedTrainer {
 	private static Logger					log						= LoggerFactory.getLogger(SupervisedTrainer.class);
 
-	private static final boolean			COMPUTE_SUM_OF_ERRORS	= false;
+	private boolean computeLoss;
 
 	@DecimalMin("0.0")
 	private Float learningRate;
@@ -70,7 +70,7 @@ public class SupervisedTrainer {
 	private String outputFileName;
 
 	@Min(1)
-	private int sequenceLength;
+	private int sequenceLength = 1;
 
 	@Autowired
 	private SampleGenerator generator;
@@ -105,6 +105,7 @@ public class SupervisedTrainer {
 
 		int i;
 		long batchStart = System.currentTimeMillis();
+		Float sumOfLosses = 0.0f;
 		for (i = 0; i < trainingSampleCount; i++) {
 			long start = System.currentTimeMillis();
 
@@ -117,26 +118,31 @@ public class SupervisedTrainer {
 
 			predictor.feedForward(network, nextSample.getInputs().getRow(0));
 
-			log.debug("Finished feed-forward in: {}ms", (System.currentTimeMillis() - start));
+			log.debug("Finished feed-forward in: {}ms.", (System.currentTimeMillis() - start));
 
 			start = System.currentTimeMillis();
 
-			backPropagate(network, nextSample.getOutputs().getRow(0));
+			Float loss = backPropagate(network, nextSample.getOutputs().getRow(0));
+			sumOfLosses += loss;
 
-			log.debug("Finished back-propagation in: {}ms", (System.currentTimeMillis() - start));
+			log.debug("Finished back-propagation in: {}ms.", (System.currentTimeMillis() - start));
 
 			currentBatchSize++;
 
 			if (currentBatchSize == batchSize) {
 				long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent, currentBatchSize);
-				log.debug("Finished applying accumulated deltas in {}ms", applyAccumulatedDeltasTime);
+				log.debug("Finished applying accumulated deltas in {}ms.", applyAccumulatedDeltasTime);
 
-				log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
-						- batchStart));
+				Float averageLoss = sumOfLosses / (float) currentBatchSize;
+
+				log.info("Finished training batch {} in {}ms" + (computeLoss ? " with loss: {}." : "."), ((i + 1) / batchSize), (System.currentTimeMillis()
+						- batchStart), averageLoss);
 
 				currentBatchSize = 0;
 
 				batchStart = System.currentTimeMillis();
+
+				sumOfLosses = 0.0f;
 			}
 
 			network.incrementSamplesTrained();
@@ -153,15 +159,17 @@ public class SupervisedTrainer {
 		}
 
 		if (currentBatchSize > 0) {
-			log.info("Finished training batch {} in {}ms.", (int) ((i + 1) / batchSize), (System.currentTimeMillis()
-					- batchStart));
+			Float averageLoss = sumOfLosses / (float) currentBatchSize;
+			log.info("Finished training batch {} in {}ms" + (computeLoss ? " with loss: {}." : "."), ((i + 1) / batchSize), (System.currentTimeMillis()
+					- batchStart), averageLoss);
 
 			long applyAccumulatedDeltasTime = network.applyAccumulatedDeltas(learningRate, weightDecayPercent, currentBatchSize);
-			log.debug("Finished applying accumulated deltas in {}ms", applyAccumulatedDeltasTime);
+			log.debug("Finished applying accumulated deltas in {}ms.", applyAccumulatedDeltasTime);
 		}
 	}
 
-	protected void backPropagate(NeuralNetwork network, INDArray expectedOutputs) {
+	protected Float backPropagate(NeuralNetwork network, INDArray expectedOutputs) {
+		Float loss = 0.0f;
 		Layer outputLayer = network.getOutputLayer();
 
 		if (expectedOutputs.size(1) != outputLayer.getNeurons()) {
@@ -174,8 +182,8 @@ public class SupervisedTrainer {
 		 * The sum of errors is not actually used by the backpropagation algorithm, but it may be useful for debugging
 		 * purposes
 		 */
-		if (COMPUTE_SUM_OF_ERRORS) {
-			computeSumOfErrors(network, expectedOutputs);
+		if (computeLoss) {
+			loss = computeSumOfErrors(network, expectedOutputs);
 		}
 
 		// START - PROCESS OUTPUT LAYER
@@ -250,6 +258,8 @@ public class SupervisedTrainer {
 			deltaLayer = network.getLayers()[i - 1].getAccumulatedDeltas();
 			deltaLayer.addi(deltas);
 		}
+
+		return loss;
 	}
 
 	protected static Float computeSumOfErrors(NeuralNetwork network, INDArray expectedOutputs) {
@@ -272,7 +282,7 @@ public class SupervisedTrainer {
 
 	protected static void costFunctionClassification(INDArray expectedOutputs, INDArray actualOutputs) {
 		Transforms.log(actualOutputs, false);
-		actualOutputs.muli(expectedOutputs);
+		actualOutputs.muli(expectedOutputs).negi();
 	}
 
 	protected static void derivativeOfCostFunctionRegression(INDArray expectedOutputs, INDArray actualOutputs) {
@@ -298,5 +308,13 @@ public class SupervisedTrainer {
 
 	public void setIterationsBetweenSaves(int iterationsBetweenSaves) {
 		this.iterationsBetweenSaves = iterationsBetweenSaves;
+	}
+
+	public void setComputeLoss(boolean computeLoss) {
+		this.computeLoss = computeLoss;
+	}
+
+	public void setSequenceLength(int sequenceLength) {
+		this.sequenceLength = sequenceLength;
 	}
 }
