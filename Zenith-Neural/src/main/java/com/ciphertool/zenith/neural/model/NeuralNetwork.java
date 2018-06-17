@@ -34,6 +34,8 @@ public class NeuralNetwork {
 
 	private long samplesTrained = 0;
 
+	private INDArray accumulatedCost;
+
 	@SuppressWarnings("unused")
 	private NeuralNetwork() {
 		// Exists purely for Jackson deserialization
@@ -236,5 +238,13 @@ public class NeuralNetwork {
 
 	public NetworkType getType() {
 		return type;
+	}
+
+	public INDArray getAccumulatedCost() {
+		return accumulatedCost;
+	}
+
+	public void setAccumulatedCost(INDArray accumulatedCost) {
+		this.accumulatedCost = accumulatedCost;
 	}
 }

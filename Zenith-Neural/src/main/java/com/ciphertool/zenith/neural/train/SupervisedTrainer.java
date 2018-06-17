@@ -21,12 +21,12 @@ package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.model.*;
+import com.ciphertool.zenith.neural.predict.CostFunctions;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,13 +114,13 @@ public class SupervisedTrainer {
 						nextSample.getInputs().size(0)));
 			}
 
-			predictor.feedForward(network, nextSample.getInputs().getRow(0));
+			predictor.feedForward(network, nextSample.getInputs().getRow(0), nextSample.getOutputs().getRow(0), true);
 
 			log.debug("Finished feed-forward in: {}ms.", (System.currentTimeMillis() - start));
 
 			start = System.currentTimeMillis();
 
-			Float loss = backPropagate(network, nextSample.getOutputs().getRow(0));
+			Float loss = backPropagate(network);
 			sumOfLosses += loss;
 
 			log.debug("Finished back-propagation in: {}ms.", (System.currentTimeMillis() - start));
@@ -166,39 +166,15 @@ public class SupervisedTrainer {
 		}
 	}
 
-	protected Float backPropagate(NeuralNetwork network, INDArray expectedOutputs) {
+	protected Float backPropagate(NeuralNetwork network) {
 		Float loss = 0.0f;
 		Layer outputLayer = network.getOutputLayer();
-
-		if (expectedOutputs.size(1) != outputLayer.getNeurons()) {
-			throw new IllegalArgumentException("The expected output size of " + expectedOutputs.size(1)
-					+ " does not match the actual output size of " + outputLayer.getNeurons()
-					+ ".  Unable to continue with back propagation step.");
-		}
-
-		/*
-		 * The sum of errors is not actually used by the backpropagation algorithm, but it may be useful for debugging
-		 * purposes
-		 */
-		if (computeLoss) {
-			loss = computeSumOfErrors(network, expectedOutputs);
-		}
 
 		// START - PROCESS OUTPUT LAYER
 		INDArray errorDerivatives;
 		INDArray activationDerivatives;
 
-		INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
-
-		// Compute deltas for output layer using chain rule and subtract them from current weights
-		// TODO: implement summation for backprop through time
-		if (network.getProblemType() == ProblemType.REGRESSION) {
-			derivativeOfCostFunctionRegression(expectedOutputs, actualOutputs);
-		} else {
-			derivativeOfCostFunctionClassification(expectedOutputs, actualOutputs);
-		}
-
-		errorDerivatives = actualOutputs;
+		errorDerivatives = network.getAccumulatedCost();
 
 		INDArray outputSums = network.getOutputLayer().getOutputSums().dup();
 
@@ -300,32 +276,12 @@ public class SupervisedTrainer {
 		INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
 
 		if (network.getProblemType() == ProblemType.REGRESSION) {
-			costFunctionRegression(expectedOutputs, actualOutputs);
+			CostFunctions.costFunctionRegression(expectedOutputs, actualOutputs);
 		} else {
-			costFunctionClassification(expectedOutputs, actualOutputs);
+			CostFunctions.costFunctionClassification(expectedOutputs, actualOutputs);
 		}
 
 		return actualOutputs.sumNumber().floatValue();
-	}
-
-	protected static void costFunctionRegression(INDArray expectedOutputs, INDArray actualOutputs) {
-		actualOutputs.rsubi(expectedOutputs);
-		Transforms.pow(actualOutputs, 2, false);
-		actualOutputs.divi(2.0f);
-	}
-
-	protected static void costFunctionClassification(INDArray expectedOutputs, INDArray actualOutputs) {
-		Transforms.log(actualOutputs, false);
-		actualOutputs.muli(expectedOutputs).negi();
-	}
-
-	protected static void derivativeOfCostFunctionRegression(INDArray expectedOutputs, INDArray actualOutputs) {
-		actualOutputs.rsubi(expectedOutputs);
-		actualOutputs.negi();
-	}
-
-	protected static void derivativeOfCostFunctionClassification(INDArray expectedOutputs, INDArray actualOutputs) {
-		actualOutputs.subi(expectedOutputs);
 	}
 
 	public void setLearningRate(Float learningRate) {

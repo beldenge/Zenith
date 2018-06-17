@@ -125,7 +125,7 @@ spring:
 network:
   # 391 positions of 26 possible letters each
   inputLayerNeurons: 26
-  outputLayerNeurons: 1
+  outputLayerNeurons: 26
   layerConfigurations[0].numberOfNeurons: ${network.inputLayerNeurons}
   layerConfigurations[1].layerType: RECURRENT
   layerConfigurations[1].numberOfNeurons: 5000

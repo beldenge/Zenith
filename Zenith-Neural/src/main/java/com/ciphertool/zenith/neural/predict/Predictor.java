@@ -62,7 +62,7 @@ public class Predictor {
 						nextSample.getInputs().size(0)));
 			}
 
-			feedForward(network, nextSample.getInputs().getRow(0));
+			feedForward(network, nextSample.getInputs().getRow(0), nextSample.getOutputs().getRow(0), false);
 
 			INDArray outputLayerActivations = network.getOutputLayer().getActivations();
 
@@ -112,7 +112,7 @@ public class Predictor {
 		stats.incrementTotalPredictions();
 	}
 
-	public void feedForward(NeuralNetwork network, INDArray inputs) {
+	public void feedForward(NeuralNetwork network, INDArray inputs, INDArray expectedOutputs, boolean computeCost) {
 		INDArray toLayerActivations;
 		INDArray outputSumLayer;
 
@@ -121,8 +121,8 @@ public class Predictor {
 		for (int j = 0; j < sequenceIterations; j ++) {
 			INDArray iterationInputs = inputs;
 
+            int startIndex = j * network.getLayers()[0].getNeurons();
 			if (NetworkType.RECURRENT == network.getType()) {
-				int startIndex = j * network.getLayers()[0].getNeurons();
 				iterationInputs = inputs.get(NDArrayIndex.all(), NDArrayIndex.interval(startIndex, startIndex + network.getLayers()[0].getNeurons()));
 			}
 
@@ -175,7 +175,24 @@ public class Predictor {
 					fromLayer.getRecurrentActivations().push(newActivations);
 				}
 			}
-		}
+
+			if (computeCost) {
+				INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
+
+				if (NetworkType.RECURRENT == network.getType()) {
+					expectedOutputs = inputs.get(NDArrayIndex.all(), NDArrayIndex.interval(startIndex + network.getLayers()[0].getNeurons(), startIndex + (network.getLayers()[0].getNeurons() * 2)));
+				}
+
+				// Compute deltas for output layer using chain rule
+				if (network.getProblemType() == ProblemType.REGRESSION) {
+					CostFunctions.derivativeOfCostFunctionRegression(expectedOutputs, actualOutputs);
+				} else {
+					CostFunctions.derivativeOfCostFunctionClassification(expectedOutputs, actualOutputs);
+				}
+
+				network.getAccumulatedCost().addi(actualOutputs);
+			}
+        }
 	}
 
 	public void setTestSampleCount(int testSampleCount) {

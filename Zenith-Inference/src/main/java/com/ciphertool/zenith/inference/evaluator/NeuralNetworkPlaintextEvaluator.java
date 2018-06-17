@@ -65,7 +65,7 @@ public class NeuralNetworkPlaintextEvaluator {
 
 		long startFeedForward = System.currentTimeMillis();
 
-		predictor.feedForward(network, Nd4j.create(inputs));
+		predictor.feedForward(network, Nd4j.create(inputs), null, false);
 
 		log.debug("Feed forward took {}ms.", (System.currentTimeMillis() - startFeedForward));
 
