@@ -66,7 +66,6 @@ public class NeuralNetwork {
 				type = NetworkType.RECURRENT;
 
 				// Initialize recurrent inputs to zeros
-				int previousLayerNeurons = layerConfigurations[i - 1].getNumberOfNeurons();
 				layers[i - 1].getRecurrentActivations().push(Nd4j.zeros(1, currentLayerNeurons));
 				layers[i - 1].setRecurrentAccumulatedDeltas(Nd4j.create(currentLayerNeurons, currentLayerNeurons));
 				layers[i - 1].setRecurrentOutgoingWeights(Nd4j.create(currentLayerNeurons, currentLayerNeurons));
@@ -129,6 +128,30 @@ public class NeuralNetwork {
 
 			weights.subi(accumulatedDeltas);
 			accumulatedDeltas.assign(0.0f);
+
+			if (NetworkType.RECURRENT == type) {
+				accumulatedDeltas = layers[i].getRecurrentAccumulatedDeltas();
+				weights = layers[i].getRecurrentOutgoingWeights();
+
+				accumulatedDeltas.divi(deltaCount);
+
+				if (learningRate != null) {
+					accumulatedDeltas.muli(learningRate);
+				}
+
+				if (weightDecayPercent != null && weightDecayPercent != 0.0f) {
+					INDArray regularization = weights.mul(weightDecayPercent);
+
+					if (learningRate != null) {
+						regularization.muli(learningRate);
+					}
+
+					weights.subi(regularization);
+				}
+
+				weights.subi(accumulatedDeltas);
+				accumulatedDeltas.assign(0.0f);
+			}
 		}
 
 		return System.currentTimeMillis() - start;

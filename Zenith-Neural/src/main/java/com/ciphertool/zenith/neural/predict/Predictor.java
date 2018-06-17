@@ -160,6 +160,11 @@ public class Predictor {
 				// Get a subset of the outputSumLayer so as not to overwrite the bias neuron
 				outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, newActivations.size(1))).assign(newActivations.dup());
 
+				if (LayerType.RECURRENT == toLayer.getType()) {
+					// Update the hidden-to-hidden activation values
+					toLayer.getRecurrentOutputSums().push(newActivations.dup());
+				}
+
 				toLayer.getActivationFunctionType().getActivationFunction().transformInputSignal(newActivations);
 
 				// Insert the activation values, overwriting all except the bias

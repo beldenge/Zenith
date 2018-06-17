@@ -20,13 +20,11 @@
 package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
-import com.ciphertool.zenith.neural.model.DataSet;
-import com.ciphertool.zenith.neural.model.Layer;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.ProblemType;
+import com.ciphertool.zenith.neural.model.*;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.slf4j.Logger;
@@ -193,6 +191,7 @@ public class SupervisedTrainer {
 		INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
 
 		// Compute deltas for output layer using chain rule and subtract them from current weights
+		// TODO: implement summation for backprop through time
 		if (network.getProblemType() == ProblemType.REGRESSION) {
 			derivativeOfCostFunctionRegression(expectedOutputs, actualOutputs);
 		} else {
@@ -228,35 +227,70 @@ public class SupervisedTrainer {
 		Layer toLayer;
 		INDArray oldErrorDerivatives;
 		INDArray oldActivationDerivatives;
+		INDArray recurrentDeltaLayer;
 
 		// Compute deltas for hidden layers using chain rule and subtract them from current weights
 		for (int i = network.getLayers().length - 2; i > 0; i--) {
-			outputSumDerivatives = network.getLayers()[i - 1].getActivations();
-			toLayer = network.getLayers()[i];
+			for (int j = 0; j < (NetworkType.RECURRENT == network.getType() ? network.getLayers()[i - 1].getRecurrentActivations().size() : 1); j++) {
+				if (NetworkType.RECURRENT == network.getType()) {
+					int recurrentActivations = network.getLayers()[i - 1].getRecurrentActivations().peek().size(1);
+					int inputActivations = network.getLayers()[i - 1].getActivations().size(1);
+					outputSumDerivatives = Nd4j.create(1, recurrentActivations + inputActivations);
+					outputSumDerivatives.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, recurrentActivations)}, network.getLayers()[i - 1].getRecurrentActivations().pop());
+					outputSumDerivatives.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(recurrentActivations, recurrentActivations + inputActivations)}, network.getLayers()[i - 1].getActivations());
+				} else {
+					outputSumDerivatives = network.getLayers()[i - 1].getActivations();
+				}
 
-			oldErrorDerivatives = errorDerivatives;
-			oldActivationDerivatives = activationDerivatives;
+				toLayer = network.getLayers()[i];
 
-			INDArray outputSumLayer = network.getLayers()[i].getOutputSums();
-			// Get a subset of the outputSumLayer so as to skip the bias neuron
-			outputSums = outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, outputSumLayer.size(1) - (toLayer.hasBias() ? 1 : 0))).dup();
-			toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
+				oldErrorDerivatives = errorDerivatives;
+				oldActivationDerivatives = activationDerivatives;
 
-			activationDerivatives = outputSums;
+				INDArray outputSumLayer;
 
-			INDArray partialErrorDerivatives = oldErrorDerivatives.mul(oldActivationDerivatives);
-			INDArray toWeightLayer = network.getLayers()[i].getOutgoingWeights();
-			// Get a subset of the toWeightLayer so as to skip the bias neuron
-			errorDerivatives = toWeightLayer.get(NDArrayIndex.interval(0, toWeightLayer.size(0) - (toLayer.hasBias() ? 1 : 0)), NDArrayIndex.all()).mmul(partialErrorDerivatives.transpose()).transpose();
+				if (NetworkType.RECURRENT == network.getType()) {
+					outputSumLayer = network.getLayers()[i].getRecurrentOutputSums().pop();
+				} else {
+					outputSumLayer = network.getLayers()[i].getOutputSums();
+				}
 
-			outputWeights = network.getLayers()[i - 1].getOutgoingWeights();
-			deltas = Nd4j.ones(outputWeights.shape());
-			deltas.muliColumnVector(outputSumDerivatives.transpose());
-			deltas.muliRowVector(errorDerivatives);
-			deltas.muliRowVector(activationDerivatives);
+				// Get a subset of the outputSumLayer so as to skip the bias neuron
+				outputSums = outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, outputSumLayer.size(1) - (toLayer.hasBias() ? 1 : 0))).dup();
+				toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
 
-			deltaLayer = network.getLayers()[i - 1].getAccumulatedDeltas();
-			deltaLayer.addi(deltas);
+				activationDerivatives = outputSums;
+
+				INDArray partialErrorDerivatives = oldErrorDerivatives.mul(oldActivationDerivatives);
+				INDArray toWeightLayer = network.getLayers()[i].getOutgoingWeights();
+				// Get a subset of the toWeightLayer so as to skip the bias neuron
+				errorDerivatives = toWeightLayer.get(NDArrayIndex.interval(0, toWeightLayer.size(0) - (toLayer.hasBias() ? 1 : 0)), NDArrayIndex.all()).mmul(partialErrorDerivatives.transpose()).transpose();
+
+				outputWeights = network.getLayers()[i - 1].getOutgoingWeights();
+
+				if (NetworkType.RECURRENT == network.getType()) {
+					int recurrentOutputWeights = network.getLayers()[i - 1].getRecurrentOutgoingWeights().size(0);
+					int feedForwardOutputWeights = network.getLayers()[i - 1].getOutgoingWeights().size(0);
+					outputWeights = Nd4j.create(recurrentOutputWeights + feedForwardOutputWeights, network.getLayers()[i - 1].getOutgoingWeights().size(1));
+					outputWeights.put(new INDArrayIndex[] {NDArrayIndex.interval(0, recurrentOutputWeights), NDArrayIndex.all()}, network.getLayers()[i - 1].getRecurrentOutgoingWeights());
+					outputWeights.put(new INDArrayIndex[] {NDArrayIndex.interval(recurrentOutputWeights, recurrentOutputWeights + feedForwardOutputWeights), NDArrayIndex.all()}, network.getLayers()[i - 1].getOutgoingWeights());
+				}
+
+				deltas = Nd4j.ones(outputWeights.shape());
+				deltas.muliColumnVector(outputSumDerivatives.transpose());
+				deltas.muliRowVector(errorDerivatives);
+				deltas.muliRowVector(activationDerivatives);
+
+				deltaLayer = network.getLayers()[i - 1].getAccumulatedDeltas();
+
+				if (NetworkType.RECURRENT == network.getType()) {
+					recurrentDeltaLayer = network.getLayers()[i - 1].getRecurrentAccumulatedDeltas();
+					recurrentDeltaLayer.addi(deltas.get(NDArrayIndex.interval(0, recurrentDeltaLayer.size(0)), NDArrayIndex.all()));
+					deltas = deltas.get(NDArrayIndex.interval(recurrentDeltaLayer.size(0), deltas.size(0)), NDArrayIndex.all());
+				}
+
+				deltaLayer.addi(deltas);
+			}
 		}
 
 		return loss;

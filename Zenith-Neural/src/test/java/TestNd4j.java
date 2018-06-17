@@ -27,5 +27,13 @@ public class TestNd4j {
         sequence3.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, 10)}, sequence1);
         sequence3.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(10, 20)}, sequence2);
         System.out.println(sequence3);
+
+        INDArray stuff = Nd4j.create(new int[]{4, 3});
+        stuff.putRow(0, Nd4j.create(new float[] {1.0f, 2.0f, 3.0f}));
+        stuff.putRow(1, Nd4j.create(new float[] {5.0f, 6.0f, 7.0f}));
+        stuff.putRow(2, Nd4j.create(new float[] {9.0f, 10.0f, 11.0f}));
+        stuff.putRow(3, Nd4j.create(new float[] {13.0f, 14.0f, 15.0f}));
+        System.out.println(stuff.get(NDArrayIndex.interval(0, 2), NDArrayIndex.all()));
+        System.out.println(stuff.get(NDArrayIndex.interval(2, 4), NDArrayIndex.all()));
     }
 }

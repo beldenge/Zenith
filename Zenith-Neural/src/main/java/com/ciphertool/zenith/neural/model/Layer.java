@@ -39,6 +39,7 @@ public class Layer {
 	private INDArray accumulatedDeltas;
 	private INDArray outgoingWeights;
 	private Stack<INDArray> recurrentActivations = new Stack<>();
+	private Stack<INDArray> recurrentOutputSums = new Stack<>();
 	private INDArray recurrentAccumulatedDeltas;
 	private INDArray recurrentOutgoingWeights;
 
@@ -113,8 +114,12 @@ public class Layer {
 		return recurrentActivations;
 	}
 
-	public void setRecurrentActivations(Stack<INDArray> recurrentActivations) {
-		this.recurrentActivations = recurrentActivations;
+	public Stack<INDArray> getRecurrentOutputSums() {
+		return recurrentOutputSums;
+	}
+
+	public INDArray getRecurrentAccumulatedDeltas() {
+		return recurrentAccumulatedDeltas;
 	}
 
 	public void setRecurrentAccumulatedDeltas(INDArray recurrentAccumulatedDeltas) {
