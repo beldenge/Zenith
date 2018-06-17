@@ -124,15 +124,12 @@ spring:
 
 network:
   # 391 positions of 26 possible letters each
-  inputLayerNeurons: 10166
+  inputLayerNeurons: 26
   outputLayerNeurons: 4
   layerConfigurations[0].numberOfNeurons: ${network.inputLayerNeurons}
-  layerConfigurations[1].layerType: FEED_FORWARD
+  layerConfigurations[1].layerType: RECURRENT
   layerConfigurations[1].numberOfNeurons: 5000
-  layerConfigurations[1].activationType: LEAKY_RELU
-  layerConfigurations[2].layerType: FEED_FORWARD
-  layerConfigurations[2].numberOfNeurons: 2500
-  layerConfigurations[2].activationType: LEAKY_RELU
+  layerConfigurations[1].activationType: TANH
   layerConfigurations[3].numberOfNeurons: ${network.outputLayerNeurons}
   initializationType: UNIFORM
   biasWeight: 1.0
@@ -143,6 +140,7 @@ network:
   continueTraining: true
 
 training:
+  sequenceLength: 391
   iterationsBetweenSaves: 1000
   weightDecayPercent: 0.0
   learningRate: 0.001

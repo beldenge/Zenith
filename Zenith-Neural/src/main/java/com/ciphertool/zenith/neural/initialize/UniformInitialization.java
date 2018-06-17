@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.neural.initialize;
 
+import com.ciphertool.zenith.neural.model.Layer;
+import com.ciphertool.zenith.neural.model.LayerType;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -26,9 +28,15 @@ public class UniformInitialization implements Initialization {
     @Override
     public void initialize(NeuralNetwork network) {
         for (int i = 0; i < network.getLayers().length - 1; i++) {
-            network.getLayers()[i].setOutgoingWeights(Nd4j.rand(network.getLayers()[i].getOutgoingWeights().shape()));
+            Layer layer = network.getLayers()[i];
 
-            network.getLayers()[i].getOutgoingWeights().subi(0.5f);
+            layer.setOutgoingWeights(Nd4j.rand(layer.getOutgoingWeights().shape()));
+            layer.getOutgoingWeights().subi(0.5f);
+
+            if(i < network.getLayers().length - 1 && LayerType.RECURRENT == network.getLayers()[i + 1].getType()) {
+                layer.setRecurrentOutgoingWeights(Nd4j.rand(layer.getRecurrentOutgoingWeights().shape()));
+                layer.getRecurrentOutgoingWeights().subi(0.5f);
+            }
         }
     }
 }

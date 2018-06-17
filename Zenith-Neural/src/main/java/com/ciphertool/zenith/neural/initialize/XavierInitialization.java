@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.neural.initialize;
 
+import com.ciphertool.zenith.neural.model.Layer;
+import com.ciphertool.zenith.neural.model.LayerType;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -26,11 +28,21 @@ public class XavierInitialization implements Initialization {
     @Override
     public void initialize(NeuralNetwork network) {
         for (int i = 0; i < network.getLayers().length - 1; i++) {
-            float inputCount = network.getLayers()[i].getActivations().size(1);
+            Layer layer = network.getLayers()[i];
 
-            network.getLayers()[i].setOutgoingWeights(Nd4j.randn(network.getLayers()[i].getOutgoingWeights().shape()));
+            float inputCount = layer.getActivations().size(1);
 
-            network.getLayers()[i].getOutgoingWeights().divi(inputCount);
+            if(i < network.getLayers().length - 1 && LayerType.RECURRENT == network.getLayers()[i + 1].getType()) {
+                inputCount += layer.getRecurrentActivations().size(1);
+            }
+
+            layer.setOutgoingWeights(Nd4j.randn(layer.getOutgoingWeights().shape()));
+            layer.getOutgoingWeights().divi(inputCount);
+
+            if(i < network.getLayers().length - 1 && LayerType.RECURRENT == network.getLayers()[i + 1].getType()) {
+                layer.setRecurrentOutgoingWeights(Nd4j.randn(layer.getRecurrentOutgoingWeights().shape()));
+                layer.getRecurrentOutgoingWeights().divi(inputCount);
+            }
         }
     }
 }

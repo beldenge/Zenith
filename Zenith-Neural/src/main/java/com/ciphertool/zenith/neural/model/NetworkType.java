@@ -19,7 +19,7 @@
 
 package com.ciphertool.zenith.neural.model;
 
-public enum LayerType {
+public enum NetworkType {
     FEED_FORWARD,
     RECURRENT;
 }

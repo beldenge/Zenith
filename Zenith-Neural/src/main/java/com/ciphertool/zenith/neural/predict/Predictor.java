@@ -20,11 +20,10 @@
 package com.ciphertool.zenith.neural.predict;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
-import com.ciphertool.zenith.neural.model.DataSet;
-import com.ciphertool.zenith.neural.model.Layer;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.ProblemType;
+import com.ciphertool.zenith.neural.model.*;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +40,9 @@ public class Predictor {
 
 	@Min(1)
 	private int testSampleCount;
+
+	@Min(1)
+	private int sequenceLength;
 
 	private Float marginOfError = 0.01f;
 
@@ -111,39 +113,65 @@ public class Predictor {
 	}
 
 	public void feedForward(NeuralNetwork network, INDArray inputs) {
-		Layer inputLayer = network.getInputLayer();
-
-		int nonBiasNeurons = inputLayer.getNeurons() - (inputLayer.hasBias() ? 1 : 0);
-
-		if (inputs.size(1) != nonBiasNeurons) {
-			throw new IllegalArgumentException("The sample input size of " + inputs.size(1)
-					+ " does not match the input layer size of " + nonBiasNeurons
-					+ ".  Unable to continue with feed forward step.");
-		}
-
-		// Insert the inputs, overwriting all except the bias
-		network.getInputLayer().getActivations().put(NDArrayIndex.createCoveringShape(inputs.shape()), inputs);
-
-		INDArray fromLayer;
+		INDArray fromLayerActivations;
 		INDArray synapticGap;
-		INDArray toLayer;
+		INDArray toLayerActivations;
 		INDArray outputSumLayer;
 
-		for (int i = 0; i < network.getLayers().length - 1; i++) {
-			fromLayer = network.getLayers()[i].getActivations();
-			synapticGap = network.getLayers()[i].getOutgoingWeights();
-			toLayer = network.getLayers()[i + 1].getActivations();
-			outputSumLayer = network.getLayers()[i + 1].getOutputSums();
+		int sequenceIterations = (NetworkType.RECURRENT == network.getType() ? sequenceLength : 1);
 
-			INDArray newActivations = fromLayer.mmul(synapticGap);
+		for (int j = 0; j < sequenceIterations; j ++) {
+			INDArray iterationInputs = inputs;
 
-			// Get a subset of the outputSumLayer so as not to overwrite the bias neuron
-			outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, newActivations.size(1))).assign(newActivations.dup());
+			if (NetworkType.RECURRENT == network.getType()) {
+				int startIndex = j * network.getLayers()[0].getNeurons();
+				iterationInputs = inputs.get(NDArrayIndex.all(), NDArrayIndex.interval(startIndex, startIndex + network.getLayers()[0].getNeurons()));
+			}
 
-			network.getLayers()[i + 1].getActivationFunctionType().getActivationFunction().transformInputSignal(newActivations);
+			// Insert the inputs, overwriting all except the bias
+			network.getInputLayer().getActivations().put(NDArrayIndex.createCoveringShape(iterationInputs.shape()), iterationInputs);
 
-			// Insert the activation values, overwriting all except the bias
-			toLayer.put(NDArrayIndex.createCoveringShape(newActivations.shape()), newActivations);
+			for (int i = 0; i < network.getLayers().length - 1; i++) {
+				Layer fromLayer = network.getLayers()[i];
+				Layer toLayer = network.getLayers()[i + 1];
+
+				INDArray combinedInput = fromLayer.getActivations();
+				INDArray combinedWeights = fromLayer.getOutgoingWeights();
+
+				if (LayerType.RECURRENT == toLayer.getType()) {
+					// Add previous hidden-to-hidden activations and weights to the fromLayer and synapticGap matrices
+					int recurrentActivations = fromLayer.getRecurrentActivations().size(1);
+					int inputActivations = fromLayer.getActivations().size(1);
+					combinedInput = Nd4j.create(1, recurrentActivations + inputActivations);
+					combinedInput.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, recurrentActivations)}, fromLayer.getRecurrentActivations().dup());
+					combinedInput.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(recurrentActivations, recurrentActivations + inputActivations)}, fromLayer.getActivations().dup());
+
+					int nextLayerNeurons = toLayer.getNeurons() + (toLayer.hasBias() ? 1 : 0);
+					int recurrentWeights = fromLayer.getRecurrentOutgoingWeights().size(0);
+					int fromLayerWeights = fromLayer.getOutgoingWeights().size(0);
+					combinedWeights = Nd4j.create(recurrentWeights + fromLayerWeights,  nextLayerNeurons);
+					combinedWeights.put(new INDArrayIndex[] {NDArrayIndex.interval(0, recurrentWeights), NDArrayIndex.interval(0, nextLayerNeurons)}, fromLayer.getRecurrentOutgoingWeights().dup());
+					combinedWeights.put(new INDArrayIndex[] {NDArrayIndex.interval(recurrentWeights, recurrentWeights + fromLayerWeights), NDArrayIndex.interval(0, nextLayerNeurons)}, fromLayer.getOutgoingWeights().dup());
+				}
+
+				toLayerActivations = toLayer.getActivations();
+				outputSumLayer = toLayer.getOutputSums();
+
+				INDArray newActivations = combinedInput.mmul(combinedWeights);
+
+				// Get a subset of the outputSumLayer so as not to overwrite the bias neuron
+				outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, newActivations.size(1))).assign(newActivations.dup());
+
+				toLayer.getActivationFunctionType().getActivationFunction().transformInputSignal(newActivations);
+
+				// Insert the activation values, overwriting all except the bias
+				toLayerActivations.put(NDArrayIndex.createCoveringShape(newActivations.shape()), newActivations.dup());
+
+				if (LayerType.RECURRENT == toLayer.getType()) {
+					// Update the hidden-to-hidden activation values
+					fromLayer.getRecurrentActivations().assign(newActivations);
+				}
+			}
 		}
 	}
 

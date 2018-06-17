@@ -141,7 +141,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 	@PostConstruct
 	public void setUp() {
 		if(inputLayerNeurons % NUM_LETTERS != 0) {
-			throw new IllegalStateException("The 'network.layers.input' property must be evenly divisible by " +
+			throw new IllegalStateException("The 'network.inputLayerNeurons' property must be evenly divisible by " +
 					NUM_LETTERS + " of which the value " + inputLayerNeurons + " is not.");
 		}
 
@@ -254,8 +254,6 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 		else {
 			// Generate a sample from known English paragraphs
-			int i = outputLayerNeurons - 1;
-
 			samples.putRow(0, getRandomParagraph());
 			outputs.putScalar(0, outputLayerNeurons - 1, 1.0f);
 

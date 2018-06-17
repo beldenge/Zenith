@@ -28,7 +28,9 @@ public class NeuralNetwork {
 
 	private ProblemType	problemType;
 
-	private Layer[]		layers;
+	private NetworkType type = NetworkType.FEED_FORWARD;
+
+	private Layer[]	layers;
 
 	private long samplesTrained = 0;
 
@@ -44,18 +46,31 @@ public class NeuralNetwork {
 		layers = new Layer[layerConfigurations.length];
 
 		layers[0] = new Layer(layerConfigurations[0].getNumberOfNeurons(), addBias, LayerType.FEED_FORWARD);
+		int nextLayerNeurons = layerConfigurations[1].getNumberOfNeurons();
+		layers[0].setAccumulatedDeltas(Nd4j.create(layers[0].getActivations().size(1), nextLayerNeurons));
+		layers[0].setOutgoingWeights(Nd4j.create(layers[0].getActivations().size(1), nextLayerNeurons));
 
 		for (int i = 1; i < layerConfigurations.length - 1; i++) {
-			int numberOfNeurons = layerConfigurations[i].getNumberOfNeurons();
+			int currentLayerNeurons = layerConfigurations[i].getNumberOfNeurons();
 
 			ActivationFunctionType activationFunctionType = layerConfigurations[i].getActivationType();
 
 			LayerType layerType = layerConfigurations[i].getLayerType();
 
-			layers[i] = new Layer(numberOfNeurons, activationFunctionType, addBias, layerType);
+			layers[i] = new Layer(currentLayerNeurons, activationFunctionType, addBias, layerType);
+			nextLayerNeurons = layerConfigurations[i + 1].getNumberOfNeurons();
+			layers[i].setAccumulatedDeltas(Nd4j.create(layers[i].getActivations().size(1), nextLayerNeurons));
+			layers[i].setOutgoingWeights(Nd4j.create(layers[i].getActivations().size(1), nextLayerNeurons));
 
-			layers[i - 1].setAccumulatedDeltas(Nd4j.create(layers[i - 1].getActivations().size(1), numberOfNeurons));
-			layers[i - 1].setOutgoingWeights(Nd4j.create(layers[i - 1].getActivations().size(1), numberOfNeurons));
+			if (LayerType.RECURRENT == layers[i].getType()) {
+				type = NetworkType.RECURRENT;
+
+				// Initialize recurrent inputs to zeros
+				int previousLayerNeurons = layerConfigurations[i - 1].getNumberOfNeurons();
+				layers[i - 1].setRecurrentActivations(Nd4j.zeros(1, previousLayerNeurons));
+				layers[i - 1].setRecurrentAccumulatedDeltas(Nd4j.create(layers[i - 1].getRecurrentActivations().size(1), currentLayerNeurons));
+				layers[i - 1].setRecurrentOutgoingWeights(Nd4j.create(layers[i - 1].getRecurrentActivations().size(1), currentLayerNeurons));
+			}
 		}
 
 		LayerConfiguration outputLayerConfiguration = layerConfigurations[layerConfigurations.length - 1];
@@ -194,5 +209,9 @@ public class NeuralNetwork {
 
 	public void incrementSamplesTrained() {
 		this.samplesTrained ++;
+	}
+
+	public NetworkType getType() {
+		return type;
 	}
 }

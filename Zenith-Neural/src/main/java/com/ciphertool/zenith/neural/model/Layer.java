@@ -37,7 +37,6 @@ public class Layer {
 	private INDArray accumulatedDeltas;
 	private INDArray outgoingWeights;
 	private INDArray recurrentActivations;
-	private INDArray recurrentOutputSums;
 	private INDArray recurrentAccumulatedDeltas;
 	private INDArray recurrentOutgoingWeights;
 
@@ -102,5 +101,33 @@ public class Layer {
 
 	public void setOutgoingWeights(INDArray outgoingWeights) {
 		this.outgoingWeights = outgoingWeights;
+	}
+
+	public LayerType getType() {
+		return type;
+	}
+
+	public INDArray getRecurrentActivations() {
+		return recurrentActivations;
+	}
+
+	public void setRecurrentActivations(INDArray recurrentActivations) {
+		this.recurrentActivations = recurrentActivations;
+	}
+
+	public INDArray getRecurrentAccumulatedDeltas() {
+		return recurrentAccumulatedDeltas;
+	}
+
+	public void setRecurrentAccumulatedDeltas(INDArray recurrentAccumulatedDeltas) {
+		this.recurrentAccumulatedDeltas = recurrentAccumulatedDeltas;
+	}
+
+	public INDArray getRecurrentOutgoingWeights() {
+		return recurrentOutgoingWeights;
+	}
+
+	public void setRecurrentOutgoingWeights(INDArray recurrentOutgoingWeights) {
+		this.recurrentOutgoingWeights = recurrentOutgoingWeights;
 	}
 }

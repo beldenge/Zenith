@@ -69,6 +69,9 @@ public class SupervisedTrainer {
 	@Value("${network.outputFileName}")
 	private String outputFileName;
 
+	@Min(1)
+	private int sequenceLength;
+
 	@Autowired
 	private SampleGenerator generator;
 
