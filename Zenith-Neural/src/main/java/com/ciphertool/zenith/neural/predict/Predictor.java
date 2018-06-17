@@ -118,13 +118,18 @@ public class Predictor {
 		INDArray outputSumLayer;
 
 		int sequenceIterations = (NetworkType.RECURRENT == network.getType() ? sequenceLength : 1);
+		int startIndex = 0;
 
 		for (int j = 0; j < sequenceIterations; j ++) {
 			INDArray iterationInputs = inputs;
 
-            int startIndex = j * network.getLayers()[0].getNeurons();
 			if (NetworkType.RECURRENT == network.getType()) {
-				iterationInputs = inputs.get(NDArrayIndex.all(), NDArrayIndex.interval(startIndex, startIndex + network.getLayers()[0].getNeurons()));
+				if (j == 0) {
+					iterationInputs = Nd4j.zeros(network.getLayers()[0].getNeurons());
+				} else {
+					iterationInputs = inputs.get(NDArrayIndex.all(), NDArrayIndex.interval(startIndex, startIndex + network.getLayers()[0].getNeurons()));
+					startIndex += network.getLayers()[0].getNeurons();
+				}
 			}
 
 			// Insert the inputs, overwriting all except the bias
@@ -181,7 +186,7 @@ public class Predictor {
 				INDArray actualOutputs = network.getOutputLayer().getActivations().dup();
 
 				if (NetworkType.RECURRENT == network.getType()) {
-					expectedOutputs = inputs.get(NDArrayIndex.all(), NDArrayIndex.interval(startIndex + network.getLayers()[0].getNeurons(), startIndex + (network.getLayers()[0].getNeurons() * 2)));
+					expectedOutputs = inputs.get(NDArrayIndex.all(), NDArrayIndex.interval(startIndex, startIndex + network.getLayers()[0].getNeurons()));
 				}
 
 				// Compute deltas for output layer using chain rule
