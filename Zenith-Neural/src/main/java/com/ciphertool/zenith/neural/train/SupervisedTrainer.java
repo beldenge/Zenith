@@ -225,7 +225,7 @@ public class SupervisedTrainer {
 				if (NetworkType.RECURRENT == network.getType()) {
 					outputSums = network.getLayers()[i].getRecurrentOutputSums().pop();
 				} else {
-					outputSums = network.getLayers()[i].getOutputSums().dup();
+					outputSums = network.getLayers()[i].getOutputSums().get(NDArrayIndex.all(), NDArrayIndex.interval(0, network.getLayers()[i].getOutputSums().size(1) - (toLayer.hasBias() ? 1 : 0))).dup();
 				}
 
 				toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
