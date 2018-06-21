@@ -131,7 +131,7 @@ public class NeuralNetwork {
 			weights.subi(accumulatedDeltas);
 			accumulatedDeltas.assign(0.0f);
 
-			if (NetworkType.RECURRENT == type) {
+			if (LayerType.RECURRENT == layers[i + 1].getType()) {
 				accumulatedDeltas = layers[i].getRecurrentAccumulatedDeltas();
 				weights = layers[i].getRecurrentOutgoingWeights();
 

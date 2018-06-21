@@ -211,8 +211,8 @@ public class SupervisedTrainer {
 					int recurrentActivations = network.getLayers()[i - 1].getRecurrentActivations().peek().size(1);
 					int inputActivations = network.getLayers()[i - 1].getActivations().size(1);
 					outputSumDerivatives = Nd4j.create(1, recurrentActivations + inputActivations);
-					outputSumDerivatives.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, recurrentActivations)}, network.getLayers()[i - 1].getRecurrentActivations().pop());
-					outputSumDerivatives.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(recurrentActivations, recurrentActivations + inputActivations)}, network.getLayers()[i - 1].getActivations());
+					outputSumDerivatives.put(new INDArrayIndex[]{NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, recurrentActivations)}, network.getLayers()[i - 1].getRecurrentActivations().pop());
+					outputSumDerivatives.put(new INDArrayIndex[]{NDArrayIndex.interval(0, 1), NDArrayIndex.interval(recurrentActivations, recurrentActivations + inputActivations)}, network.getLayers()[i - 1].getActivations());
 				} else {
 					outputSumDerivatives = network.getLayers()[i - 1].getActivations();
 				}
@@ -222,24 +222,27 @@ public class SupervisedTrainer {
 				oldErrorDerivatives = errorDerivatives;
 				oldActivationDerivatives = activationDerivatives;
 
-				INDArray outputSumLayer;
-
 				if (NetworkType.RECURRENT == network.getType()) {
-					outputSumLayer = network.getLayers()[i].getRecurrentOutputSums().pop();
+					outputSums = network.getLayers()[i].getRecurrentOutputSums().pop();
 				} else {
-					outputSumLayer = network.getLayers()[i].getOutputSums();
+					outputSums = network.getLayers()[i].getOutputSums().dup();
 				}
 
-				// Get a subset of the outputSumLayer so as to skip the bias neuron
-				outputSums = outputSumLayer.get(NDArrayIndex.all(), NDArrayIndex.interval(0, outputSumLayer.size(1))).dup();
 				toLayer.getActivationFunctionType().getActivationFunction().calculateDerivative(outputSums);
 
 				activationDerivatives = outputSums;
 
 				INDArray partialErrorDerivatives = oldErrorDerivatives.mul(oldActivationDerivatives);
 				INDArray toWeightLayer = network.getLayers()[i].getOutgoingWeights();
-				// Get a subset of the toWeightLayer so as to skip the bias neuron
-				errorDerivatives = toWeightLayer.get(NDArrayIndex.interval(0, toWeightLayer.size(0) - (toLayer.hasBias() ? 1 : 0)), NDArrayIndex.all()).mmul(partialErrorDerivatives.transpose()).transpose();
+
+				if (NetworkType.RECURRENT == network.getType() && j > 0) {
+					toWeightLayer = network.getLayers()[i - 1].getRecurrentOutgoingWeights();
+				} else {
+					// Get a subset of the toWeightLayer so as to skip the bias neuron
+					toWeightLayer = toWeightLayer.get(NDArrayIndex.interval(0, toWeightLayer.size(0) - (network.getLayers()[i].hasBias() ? 1 : 0)), NDArrayIndex.all());
+				}
+
+				errorDerivatives = toWeightLayer.mmul(partialErrorDerivatives.transpose()).transpose();
 
 				outputWeights = network.getLayers()[i - 1].getOutgoingWeights();
 
