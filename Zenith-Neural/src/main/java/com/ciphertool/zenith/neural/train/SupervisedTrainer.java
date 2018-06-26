@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural.train;
 
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
+import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.model.*;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -74,6 +75,9 @@ public class SupervisedTrainer {
 
 	@Autowired
 	private Predictor predictor;
+
+	@Autowired
+	private NetworkMapper networkMapper;
 
 	@PostConstruct
 	public void init() {
@@ -145,14 +149,12 @@ public class SupervisedTrainer {
 			network.incrementSamplesTrained();
 
 			if (outputFileNameWithDate != null && iterationsBetweenSaves > 0 && ((i + 1) % iterationsBetweenSaves) == 0) {
-				// FIXME: re-implement saving of network to file
-				//NetworkMapper.saveToFile(network, outputFileNameWithDate);
+				networkMapper.saveToFile(network, outputFileNameWithDate);
 			}
 		}
 
 		if (outputFileNameWithDate != null && (iterationsBetweenSaves == 0 || (i % iterationsBetweenSaves) != 0)) {
-			// FIXME: re-implement saving of network to file
-			//NetworkMapper.saveToFile(network, outputFileNameWithDate);
+			networkMapper.saveToFile(network, outputFileNameWithDate);
 		}
 
 		if (currentBatchSize > 0) {

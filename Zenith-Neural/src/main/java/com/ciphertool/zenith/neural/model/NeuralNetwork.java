@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural.model;
 
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -30,11 +31,12 @@ public class NeuralNetwork {
 
 	private NetworkType type = NetworkType.FEED_FORWARD;
 
-	private Layer[]	layers;
-
 	private long samplesTrained = 0;
 
+	@JsonIgnore
 	private INDArray accumulatedCost;
+
+	private Layer[]	layers;
 
 	@SuppressWarnings("unused")
 	private NeuralNetwork() {
@@ -174,10 +176,26 @@ public class NeuralNetwork {
 	}
 
 	/**
+	 * @param problemType
+	 *            the problemType to set
+	 */
+	public void setProblemType(ProblemType problemType) {
+		this.problemType = problemType;
+	}
+
+	/**
 	 * @return the layers
 	 */
 	public Layer[] getLayers() {
 		return layers;
+	}
+
+	/**
+	 * @param layers
+	 *            the layers to set
+	 */
+	public void setLayers(Layer[] layers) {
+		this.layers = layers;
 	}
 
 	/**
@@ -203,22 +221,6 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * @param problemType
-	 *            the problemType to set
-	 */
-	public void setProblemType(ProblemType problemType) {
-		this.problemType = problemType;
-	}
-
-	/**
-	 * @param layers
-	 *            the layers to set
-	 */
-	public void setLayers(Layer[] layers) {
-		this.layers = layers;
-	}
-
-	/**
 	 * @return the number of samples trained
 	 */
 	public long getSamplesTrained() {
@@ -238,6 +240,10 @@ public class NeuralNetwork {
 
 	public NetworkType getType() {
 		return type;
+	}
+
+	public void setType(NetworkType type) {
+		this.type = type;
 	}
 
 	public INDArray getAccumulatedCost() {

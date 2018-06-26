@@ -49,9 +49,12 @@ public class NeuralNetworkPlaintextEvaluator {
 
 	private NeuralNetwork			network;
 
+	@Autowired
+	private NetworkMapper			networkMapper;
+
 	@PostConstruct
 	public void init() {
-		network = NetworkMapper.loadFromFile(inputFileName);
+		network = networkMapper.loadFromFile(inputFileName);
 	}
 
 	public EvaluationResults evaluate(CipherSolution solution, String ciphertextKey) {

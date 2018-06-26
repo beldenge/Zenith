@@ -23,19 +23,25 @@ import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.initialize.Initialization;
 import com.ciphertool.zenith.neural.initialize.InitializationType;
+import com.ciphertool.zenith.neural.io.NetworkMapper;
 import com.ciphertool.zenith.neural.model.LayerConfiguration;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.ciphertool.zenith.neural.model.ProblemType;
 import com.ciphertool.zenith.neural.predict.PredictionStats;
 import com.ciphertool.zenith.neural.predict.Predictor;
 import com.ciphertool.zenith.neural.train.SupervisedTrainer;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.shade.serde.jackson.ndarray.NDArrayDeSerializer;
+import org.nd4j.shade.serde.jackson.ndarray.NDArraySerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
@@ -83,6 +89,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	@Autowired
 	private SampleGenerator 		generator;
 
+	@Autowired
+	private NetworkMapper			networkMapper;
+
 	/**
 	 * Main entry point for the application.
 	 * 
@@ -100,15 +109,14 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 
 		NeuralNetwork network;
 
-		// FIXME: re-implement saving of network to file
-		//if (inputFileName != null && !inputFileName.isEmpty()) {
-		//	network = new NeuralNetwork(NetworkMapper.loadFromFile(inputFileName));
-		//} else {
-		network = new NeuralNetwork(layerConfigurations, biasWeight);
+		if (inputFileName != null && !inputFileName.isEmpty()) {
+			network = new NeuralNetwork(networkMapper.loadFromFile(inputFileName));
+		} else {
+			network = new NeuralNetwork(layerConfigurations, biasWeight);
 
-		Initialization initialization = InitializationType.valueOf(initializationType).getInitialization();
-		initialization.initialize(network);
-		//}
+			Initialization initialization = InitializationType.valueOf(initializationType).getInitialization();
+			initialization.initialize(network);
+		}
 
 		long start = System.currentTimeMillis();
 
@@ -138,6 +146,15 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 			log.info("Percentage most probable: " + (int) ((((float) predictionStats.getBestProbabilityCount() / (float) predictionStats.getTotalPredictions())
 					* 100.0) + 0.5));
 		}
+	}
+
+	@Bean
+	public Jackson2ObjectMapperBuilderCustomizer configureJacksonObjectMapper() {
+		return (jacksonObjectMapperBuilder) -> {
+			jacksonObjectMapperBuilder.serializerByType(INDArray.class, new NDArraySerializer());
+			jacksonObjectMapperBuilder.deserializerByType(INDArray.class, new NDArrayDeSerializer());
+			jacksonObjectMapperBuilder.failOnEmptyBeans(false);
+		};
 	}
 
 	public void setEpochs(int epochs) {

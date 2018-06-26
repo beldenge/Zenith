@@ -23,31 +23,34 @@ import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Component
 public class NetworkMapper {
 	private static Logger log = LoggerFactory.getLogger(NetworkMapper.class);
 
-	public static String saveToFile(NeuralNetwork network, String outputFileName) {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
-		mapper.setVisibility(PropertyAccessor.IS_GETTER, Visibility.NONE);
-		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NONE);
-		mapper.setVisibility(PropertyAccessor.SETTER, Visibility.NONE);
-		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+	@Autowired
+	private ObjectMapper objectMapper;
+
+	public String saveToFile(NeuralNetwork network, String outputFileName) {
+		objectMapper.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
+		objectMapper.setVisibility(PropertyAccessor.IS_GETTER, Visibility.NONE);
+		objectMapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NONE);
+		objectMapper.setVisibility(PropertyAccessor.SETTER, Visibility.NONE);
+		objectMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 
 		log.info("Saving network to file: {}", outputFileName);
 
 		try {
-			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(outputFileName), network);
+			objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(outputFileName), network);
 		} catch (IOException ioe) {
 			throw new IllegalStateException("Unable to write network parameters to file: " + outputFileName, ioe);
 		}
@@ -55,17 +58,15 @@ public class NetworkMapper {
 		return outputFileName;
 	}
 
-	public static NeuralNetwork loadFromFile(String fileName) {
+	public NeuralNetwork loadFromFile(String fileName) {
 		log.info("Loading network from file: {}", fileName);
 
 		Path networkFilePath = Paths.get(fileName);
 
-		ObjectMapper mapper = new ObjectMapper();
-
 		NeuralNetwork network;
 
 		try {
-			network = mapper.readValue(networkFilePath.toFile(), NeuralNetwork.class);
+			network = objectMapper.readValue(networkFilePath.toFile(), NeuralNetwork.class);
 		} catch (IOException ioe) {
 			throw new IllegalStateException("Unable to read network parameters from file: " + fileName, ioe);
 		}

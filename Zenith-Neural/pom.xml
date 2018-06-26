@@ -23,6 +23,10 @@ You should have received a copy of the GNU General Public License along with Zen
 	</parent>
 
 	<artifactId>Zenith-Neural</artifactId>
+
+	<properties>
+		<nd4j.version>0.9.1</nd4j.version>
+	</properties>
 	
 	<dependencies>
 		<dependency>
@@ -36,13 +40,18 @@ You should have received a copy of the GNU General Public License along with Zen
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-json</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.nd4j</groupId>
 			<artifactId>nd4j-native-platform</artifactId>
-			<version>0.9.1</version>
+			<version>${nd4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.nd4j</groupId>
+			<artifactId>nd4j-jackson</artifactId>
+			<version>${nd4j.version}</version>
 		</dependency>
 	</dependencies>
 

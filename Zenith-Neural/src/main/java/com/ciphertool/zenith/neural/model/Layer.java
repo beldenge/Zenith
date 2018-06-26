@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.neural.model;
 
 import com.ciphertool.zenith.neural.activation.ActivationFunctionType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -34,13 +35,26 @@ public class Layer {
 
 	private LayerType type;
 
+	@JsonIgnore
 	private INDArray activations;
+
+	@JsonIgnore
 	private INDArray outputSums;
+
+	@JsonIgnore
 	private INDArray accumulatedDeltas;
+
 	private INDArray outgoingWeights;
+
+	@JsonIgnore
 	private Stack<INDArray> recurrentActivations = new Stack<>();
+
+	@JsonIgnore
 	private Stack<INDArray> recurrentOutputSums = new Stack<>();
+
+	@JsonIgnore
 	private INDArray recurrentAccumulatedDeltas;
+
 	private INDArray recurrentOutgoingWeights;
 
 	@SuppressWarnings("unused")
@@ -68,11 +82,19 @@ public class Layer {
 		return activationFunctionType;
 	}
 
+	public void setActivationFunctionType(ActivationFunctionType activationFunctionType) {
+		this.activationFunctionType = activationFunctionType;
+	}
+
 	/**
 	 * @return the hasBias
 	 */
 	public boolean hasBias() {
 		return hasBias;
+	}
+
+	public void setHasBias(boolean hasBias) {
+		this.hasBias = hasBias;
 	}
 
 	/**
@@ -108,6 +130,10 @@ public class Layer {
 
 	public LayerType getType() {
 		return type;
+	}
+
+	public void setType(LayerType type) {
+		this.type = type;
 	}
 
 	public Stack<INDArray> getRecurrentActivations() {
