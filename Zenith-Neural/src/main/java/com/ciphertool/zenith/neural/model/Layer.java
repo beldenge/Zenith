@@ -28,6 +28,8 @@ import org.nd4j.linalg.factory.Nd4j;
 import java.util.Stack;
 
 public class Layer {
+	private int numberOfNeurons;
+
 	@JsonProperty(value = "hasBias")
 	private boolean	hasBias;
 
@@ -100,16 +102,28 @@ public class Layer {
 	/**
 	 * @return the number of neurons in this layer
 	 */
-	public int getNeurons() {
-		return activations.size(1);
+	public int getNumberOfNeurons() {
+		return numberOfNeurons;
+	}
+
+	public void setNumberOfNeurons(int numberOfNeurons) {
+		this.numberOfNeurons = numberOfNeurons;
 	}
 
 	public INDArray getActivations() {
 		return activations;
 	}
 
+	public void setActivations(INDArray activations) {
+		this.activations = activations;
+	}
+
 	public INDArray getOutputSums() {
 		return outputSums;
+	}
+
+	public void setOutputSums(INDArray outputSums) {
+		this.outputSums = outputSums;
 	}
 
 	public INDArray getAccumulatedDeltas() {
@@ -138,6 +152,10 @@ public class Layer {
 
 	public Stack<INDArray> getRecurrentActivations() {
 		return recurrentActivations;
+	}
+
+	public void setRecurrentActivations(Stack<INDArray> recurrentActivations) {
+		this.recurrentActivations = recurrentActivations;
 	}
 
 	public Stack<INDArray> getRecurrentOutputSums() {

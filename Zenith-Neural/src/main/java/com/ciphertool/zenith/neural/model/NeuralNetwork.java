@@ -50,6 +50,7 @@ public class NeuralNetwork {
 		layers = new Layer[layerConfigurations.length];
 
 		layers[0] = new Layer(layerConfigurations[0].getNumberOfNeurons(), addBias, LayerType.FEED_FORWARD);
+        layers[0].setNumberOfNeurons(layerConfigurations[0].getNumberOfNeurons());
 		int nextLayerNeurons = layerConfigurations[1].getNumberOfNeurons();
 		layers[0].setAccumulatedDeltas(Nd4j.create(layers[0].getActivations().size(1), nextLayerNeurons));
 		layers[0].setOutgoingWeights(Nd4j.create(layers[0].getActivations().size(1), nextLayerNeurons));
@@ -62,6 +63,7 @@ public class NeuralNetwork {
 			LayerType layerType = layerConfigurations[i].getLayerType();
 
 			layers[i] = new Layer(currentLayerNeurons, activationFunctionType, addBias, layerType);
+            layers[i].setNumberOfNeurons(layerConfigurations[i].getNumberOfNeurons());
 			nextLayerNeurons = layerConfigurations[i + 1].getNumberOfNeurons();
 			layers[i].setAccumulatedDeltas(Nd4j.create(layers[i].getActivations().size(1), nextLayerNeurons));
 			layers[i].setOutgoingWeights(Nd4j.create(layers[i].getActivations().size(1), nextLayerNeurons));
@@ -82,6 +84,7 @@ public class NeuralNetwork {
 		ActivationFunctionType activationFunctionType = outputLayerNeurons == 1 ? ActivationFunctionType.LEAKY_RELU : ActivationFunctionType.SOFTMAX;
 
 		layers[layers.length - 1] = new Layer(outputLayerNeurons, activationFunctionType, false, LayerType.FEED_FORWARD);
+		layers[layers.length - 1].setNumberOfNeurons(layerConfigurations[layers.length - 1].getNumberOfNeurons());
 
 		layers[layers.length - 2].setAccumulatedDeltas(Nd4j.create(layers[layers.length - 2].getActivations().size(1), outputLayerNeurons));
 		layers[layers.length - 2].setOutgoingWeights(Nd4j.create(layers[layers.length - 2].getActivations().size(1), outputLayerNeurons));
@@ -93,18 +96,6 @@ public class NeuralNetwork {
 				layers[i].getActivations().putScalar(layers[i].getActivations().size(1) - 1, biasWeight);
 			}
 		}
-	}
-
-	/**
-	 * Construct a NeuralNetwork loaded from file.
-	 *
-	 * @param network the NeuralNetwork from file
-	 */
-	public NeuralNetwork(NeuralNetwork network) {
-		this.layers = network.layers;
-		this.biasWeight = network.biasWeight;
-		this.problemType = network.problemType;
-		this.samplesTrained = network.samplesTrained;
 	}
 
 	public long applyAccumulatedDeltas(Float learningRate, Float weightDecayPercent, int deltaCount) {

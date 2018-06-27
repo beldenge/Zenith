@@ -110,7 +110,7 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 		NeuralNetwork network;
 
 		if (inputFileName != null && !inputFileName.isEmpty()) {
-			network = new NeuralNetwork(networkMapper.loadFromFile(inputFileName));
+			network = networkMapper.loadFromFile(inputFileName);
 		} else {
 			network = new NeuralNetwork(layerConfigurations, biasWeight);
 

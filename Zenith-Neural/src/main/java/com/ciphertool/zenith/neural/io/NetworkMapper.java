@@ -19,10 +19,13 @@
 
 package com.ciphertool.zenith.neural.io;
 
+import com.ciphertool.zenith.neural.model.Layer;
+import com.ciphertool.zenith.neural.model.LayerType;
 import com.ciphertool.zenith.neural.model.NeuralNetwork;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +72,26 @@ public class NetworkMapper {
 			network = objectMapper.readValue(networkFilePath.toFile(), NeuralNetwork.class);
 		} catch (IOException ioe) {
 			throw new IllegalStateException("Unable to read network parameters from file: " + fileName, ioe);
+		}
+
+		// Initialize layer activations and accumulated deltas
+		for (int i = 0; i < network.getLayers().length; i ++) {
+			Layer layer = network.getLayers()[i];
+			layer.setActivations(Nd4j.create(layer.getNumberOfNeurons() + (layer.hasBias() ? 1 : 0)));
+			layer.setOutputSums(Nd4j.create(layer.getNumberOfNeurons() + (layer.hasBias() ? 1 : 0)));
+
+			if (i < network.getLayers().length - 1) {
+                layer.setAccumulatedDeltas(Nd4j.create(layer.getOutgoingWeights().shape()));
+            }
+
+			if (LayerType.RECURRENT == layer.getType()) {
+				Layer lastLayer = network.getLayers()[i - 1];
+				lastLayer.getRecurrentActivations().push(Nd4j.zeros(1, layer.getNumberOfNeurons()));
+
+                if (i < network.getLayers().length - 1) {
+                    lastLayer.setRecurrentAccumulatedDeltas(Nd4j.create(layer.getOutgoingWeights().shape()));
+                }
+			}
 		}
 
 		return network;
