@@ -74,7 +74,6 @@ network:
   biasWeight: 1.0
   epochs: 1
   batchSize: 1
-  inputFileName:
   outputFileName: /Users/george/Desktop/network-xor.json
 
 training:
@@ -100,7 +99,6 @@ network:
   biasWeight: 1.0
   epochs: 1
   batchSize: 1
-  inputFileName:
   outputFileName: /Users/george/Desktop/network-mnist.json
 
 training:
@@ -108,7 +106,6 @@ training:
   learningRate: 0.01
   trainingSampleCount: 60000
   testSampleCount: 10000
-  iterationsBetweenSaves: 1000
 
 task:
   mnist:
