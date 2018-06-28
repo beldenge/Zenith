@@ -24,11 +24,11 @@ import com.ciphertool.zenith.neural.generate.SampleGenerator;
 import com.ciphertool.zenith.neural.initialize.Initialization;
 import com.ciphertool.zenith.neural.initialize.InitializationType;
 import com.ciphertool.zenith.neural.io.NetworkMapper;
-import com.ciphertool.zenith.neural.model.LayerConfiguration;
-import com.ciphertool.zenith.neural.model.NeuralNetwork;
-import com.ciphertool.zenith.neural.model.ProblemType;
+import com.ciphertool.zenith.neural.model.*;
 import com.ciphertool.zenith.neural.predict.PredictionStats;
 import com.ciphertool.zenith.neural.predict.Predictor;
+import com.ciphertool.zenith.neural.sample.CharacterSequence;
+import com.ciphertool.zenith.neural.sample.Sampler;
 import com.ciphertool.zenith.neural.train.SupervisedTrainer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.shade.serde.jackson.ndarray.NDArrayDeSerializer;
@@ -87,6 +87,9 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 	private Predictor				predictor;
 
 	@Autowired
+    private Sampler                 sampler;
+
+	@Autowired
 	private SampleGenerator 		generator;
 
 	@Autowired
@@ -132,20 +135,32 @@ public class NeuralNetworkApplication implements CommandLineRunner {
 			log.info("Finished training in " + (System.currentTimeMillis() - start) + "ms.");
 		}
 
-		log.info("Testing predictions...");
-		start = System.currentTimeMillis();
-		PredictionStats predictionStats = predictor.predict(network);
-		log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
+		if (NetworkType.FEED_FORWARD == network.getType()) {
+            log.info("Testing predictions...");
+            start = System.currentTimeMillis();
+            PredictionStats predictionStats = predictor.predict(network);
+            log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
 
-		log.info("Neural network achieved " + predictionStats.getCorrectCount() + " correct out of " + predictionStats.getTotalPredictions() + " total.");
-		log.info("Percentage correct: " + (int) ((((float) predictionStats.getCorrectCount() / (float) predictionStats.getTotalPredictions()) * 100.0) + 0.5));
+            log.info("Neural network achieved " + predictionStats.getCorrectCount() + " correct out of " + predictionStats.getTotalPredictions() + " total.");
+            log.info("Percentage correct: " + (int) ((((float) predictionStats.getCorrectCount() / (float) predictionStats.getTotalPredictions()) * 100.0) + 0.5));
 
-		if (network.getProblemType() == ProblemType.CLASSIFICATION) {
-			log.info("Classification achieved " + predictionStats.getBestProbabilityCount() + " most probable out of " + predictionStats.getTotalPredictions()
-					+ " total.");
-			log.info("Percentage most probable: " + (int) ((((float) predictionStats.getBestProbabilityCount() / (float) predictionStats.getTotalPredictions())
-					* 100.0) + 0.5));
-		}
+            if (network.getProblemType() == ProblemType.CLASSIFICATION) {
+                log.info("Classification achieved " + predictionStats.getBestProbabilityCount() + " most probable out of " + predictionStats.getTotalPredictions()
+                        + " total.");
+                log.info("Percentage most probable: " + (int) ((((float) predictionStats.getBestProbabilityCount() / (float) predictionStats.getTotalPredictions())
+                        * 100.0) + 0.5));
+            }
+        } else if (NetworkType.RECURRENT == network.getType()) {
+            log.info("Generating new sequences...");
+            start = System.currentTimeMillis();
+            INDArray[] samples = sampler.sample(network);
+
+            for (int i = 0; i < samples.length; i ++) {
+                log.info("Sequence {}: {}", i, CharacterSequence.fromOneHotVectors(samples[i]));
+            }
+
+            log.info("Finished in " + (System.currentTimeMillis() - start) + "ms.");
+        }
 	}
 
 	@Bean

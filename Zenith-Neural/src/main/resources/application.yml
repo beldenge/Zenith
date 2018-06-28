@@ -133,7 +133,7 @@ network:
   biasWeight: 1.0
   epochs: 1
   batchSize: 1
-  inputFileName: #/Users/george/Desktop/network-zodiac408-20180512-015409.json
+  inputFileName:
   outputFileName: /Users/george/Desktop/network-zodiac408.json
   continueTraining: true
 
@@ -141,8 +141,8 @@ training:
   sequenceLength: 391
   weightDecayPercent: 0.0
   learningRate: 0.001
-  trainingSampleCount: 10000
-  testSampleCount: 2000
+  trainingSampleCount: 100000
+  testSampleCount: 100
   iterationsBetweenSaves: 1000
 
 task:

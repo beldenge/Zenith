@@ -50,6 +50,11 @@ public class NeuralNetwork {
 		layers = new Layer[layerConfigurations.length];
 
 		layers[0] = new Layer(layerConfigurations[0].getNumberOfNeurons(), addBias, LayerType.FEED_FORWARD);
+
+		if (addBias) {
+			layers[0].getActivations().putScalar(layerConfigurations[0].getNumberOfNeurons(), biasWeight);
+		}
+
         layers[0].setNumberOfNeurons(layerConfigurations[0].getNumberOfNeurons());
 		int nextLayerNeurons = layerConfigurations[1].getNumberOfNeurons();
 		layers[0].setAccumulatedDeltas(Nd4j.create(layers[0].getActivations().size(1), nextLayerNeurons));

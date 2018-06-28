@@ -123,7 +123,7 @@ public class Predictor {
 		for (int j = 0; j < sequenceIterations; j ++) {
 			INDArray iterationInputs = inputs;
 
-			int nonBiasNeurons = network.getLayers()[0].getNumberOfNeurons() - (network.getLayers()[0].hasBias() ? 1 : 0);
+			int nonBiasNeurons = network.getLayers()[0].getNumberOfNeurons();
 
 			if (NetworkType.RECURRENT == network.getType()) {
 				if (j == 0) {
@@ -152,7 +152,7 @@ public class Predictor {
 					combinedInput.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(0, recurrentActivations)}, fromLayer.getRecurrentActivations().peek().dup());
 					combinedInput.put(new INDArrayIndex[] {NDArrayIndex.interval(0, 1), NDArrayIndex.interval(recurrentActivations, recurrentActivations + inputActivations)}, fromLayer.getActivations().dup());
 
-					int nextLayerNeurons = toLayer.getNumberOfNeurons() - (toLayer.hasBias() ? 1 : 0);
+					int nextLayerNeurons = toLayer.getNumberOfNeurons();
 					int recurrentWeights = fromLayer.getRecurrentOutgoingWeights().size(0);
 					int fromLayerWeights = fromLayer.getOutgoingWeights().size(0);
 					combinedWeights = Nd4j.create(recurrentWeights + fromLayerWeights,  nextLayerNeurons);
