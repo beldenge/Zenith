@@ -26,14 +26,12 @@ import java.util.List;
 public class ModelConstants {
 	public static final List<Character>	LOWERCASE_VOWELS		= Arrays.asList(new Character[] { 'a', 'e', 'i', 'o',
 			'u' });
+
 	public static final List<Character>	LOWERCASE_CONSONANTS	= Arrays.asList(new Character[] { 'b', 'c', 'd', 'f',
 			'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z' });
-	public static final List<Character>	LOWERCASE_LETTERS		= new ArrayList<>();
 
-	static {
-		LOWERCASE_LETTERS.addAll(LOWERCASE_VOWELS);
-		LOWERCASE_LETTERS.addAll(LOWERCASE_CONSONANTS);
-	}
+	public static final List<Character>	LOWERCASE_LETTERS		= Arrays.asList(new Character[] { 'a', 'b', 'c', 'd',
+			'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' });
 
 	public static final List<Character> LOWERCASE_LETTERS_AND_SPACE = new ArrayList<>(LOWERCASE_LETTERS);
 
