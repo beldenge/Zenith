@@ -62,9 +62,7 @@ You should have received a copy of the GNU General Public License along with Zen
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
+						<id>repackage</id>
 						<!-- By default, Spring Boot will replace the original artifact, so we have to provide a classifier in order to use it as a dependency as well. -->
 						<configuration>
 							<classifier>exec</classifier>
