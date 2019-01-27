@@ -39,6 +39,7 @@ You should have received a copy of the GNU General Public License along with Zen
 		<module>Zenith-Inference</module>
 		<module>Zenith-Math</module>
 		<module>Zenith-Neural</module>
+		<module>Zenith-Data</module>
 	</modules>
 
 	<dependencies>
