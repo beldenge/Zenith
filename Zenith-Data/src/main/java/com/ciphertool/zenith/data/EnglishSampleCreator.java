@@ -42,18 +42,18 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @Validated
 @ConfigurationProperties
-public class EnglishSampleCreator {
+public class EnglishSampleCreator implements SampleCreator {
     private static Logger log	= LoggerFactory.getLogger(EnglishSampleCreator.class);
 
     private static final int TRUE_ENGLISH = 99;
 
     @NotBlank
-    @Value("${task.zodiac408.sourceDirectory}")
+    @Value("${task.sourceDirectory}")
     private String					validTrainingTextDirectory;
 
     @Min(1)
     @Value("${training.sequenceLength}")
-    private int sequenceLength = 1;
+    private int sequenceLength;
 
     @Autowired
     private TaskExecutor taskExecutor;
@@ -61,6 +61,7 @@ public class EnglishSampleCreator {
     @Autowired
     private FileExporter fileExporter;
 
+    @Override
     public void createSamples() {
         Path validTrainingTextDirectoryPath = Paths.get(validTrainingTextDirectory);
 
@@ -69,13 +70,9 @@ public class EnglishSampleCreator {
                     "Property \"task.zodiac408.sourceDirectory\" must be a directory.");
         }
 
-        long start = System.currentTimeMillis();
-
         List<CompletableFuture<Void>> futures = parseFiles(validTrainingTextDirectoryPath);
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
-
-        log.info("Finished processing source directory in {}ms.", (System.currentTimeMillis() - start));
     }
 
     protected List<CompletableFuture<Void>> parseFiles(Path path) {

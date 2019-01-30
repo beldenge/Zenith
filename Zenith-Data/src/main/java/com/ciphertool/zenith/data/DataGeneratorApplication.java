@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.data;
 
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +38,19 @@ import javax.validation.constraints.Min;
 @EnableAsync
 @Validated
 @ConfigurationProperties
-@SpringBootApplication
+@SpringBootApplication(scanBasePackageClasses = { DataGeneratorApplication.class, LetterNGramDao.class })
 public class DataGeneratorApplication implements CommandLineRunner {
     private static Logger log	= LoggerFactory.getLogger(DataGeneratorApplication.class);
+
+    @Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+    private int						corePoolSize;
+
+    @Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+    private int						maxPoolSize;
+
+    @Min(1)
+    @Value("${taskExecutor.queueCapacity}")
+    private int						queueCapacity;
 
     @Autowired
     private EnglishSampleCreator englishSampleCreator;
@@ -62,22 +73,24 @@ public class DataGeneratorApplication implements CommandLineRunner {
 
     @Override
     public void run(String... arg0) {
+        long start = System.currentTimeMillis();
+
         englishSampleCreator.createSamples();
 
-        // TODO: Generate Uniform sequences
+        log.info("Finished generating English samples in {}ms.", (System.currentTimeMillis() - start));
 
-        // TODO: Generate Markov sequences
+        start = System.currentTimeMillis();
+
+        uniformSampleCreator.createSamples();
+
+        log.info("Finished generating uniform samples in {}ms.", (System.currentTimeMillis() - start));
+
+        start = System.currentTimeMillis();
+
+        markovSampleCreator.createSamples();
+
+        log.info("Finished generating Markov samples in {}ms.", (System.currentTimeMillis() - start));
     }
-
-    @Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-    private int						corePoolSize;
-
-    @Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-    private int						maxPoolSize;
-
-    @Min(1)
-    @Value("${taskExecutor.queueCapacity}")
-    private int						queueCapacity;
 
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {

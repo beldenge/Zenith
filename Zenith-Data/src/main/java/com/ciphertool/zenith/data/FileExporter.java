@@ -71,6 +71,8 @@ public class FileExporter {
                 String paragraph = sample.toString().substring(0, sampleSize);
 
                 try {
+                    log.debug("Random sample of order {}: {}", markovOrder, paragraph);
+
                     writer.write(markovOrder, paragraph);
                 } catch (IOException e) {
                     throw new IllegalStateException(e);

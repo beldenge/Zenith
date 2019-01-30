@@ -51,10 +51,11 @@ taskExecutor:
   #override:
 
 task:
-  zodiac408:
-    sourceDirectory: /Users/george/Desktop/zenith-transformed
+  sourceDirectory: /Users/george/Desktop/zenith-transformed
   outputFileDirectory: /Users/george/Desktop/zenith-data
   maxRecordsPerFile: 100000
+  markovOrder: 5
+  samplesToCreate: 1000000
 
 training:
   sequenceLength: 391

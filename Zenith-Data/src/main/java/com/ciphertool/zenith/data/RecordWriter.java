@@ -33,13 +33,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Validated
 @ConfigurationProperties
 public class RecordWriter {
-    private static final String OUTPUT_FILE_PREFIX = "sequences-";
+    private static final String OUTPUT_FILE_PREFIX = "sequences";
     private static final String OUTPUT_FILE_EXTENSION = ".csv";
 
     @NotBlank
@@ -53,9 +55,7 @@ public class RecordWriter {
 
     private Path outputDirectory;
 
-    private AtomicInteger recordsWritten = new AtomicInteger(0);
-
-    private String currentFileName = OUTPUT_FILE_PREFIX + "0" + OUTPUT_FILE_EXTENSION;
+    private Map<Integer, AtomicInteger> recordsWrittenPerOrder = new HashMap<>();
 
     @PostConstruct
     public void init() throws IOException {
@@ -66,31 +66,39 @@ public class RecordWriter {
         }
 
         Files.createDirectory(outputDirectory);
-
-        createNextFile();
     }
 
     public synchronized void write(@NotNull Integer markovOrder, @NotBlank String sequence) throws IOException {
+        if (!recordsWrittenPerOrder.containsKey(markovOrder) || recordsWrittenPerOrder.get(markovOrder).get() % maxRecordsPerFile == 0) {
+            createNextFile(markovOrder);
+        }
+
         String record = markovOrder.toString() + "," + sequence + System.lineSeparator();
 
-        Files.write(Paths.get(outputDirectory.toString(), currentFileName), record.getBytes(), StandardOpenOption.APPEND);
+        Files.write(Paths.get(outputDirectory.toString(), getFileName(markovOrder)), record.getBytes(), StandardOpenOption.APPEND);
 
-        recordsWritten.incrementAndGet();
-
-        if (recordsWritten.get() % maxRecordsPerFile == 0) {
-            createNextFile();
-        }
+        recordsWrittenPerOrder.get(markovOrder).incrementAndGet();
     }
 
-    private void createNextFile() throws IOException {
-        currentFileName = OUTPUT_FILE_PREFIX + recordsWritten.get() + OUTPUT_FILE_EXTENSION;
+    private void createNextFile(int markovOrder) throws IOException {
+        if (!recordsWrittenPerOrder.containsKey(markovOrder)) {
+            recordsWrittenPerOrder.put(markovOrder, new AtomicInteger(0));
+        }
 
-        Path nextFile = Paths.get(outputDirectory.toString(), currentFileName);
+        Path nextFile = Paths.get(outputDirectory.toString(), getFileName(markovOrder));
 
         if (Files.exists(nextFile)) {
             throw new IllegalStateException("Output file " + nextFile.toString() + " already exists, and the default behavior is to append.  Please move or delete this file and retry.");
         }
 
         Files.createFile(nextFile);
+    }
+
+    private String getFileName(int markovOrder) {
+        AtomicInteger recordsWritten = recordsWrittenPerOrder.get(markovOrder);
+
+        String recordOffsetPart = String.valueOf(recordsWritten.get() - (recordsWritten.get() % maxRecordsPerFile));
+
+        return String.join("-", OUTPUT_FILE_PREFIX, String.valueOf(markovOrder), recordOffsetPart) + OUTPUT_FILE_EXTENSION;
     }
 }
