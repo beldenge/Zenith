@@ -25,16 +25,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
@@ -55,50 +57,52 @@ public class RecordWriter {
 
     private Path outputDirectory;
 
-    private Map<Integer, AtomicInteger> recordsWrittenPerOrder = new HashMap<>();
+    private Map<Integer, FileContext> fileContextPerOrder = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() throws IOException {
         outputDirectory = Paths.get(outputFileDirectory);
 
-        if (Files.exists(outputDirectory)) {
-            throw new IllegalStateException("Output directory " + outputFileDirectory + " already exists, and the default behavior is to append.  Please move or delete this directory and retry.");
-        }
-
+        // Files.createDirectory() throws FileAlreadyExistsException if the directory already exists
         Files.createDirectory(outputDirectory);
     }
 
     public synchronized void write(@NotNull Integer markovOrder, @NotBlank String sequence) throws IOException {
-        if (!recordsWrittenPerOrder.containsKey(markovOrder) || recordsWrittenPerOrder.get(markovOrder).get() % maxRecordsPerFile == 0) {
+        if (!fileContextPerOrder.containsKey(markovOrder)) {
+            fileContextPerOrder.put(markovOrder, new FileContext(new AtomicInteger(0)));
+        }
+
+        if (fileContextPerOrder.get(markovOrder).getRecordsWritten().get() % maxRecordsPerFile == 0) {
             createNextFile(markovOrder);
         }
 
-        String record = markovOrder.toString() + "," + sequence + System.lineSeparator();
+        String record = String.join(",", markovOrder.toString(), sequence) + System.lineSeparator();
 
-        Files.write(Paths.get(outputDirectory.toString(), getFileName(markovOrder)), record.getBytes(), StandardOpenOption.APPEND);
-
-        recordsWrittenPerOrder.get(markovOrder).incrementAndGet();
+        fileContextPerOrder.get(markovOrder).getWriter().append(record);
+        fileContextPerOrder.get(markovOrder).getRecordsWritten().incrementAndGet();
     }
 
     private void createNextFile(int markovOrder) throws IOException {
-        if (!recordsWrittenPerOrder.containsKey(markovOrder)) {
-            recordsWrittenPerOrder.put(markovOrder, new AtomicInteger(0));
+        if (fileContextPerOrder.get(markovOrder).getWriter() != null) {
+            fileContextPerOrder.get(markovOrder).getWriter().close();
         }
 
-        Path nextFile = Paths.get(outputDirectory.toString(), getFileName(markovOrder));
-
-        if (Files.exists(nextFile)) {
-            throw new IllegalStateException("Output file " + nextFile.toString() + " already exists, and the default behavior is to append.  Please move or delete this file and retry.");
-        }
-
-        Files.createFile(nextFile);
+        String filename = Paths.get(outputDirectory.toString(), getFileName(markovOrder)).toString();
+        fileContextPerOrder.get(markovOrder).setWriter(new BufferedWriter(new FileWriter(filename, true)));
     }
 
     private String getFileName(int markovOrder) {
-        AtomicInteger recordsWritten = recordsWrittenPerOrder.get(markovOrder);
+        int recordsWritten = fileContextPerOrder.containsKey(markovOrder) ? fileContextPerOrder.get(markovOrder).getRecordsWritten().get() : 0;
 
-        String recordOffsetPart = String.valueOf(recordsWritten.get() - (recordsWritten.get() % maxRecordsPerFile));
+        String recordOffsetPart = String.valueOf(recordsWritten - (recordsWritten % maxRecordsPerFile));
 
         return String.join("-", OUTPUT_FILE_PREFIX, String.valueOf(markovOrder), recordOffsetPart) + OUTPUT_FILE_EXTENSION;
+    }
+
+    @PreDestroy
+    public void closeResources() throws IOException {
+        for (FileContext fileContext : fileContextPerOrder.values()) {
+            fileContext.getWriter().close();
+        }
     }
 }
