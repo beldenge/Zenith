@@ -88,15 +88,6 @@ public class RecordShuffler {
         try {
             while (!done) {
                 for (int i = 0; i < markovOrder + 2; i++) {
-                    if (recordsWritten % maxRecordsPerFile == 0) {
-                        if (writer != null) {
-                            writer.close();
-                        }
-
-                        String filename = String.join("-", FileConstants.OUTPUT_FILE_PREFIX, String.valueOf(recordsWritten)) + FileConstants.OUTPUT_FILE_EXTENSION;
-                        writer = new BufferedWriter(new FileWriter(filename, true));
-                    }
-
                     int markovOrderPart = (i == markovOrder + 1) ? 99 : i;
 
                     String line = read(markovOrderPart);
@@ -106,7 +97,16 @@ public class RecordShuffler {
                         break;
                     }
 
-                    writer.write(line);
+                    if (recordsWritten % maxRecordsPerFile == 0) {
+                        if (writer != null) {
+                            writer.close();
+                        }
+
+                        String filename = Paths.get(outputDirectory.toString(), String.join("-", FileConstants.OUTPUT_FILE_PREFIX, String.valueOf(recordsWritten)) + FileConstants.OUTPUT_FILE_EXTENSION).toString();
+                        writer = new BufferedWriter(new FileWriter(filename, true));
+                    }
+
+                    writer.write(line + System.lineSeparator());
                     recordsWritten ++;
                 }
             }
@@ -130,7 +130,7 @@ public class RecordShuffler {
                 openNextFile(markovOrder);
             }
             catch(FileNotFoundException fnfe) {
-                log.warn("Next file for markovOrder " + markovOrder + " was not found.  Unable to continue, but this may be expected.", fnfe);
+                log.warn("Next file for markovOrder " + markovOrder + " at record count " + fileContextPerOrder.get(markovOrder).getRecordsRead().get() + " was not found.  Unable to continue, but this may be expected.");
                 return null;
             }
         }
@@ -145,7 +145,7 @@ public class RecordShuffler {
             fileContextPerOrder.get(markovOrder).getReader().close();
         }
 
-        String filename = Paths.get(outputDirectory.toString(), getFileName(markovOrder)).toString();
+        String filename = Paths.get(sourceDirectoryPath.toString(), getFileName(markovOrder)).toString();
         fileContextPerOrder.get(markovOrder).setReader(new BufferedReader(new FileReader(filename)));
     }
 
