@@ -43,9 +43,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Validated
 @ConfigurationProperties
 public class RecordWriter {
-    private static final String OUTPUT_FILE_PREFIX = "sequences";
-    private static final String OUTPUT_FILE_EXTENSION = ".csv";
-
     @NotBlank
     @Value("${task.outputFileDirectory}")
     private String					outputFileDirectory;
@@ -57,7 +54,7 @@ public class RecordWriter {
 
     private Path outputDirectory;
 
-    private Map<Integer, FileContext> fileContextPerOrder = new ConcurrentHashMap<>();
+    private Map<Integer, FileWritingContext> fileContextPerOrder = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() throws IOException {
@@ -69,7 +66,7 @@ public class RecordWriter {
 
     public synchronized void write(@NotNull Integer markovOrder, @NotBlank String sequence) throws IOException {
         if (!fileContextPerOrder.containsKey(markovOrder)) {
-            fileContextPerOrder.put(markovOrder, new FileContext(new AtomicInteger(0)));
+            fileContextPerOrder.put(markovOrder, new FileWritingContext(new AtomicInteger(0)));
         }
 
         if (fileContextPerOrder.get(markovOrder).getRecordsWritten().get() % maxRecordsPerFile == 0) {
@@ -96,12 +93,12 @@ public class RecordWriter {
 
         String recordOffsetPart = String.valueOf(recordsWritten - (recordsWritten % maxRecordsPerFile));
 
-        return String.join("-", OUTPUT_FILE_PREFIX, String.valueOf(markovOrder), recordOffsetPart) + OUTPUT_FILE_EXTENSION;
+        return String.join("-", FileConstants.OUTPUT_FILE_PREFIX, String.valueOf(markovOrder), recordOffsetPart) + FileConstants.OUTPUT_FILE_EXTENSION;
     }
 
     @PreDestroy
     public void closeResources() throws IOException {
-        for (FileContext fileContext : fileContextPerOrder.values()) {
+        for (FileWritingContext fileContext : fileContextPerOrder.values()) {
             fileContext.getWriter().close();
         }
     }

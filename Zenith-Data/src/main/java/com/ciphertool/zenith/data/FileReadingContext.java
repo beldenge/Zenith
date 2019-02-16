@@ -19,30 +19,30 @@
 
 package com.ciphertool.zenith.data;
 
-import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FileContext {
-    private AtomicInteger recordsWritten;
-    private BufferedWriter writer;
+public class FileReadingContext {
+    private AtomicInteger recordsRead;
+    private BufferedReader reader;
 
-    public FileContext(AtomicInteger recordsWritten) {
-        this.recordsWritten = recordsWritten;
+    public FileReadingContext(AtomicInteger recordsRead) {
+        this.recordsRead = recordsRead;
     }
 
-    public AtomicInteger getRecordsWritten() {
-        return recordsWritten;
+    public AtomicInteger getRecordsRead() {
+        return recordsRead;
     }
 
-    public void setRecordsWritten(AtomicInteger recordsWritten) {
-        this.recordsWritten = recordsWritten;
+    public void setRecordsRead(AtomicInteger recordsRead) {
+        this.recordsRead = recordsRead;
     }
 
-    public BufferedWriter getWriter() {
-        return writer;
+    public BufferedReader getReader() {
+        return reader;
     }
 
-    public void setWriter(BufferedWriter writer) {
-        this.writer = writer;
+    public void setReader(BufferedReader reader) {
+        this.reader = reader;
     }
 }

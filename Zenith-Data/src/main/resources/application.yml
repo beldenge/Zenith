@@ -53,6 +53,7 @@ taskExecutor:
 task:
   sourceDirectory: /Users/george/Desktop/zenith-transformed
   outputFileDirectory: /Users/george/Desktop/zenith-data
+  shuffledOutputDirectory: /Users/george/Desktop/zenith-data-shuffled
   maxRecordsPerFile: 100000
   markovOrder: 5
   #samplesToCreate: 1000000

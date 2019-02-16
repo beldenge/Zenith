@@ -34,6 +34,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @EnableAsync
 @Validated
@@ -52,6 +56,14 @@ public class DataGeneratorApplication implements CommandLineRunner {
     @Value("${taskExecutor.queueCapacity}")
     private int						queueCapacity;
 
+    @NotBlank
+    @Value("${task.outputFileDirectory}")
+    private String					outputFileDirectory;
+
+    @NotBlank
+    @Value("${task.shuffledOutputDirectory}")
+    private String					shuffledOutputDirectory;
+
     @Autowired
     private EnglishSampleCreator englishSampleCreator;
 
@@ -60,6 +72,9 @@ public class DataGeneratorApplication implements CommandLineRunner {
 
     @Autowired
     private MarkovSampleCreator markovSampleCreator;
+
+    @Autowired
+    private RecordShuffler recordShuffler;
 
     /**
      * Main entry point for the application.
@@ -72,24 +87,40 @@ public class DataGeneratorApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... arg0) {
-        long start = System.currentTimeMillis();
+    public void run(String... arg0) throws IOException {
+        long start;
 
-        int samplesToCreate = englishSampleCreator.createSamples(-1);
+        if (Files.exists(Paths.get(outputFileDirectory))) {
+            log.info("Output directory already exists.  Skipping sample creation.");
+        } else {
+            start = System.currentTimeMillis();
 
-        log.info("Finished generating {} English samples in {}ms.", samplesToCreate, (System.currentTimeMillis() - start));
+            int samplesToCreate = englishSampleCreator.createSamples(-1);
 
-        start = System.currentTimeMillis();
+            log.info("Finished generating {} English samples in {}ms.", samplesToCreate, (System.currentTimeMillis() - start));
 
-        int samplesCreated = uniformSampleCreator.createSamples(samplesToCreate);
+            start = System.currentTimeMillis();
 
-        log.info("Finished generating {} uniform samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
+            int samplesCreated = uniformSampleCreator.createSamples(samplesToCreate);
 
-        start = System.currentTimeMillis();
+            log.info("Finished generating {} uniform samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
 
-        samplesCreated = markovSampleCreator.createSamples(samplesToCreate);
+            start = System.currentTimeMillis();
 
-        log.info("Finished generating {} Markov samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
+            samplesCreated = markovSampleCreator.createSamples(samplesToCreate);
+
+            log.info("Finished generating {} Markov samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
+        }
+
+        if (Files.exists(Paths.get(shuffledOutputDirectory))) {
+            log.info("Output directory already exists.  Skipping sample shuffling.");
+        } else {
+            start = System.currentTimeMillis();
+
+            int recordsWritten = recordShuffler.shuffle();
+
+            log.info("Finished shuffling {} samples in {}ms.", recordsWritten, (System.currentTimeMillis() - start));
+        }
     }
 
     @Bean

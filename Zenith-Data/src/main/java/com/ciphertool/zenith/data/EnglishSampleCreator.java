@@ -71,7 +71,7 @@ public class EnglishSampleCreator implements SampleCreator {
 
         if (!Files.isDirectory(validTrainingTextDirectoryPath)) {
             throw new IllegalArgumentException(
-                    "Property \"task.zodiac408.sourceDirectory\" must be a directory.");
+                    "Property \"task.sourceDirectory\" must be a directory.");
         }
 
         List<CompletableFuture<Integer>> futures = parseFiles(validTrainingTextDirectoryPath);
