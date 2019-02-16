@@ -22,6 +22,7 @@ package com.ciphertool.zenith.data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class FileExporter {
 
     private static final String	NON_ALPHA				= "[^a-zA-Z]";
 
+    @Lazy
     @Autowired
     private RecordWriter writer;
 

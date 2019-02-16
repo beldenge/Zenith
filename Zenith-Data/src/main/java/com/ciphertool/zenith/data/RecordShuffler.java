@@ -22,6 +22,7 @@ package com.ciphertool.zenith.data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Lazy
 @Component
 public class RecordShuffler {
     private static Logger log	= LoggerFactory.getLogger(RecordShuffler.class);

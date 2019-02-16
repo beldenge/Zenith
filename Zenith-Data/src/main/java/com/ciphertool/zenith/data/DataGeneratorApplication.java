@@ -28,6 +28,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -65,16 +66,7 @@ public class DataGeneratorApplication implements CommandLineRunner {
     private String					shuffledOutputDirectory;
 
     @Autowired
-    private EnglishSampleCreator englishSampleCreator;
-
-    @Autowired
-    private UniformSampleCreator uniformSampleCreator;
-
-    @Autowired
-    private MarkovSampleCreator markovSampleCreator;
-
-    @Autowired
-    private RecordShuffler recordShuffler;
+    private ApplicationContext context;
 
     /**
      * Main entry point for the application.
@@ -95,28 +87,32 @@ public class DataGeneratorApplication implements CommandLineRunner {
         } else {
             start = System.currentTimeMillis();
 
+            EnglishSampleCreator englishSampleCreator = context.getBean(EnglishSampleCreator.class);
             int samplesToCreate = englishSampleCreator.createSamples(-1);
 
             log.info("Finished generating {} English samples in {}ms.", samplesToCreate, (System.currentTimeMillis() - start));
 
             start = System.currentTimeMillis();
 
+            UniformSampleCreator uniformSampleCreator = context.getBean(UniformSampleCreator.class);
             int samplesCreated = uniformSampleCreator.createSamples(samplesToCreate);
 
             log.info("Finished generating {} uniform samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
 
             start = System.currentTimeMillis();
 
+            MarkovSampleCreator markovSampleCreator = context.getBean(MarkovSampleCreator.class);
             samplesCreated = markovSampleCreator.createSamples(samplesToCreate);
 
             log.info("Finished generating {} Markov samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
         }
 
         if (Files.exists(Paths.get(shuffledOutputDirectory))) {
-            log.info("Output directory already exists.  Skipping sample shuffling.");
+            log.info("Shuffled directory already exists.  Skipping sample shuffling.");
         } else {
             start = System.currentTimeMillis();
 
+            RecordShuffler recordShuffler = context.getBean(RecordShuffler.class);
             int recordsWritten = recordShuffler.shuffle();
 
             log.info("Finished shuffling {} samples in {}ms.", recordsWritten, (System.currentTimeMillis() - start));

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -54,7 +55,6 @@ public class UniformSampleCreator implements SampleCreator {
         }
     }
 
-    @Min(1)
     @Value("${task.samplesToCreate:-1}")
     private Integer samplesToCreate;
 
@@ -62,6 +62,7 @@ public class UniformSampleCreator implements SampleCreator {
     @Value("${training.sequenceLength}")
     private int sequenceLength;
 
+    @Lazy
     @Autowired
     private RecordWriter writer;
 
