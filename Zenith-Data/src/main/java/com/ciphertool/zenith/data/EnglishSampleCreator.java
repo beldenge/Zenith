@@ -61,8 +61,12 @@ public class EnglishSampleCreator implements SampleCreator {
     @Autowired
     private FileExporter fileExporter;
 
+    /**
+     * @param howMany ignored for this implementation
+     * @return the number of samples created
+     */
     @Override
-    public void createSamples() {
+    public int createSamples(int howMany) {
         Path validTrainingTextDirectoryPath = Paths.get(validTrainingTextDirectory);
 
         if (!Files.isDirectory(validTrainingTextDirectoryPath)) {
@@ -70,21 +74,23 @@ public class EnglishSampleCreator implements SampleCreator {
                     "Property \"task.zodiac408.sourceDirectory\" must be a directory.");
         }
 
-        List<CompletableFuture<Void>> futures = parseFiles(validTrainingTextDirectoryPath);
+        List<CompletableFuture<Integer>> futures = parseFiles(validTrainingTextDirectoryPath);
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
+        return futures.stream()
+            .map(CompletableFuture::join)
+            .reduce(0, (a, b) -> a + b);
     }
 
-    protected List<CompletableFuture<Void>> parseFiles(Path path) {
-        List<CompletableFuture<Void>> tasks = new ArrayList<>();
-        CompletableFuture<Void> task;
+    protected List<CompletableFuture<Integer>> parseFiles(Path path) {
+        List<CompletableFuture<Integer>> tasks = new ArrayList<>();
+        CompletableFuture<Integer> task;
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path entry : stream) {
                 if (Files.isDirectory(entry)) {
                     tasks.addAll(parseFiles(entry));
                 } else {
-                    task = CompletableFuture.runAsync(() -> fileExporter.parse(TRUE_ENGLISH, entry, sequenceLength), taskExecutor);
+                    task = CompletableFuture.supplyAsync(() -> fileExporter.parse(TRUE_ENGLISH, entry, sequenceLength), taskExecutor);
                     tasks.add(task);
                 }
             }

@@ -39,7 +39,7 @@ public class FileExporter {
     @Autowired
     private RecordWriter writer;
 
-    public void parse(Integer markovOrder, Path inputPath, int sampleSize) {
+    public int parse(Integer markovOrder, Path inputPath, int sampleSize) {
         long start = System.currentTimeMillis();
 
         List<String> sentencesToAdd = new ArrayList<>();
@@ -63,6 +63,7 @@ public class FileExporter {
         }
 
         StringBuilder sample = new StringBuilder();
+        int sequencesWritten = 0;
 
         for (int i = 0; i < sentencesToAdd.size(); i++) {
             sample.append(sentencesToAdd.get(i));
@@ -74,6 +75,7 @@ public class FileExporter {
                     log.debug("Random sample of order {}: {}", markovOrder, paragraph);
 
                     writer.write(markovOrder, paragraph);
+                    sequencesWritten ++;
                 } catch (IOException e) {
                     throw new IllegalStateException(e);
                 }
@@ -83,5 +85,6 @@ public class FileExporter {
         }
 
         log.info("Completed parsing file {} in {}ms.", inputPath.toString(), (System.currentTimeMillis() - start));
+        return sequencesWritten;
     }
 }

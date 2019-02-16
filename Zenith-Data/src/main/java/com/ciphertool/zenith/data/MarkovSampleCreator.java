@@ -65,7 +65,7 @@ public class MarkovSampleCreator implements SampleCreator {
     private int markovOrder;
 
     @Min(1)
-    @Value("${task.samplesToCreate}")
+    @Value("${task.samplesToCreate:-1}")
     private Integer samplesToCreate;
 
     @Min(1)
@@ -93,12 +93,16 @@ public class MarkovSampleCreator implements SampleCreator {
     }
 
     @Override
-    public void createSamples() {
-        for (int i = 0; i < samplesToCreate; i ++) {
+    public int createSamples(int howMany) {
+        int i = 0;
+
+        for (; i < (samplesToCreate >= 0 ? samplesToCreate : howMany); i ++) {
             for (int j = 0; j < markovOrder; j ++) {
                 generateMarkovModelSample(j + 1);
             }
         }
+
+        return i;
     }
 
     protected void generateMarkovModelSample(int markovOrder) {

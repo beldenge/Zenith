@@ -55,7 +55,7 @@ public class UniformSampleCreator implements SampleCreator {
     }
 
     @Min(1)
-    @Value("${task.samplesToCreate}")
+    @Value("${task.samplesToCreate:-1}")
     private Integer samplesToCreate;
 
     @Min(1)
@@ -66,10 +66,14 @@ public class UniformSampleCreator implements SampleCreator {
     private RecordWriter writer;
 
     @Override
-    public void createSamples(){
-        for (int i = 0; i < samplesToCreate; i ++) {
+    public int createSamples(int howMany){
+        int i = 0;
+
+        for (; i < (samplesToCreate >= 0 ? samplesToCreate : howMany); i ++) {
             generateRandomSample();
         }
+
+        return i;
     }
 
     private void generateRandomSample() {

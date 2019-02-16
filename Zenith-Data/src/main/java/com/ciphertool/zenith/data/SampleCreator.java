@@ -20,5 +20,5 @@
 package com.ciphertool.zenith.data;
 
 public interface SampleCreator {
-    void createSamples();
+    int createSamples(int howMany);
 }

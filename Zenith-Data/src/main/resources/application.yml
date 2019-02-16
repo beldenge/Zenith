@@ -55,7 +55,7 @@ task:
   outputFileDirectory: /Users/george/Desktop/zenith-data
   maxRecordsPerFile: 100000
   markovOrder: 5
-  samplesToCreate: 1000000
+  #samplesToCreate: 1000000
 
 training:
   sequenceLength: 391

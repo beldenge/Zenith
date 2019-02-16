@@ -75,21 +75,21 @@ public class DataGeneratorApplication implements CommandLineRunner {
     public void run(String... arg0) {
         long start = System.currentTimeMillis();
 
-        englishSampleCreator.createSamples();
+        int samplesToCreate = englishSampleCreator.createSamples(-1);
 
-        log.info("Finished generating English samples in {}ms.", (System.currentTimeMillis() - start));
-
-        start = System.currentTimeMillis();
-
-        uniformSampleCreator.createSamples();
-
-        log.info("Finished generating uniform samples in {}ms.", (System.currentTimeMillis() - start));
+        log.info("Finished generating {} English samples in {}ms.", samplesToCreate, (System.currentTimeMillis() - start));
 
         start = System.currentTimeMillis();
 
-        markovSampleCreator.createSamples();
+        int samplesCreated = uniformSampleCreator.createSamples(samplesToCreate);
 
-        log.info("Finished generating Markov samples in {}ms.", (System.currentTimeMillis() - start));
+        log.info("Finished generating {} uniform samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
+
+        start = System.currentTimeMillis();
+
+        samplesCreated = markovSampleCreator.createSamples(samplesToCreate);
+
+        log.info("Finished generating {} Markov samples in {}ms.", samplesCreated, (System.currentTimeMillis() - start));
     }
 
     @Bean
