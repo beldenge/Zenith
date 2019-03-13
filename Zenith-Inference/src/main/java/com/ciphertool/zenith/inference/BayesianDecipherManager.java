@@ -19,6 +19,26 @@
 
 package com.ciphertool.zenith.inference;
 
+import com.ciphertool.zenith.inference.dao.CipherDao;
+import com.ciphertool.zenith.inference.dto.EvaluationResults;
+import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.Plaintext;
+import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.LstmNetworkPlaintextEvaluator;
+import com.ciphertool.zenith.inference.probability.BoundaryProbability;
+import com.ciphertool.zenith.inference.probability.SolutionProbability;
+import com.ciphertool.zenith.math.sampling.RouletteSampler;
+import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.probability.LetterProbability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,29 +47,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadLocalRandom;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.stereotype.Component;
-
-import com.ciphertool.zenith.inference.dao.CipherDao;
-import com.ciphertool.zenith.inference.dto.EvaluationResults;
-import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Plaintext;
-import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.NeuralNetworkPlaintextEvaluator;
-import com.ciphertool.zenith.inference.probability.BoundaryProbability;
-import com.ciphertool.zenith.model.probability.LetterProbability;
-import com.ciphertool.zenith.inference.probability.SolutionProbability;
-import com.ciphertool.zenith.math.sampling.RouletteSampler;
-import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.ModelConstants;
 
 @Component
 public class BayesianDecipherManager {
@@ -129,7 +126,7 @@ public class BayesianDecipherManager {
 	private boolean							letterTypeSamplingEnabled;
 
 	@Autowired
-	private NeuralNetworkPlaintextEvaluator	plaintextEvaluator;
+	private LstmNetworkPlaintextEvaluator 	plaintextEvaluator;
 
 	@Autowired
 	private CipherDao						cipherDao;

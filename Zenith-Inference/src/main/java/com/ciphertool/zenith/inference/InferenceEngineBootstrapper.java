@@ -19,9 +19,11 @@
 
 package com.ciphertool.zenith.inference;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
+import com.ciphertool.zenith.math.MathCache;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +31,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import com.ciphertool.zenith.math.MathCache;
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.neural.predict.Predictor;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, MathCache.class,
-		LetterNGramDao.class, Predictor.class })
+		LetterNGramDao.class })
 @EnableCaching
 public class InferenceEngineBootstrapper implements CommandLineRunner {
 	private static Logger			log	= LoggerFactory.getLogger(InferenceEngineBootstrapper.class);
@@ -58,7 +59,7 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	@Autowired
 	private BayesianDecipherManager	manager;
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
+	public static void main(String[] args) {
 		SpringApplication.run(InferenceEngineBootstrapper.class, args);
 	}
 
@@ -69,11 +70,32 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	 *             if there's an error during initialization
 	 */
 	@Override
-	public void run(String... arg0) throws Exception {
+	public void run(String... arg0) {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
 		manager.run();
+	}
+
+	@Bean
+	public RestTemplate restTemplate(RestTemplateBuilder builder) {
+		builder.customizers((restTemplate) -> {
+				PoolingHttpClientConnectionManager connectionManager = new
+						PoolingHttpClientConnectionManager();
+				connectionManager.setMaxTotal(10);
+				connectionManager.setDefaultMaxPerRoute(10);
+
+				CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(connectionManager).build();
+
+				HttpComponentsClientHttpRequestFactory httpReqFactory = new HttpComponentsClientHttpRequestFactory(httpclient);
+				httpReqFactory.setReadTimeout(5000);
+				httpReqFactory.setConnectionRequestTimeout(5000);
+				httpReqFactory.setConnectTimeout(5000);
+
+				restTemplate.setRequestFactory(httpReqFactory);
+		});
+
+		return builder.build();
 	}
 
 	@Bean

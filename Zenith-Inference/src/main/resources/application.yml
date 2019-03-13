@@ -30,6 +30,12 @@ taskExecutor:
     #override:
 
 # ---------------------------------------
+# LSTM Service Properties
+# ---------------------------------------
+lstm:
+  service-url: http://localhost:5000/predictions/
+
+# ---------------------------------------
 # Markov Model Properties
 # ---------------------------------------
 markov:
@@ -61,6 +67,8 @@ bayes:
 # MongoDB Properties
 #----------------------------------------
 spring:
+  main:
+    web-application-type: NONE
   data:
     mongodb:
       host: localhost
