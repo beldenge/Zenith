@@ -47,14 +47,12 @@ public class LstmNetworkPlaintextEvaluator {
 
         log.debug("LSTM prediction took {}ms.", (System.currentTimeMillis() - startLstmPrediction));
 
-        Float interpolatedProbability = lstmPrediction.getPredictions().get(lstmPrediction.getPredictions().size() - 1);
+        Float probability = lstmPrediction.getProbability();
 
-        if (interpolatedProbability == 0f) {
-            interpolatedProbability = 0.000001f;
+        if (probability == 0f) {
+            probability = 0.000001f;
         }
 
-        Float interpolatedLogProbability = (float) Math.log(interpolatedProbability);
-
-        return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
+        return new EvaluationResults(probability, lstmPrediction.getLogProbability());
     }
 }

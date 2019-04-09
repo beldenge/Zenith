@@ -24,13 +24,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @NoArgsConstructor
 @Getter
 @Setter
 @ToString
 public class LstmPrediction {
-    private List<Float> predictions = new ArrayList<>();
+    private Float probability;
+    private Float logProbability;
 }

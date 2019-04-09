@@ -33,7 +33,7 @@ taskExecutor:
 # LSTM Service Properties
 # ---------------------------------------
 lstm:
-  service-url: http://localhost:5000/predictions/
+  service-url: http://localhost:5000/probabilities/
 
 # ---------------------------------------
 # Markov Model Properties
@@ -54,7 +54,7 @@ markov:
 #----------------------------------------
 bayes:
   sampler:
-    iterations: 5000
+    iterations: 250
     iterateRandomly: false
     letterTypeSampling:
       enabled: false
