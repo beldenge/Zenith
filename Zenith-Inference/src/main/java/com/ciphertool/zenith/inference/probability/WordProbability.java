@@ -21,10 +21,12 @@ package com.ciphertool.zenith.inference.probability;
 
 import com.ciphertool.zenith.math.probability.Probability;
 
+import java.math.BigDecimal;
+
 public class WordProbability implements Probability<String> {
 	private Integer		previous;
 	private Integer		next;
-	private Float	probability;
+	private BigDecimal	probability;
 	private Float	logProbability;
 	private String		value;
 
@@ -54,11 +56,20 @@ public class WordProbability implements Probability<String> {
 	 * @param logProbability
 	 *            the log probability
 	 */
-	public WordProbability(Integer previous, Integer next, String value, Float probability,
+	public WordProbability(Integer previous, Integer next, String value, BigDecimal probability,
 						   Float logProbability) {
 		this.previous = previous;
 		this.next = next;
 		this.probability = probability;
+		this.value = value;
+		this.logProbability = logProbability;
+	}
+
+	public WordProbability(Integer previous, Integer next, String value, Float probability,
+						   Float logProbability) {
+		this.previous = previous;
+		this.next = next;
+		this.probability = BigDecimal.valueOf(probability);
 		this.value = value;
 		this.logProbability = logProbability;
 	}
@@ -85,7 +96,7 @@ public class WordProbability implements Probability<String> {
 	 * @return the probability
 	 */
 	@Override
-	public Float getProbability() {
+	public BigDecimal getProbability() {
 		return probability;
 	}
 
@@ -93,7 +104,7 @@ public class WordProbability implements Probability<String> {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Float probability) {
+	public void setProbability(BigDecimal probability) {
 		this.probability = probability;
 	}
 

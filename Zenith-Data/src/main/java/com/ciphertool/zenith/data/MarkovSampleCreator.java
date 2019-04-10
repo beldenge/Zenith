@@ -38,6 +38,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class MarkovSampleCreator implements SampleCreator {
         }
     }
 
-    private static final Float RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+    private static final BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
     @Min(1)
     @Value("${task.markovOrder:1}")
@@ -149,7 +150,7 @@ public class MarkovSampleCreator implements SampleCreator {
             probabilities.add(probability);
         }
 
-        Float totalProbability = sampler.reIndex(probabilities);
+        BigDecimal totalProbability = sampler.reIndex(probabilities);
 
         int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 

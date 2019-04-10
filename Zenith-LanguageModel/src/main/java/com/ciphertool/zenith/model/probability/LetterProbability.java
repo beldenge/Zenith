@@ -21,9 +21,11 @@ package com.ciphertool.zenith.model.probability;
 
 import com.ciphertool.zenith.math.probability.Probability;
 
+import java.math.BigDecimal;
+
 public class LetterProbability implements Probability<Character>, Comparable<LetterProbability> {
 	private Character	letter;
-	private Float	probability;
+	private BigDecimal	probability;
 
 	/**
 	 * @param letter
@@ -33,7 +35,7 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	 */
 	public LetterProbability(Character letter, Float probability) {
 		this.letter = letter;
-		this.probability = probability;
+		this.probability = BigDecimal.valueOf(probability);
 	}
 
 	@Override
@@ -42,7 +44,7 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	}
 
 	@Override
-	public Float getProbability() {
+	public BigDecimal getProbability() {
 		return probability;
 	}
 
@@ -50,7 +52,7 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Float probability) {
+	public void setProbability(BigDecimal probability) {
 		this.probability = probability;
 	}
 
@@ -61,13 +63,7 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 
 	@Override
 	public int compareTo(LetterProbability other) {
-		if (this.probability < other.probability) {
-			return -1;
-		} else if (this.probability > other.probability) {
-			return 1;
-		} else {
-			return 0;
-		}
+		return this.probability.compareTo(other.probability);
 	}
 
 	@Override

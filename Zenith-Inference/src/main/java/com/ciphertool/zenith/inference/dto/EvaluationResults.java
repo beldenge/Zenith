@@ -19,23 +19,30 @@
 
 package com.ciphertool.zenith.inference.dto;
 
+import java.math.BigDecimal;
+
 public class EvaluationResults {
-	private Float	probability;
+	private BigDecimal	probability;
 	private Float	logProbability;
 
 	/**
 	 * @param probability
 	 * @param logProbability
 	 */
-	public EvaluationResults(Float probability, Float logProbability) {
+	public EvaluationResults(BigDecimal probability, Float logProbability) {
 		this.probability = probability;
+		this.logProbability = logProbability;
+	}
+
+	public EvaluationResults(Float probability, Float logProbability) {
+		this.probability = BigDecimal.valueOf(probability);
 		this.logProbability = logProbability;
 	}
 
 	/**
 	 * @return the probability
 	 */
-	public Float getProbability() {
+	public BigDecimal getProbability() {
 		return probability;
 	}
 
@@ -43,7 +50,7 @@ public class EvaluationResults {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Float probability) {
+	public void setProbability(BigDecimal probability) {
 		this.probability = probability;
 	}
 

@@ -19,22 +19,20 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.probability.WordProbability;
-import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class PlaintextEvaluator {
@@ -44,7 +42,7 @@ public class PlaintextEvaluator {
 	private Boolean		includeWordBoundaries;
 
 	public EvaluationResults evaluate(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
-		Float interpolatedProbability = 1.0f;
+		BigDecimal interpolatedProbability = BigDecimal.ONE;
 		Float interpolatedLogProbability = 0.0f;
 
 		long startLetter = System.currentTimeMillis();

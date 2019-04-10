@@ -19,21 +19,17 @@
 
 package com.ciphertool.zenith.inference.selection;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.ciphertool.zenith.math.sampling.RouletteSampler;
-import org.junit.Test;
-
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.model.probability.LetterProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
+import com.ciphertool.zenith.math.sampling.RouletteSampler;
+import com.ciphertool.zenith.model.probability.LetterProbability;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+import static org.junit.Assert.assertTrue;
 
 public class RouletteSamplerTest {
 
@@ -72,7 +68,7 @@ public class RouletteSamplerTest {
 
 		Collections.sort(letterUnigramProbabilities);
 
-		Float totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
+		BigDecimal totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
 
 		Map<Character, Integer> characterCounts = new HashMap<>();
 		int nextIndex;
@@ -91,15 +87,15 @@ public class RouletteSamplerTest {
 		}
 
 		for (LetterProbability letterProbability : letterUnigramProbabilities) {
-			Float actual = letterProbability.getProbability();
+			BigDecimal actual = letterProbability.getProbability();
 			Float estimated = (((float) characterCounts.get(letterProbability.getValue())
 					/ (float) i));
-			Float difference = Math.abs(actual - estimated);
+			BigDecimal difference = actual.subtract(BigDecimal.valueOf(estimated)).abs();
 
 			System.out.printf(letterProbability.getValue() + ": actual=" + actual.toString() + ", estimated="
 					+ estimated.toString() + ", difference=" + difference.toString() + "\n");
 
-			assertTrue(difference.compareTo((0.001f)) < 0);
+			assertTrue(difference.compareTo(BigDecimal.valueOf(0.001f)) < 0);
 		}
 	}
 
@@ -108,63 +104,63 @@ public class RouletteSamplerTest {
 		List<SolutionProbability> solutionProbabilities = new ArrayList<>();
 
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("1", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("2", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("3", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("4", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("5", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("6", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("7", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("8", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("9", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("10", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("11", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("12", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("13", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("14", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("15", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("16", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("17", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("18", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("19", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("20", 1, 1), 0),
-				(0.9999975f)));
+				BigDecimal.valueOf(0.9999975f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("21", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("22", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("23", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("24", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("25", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 		solutionProbabilities.add(new SolutionProbability(new CipherSolution(new Cipher("26", 1, 1), 0),
-				(0.0000001f)));
+				BigDecimal.valueOf(0.0000001f)));
 
 		RouletteSampler<SolutionProbability> rouletteSampler = new RouletteSampler<>();
 
 		Collections.sort(solutionProbabilities);
 
-		Float totalProbability = rouletteSampler.reIndex(solutionProbabilities);
+		BigDecimal totalProbability = rouletteSampler.reIndex(solutionProbabilities);
 
 		Map<CipherSolution, Integer> solutionCounts = new HashMap<>();
 		int nextIndex;
@@ -183,15 +179,15 @@ public class RouletteSamplerTest {
 		}
 
 		for (SolutionProbability solutionProbability : solutionProbabilities) {
-			Float actual = solutionProbability.getProbability();
+			BigDecimal actual = solutionProbability.getProbability();
 			Float estimated = (((float) (solutionCounts.get(solutionProbability.getValue()) == null ? 0 : solutionCounts.get(solutionProbability.getValue()))
 					/ (float) i));
-			Float difference = Math.abs(actual - estimated);
+			BigDecimal difference = actual.subtract(BigDecimal.valueOf(estimated)).abs();
 
 			System.out.printf(solutionProbability.getValue().getCipher().getName() + ": actual=" + actual.toString()
 					+ ", estimated=" + estimated.toString() + ", difference=" + difference.toString() + "\n");
 
-			assertTrue(difference.compareTo((0.001f)) < 0);
+			assertTrue(difference.compareTo(BigDecimal.valueOf(0.001f)) < 0);
 		}
 	}
 }

@@ -26,7 +26,6 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.LstmNetworkPlaintextEvaluator;
-import com.ciphertool.zenith.inference.probability.BoundaryProbability;
 import com.ciphertool.zenith.inference.probability.SolutionProbability;
 import com.ciphertool.zenith.math.sampling.RouletteSampler;
 import com.ciphertool.zenith.model.ModelConstants;
@@ -39,6 +38,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,51 +53,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
 	private Logger				badPredictionLog		= LoggerFactory.getLogger("com.ciphertool.zenith.inference.badPredictionLog");
-
-	private static Float[]	letterProbabilities		= new Float[ModelConstants.LOWERCASE_LETTERS.size()];
-	private static Float[]	vowelProbabilities		= new Float[ModelConstants.LOWERCASE_VOWELS.size()];
-	private static Float[]	consonantProbabilities	= new Float[ModelConstants.LOWERCASE_CONSONANTS.size()];
-
-	static {
-		Float numLetters = (float) ModelConstants.LOWERCASE_LETTERS.size();
-		Float singleLetterRatio = 1.0f / numLetters;
-
-		Float numVowels = (float) ModelConstants.LOWERCASE_VOWELS.size();
-		Float singleVowelRatio = 1.0f / numVowels;
-
-		Float numConsonants = (float) ModelConstants.LOWERCASE_CONSONANTS.size();
-		Float singleConsonantRatio = 1.0f / numConsonants;
-
-		for (int i = 0; i < letterProbabilities.length; i++) {
-			letterProbabilities[i] = 0.0f;
-		}
-
-		for (int i = 0; i < vowelProbabilities.length; i++) {
-			vowelProbabilities[i] = 0.0f;
-		}
-
-		for (int i = 0; i < consonantProbabilities.length; i++) {
-			consonantProbabilities[i] = 0.0f;
-		}
-
-		for (int i = 1; i <= letterProbabilities.length; i++) {
-			for (int j = letterProbabilities.length - 1; j >= letterProbabilities.length - i; j--) {
-				letterProbabilities[j] = letterProbabilities[j] + (singleLetterRatio / (float) i);
-			}
-		}
-
-		for (int i = 1; i <= vowelProbabilities.length; i++) {
-			for (int j = vowelProbabilities.length - 1; j >= vowelProbabilities.length - i; j--) {
-				vowelProbabilities[j] = vowelProbabilities[j] + (singleVowelRatio / (float) i);
-			}
-		}
-
-		for (int i = 1; i <= consonantProbabilities.length; i++) {
-			for (int j = consonantProbabilities.length - 1; j >= consonantProbabilities.length - i; j--) {
-				consonantProbabilities[j] = consonantProbabilities[j] + (singleConsonantRatio / (float) i);
-			}
-		}
-	}
 
 	@Value("${cipher.name}")
 	private String							cipherName;
@@ -112,9 +68,6 @@ public class BayesianDecipherManager {
 
 	@Value("${bayes.sampler.iterateRandomly}")
 	private Boolean							iterateRandomly;
-
-	@Value("${markov.letter.include.word.boundaries}")
-	private Boolean							includeWordBoundaries;
 
 	@Value("${markov.letter.order}")
 	private int								markovOrder;
@@ -172,14 +125,14 @@ public class BayesianDecipherManager {
 		letterUnigramProbabilities.add(new LetterProbability('y', 0.01974f));
 		letterUnigramProbabilities.add(new LetterProbability('z', 0.00074f));
 
-		Float sum = 0.0f;
+		BigDecimal sum = BigDecimal.ZERO;
 
 		for (LetterProbability probability : letterUnigramProbabilities) {
-			sum = sum + probability.getProbability();
+			sum = sum.add(probability.getProbability());
 		}
 
 		for (LetterProbability probability : letterUnigramProbabilities) {
-			probability.setProbability(probability.getProbability() / sum);
+			probability.setProbability(probability.getProbability().divide(sum, MathContext.DECIMAL32));
 		}
 	}
 
@@ -203,7 +156,7 @@ public class BayesianDecipherManager {
 
 		RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
 		Collections.sort(letterUnigramProbabilities);
-		Float totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
+		BigDecimal totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
 
 		cipher.getCiphertextCharacters().stream().map(ciphertext -> ciphertext.getValue()).distinct().forEach(ciphertext -> {
 			// Pick a plaintext at random according to the language model
@@ -211,16 +164,6 @@ public class BayesianDecipherManager {
 
 			initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
 		});
-
-		if (includeWordBoundaries) {
-			Float wordBoundaryProbability = 1.0f / (float) LanguageConstants.AVERAGE_WORD_SIZE;
-
-			for (int i = 0; i < cipher.getCiphertextCharacters().size() - 1; i++) {
-				if (ThreadLocalRandom.current().nextFloat() < wordBoundaryProbability) {
-					initialSolution.addWordBoundary(i);
-				}
-			}
-		}
 
 		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(initialSolution, null);
 		initialSolution.setProbability(initialPlaintextResults.getProbability());
@@ -247,8 +190,6 @@ public class BayesianDecipherManager {
 		long start = System.currentTimeMillis();
 		long startLetterSampling;
 		long letterSamplingElapsed;
-		long startWordSampling;
-		long wordSamplingElapsed;
 
 		Float knownProximity = null;
 		int i;
@@ -269,22 +210,16 @@ public class BayesianDecipherManager {
 			next.setProbability(fullPlaintextResults.getProbability());
 			next.setLogProbability(fullPlaintextResults.getLogProbability());
 
-			startWordSampling = System.currentTimeMillis();
-			if (includeWordBoundaries) {
-				next = runGibbsWordBoundarySampler(temperature, next);
-			}
-			wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
-
 			if (knownPlaintextEvaluator != null) {
 				knownProximity = knownPlaintextEvaluator.evaluate(next);
 				next.setKnownSolutionProximity(knownProximity);
 
 				if (next.getKnownSolutionProximity() < 0.05
-						&& next.getProbability() > 0.99) {
+						&& next.getProbability().compareTo(BigDecimal.valueOf(0.99)) >= 0) {
 					badPredictionLog.info(next.asSingleLineString());
 				}
 
-				if (maxKnown.getKnownSolutionProximity() < knownProximity) {
+				if (knownProximity > maxKnown.getKnownSolutionProximity()) {
 					maxKnown = next;
 					maxKnownIteration = i + 1;
 				}
@@ -296,8 +231,7 @@ public class BayesianDecipherManager {
 			}
 
 			log.info("Iteration " + (i + 1) + " complete.  [elapsed=" + (System.currentTimeMillis() - iterationStart)
-					+ "ms, letterSampling=" + letterSamplingElapsed + "ms, wordSampling=" + wordSamplingElapsed
-					+ "ms, temp=" + String.format("%1$,.2f", temperature) + "]");
+					+ "ms, letterSampling=" + letterSamplingElapsed + "ms, temp=" + String.format("%1$,.2f", temperature) + "]");
 			log.info(next.toString());
 		}
 
@@ -322,7 +256,7 @@ public class BayesianDecipherManager {
 	protected CipherSolution runGibbsLetterSampler(Float temperature, CipherSolution solution) {
 		RouletteSampler<SolutionProbability> rouletteSampler = new RouletteSampler<>();
 		CipherSolution proposal = null;
-		Float totalProbability;
+		BigDecimal totalProbability;
 
 		List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();
 		mappingList.addAll(solution.getMappings().entrySet());
@@ -398,9 +332,9 @@ public class BayesianDecipherManager {
 
 	protected List<SolutionProbability> computeDistribution(String ciphertextKey, CipherSolution solution) {
 		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
-		Float sumOfProbabilities = 0.0f;
+		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
 
-		List<FutureTask<CipherSolution>> futures = new ArrayList<FutureTask<CipherSolution>>(26);
+		List<FutureTask<CipherSolution>> futures = new ArrayList<>(26);
 		FutureTask<CipherSolution> task;
 
 		// Calculate the full conditional probability for each possible plaintext substitution
@@ -417,7 +351,8 @@ public class BayesianDecipherManager {
 				next = future.get();
 
 				plaintextDistribution.add(new SolutionProbability(next, next.getProbability()));
-				sumOfProbabilities = sumOfProbabilities + next.getProbability();
+
+				sumOfProbabilities = sumOfProbabilities.add(next.getProbability());
 			} catch (InterruptedException ie) {
 				log.error("Caught InterruptedException while waiting for LetterProbabilityTask ", ie);
 			} catch (ExecutionException ee) {
@@ -428,73 +363,16 @@ public class BayesianDecipherManager {
 		// Normalize the probabilities
 		// TODO: should we also somehow normalize the log probabilities?
 		for (SolutionProbability solutionProbability : plaintextDistribution) {
-			solutionProbability.setProbability(solutionProbability.getProbability() / sumOfProbabilities);
+			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathContext.DECIMAL32));
 		}
 
 		return plaintextDistribution;
 	}
 
-	protected CipherSolution runGibbsWordBoundarySampler(Float temperature, CipherSolution solution) {
-		int nextBoundary;
-		Float sumOfProbabilities = null;
-		List<BoundaryProbability> boundaryProbabilities = null;
-		boolean isAddBoundary = false;
-		CipherSolution addProposal = null;
-		CipherSolution removeProposal = null;
-		CipherSolution proposal = null;
-		EvaluationResults addPlaintextResults = null;
-		EvaluationResults removePlaintextResults = null;
-		Float totalProbability;
-		RouletteSampler<BoundaryProbability> rouletteSampler = new RouletteSampler<>();
-
-		for (int i = 0; i < cipher.getCiphertextCharacters().size() - 1; i++) {
-			boundaryProbabilities = new ArrayList<>();
-			nextBoundary = i;
-
-			addProposal = solution.clone();
-			if (!addProposal.getWordBoundaries().contains(nextBoundary)) {
-				addProposal.addWordBoundary(nextBoundary);
-				addPlaintextResults = plaintextEvaluator.evaluate(addProposal, null);
-				addProposal.setProbability(addPlaintextResults.getProbability());
-				addProposal.setLogProbability(addPlaintextResults.getLogProbability());
-			}
-
-			removeProposal = solution.clone();
-			if (removeProposal.getWordBoundaries().contains(nextBoundary)) {
-				removeProposal.removeWordBoundary(nextBoundary);
-				removePlaintextResults = plaintextEvaluator.evaluate(removeProposal, null);
-				removeProposal.setProbability(removePlaintextResults.getProbability());
-				removeProposal.setLogProbability(removePlaintextResults.getLogProbability());
-			}
-
-			sumOfProbabilities = addProposal.getProbability() + removeProposal.getProbability();
-
-			boundaryProbabilities.add(new BoundaryProbability(true,
-					addProposal.getProbability() / sumOfProbabilities));
-			boundaryProbabilities.add(new BoundaryProbability(false,
-					removeProposal.getProbability() / sumOfProbabilities));
-
-			Collections.sort(boundaryProbabilities);
-			totalProbability = rouletteSampler.reIndex(boundaryProbabilities);
-
-			isAddBoundary = boundaryProbabilities.get(rouletteSampler.getNextIndex(boundaryProbabilities, totalProbability)).getValue();
-
-			if (isAddBoundary) {
-				proposal = addProposal;
-			} else {
-				proposal = removeProposal;
-			}
-
-			solution = selectNext(temperature, solution, proposal);
-		}
-
-		return solution;
-	}
-
 	protected CipherSolution selectNext(Float temperature, CipherSolution solution, CipherSolution proposal) {
 		Float acceptanceProbability = null;
 
-		if (proposal.getLogProbability().compareTo(solution.getLogProbability()) >= 0) {
+		if (proposal.getLogProbability().compareTo(solution.getLogProbability()) > 0) {
 			log.debug("Better solution found");
 			return proposal;
 		} else {
@@ -503,13 +381,12 @@ public class BayesianDecipherManager {
 
 			log.debug("Acceptance probability: {}", acceptanceProbability);
 
-			if (acceptanceProbability< 0.0) {
+			if (acceptanceProbability < 0.0) {
 				throw new IllegalStateException(
 						"Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
 			}
 
-			if (acceptanceProbability > 1.0
-					|| ThreadLocalRandom.current().nextFloat() < acceptanceProbability) {
+			if (acceptanceProbability > 1.0 || ThreadLocalRandom.current().nextFloat() < acceptanceProbability) {
 				return proposal;
 			}
 		}

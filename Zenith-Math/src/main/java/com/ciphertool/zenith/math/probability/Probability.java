@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.math.probability;
 
+import java.math.BigDecimal;
+
 public interface Probability<T> {
 	/**
 	 * @return the value
@@ -28,7 +30,7 @@ public interface Probability<T> {
 	/**
 	 * @return the probability
 	 */
-	Float getProbability();
+	BigDecimal getProbability();
 
 	/**
 	 * @return the log probability

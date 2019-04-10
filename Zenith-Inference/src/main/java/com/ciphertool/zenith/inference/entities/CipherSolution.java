@@ -19,21 +19,18 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 public class CipherSolution {
 	private static Logger			log						= LoggerFactory.getLogger(CipherSolution.class);
 
 	protected Cipher				cipher;
 
-	private Float				probability				= null;
+	private BigDecimal				probability				= null;
 	private Float				logProbability			= null;
 	private Float				knownSolutionProximity	= null;
 
@@ -74,11 +71,11 @@ public class CipherSolution {
 	/**
 	 * @return the probability
 	 */
-	public Float getProbability() {
+	public BigDecimal getProbability() {
 		return probability;
 	}
 
-	public void setProbability(Float score) {
+	public void setProbability(BigDecimal score) {
 		this.probability = score;
 	}
 

@@ -19,8 +19,10 @@
 
 package com.ciphertool.zenith.math.sampling;
 
+import java.math.BigDecimal;
+
 public class BinaryRouletteNode {
-	private Float			value;
+	private BigDecimal			value;
 	private int					index;
 	private BinaryRouletteNode	lessThan;
 	private BinaryRouletteNode	greaterThan;
@@ -32,7 +34,7 @@ public class BinaryRouletteNode {
 	 * @param value
 	 *            the value to set
 	 */
-	public BinaryRouletteNode(int index, Float value) {
+	public BinaryRouletteNode(int index, BigDecimal value) {
 		this.index = index;
 		this.value = value;
 	}
@@ -40,7 +42,7 @@ public class BinaryRouletteNode {
 	/**
 	 * @return the value
 	 */
-	public Float getValue() {
+	public BigDecimal getValue() {
 		return value;
 	}
 

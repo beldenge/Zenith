@@ -47,12 +47,6 @@ public class LstmNetworkPlaintextEvaluator {
 
         log.debug("LSTM prediction took {}ms.", (System.currentTimeMillis() - startLstmPrediction));
 
-        Float probability = lstmPrediction.getProbability();
-
-        if (probability == 0f) {
-            probability = 0.000001f;
-        }
-
-        return new EvaluationResults(probability, lstmPrediction.getLogProbability());
+        return new EvaluationResults(lstmPrediction.getProbability(), lstmPrediction.getLogProbability());
     }
 }

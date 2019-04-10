@@ -47,6 +47,7 @@ import javax.annotation.PostConstruct;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,7 +76,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 		}
 	}
 
-	private static final Float RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
+	private static final BigDecimal RANDOM_LETTER_TOTAL_PROBABILITY = RANDOM_LETTER_SAMPLER.reIndex(RANDOM_LETTER_PROBABILITIES);
 
 	private static final Map<Character, Float[]> SPARSE_CHARACTER_MAP = new HashMap<>(NUM_LETTERS);
 
@@ -348,7 +349,7 @@ public class Zodiac408SampleGenerator implements SampleGenerator {
 			probabilities.add(probability);
 		}
 
-		Float totalProbability = sampler.reIndex(probabilities);
+		BigDecimal totalProbability = sampler.reIndex(probabilities);
 
 		int nextIndex = sampler.getNextIndex(probabilities, totalProbability);
 

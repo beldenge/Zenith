@@ -22,9 +22,11 @@ package com.ciphertool.zenith.inference.probability;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.math.probability.Probability;
 
+import java.math.BigDecimal;
+
 public class SolutionProbability implements Probability<CipherSolution>, Comparable<SolutionProbability> {
 	private CipherSolution	solution;
-	private Float		probability;
+	private BigDecimal probability;
 
 	/**
 	 * @param solution
@@ -32,7 +34,7 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @param probability
 	 *            the probability
 	 */
-	public SolutionProbability(CipherSolution solution, Float probability) {
+	public SolutionProbability(CipherSolution solution, BigDecimal probability) {
 		super();
 		this.solution = solution;
 		this.probability = probability;
@@ -50,7 +52,7 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @return the probability
 	 */
 	@Override
-	public Float getProbability() {
+	public BigDecimal getProbability() {
 		return probability;
 	}
 
@@ -58,7 +60,7 @@ public class SolutionProbability implements Probability<CipherSolution>, Compara
 	 * @param probability
 	 *            the probability to set
 	 */
-	public void setProbability(Float probability) {
+	public void setProbability(BigDecimal probability) {
 		this.probability = probability;
 	}
 
