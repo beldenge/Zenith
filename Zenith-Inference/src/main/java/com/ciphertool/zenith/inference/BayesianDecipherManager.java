@@ -54,6 +54,9 @@ public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
 	private Logger				badPredictionLog		= LoggerFactory.getLogger("com.ciphertool.zenith.inference.badPredictionLog");
 
+	@Value("${bayes.sampler.go-fast:false}")
+	private boolean							goFast;
+
 	@Value("${cipher.name}")
 	private String							cipherName;
 
@@ -61,10 +64,10 @@ public class BayesianDecipherManager {
 	private int								samplerIterations;
 
 	@Value("${bayes.annealing.temperature.max}")
-	private int								annealingTemperatureMax;
+	private float								annealingTemperatureMax;
 
 	@Value("${bayes.annealing.temperature.min}")
-	private int								annealingTemperatureMin;
+	private float								annealingTemperatureMin;
 
 	@Value("${bayes.sampler.iterateRandomly}")
 	private Boolean							iterateRandomly;
@@ -175,8 +178,6 @@ public class BayesianDecipherManager {
 
 		log.info(initialSolution.toString());
 
-		Float maxTemp = (float) annealingTemperatureMax;
-		Float minTemp = (float) annealingTemperatureMin;
 		Float iterations = (float) samplerIterations;
 		Float temperature;
 
@@ -200,7 +201,7 @@ public class BayesianDecipherManager {
 			 * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
 			 * temperature so as not to go below it
 			 */
-			temperature = (((maxTemp - minTemp) * (iterations - (float) i)) / iterations) + minTemp;
+			temperature = (((annealingTemperatureMax - annealingTemperatureMin) * (iterations - (float) i)) / iterations) + annealingTemperatureMin;
 
 			startLetterSampling = System.currentTimeMillis();
 			next = runGibbsLetterSampler(temperature, next);
@@ -274,7 +275,7 @@ public class BayesianDecipherManager {
 			original.setProbability(fullPlaintextResults.getProbability());
 			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
-			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), original);
+			List<SolutionProbability> plaintextDistribution = goFast ? computeDistributionFast(nextEntry.getKey(), original) : computeDistribution(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
 
@@ -328,6 +329,34 @@ public class BayesianDecipherManager {
 
 			return conditionalSolution;
 		}
+	}
+
+	protected List<SolutionProbability> computeDistributionFast(String ciphertextKey, CipherSolution solution) {
+		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
+		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
+
+		EvaluationResults fullResults = plaintextEvaluator.evaluate(solution.clone(), ciphertextKey);
+
+		// Calculate the full conditional probability for each possible plaintext substitution
+		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+			CipherSolution next = solution.clone();
+			next.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
+			EvaluationResults partialResults = fullResults.getDistribution().get(letter.toString());
+			next.setProbability(partialResults.getProbability());
+			next.setLogProbability(partialResults.getLogProbability());
+
+			plaintextDistribution.add(new SolutionProbability(next, next.getProbability()));
+
+			sumOfProbabilities = sumOfProbabilities.add(next.getProbability());
+		}
+
+		// Normalize the probabilities
+		// TODO: should we also somehow normalize the log probabilities?
+		for (SolutionProbability solutionProbability : plaintextDistribution) {
+			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathContext.DECIMAL32));
+		}
+
+		return plaintextDistribution;
 	}
 
 	protected List<SolutionProbability> computeDistribution(String ciphertextKey, CipherSolution solution) {

@@ -54,14 +54,15 @@ markov:
 #----------------------------------------
 bayes:
   sampler:
+    go-fast: false
     iterations: 250
     iterateRandomly: false
     letterTypeSampling:
       enabled: false
   annealing:
     temperature:
-      max: 100
-      min: 10
+      max: 10
+      min: 1
 
 #----------------------------------------
 # MongoDB Properties

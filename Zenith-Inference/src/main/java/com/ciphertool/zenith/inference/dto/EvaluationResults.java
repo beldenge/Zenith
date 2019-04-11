@@ -20,15 +20,19 @@
 package com.ciphertool.zenith.inference.dto;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 public class EvaluationResults {
 	private BigDecimal	probability;
 	private Float	logProbability;
+	private Map<String, EvaluationResults> distribution;
 
-	/**
-	 * @param probability
-	 * @param logProbability
-	 */
+	public EvaluationResults(BigDecimal probability, Float logProbability, Map<String, EvaluationResults> distribution) {
+		this.probability = probability;
+		this.logProbability = logProbability;
+		this.distribution = distribution;
+	}
+
 	public EvaluationResults(BigDecimal probability, Float logProbability) {
 		this.probability = probability;
 		this.logProbability = logProbability;
@@ -69,8 +73,20 @@ public class EvaluationResults {
 		this.logProbability = logProbability;
 	}
 
+	public Map<String, EvaluationResults> getDistribution() {
+		return distribution;
+	}
+
+	public void setDistribution(Map<String, EvaluationResults> distribution) {
+		this.distribution = distribution;
+	}
+
 	@Override
 	public String toString() {
-		return "EvaluationResults [probability=" + probability + ", logProbability=" + logProbability + "]";
+		return "EvaluationResults{" +
+				"probability=" + probability +
+				", logProbability=" + logProbability +
+				", distribution=" + distribution +
+				'}';
 	}
 }
