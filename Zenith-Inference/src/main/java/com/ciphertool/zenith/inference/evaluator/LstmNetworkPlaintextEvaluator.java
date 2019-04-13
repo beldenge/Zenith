@@ -45,8 +45,8 @@ public class LstmNetworkPlaintextEvaluator {
     @Value("${lstm.service-url}")
     private String lstmServiceUrl;
 
-    @Value("${bayes.sampler.go-fast:false}")
-    private boolean							goFast;
+    @Value("${bayes.sampler.enable-partial-evaluation:false}")
+    private boolean enablePartialEvaluation;
 
     public EvaluationResults evaluate(CipherSolution solution, String ciphertextKey) {
         String solutionString = solution.asSingleLineString();
@@ -55,7 +55,7 @@ public class LstmNetworkPlaintextEvaluator {
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(lstmServiceUrl)
                 .pathSegment(solutionString)
-                .queryParam("include_time_steps", goFast);
+                .queryParam("include_time_steps", enablePartialEvaluation);
 
         LstmPrediction lstmPrediction = restTemplate.getForObject(builder.build().encode().toUri(), LstmPrediction.class);
 
@@ -64,7 +64,7 @@ public class LstmNetworkPlaintextEvaluator {
         Map<String, EvaluationResults> distributionToReturn = new HashMap<>();
         Map<String, Float> distribution = null;
 
-        if (goFast && ciphertextKey != null) {
+        if (enablePartialEvaluation && ciphertextKey != null) {
             List<Integer> ciphertextIndices = getCiphertextIndices(solution, ciphertextKey);
 
             distribution = flattenMap(lstmPrediction.getTimeStepProbabilities().get(ciphertextIndices.get(0)));

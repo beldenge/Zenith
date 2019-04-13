@@ -54,8 +54,11 @@ public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
 	private Logger				badPredictionLog		= LoggerFactory.getLogger("com.ciphertool.zenith.inference.badPredictionLog");
 
-	@Value("${bayes.sampler.go-fast:false}")
-	private boolean							goFast;
+	@Value("${bayes.sampler.enable-partial-evaluation:false}")
+	private boolean enablePartialEvaluation;
+
+	@Value("${bayes.sampler.unigram-probability-mass-ratio:0.0}")
+	private float unigramProbabilityMassRatio;
 
 	@Value("${cipher.name}")
 	private String							cipherName;
@@ -141,6 +144,10 @@ public class BayesianDecipherManager {
 
 	@PostConstruct
 	public void setUp() {
+		if (unigramProbabilityMassRatio < 0.0 || unigramProbabilityMassRatio > 1.0) {
+			throw new IllegalArgumentException("The property 'bayes.sampler.unigram-probability-mass-ratio' must be between 0.0 and 1.0, but it was found to be " + unigramProbabilityMassRatio + ".");
+		}
+
 		this.cipher = cipherDao.findByCipherName(cipherName);
 		int totalCharacters = this.cipher.getCiphertextCharacters().size();
 		int lastRowBegin = (this.cipher.getColumns() * (this.cipher.getRows() - 1));
@@ -275,7 +282,7 @@ public class BayesianDecipherManager {
 			original.setProbability(fullPlaintextResults.getProbability());
 			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
-			List<SolutionProbability> plaintextDistribution = goFast ? computeDistributionFast(nextEntry.getKey(), original) : computeDistribution(nextEntry.getKey(), original);
+			List<SolutionProbability> plaintextDistribution = enablePartialEvaluation ? computeDistributionPartial(nextEntry.getKey(), original) : computeDistribution(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
 
@@ -331,7 +338,7 @@ public class BayesianDecipherManager {
 		}
 	}
 
-	protected List<SolutionProbability> computeDistributionFast(String ciphertextKey, CipherSolution solution) {
+	protected List<SolutionProbability> computeDistributionPartial(String ciphertextKey, CipherSolution solution) {
 		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
 		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
 
@@ -352,8 +359,15 @@ public class BayesianDecipherManager {
 
 		// Normalize the probabilities
 		// TODO: should we also somehow normalize the log probabilities?
-		for (SolutionProbability solutionProbability : plaintextDistribution) {
+		for (int i = 0; i < plaintextDistribution.size(); i ++) {
+			SolutionProbability solutionProbability = plaintextDistribution.get(i);
 			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathContext.DECIMAL32));
+
+			if (unigramProbabilityMassRatio > 0.0) {
+				BigDecimal unigramProbabilityMass = letterUnigramProbabilities.get(i).getProbability().multiply(BigDecimal.valueOf(unigramProbabilityMassRatio));
+				BigDecimal evaluatorProbabilityMass = solutionProbability.getProbability().multiply(BigDecimal.valueOf(1.0 - unigramProbabilityMassRatio));
+				solutionProbability.setProbability(unigramProbabilityMass.add(evaluatorProbabilityMass));
+			}
 		}
 
 		return plaintextDistribution;
@@ -391,8 +405,15 @@ public class BayesianDecipherManager {
 
 		// Normalize the probabilities
 		// TODO: should we also somehow normalize the log probabilities?
-		for (SolutionProbability solutionProbability : plaintextDistribution) {
+		for (int i = 0; i < plaintextDistribution.size(); i ++) {
+			SolutionProbability solutionProbability = plaintextDistribution.get(i);
 			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathContext.DECIMAL32));
+
+			if (unigramProbabilityMassRatio > 0.0) {
+				BigDecimal unigramProbabilityMass = letterUnigramProbabilities.get(i).getProbability().multiply(BigDecimal.valueOf(unigramProbabilityMassRatio));
+				BigDecimal evaluatorProbabilityMass = solutionProbability.getProbability().multiply(BigDecimal.valueOf(1.0 - unigramProbabilityMassRatio));
+				solutionProbability.setProbability(unigramProbabilityMass.add(evaluatorProbabilityMass));
+			}
 		}
 
 		return plaintextDistribution;

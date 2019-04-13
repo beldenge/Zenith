@@ -54,7 +54,8 @@ markov:
 #----------------------------------------
 bayes:
   sampler:
-    go-fast: false
+    enable-partial-evaluation: false
+    unigram-probability-mass-ratio: 0.5
     iterations: 250
     iterateRandomly: false
     letterTypeSampling:
