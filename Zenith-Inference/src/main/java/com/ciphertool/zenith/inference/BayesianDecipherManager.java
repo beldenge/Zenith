@@ -99,6 +99,7 @@ public class BayesianDecipherManager {
 	private Cipher							cipher;
 	private int								cipherKeySize;
 	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>(26);
+	private static BigDecimal uniformProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(26), MathContext.DECIMAL32);
 
 	/**
 	 * @see <a href="https://en.wikipedia.org/wiki/Letter_frequency">https://en.wikipedia.org/wiki/Letter_frequency</a>
@@ -364,7 +365,7 @@ public class BayesianDecipherManager {
 			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathContext.DECIMAL32));
 
 			if (unigramProbabilityMassRatio > 0.0) {
-				BigDecimal unigramProbabilityMass = letterUnigramProbabilities.get(i).getProbability().multiply(BigDecimal.valueOf(unigramProbabilityMassRatio));
+				BigDecimal unigramProbabilityMass = uniformProbability.multiply(BigDecimal.valueOf(unigramProbabilityMassRatio));
 				BigDecimal evaluatorProbabilityMass = solutionProbability.getProbability().multiply(BigDecimal.valueOf(1.0 - unigramProbabilityMassRatio));
 				solutionProbability.setProbability(unigramProbabilityMass.add(evaluatorProbabilityMass));
 			}
@@ -410,7 +411,7 @@ public class BayesianDecipherManager {
 			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathContext.DECIMAL32));
 
 			if (unigramProbabilityMassRatio > 0.0) {
-				BigDecimal unigramProbabilityMass = letterUnigramProbabilities.get(i).getProbability().multiply(BigDecimal.valueOf(unigramProbabilityMassRatio));
+				BigDecimal unigramProbabilityMass = uniformProbability.multiply(BigDecimal.valueOf(unigramProbabilityMassRatio));
 				BigDecimal evaluatorProbabilityMass = solutionProbability.getProbability().multiply(BigDecimal.valueOf(1.0 - unigramProbabilityMassRatio));
 				solutionProbability.setProbability(unigramProbabilityMass.add(evaluatorProbabilityMass));
 			}
