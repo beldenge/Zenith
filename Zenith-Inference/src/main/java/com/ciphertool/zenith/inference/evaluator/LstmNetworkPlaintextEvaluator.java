@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.model.ModelConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +30,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class LstmNetworkPlaintextEvaluator {
@@ -45,75 +44,57 @@ public class LstmNetworkPlaintextEvaluator {
     @Value("${lstm.service-url}")
     private String lstmServiceUrl;
 
-    @Value("${bayes.sampler.enable-partial-evaluation:false}")
-    private boolean enablePartialEvaluation;
-
-    public EvaluationResults evaluate(CipherSolution solution, String ciphertextKey) {
+    public List<EvaluationResults> evaluate(CipherSolution solution, String ciphertextKey) {
         String solutionString = solution.asSingleLineString();
 
         long startLstmPrediction = System.currentTimeMillis();
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(lstmServiceUrl)
-                .pathSegment(solutionString)
-                .queryParam("include_time_steps", enablePartialEvaluation);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(lstmServiceUrl);
 
-        LstmPrediction lstmPrediction = restTemplate.getForObject(builder.build().encode().toUri(), LstmPrediction.class);
+        LstmPredictionRequest request = new LstmPredictionRequest();
+
+        if (ciphertextKey != null) {
+            List<String> sequences = new ArrayList<>();
+
+            List<Integer> ciphertextIndices = getCiphertextIndices(solution, ciphertextKey);
+
+            for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+                String nextSolutionString = solutionString;
+
+                for (Integer indice : ciphertextIndices) {
+                    nextSolutionString = nextSolutionString.substring(0, indice) + letter + nextSolutionString.substring(indice + 1);
+                }
+
+                sequences.add(nextSolutionString);
+            }
+
+            request.setSequences(sequences);
+        } else {
+            request.setSequences(Collections.singletonList(solutionString));
+        }
+
+        LstmPrediction response = restTemplate.postForObject(builder.build().encode().toUri(), request, LstmPrediction.class);
 
         log.debug("LSTM prediction took {}ms.", (System.currentTimeMillis() - startLstmPrediction));
 
-        Map<String, EvaluationResults> distributionToReturn = new HashMap<>();
-        Map<String, Float> distribution = null;
+        List<EvaluationResults> distributionToReturn = new ArrayList<>(request.getSequences().size());
 
-        if (enablePartialEvaluation && ciphertextKey != null) {
-            List<Integer> ciphertextIndices = getCiphertextIndices(solution, ciphertextKey);
-
-            distribution = flattenMap(lstmPrediction.getTimeStepProbabilities().get(ciphertextIndices.get(0)));
-
-            for (Map.Entry<String, Float> entry : distribution.entrySet()) {
-                distributionToReturn.put(entry.getKey(), new EvaluationResults(BigDecimal.valueOf(entry.getValue()), (float) Math.log(entry.getValue())));
-            }
-
-            for (int i = 1; i < ciphertextIndices.size(); i++) {
-                Map<String, Float> next = flattenMap(lstmPrediction.getTimeStepProbabilities().get(ciphertextIndices.get(i)));
-
-                for (String key : distribution.keySet()) {
-                    EvaluationResults oldEvaluationResults = distributionToReturn.get(key);
-
-                    BigDecimal nextProbability = oldEvaluationResults.getProbability().multiply(BigDecimal.valueOf(next.get(key)));
-                    Float nextLogProbability = oldEvaluationResults.getLogProbability() + (float) Math.log(next.get(key));
-                    EvaluationResults newEvaluationResults = new EvaluationResults(nextProbability, nextLogProbability);
-
-                    distributionToReturn.put(key, newEvaluationResults);
-                }
-            }
+        for (LstmProbability probability : response.getProbabilities()) {
+            distributionToReturn.add(new EvaluationResults(probability.getProbability(), probability.getLogProbability()));
         }
 
-        return new EvaluationResults(lstmPrediction.getProbability(), lstmPrediction.getLogProbability(), distributionToReturn);
+        return distributionToReturn;
     }
 
     public List<Integer> getCiphertextIndices(CipherSolution solution, String ciphertextKey) {
         List<Integer> ciphertextIndices = new ArrayList<>();
 
-        // Subtract one because this only returns the next character predictions, which by definition cannot predict the last character
-        // TODO: eventually train a model that predicts the first character, so that we can evaluate every time step
-        for (int i = 0; i < solution.getCipher().getCiphertextCharacters().size() - 1; i++) {
+        for (int i = 0; i < solution.getCipher().getCiphertextCharacters().size(); i++) {
             if (ciphertextKey.equals(solution.getCipher().getCiphertextCharacters().get(i).getValue())) {
                 ciphertextIndices.add(i);
             }
         }
 
         return ciphertextIndices;
-    }
-
-    public Map<String, Float> flattenMap(List<Map<String, Float>> mapsToFlatten) {
-        Map<String, Float> flattened = new HashMap<>();
-
-        for (Map<String, Float> map : mapsToFlatten) {
-            for (Map.Entry<String, Float> entry : map.entrySet()) {
-                flattened.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return flattened;
     }
 }

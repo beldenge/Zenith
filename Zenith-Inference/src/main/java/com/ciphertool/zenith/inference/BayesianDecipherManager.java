@@ -54,9 +54,6 @@ public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
 	private Logger				badPredictionLog		= LoggerFactory.getLogger("com.ciphertool.zenith.inference.badPredictionLog");
 
-	@Value("${bayes.sampler.enable-partial-evaluation:false}")
-	private boolean enablePartialEvaluation;
-
 	@Value("${bayes.sampler.unigram-probability-mass-ratio:0.0}")
 	private float unigramProbabilityMassRatio;
 
@@ -176,7 +173,7 @@ public class BayesianDecipherManager {
 			initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
 		});
 
-		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(initialSolution, null);
+		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(initialSolution, null).get(0);
 		initialSolution.setProbability(initialPlaintextResults.getProbability());
 		initialSolution.setLogProbability(initialPlaintextResults.getLogProbability());
 
@@ -215,7 +212,7 @@ public class BayesianDecipherManager {
 			next = runGibbsLetterSampler(temperature, next);
 			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(next, null);
+			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(next, null).get(0);
 			next.setProbability(fullPlaintextResults.getProbability());
 			next.setLogProbability(fullPlaintextResults.getLogProbability());
 
@@ -279,11 +276,11 @@ public class BayesianDecipherManager {
 
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(original, nextEntry.getKey());
+			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(original, null).get(0);
 			original.setProbability(fullPlaintextResults.getProbability());
 			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
-			List<SolutionProbability> plaintextDistribution = enablePartialEvaluation ? computeDistributionPartial(nextEntry.getKey(), original) : computeDistribution(nextEntry.getKey(), original);
+			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
 
@@ -329,7 +326,7 @@ public class BayesianDecipherManager {
 			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
 
 			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(conditionalSolution, ciphertextKey);
+			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(conditionalSolution, null).get(0);
 			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
 
 			conditionalSolution.setProbability(remainingPlaintextResults.getProbability());
@@ -343,13 +340,13 @@ public class BayesianDecipherManager {
 		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
 		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
 
-		EvaluationResults fullResults = plaintextEvaluator.evaluate(solution.clone(), ciphertextKey);
+		List<EvaluationResults> fullResults = plaintextEvaluator.evaluate(solution.clone(), ciphertextKey);
 
 		// Calculate the full conditional probability for each possible plaintext substitution
 		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
 			CipherSolution next = solution.clone();
 			next.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
-			EvaluationResults partialResults = fullResults.getDistribution().get(letter.toString());
+			EvaluationResults partialResults = fullResults.get(0);
 			next.setProbability(partialResults.getProbability());
 			next.setLogProbability(partialResults.getLogProbability());
 

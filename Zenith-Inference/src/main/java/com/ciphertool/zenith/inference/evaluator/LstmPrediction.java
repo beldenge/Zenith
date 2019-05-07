@@ -24,16 +24,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @NoArgsConstructor
 @Getter
 @Setter
 @ToString
 public class LstmPrediction {
-    private BigDecimal probability;
-    private Float logProbability;
-    private List<List<Map<String, Float>>> timeStepProbabilities;
+    private List<LstmProbability> probabilities;
 }
