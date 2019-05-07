@@ -44,9 +44,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -280,7 +277,7 @@ public class BayesianDecipherManager {
 			original.setProbability(fullPlaintextResults.getProbability());
 			original.setLogProbability(fullPlaintextResults.getLogProbability());
 
-			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), original);
+			List<SolutionProbability> plaintextDistribution = computeDistributionPartial(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
 
@@ -294,48 +291,6 @@ public class BayesianDecipherManager {
 		return solution;
 	}
 
-	/**
-	 * A concurrent task for computing the letter probability during Gibbs sampling.
-	 */
-	protected class LetterProbabilityTask implements Callable<CipherSolution> {
-		private Character		letter;
-		private String			ciphertextKey;
-		private CipherSolution	conditionalSolution;
-
-		/**
-		 * @param conditionalSolution
-		 *            the original unmodified solution
-		 * @param letter
-		 *            the letter to sample for
-		 * @param ciphertextKey
-		 *            the ciphertext key
-		 */
-		public LetterProbabilityTask(CipherSolution conditionalSolution, Character letter, String ciphertextKey) {
-			this.letter = letter;
-			this.ciphertextKey = ciphertextKey;
-			this.conditionalSolution = conditionalSolution;
-		}
-
-		@Override
-		public CipherSolution call() {
-			if (conditionalSolution.getMappings().get(ciphertextKey).equals(new Plaintext(letter.toString()))) {
-				// No need to re-score the solution in this case
-				return conditionalSolution;
-			}
-
-			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
-
-			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(conditionalSolution, null).get(0);
-			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
-
-			conditionalSolution.setProbability(remainingPlaintextResults.getProbability());
-			conditionalSolution.setLogProbability(remainingPlaintextResults.getLogProbability());
-
-			return conditionalSolution;
-		}
-	}
-
 	protected List<SolutionProbability> computeDistributionPartial(String ciphertextKey, CipherSolution solution) {
 		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
 		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
@@ -343,62 +298,17 @@ public class BayesianDecipherManager {
 		List<EvaluationResults> fullResults = plaintextEvaluator.evaluate(solution.clone(), ciphertextKey);
 
 		// Calculate the full conditional probability for each possible plaintext substitution
-		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
+		for (int i = 0; i < ModelConstants.LOWERCASE_LETTERS.size(); i ++) {
 			CipherSolution next = solution.clone();
-			next.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
-			EvaluationResults partialResults = fullResults.get(0);
+			next.replaceMapping(ciphertextKey, new Plaintext(ModelConstants.LOWERCASE_LETTERS.get(i).toString()));
+
+			EvaluationResults partialResults = fullResults.get(i);
 			next.setProbability(partialResults.getProbability());
 			next.setLogProbability(partialResults.getLogProbability());
 
 			plaintextDistribution.add(new SolutionProbability(next, next.getProbability()));
 
 			sumOfProbabilities = sumOfProbabilities.add(next.getProbability());
-		}
-
-		// Normalize the probabilities
-		// TODO: should we also somehow normalize the log probabilities?
-		for (int i = 0; i < plaintextDistribution.size(); i ++) {
-			SolutionProbability solutionProbability = plaintextDistribution.get(i);
-			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathContext.DECIMAL32));
-
-			if (unigramProbabilityMassRatio > 0.0) {
-				BigDecimal unigramProbabilityMass = uniformProbability.multiply(BigDecimal.valueOf(unigramProbabilityMassRatio));
-				BigDecimal evaluatorProbabilityMass = solutionProbability.getProbability().multiply(BigDecimal.valueOf(1.0 - unigramProbabilityMassRatio));
-				solutionProbability.setProbability(unigramProbabilityMass.add(evaluatorProbabilityMass));
-			}
-		}
-
-		return plaintextDistribution;
-	}
-
-	protected List<SolutionProbability> computeDistribution(String ciphertextKey, CipherSolution solution) {
-		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
-		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
-
-		List<FutureTask<CipherSolution>> futures = new ArrayList<>(26);
-		FutureTask<CipherSolution> task;
-
-		// Calculate the full conditional probability for each possible plaintext substitution
-		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
-			task = new FutureTask<>(new LetterProbabilityTask(solution.clone(), letter, ciphertextKey));
-			futures.add(task);
-			this.taskExecutor.execute(task);
-		}
-
-		CipherSolution next;
-
-		for (FutureTask<CipherSolution> future : futures) {
-			try {
-				next = future.get();
-
-				plaintextDistribution.add(new SolutionProbability(next, next.getProbability()));
-
-				sumOfProbabilities = sumOfProbabilities.add(next.getProbability());
-			} catch (InterruptedException ie) {
-				log.error("Caught InterruptedException while waiting for LetterProbabilityTask ", ie);
-			} catch (ExecutionException ee) {
-				log.error("Caught ExecutionException while waiting for LetterProbabilityTask ", ee);
-			}
 		}
 
 		// Normalize the probabilities
