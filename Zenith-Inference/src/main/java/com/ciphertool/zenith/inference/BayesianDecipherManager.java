@@ -273,11 +273,7 @@ public class BayesianDecipherManager {
 
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(original, null).get(0);
-			original.setProbability(fullPlaintextResults.getProbability());
-			original.setLogProbability(fullPlaintextResults.getLogProbability());
-
-			List<SolutionProbability> plaintextDistribution = computeDistributionPartial(nextEntry.getKey(), original);
+			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), original);
 
 			Collections.sort(plaintextDistribution);
 
@@ -291,7 +287,7 @@ public class BayesianDecipherManager {
 		return solution;
 	}
 
-	protected List<SolutionProbability> computeDistributionPartial(String ciphertextKey, CipherSolution solution) {
+	protected List<SolutionProbability> computeDistribution(String ciphertextKey, CipherSolution solution) {
 		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
 		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
 
