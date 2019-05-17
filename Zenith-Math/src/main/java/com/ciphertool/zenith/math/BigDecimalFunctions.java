@@ -32,10 +32,4 @@ public class BigDecimalFunctions implements MathCache {
 	public BigDecimal log(BigDecimal x) {
 		return BigDecimalMath.log(x);
 	}
-
-	@Override
-	@Cacheable(value = "rootCache", key = "#x")
-	public BigDecimal cubeRoot(BigDecimal x) {
-		return BigDecimalMath.root(3, x);
-	}
 }

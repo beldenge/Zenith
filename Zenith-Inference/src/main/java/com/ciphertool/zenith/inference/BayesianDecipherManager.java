@@ -27,7 +27,6 @@ import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
-import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
@@ -84,9 +83,6 @@ public class BayesianDecipherManager {
 
 	@Autowired
 	private LetterNGramDao					letterNGramDao;
-
-	@Autowired
-	private MathCache bigDecimalFunctions;
 
 	@Autowired(required = false)
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
@@ -292,8 +288,8 @@ public class BayesianDecipherManager {
 
 		BigDecimal solutionCoincidence = solution.computeIndexOfCoincidence();
 		BigDecimal proposalCoincidence = proposal.computeIndexOfCoincidence();
-		BigDecimal solutionScore = solution.getLogProbability().multiply(BigDecimalMath.sqrt(BigDecimalMath.sqrt(solutionCoincidence)));
-		BigDecimal proposalScore = proposal.getLogProbability().multiply(BigDecimalMath.sqrt(BigDecimalMath.sqrt(proposalCoincidence)));
+		BigDecimal solutionScore = solution.getLogProbability().multiply(BigDecimalMath.root(5, solutionCoincidence));
+		BigDecimal proposalScore = proposal.getLogProbability().multiply(BigDecimalMath.root(5, proposalCoincidence));
 
 		if (proposalScore.compareTo(solutionScore) >= 0) {
 			log.debug("Better solution found");

@@ -28,10 +28,4 @@ public interface MathCache {
 	 * @return the natural logarithm of x
 	 */
 	BigDecimal log(BigDecimal x);
-
-	/**
-	 * @param x the BigDecimal to calculate the cube root of
-	 * @return the cube root of x
-	 */
-	BigDecimal cubeRoot(BigDecimal x);
 }
