@@ -19,25 +19,7 @@
 
 package com.ciphertool.zenith.inference;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
-
-import javax.annotation.PostConstruct;
-
-import org.nevec.rjm.BigDecimalMath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.stereotype.Component;
-
 import com.ciphertool.zenith.inference.dao.CipherDao;
-import com.ciphertool.zenith.inference.dto.EvaluationResults;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
@@ -45,11 +27,26 @@ import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
+import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import org.nevec.rjm.BigDecimalMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class BayesianDecipherManager {
@@ -87,6 +84,9 @@ public class BayesianDecipherManager {
 
 	@Autowired
 	private LetterNGramDao					letterNGramDao;
+
+	@Autowired
+	private MathCache bigDecimalFunctions;
 
 	@Autowired(required = false)
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
@@ -176,9 +176,7 @@ public class BayesianDecipherManager {
 			initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
 		});
 
-		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
-		initialSolution.setProbability(initialPlaintextResults.getProbability());
-		initialSolution.setLogProbability(initialPlaintextResults.getLogProbability());
+		plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
 
 		if (knownPlaintextEvaluator != null) {
 			initialSolution.setKnownSolutionProximity(BigDecimal.valueOf(knownPlaintextEvaluator.evaluate(initialSolution)));
@@ -233,7 +231,7 @@ public class BayesianDecipherManager {
 				}
 			}
 
-			if (maxBayes.getProbability().compareTo(next.getProbability()) < 0) {
+			if (maxBayes.getLogProbability().compareTo(next.getLogProbability()) < 0) {
 				maxBayes = next;
 				maxBayesIteration = i + 1;
 			}
@@ -281,9 +279,7 @@ public class BayesianDecipherManager {
 
 			proposal.replaceMapping(nextEntry.getKey(), new Plaintext(letter));
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, proposal, null);
-			proposal.setProbability(fullPlaintextResults.getProbability());
-			proposal.setLogProbability(fullPlaintextResults.getLogProbability());
+			plaintextEvaluator.evaluate(letterMarkovModel, proposal, nextEntry.getKey());
 
 			solution = selectNext(temperature, solution, proposal);
 		}

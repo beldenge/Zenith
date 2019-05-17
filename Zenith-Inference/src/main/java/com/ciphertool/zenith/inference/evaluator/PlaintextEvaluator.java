@@ -19,24 +19,18 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.math.MathCache;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.inference.dto.EvaluationResults;
-import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.probability.WordProbability;
-import com.ciphertool.zenith.math.MathCache;
-import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.ModelConstants;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class PlaintextEvaluator {
@@ -45,60 +39,27 @@ public class PlaintextEvaluator {
 	@Autowired
 	private MathCache	bigDecimalFunctions;
 
-	@Value("${markov.letter.include.word.boundaries}")
-	private Boolean		includeWordBoundaries;
-
-	public EvaluationResults evaluate(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
-		BigDecimal interpolatedProbability = BigDecimal.ONE;
-		BigDecimal interpolatedLogProbability = BigDecimal.ZERO;
-
+	public void evaluate(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
 		long startLetter = System.currentTimeMillis();
-		EvaluationResults letterNGramResults = evaluateLetterNGrams(letterMarkovModel, solution, ciphertextKey);
+
+		evaluateLetterNGrams(letterMarkovModel, solution, ciphertextKey);
+
 		log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
-
-		interpolatedProbability = letterNGramResults.getProbability();
-		interpolatedLogProbability = letterNGramResults.getLogProbability();
-
-		return new EvaluationResults(interpolatedProbability, interpolatedLogProbability);
 	}
 
-	public EvaluationResults evaluateLetterNGrams(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
+	public void evaluateLetterNGrams(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
 		int order = letterMarkovModel.getOrder();
-		List<WordProbability> words = transformToWordList(solution);
 
-		if (words == null || words.isEmpty()) {
-			throw new IllegalStateException(
-					"Unable to evaluate n-grams because the list of words to concatenate is empty.");
-		}
-
-		BigDecimal probability = null;
-		BigDecimal nGramProbability = BigDecimal.ONE;
-		BigDecimal nGramLogProbability = BigDecimal.ZERO;
-		TreeNGram match = null;
+		BigDecimal probability;
 
 		StringBuilder sb = new StringBuilder();
-
-		if (includeWordBoundaries) {
-			sb.append(" ");
-		}
-
-		for (WordProbability word : words) {
-			if (includeWordBoundaries) {
-				sb.append(String.join(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR, word.getValue().split("\\.*")));
-				sb.append(" ");
-			} else {
-				sb.append(word.getValue());
-			}
-		}
+		sb.append(solution.asSingleLineString());
 
 		if (ciphertextKey != null) {
 			List<Integer> ciphertextIndices = new ArrayList<>();
-			int nextIndice;
 			for (int i = 0; i < solution.getCipher().getCiphertextCharacters().size(); i++) {
-				nextIndice = i * (includeWordBoundaries ? 2 : 1);
-
 				if (ciphertextKey.equals(solution.getCipher().getCiphertextCharacters().get(i).getValue())) {
-					ciphertextIndices.add(nextIndice);
+					ciphertextIndices.add(i);
 				}
 			}
 
@@ -112,60 +73,34 @@ public class PlaintextEvaluator {
 				}
 
 				for (int i = start; i < end; i++) {
-					match = letterMarkovModel.findExact(sb.substring(i, i + order));
+					probability = computeNGramProbability(letterMarkovModel, sb.substring(i, i + order));
 
-					if (match != null) {
-						probability = match.getProbability();
-						log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
-					} else {
-						probability = letterMarkovModel.getUnknownLetterNGramProbability();
-						log.debug("No Letter N-Gram Match");
-					}
-
-					nGramProbability = nGramProbability.multiply(probability, MathConstants.PREC_10_HALF_UP);
-					nGramLogProbability = nGramLogProbability.add(bigDecimalFunctions.log(probability), MathConstants.PREC_10_HALF_UP);
+					solution.replaceLogProbability(i, bigDecimalFunctions.log(probability));
 				}
 
 				lastIndex = end;
 			}
 		} else {
 			for (int i = 0; i < sb.length() - order; i++) {
-				match = letterMarkovModel.findExact(sb.substring(i, i + order));
+				probability = computeNGramProbability(letterMarkovModel, sb.substring(i, i + order));
 
-				if (match != null) {
-					probability = match.getProbability();
-					log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
-				} else {
-					probability = letterMarkovModel.getUnknownLetterNGramProbability();
-					log.debug("No Letter N-Gram Match");
-				}
-
-				nGramProbability = nGramProbability.multiply(probability, MathConstants.PREC_10_HALF_UP);
-				nGramLogProbability = nGramLogProbability.add(bigDecimalFunctions.log(probability), MathConstants.PREC_10_HALF_UP);
+				solution.addLogProbability(bigDecimalFunctions.log(probability));
 			}
 		}
-
-		return new EvaluationResults(nGramProbability, nGramLogProbability);
 	}
 
-	protected List<WordProbability> transformToWordList(CipherSolution solution) {
-		String currentSolutionString = solution.asSingleLineString().substring(0, solution.getCipher().getCiphertextCharacters().size());
+	private BigDecimal computeNGramProbability(TreeMarkovModel letterMarkovModel, String ngram) {
+		BigDecimal probability;
+		TreeNGram match = letterMarkovModel.findExact(ngram);
 
-		List<WordProbability> words = new ArrayList<>();
-		Integer begin = null;
-
-		for (int i = 0; i < currentSolutionString.length(); i++) {
-			if (i < (currentSolutionString.length() - 1) && solution.getWordBoundaries().contains(i)) {
-				words.add(new WordProbability(begin, i, currentSolutionString.substring((begin == null ? 0 : begin
-						+ 1), i + 1)));
-
-				begin = i;
-			}
+		if (match != null) {
+			probability = match.getProbability();
+			log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
+		} else {
+			probability = letterMarkovModel.getUnknownLetterNGramProbability();
+			log.debug("No Letter N-Gram Match");
 		}
 
-		words.add(new WordProbability(begin, null, currentSolutionString.substring((begin == null ? 0 : begin
-				+ 1), currentSolutionString.length())));
-
-		return words;
+		return probability;
 	}
 }

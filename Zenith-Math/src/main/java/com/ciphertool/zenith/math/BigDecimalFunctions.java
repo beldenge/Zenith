@@ -19,11 +19,11 @@
 
 package com.ciphertool.zenith.math;
 
-import java.math.BigDecimal;
-
 import org.nevec.rjm.BigDecimalMath;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 
 @Component
 public class BigDecimalFunctions implements MathCache {
@@ -31,5 +31,11 @@ public class BigDecimalFunctions implements MathCache {
 	@Cacheable(value = "logarithmCache", key = "#x")
 	public BigDecimal log(BigDecimal x) {
 		return BigDecimalMath.log(x);
+	}
+
+	@Override
+	@Cacheable(value = "rootCache", key = "#x")
+	public BigDecimal cubeRoot(BigDecimal x) {
+		return BigDecimalMath.root(3, x);
 	}
 }

@@ -24,8 +24,14 @@ import java.math.BigDecimal;
 public interface MathCache {
 	/**
 	 * @param x
-	 *            the BigDecimal to calculate the logarithm of
-	 * @return log(x)
+	 *            the BigDecimal to calculate the natural logarithm of
+	 * @return the natural logarithm of x
 	 */
-	public BigDecimal log(BigDecimal x);
+	BigDecimal log(BigDecimal x);
+
+	/**
+	 * @param x the BigDecimal to calculate the cube root of
+	 * @return the cube root of x
+	 */
+	BigDecimal cubeRoot(BigDecimal x);
 }

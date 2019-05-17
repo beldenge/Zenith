@@ -19,11 +19,12 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,11 +35,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Plaintext;
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Ignore
 @SpringBootTest
@@ -121,108 +120,6 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		actualSolution.putMapping("backc", new Plaintext("v"));
 		actualSolution.putMapping("backj", new Plaintext("x"));
 		actualSolution.putMapping("box", new Plaintext("y"));
-
-		actualSolution.addWordBoundary(0); // I
-		actualSolution.addWordBoundary(4); // like
-		actualSolution.addWordBoundary(11); // killing
-		actualSolution.addWordBoundary(17); // people
-		actualSolution.addWordBoundary(24); // because
-		actualSolution.addWordBoundary(26); // it
-		actualSolution.addWordBoundary(28); // is
-		actualSolution.addWordBoundary(30); // so
-		actualSolution.addWordBoundary(34); // much
-		actualSolution.addWordBoundary(37); // fun
-		actualSolution.addWordBoundary(39); // it
-		actualSolution.addWordBoundary(41); // is
-		actualSolution.addWordBoundary(45); // more
-		actualSolution.addWordBoundary(48); // fun
-		actualSolution.addWordBoundary(52); // than
-		actualSolution.addWordBoundary(59); // killing
-		actualSolution.addWordBoundary(63); // wild
-		actualSolution.addWordBoundary(67); // game
-		actualSolution.addWordBoundary(69); // in
-		actualSolution.addWordBoundary(72); // the
-		actualSolution.addWordBoundary(79); // forrest
-		actualSolution.addWordBoundary(86); // because
-		actualSolution.addWordBoundary(89); // man
-		actualSolution.addWordBoundary(91); // is
-		actualSolution.addWordBoundary(94); // the
-		actualSolution.addWordBoundary(98); // most
-		actualSolution.addWordBoundary(107); // dangeroue
-		actualSolution.addWordBoundary(113); // anamal
-		actualSolution.addWordBoundary(115); // of
-		actualSolution.addWordBoundary(118); // all
-		actualSolution.addWordBoundary(120); // to
-		actualSolution.addWordBoundary(124); // kill
-		actualSolution.addWordBoundary(133); // something
-		actualSolution.addWordBoundary(138); // gives
-		actualSolution.addWordBoundary(140); // me
-		actualSolution.addWordBoundary(143); // the
-		actualSolution.addWordBoundary(147); // moat
-		actualSolution.addWordBoundary(156); // thrilling
-		actualSolution.addWordBoundary(165); // experence
-		actualSolution.addWordBoundary(167); // it
-		actualSolution.addWordBoundary(169); // is
-		actualSolution.addWordBoundary(173); // even
-		actualSolution.addWordBoundary(179); // better
-		actualSolution.addWordBoundary(183); // than
-		actualSolution.addWordBoundary(190); // getting
-		actualSolution.addWordBoundary(194); // your
-		actualSolution.addWordBoundary(199); // rocks
-		actualSolution.addWordBoundary(202); // off
-		actualSolution.addWordBoundary(206); // with
-		actualSolution.addWordBoundary(207); // a
-		actualSolution.addWordBoundary(211); // girl
-		actualSolution.addWordBoundary(214); // the
-		actualSolution.addWordBoundary(218); // best
-		actualSolution.addWordBoundary(222); // part
-		actualSolution.addWordBoundary(224); // of
-		actualSolution.addWordBoundary(226); // it
-		actualSolution.addWordBoundary(228); // ia
-		actualSolution.addWordBoundary(232); // thae
-		actualSolution.addWordBoundary(236); // when
-		actualSolution.addWordBoundary(237); // i
-		actualSolution.addWordBoundary(240); // die
-		actualSolution.addWordBoundary(241); // i
-		actualSolution.addWordBoundary(245); // will
-		actualSolution.addWordBoundary(247); // be
-		actualSolution.addWordBoundary(253); // reborn
-		actualSolution.addWordBoundary(255); // in
-		actualSolution.addWordBoundary(263); // paradice
-		actualSolution.addWordBoundary(266); // snd
-		actualSolution.addWordBoundary(269); // all
-		actualSolution.addWordBoundary(272); // the
-		actualSolution.addWordBoundary(273); // i
-		actualSolution.addWordBoundary(277); // have
-		actualSolution.addWordBoundary(283); // killed
-		actualSolution.addWordBoundary(287); // will
-		actualSolution.addWordBoundary(293); // become
-		actualSolution.addWordBoundary(295); // my
-		actualSolution.addWordBoundary(301); // slaves
-		actualSolution.addWordBoundary(302); // i
-		actualSolution.addWordBoundary(306); // will
-		actualSolution.addWordBoundary(309); // not
-		actualSolution.addWordBoundary(313); // give
-		actualSolution.addWordBoundary(316); // you
-		actualSolution.addWordBoundary(318); // my
-		actualSolution.addWordBoundary(322); // name
-		actualSolution.addWordBoundary(329); // because
-		actualSolution.addWordBoundary(332); // you
-		actualSolution.addWordBoundary(336); // will
-		actualSolution.addWordBoundary(339); // try
-		actualSolution.addWordBoundary(341); // to
-		actualSolution.addWordBoundary(345); // sloi
-		actualSolution.addWordBoundary(349); // down
-		actualSolution.addWordBoundary(351); // or
-		actualSolution.addWordBoundary(355); // stop
-		actualSolution.addWordBoundary(357); // my
-		actualSolution.addWordBoundary(367); // collecting
-		actualSolution.addWordBoundary(369); // of
-		actualSolution.addWordBoundary(375); // slaves
-		actualSolution.addWordBoundary(378); // for
-		actualSolution.addWordBoundary(380); // my
-		actualSolution.addWordBoundary(389); // afterlife
-		actualSolution.addWordBoundary(390); // e
 
 		actualSolution.setCipher(zodiac408);
 
@@ -359,13 +256,16 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 	@Test
 	public void testEvaluate() {
-		log.info("fitness1: " + plaintextEvaluator.evaluate(letterMarkovModel, actualSolution, null));
+		plaintextEvaluator.evaluate(letterMarkovModel, actualSolution, null);
+		log.info("fitness1: " + actualSolution.getLogProbability());
 		log.info("solution1: " + actualSolution);
 
-		log.info("fitness2: " + plaintextEvaluator.evaluate(letterMarkovModel, solution2, null));
+		plaintextEvaluator.evaluate(letterMarkovModel, solution2, null);
+		log.info("fitness2: " + solution2.getLogProbability());
 		log.info("solution2: " + solution2);
 
-		log.info("fitness3: " + plaintextEvaluator.evaluate(letterMarkovModel, solution3, null));
+		plaintextEvaluator.evaluate(letterMarkovModel, solution3, null);
+		log.info("fitness3: " + solution3.getLogProbability());
 		log.info("solution3: " + solution3);
 	}
 

@@ -19,13 +19,13 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.util.*;
-
 import com.ciphertool.zenith.model.ModelConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.*;
 
 public class CipherSolution {
 	private static Logger			log						= LoggerFactory.getLogger(CipherSolution.class);
@@ -36,12 +36,11 @@ public class CipherSolution {
 	private BigDecimal				logProbability			= null;
 	private BigDecimal				knownSolutionProximity	= null;
 
-	private Map<String, Plaintext>	mappings;
-	private Set<Integer>			wordBoundaries;
+	private Map<String, Plaintext> mappings = new HashMap<>();
+
+	private List<BigDecimal> logProbabilities = new ArrayList<>();
 
 	public CipherSolution() {
-		mappings = new HashMap<>();
-		wordBoundaries = new HashSet<>();
 	}
 
 	public CipherSolution(Cipher cipher, int numCiphertext) {
@@ -52,7 +51,6 @@ public class CipherSolution {
 		this.cipher = cipher;
 
 		mappings = new HashMap<>(numCiphertext);
-		wordBoundaries = new HashSet<>();
 	}
 
 	/**
@@ -85,15 +83,13 @@ public class CipherSolution {
 	 * @return the logProbability
 	 */
 	public BigDecimal getLogProbability() {
-		return logProbability;
-	}
+		if (logProbability != null) {
+			return logProbability;
+		}
 
-	/**
-	 * @param logProbability
-	 *            the logProbability to set
-	 */
-	public void setLogProbability(BigDecimal logProbability) {
-		this.logProbability = logProbability;
+		logProbability = logProbabilities.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		return logProbability;
 	}
 
 	public BigDecimal computeIndexOfCoincidence() {
@@ -173,6 +169,21 @@ public class CipherSolution {
 		return this.mappings.remove(key);
 	}
 
+	public List<BigDecimal> getLogProbabilities() {
+		return Collections.unmodifiableList(logProbabilities);
+	}
+
+	public void addLogProbability(BigDecimal logProbability) {
+		this.logProbabilities.add(logProbability);
+		this.logProbability = null;
+	}
+
+	public void replaceLogProbability(int i, BigDecimal logProbability) {
+		this.logProbabilities.remove(i);
+		this.logProbabilities.add(i, logProbability);
+		this.logProbability = null;
+	}
+
 	/*
 	 * This does the same thing as putMapping(), and exists solely for semantic consistency.
 	 */
@@ -194,24 +205,6 @@ public class CipherSolution {
 		this.mappings.put(key, newPlaintext);
 	}
 
-	public Set<Integer> getWordBoundaries() {
-		return Collections.unmodifiableSet(this.wordBoundaries);
-	}
-
-	public void addWordBoundary(Integer wordBoundary) {
-		if (null == wordBoundary) {
-			log.warn("Attempted to insert a null WordBoundary CipherSolution.  Returning. ");
-
-			return;
-		}
-
-		this.wordBoundaries.add(wordBoundary);
-	}
-
-	public boolean removeWordBoundary(Integer wordBoundary) {
-		return this.wordBoundaries.remove(wordBoundary);
-	}
-
 	public CipherSolution clone() {
 		CipherSolution copySolution = new CipherSolution(this.cipher, this.mappings.size());
 
@@ -219,13 +212,12 @@ public class CipherSolution {
 			copySolution.putMapping(entry.getKey(), entry.getValue().clone());
 		}
 
-		for (Integer boundary : this.wordBoundaries) {
-			copySolution.addWordBoundary(boundary.intValue());
+		for (BigDecimal logProbability : this.logProbabilities) {
+			copySolution.addLogProbability(logProbability);
 		}
 
 		// We need to set these values last to maintain whether evaluation is needed on the clone
 		copySolution.setProbability(this.probability);
-		copySolution.setLogProbability(this.logProbability);
 
 		return copySolution;
 	}
@@ -238,11 +230,7 @@ public class CipherSolution {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((cipher == null) ? 0 : cipher.hashCode());
-		result = prime * result + ((knownSolutionProximity == null) ? 0 : knownSolutionProximity.hashCode());
 		result = prime * result + ((logProbability == null) ? 0 : logProbability.hashCode());
-		result = prime * result + ((mappings == null) ? 0 : mappings.hashCode());
-		result = prime * result + ((probability == null) ? 0 : probability.hashCode());
-		result = prime * result + ((wordBoundaries == null) ? 0 : wordBoundaries.hashCode());
 		return result;
 	}
 
@@ -254,12 +242,15 @@ public class CipherSolution {
 		if (this == obj) {
 			return true;
 		}
+
 		if (obj == null) {
 			return false;
 		}
+
 		if (!(obj instanceof CipherSolution)) {
 			return false;
 		}
+
 		CipherSolution other = (CipherSolution) obj;
 		if (cipher == null) {
 			if (other.cipher != null) {
@@ -268,20 +259,7 @@ public class CipherSolution {
 		} else if (!cipher.equals(other.cipher)) {
 			return false;
 		}
-		if (knownSolutionProximity == null) {
-			if (other.knownSolutionProximity != null) {
-				return false;
-			}
-		} else if (!knownSolutionProximity.equals(other.knownSolutionProximity)) {
-			return false;
-		}
-		if (logProbability == null) {
-			if (other.logProbability != null) {
-				return false;
-			}
-		} else if (!logProbability.equals(other.logProbability)) {
-			return false;
-		}
+
 		if (mappings == null) {
 			if (other.mappings != null) {
 				return false;
@@ -289,20 +267,7 @@ public class CipherSolution {
 		} else if (!mappings.equals(other.mappings)) {
 			return false;
 		}
-		if (probability == null) {
-			if (other.probability != null) {
-				return false;
-			}
-		} else if (!probability.equals(other.probability)) {
-			return false;
-		}
-		if (wordBoundaries == null) {
-			if (other.wordBoundaries != null) {
-				return false;
-			}
-		} else if (!wordBoundaries.equals(other.wordBoundaries)) {
-			return false;
-		}
+
 		return true;
 	}
 
@@ -323,10 +288,6 @@ public class CipherSolution {
 
 	/*
 	 * Prints the properties of the solution and then outputs the entire plaintext list in block format.
-	 * 
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
@@ -336,7 +297,7 @@ public class CipherSolution {
 						+ String.format("%1$,.2f", knownSolutionProximity.doubleValue() * 100.0) + "%" : "") + "]\n");
 
 		if (this.cipher != null) {
-			String nextPlaintext = null;
+			String nextPlaintext;
 			int actualSize = this.cipher.getCiphertextCharacters().size();
 			for (int i = 0; i < actualSize; i++) {
 
@@ -351,17 +312,9 @@ public class CipherSolution {
 				 * break.
 				 */
 				if (((i + 1) % this.cipher.getColumns()) == 0) {
-					if (wordBoundaries.contains(i)) {
-						sb.append("|");
-					}
-
 					sb.append("\n");
 				} else {
-					if (wordBoundaries.contains(i)) {
-						sb.append("|");
-					} else {
-						sb.append(" ");
-					}
+					sb.append(" ");
 				}
 			}
 		}
