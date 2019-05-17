@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 George Belden
+ * Copyright 2017-2019 George Belden
  * 
  * This file is part of Zenith.
  * 
@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
 /**
- * Copyright 2017 George Belden
+ * Copyright 2017-2019 George Belden
  * 
  * This file is part of Zenith.
  * 
