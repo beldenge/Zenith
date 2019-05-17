@@ -24,9 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
@@ -46,9 +43,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.probability.BoundaryProbability;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
-import com.ciphertool.zenith.inference.probability.SolutionProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
@@ -59,51 +54,6 @@ import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 @Component
 public class BayesianDecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
-
-	private static BigDecimal[]	letterProbabilities		= new BigDecimal[ModelConstants.LOWERCASE_LETTERS.size()];
-	private static BigDecimal[]	vowelProbabilities		= new BigDecimal[ModelConstants.LOWERCASE_VOWELS.size()];
-	private static BigDecimal[]	consonantProbabilities	= new BigDecimal[ModelConstants.LOWERCASE_CONSONANTS.size()];
-
-	static {
-		BigDecimal numLetters = BigDecimal.valueOf(ModelConstants.LOWERCASE_LETTERS.size());
-		BigDecimal singleLetterRatio = BigDecimal.ONE.divide(numLetters, MathConstants.PREC_10_HALF_UP);
-
-		BigDecimal numVowels = BigDecimal.valueOf(ModelConstants.LOWERCASE_VOWELS.size());
-		BigDecimal singleVowelRatio = BigDecimal.ONE.divide(numVowels, MathConstants.PREC_10_HALF_UP);
-
-		BigDecimal numConsonants = BigDecimal.valueOf(ModelConstants.LOWERCASE_CONSONANTS.size());
-		BigDecimal singleConsonantRatio = BigDecimal.ONE.divide(numConsonants, MathConstants.PREC_10_HALF_UP);
-
-		for (int i = 0; i < letterProbabilities.length; i++) {
-			letterProbabilities[i] = BigDecimal.ZERO;
-		}
-
-		for (int i = 0; i < vowelProbabilities.length; i++) {
-			vowelProbabilities[i] = BigDecimal.ZERO;
-		}
-
-		for (int i = 0; i < consonantProbabilities.length; i++) {
-			consonantProbabilities[i] = BigDecimal.ZERO;
-		}
-
-		for (int i = 1; i <= letterProbabilities.length; i++) {
-			for (int j = letterProbabilities.length - 1; j >= letterProbabilities.length - i; j--) {
-				letterProbabilities[j] = letterProbabilities[j].add(singleLetterRatio.divide(BigDecimal.valueOf(i), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-			}
-		}
-
-		for (int i = 1; i <= vowelProbabilities.length; i++) {
-			for (int j = vowelProbabilities.length - 1; j >= vowelProbabilities.length - i; j--) {
-				vowelProbabilities[j] = vowelProbabilities[j].add(singleVowelRatio.divide(BigDecimal.valueOf(i), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-			}
-		}
-
-		for (int i = 1; i <= consonantProbabilities.length; i++) {
-			for (int j = consonantProbabilities.length - 1; j >= consonantProbabilities.length - i; j--) {
-				consonantProbabilities[j] = consonantProbabilities[j].add(singleConsonantRatio.divide(BigDecimal.valueOf(i), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-			}
-		}
-	}
 
 	@Value("${cipher.name}")
 	private String							cipherName;
@@ -119,9 +69,6 @@ public class BayesianDecipherManager {
 
 	@Value("${bayes.sampler.iterateRandomly}")
 	private Boolean							iterateRandomly;
-
-	@Value("${markov.letter.include.word.boundaries}")
-	private Boolean							includeWordBoundaries;
 
 	@Value("${markov.letter.order}")
 	private int								markovOrder;
@@ -144,13 +91,13 @@ public class BayesianDecipherManager {
 	@Autowired(required = false)
 	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
 
-	@Autowired
-	private TaskExecutor					taskExecutor;
-
 	private Cipher							cipher;
 	private int								cipherKeySize;
 	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>();
 	private TreeMarkovModel					letterMarkovModel;
+
+	private RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
+	private BigDecimal totalUnigramProbability;
 
 	@PostConstruct
 	public void setUp() {
@@ -166,14 +113,14 @@ public class BayesianDecipherManager {
 		cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
 		long startFindAll = System.currentTimeMillis();
-		log.info("Beginning retrieval of all n-grams with{} spaces.", (includeWordBoundaries ? "" : "out"));
+		log.info("Beginning retrieval of all n-grams without spaces.");
 
 		/*
 		 * Begin setting up letter n-gram model
 		 */
-		List<TreeNGram> nGramNodes = letterNGramDao.findAll(minimumCount, includeWordBoundaries);
+		List<TreeNGram> nGramNodes = letterNGramDao.findAll(minimumCount, false);
 
-		log.info("Finished retrieving {} n-grams with{} spaces in {}ms.", nGramNodes.size(), (includeWordBoundaries ? "" : "out"), (System.currentTimeMillis()
+		log.info("Finished retrieving {} n-grams without spaces in {}ms.", nGramNodes.size(), (System.currentTimeMillis()
 				- startFindAll));
 
 		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder);
@@ -219,25 +166,15 @@ public class BayesianDecipherManager {
 		// Initialize the solution key
 		CipherSolution initialSolution = new CipherSolution(cipher, cipherKeySize);
 
-		RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
 		Collections.sort(letterUnigramProbabilities);
-		BigDecimal totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
-		Double wordBoundaryProbability = (double) 1.0 / (double) LanguageConstants.AVERAGE_WORD_SIZE;
+		totalUnigramProbability = unigramRouletteSampler.reIndex(letterUnigramProbabilities);
 
 		cipher.getCiphertextCharacters().stream().map(ciphertext -> ciphertext.getValue()).distinct().forEach(ciphertext -> {
 			// Pick a plaintext at random according to the language model
-			String nextPlaintext = letterUnigramProbabilities.get(rouletteSampler.getNextIndex(letterUnigramProbabilities, totalProbability)).getValue().toString();
+			String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
 
 			initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
 		});
-
-		if (includeWordBoundaries) {
-			for (int i = 0; i < cipher.getCiphertextCharacters().size() - 1; i++) {
-				if (ThreadLocalRandom.current().nextDouble() < wordBoundaryProbability) {
-					initialSolution.addWordBoundary(i);
-				}
-			}
-		}
 
 		EvaluationResults initialPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
 		initialSolution.setProbability(initialPlaintextResults.getProbability());
@@ -267,7 +204,7 @@ public class BayesianDecipherManager {
 		long startWordSampling;
 		long wordSamplingElapsed;
 
-		Double knownProximity = null;
+		Double knownProximity;
 		int i;
 		for (i = 0; i < samplerIterations; i++) {
 			long iterationStart = System.currentTimeMillis();
@@ -282,14 +219,8 @@ public class BayesianDecipherManager {
 			next = runGibbsLetterSampler(temperature, next);
 			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, next, null);
-			next.setProbability(fullPlaintextResults.getProbability());
-			next.setLogProbability(fullPlaintextResults.getLogProbability());
-
 			startWordSampling = System.currentTimeMillis();
-			if (includeWordBoundaries) {
-				next = runGibbsWordBoundarySampler(temperature, next);
-			}
+
 			wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
 
 			if (knownPlaintextEvaluator != null) {
@@ -332,174 +263,27 @@ public class BayesianDecipherManager {
 	}
 
 	protected CipherSolution runGibbsLetterSampler(BigDecimal temperature, CipherSolution solution) {
-		RouletteSampler<SolutionProbability> rouletteSampler = new RouletteSampler<>();
-		CipherSolution proposal = null;
-		BigDecimal totalProbability;
+		CipherSolution proposal;
 
 		List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();
 		mappingList.addAll(solution.getMappings().entrySet());
 
 		Map.Entry<String, Plaintext> nextEntry;
-		CipherSolution original;
 
 		// For each cipher symbol type, run the gibbs sampling
 		for (int i = 0; i < solution.getMappings().size(); i++) {
-			original = solution.clone();
+			proposal = solution.clone();
 
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, original, nextEntry.getKey());
-			original.setProbability(fullPlaintextResults.getProbability());
-			original.setLogProbability(fullPlaintextResults.getLogProbability());
+//			String letter = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
+			String letter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size())).toString();
 
-			List<SolutionProbability> plaintextDistribution = computeDistribution(nextEntry.getKey(), original);
+			proposal.replaceMapping(nextEntry.getKey(), new Plaintext(letter));
 
-			Collections.sort(plaintextDistribution);
-
-			for (int j = 0; j < ModelConstants.LOWERCASE_LETTERS.size(); j++) {
-				plaintextDistribution.get(j).setProbability(letterProbabilities[j]);
-			}
-
-			totalProbability = rouletteSampler.reIndex(plaintextDistribution);
-
-			proposal = plaintextDistribution.get(rouletteSampler.getNextIndex(plaintextDistribution, totalProbability)).getValue();
-
-			solution = selectNext(temperature, original, proposal);
-		}
-
-		return solution;
-	}
-
-	/**
-	 * A concurrent task for computing the letter probability during Gibbs sampling.
-	 */
-	protected class LetterProbabilityTask implements Callable<CipherSolution> {
-		private Character		letter;
-		private String			ciphertextKey;
-		private CipherSolution	conditionalSolution;
-
-		/**
-		 * @param originalSolution
-		 *            the original unmodified solution
-		 * @param letter
-		 *            the letter to sample for
-		 * @param ciphertextKey
-		 *            the ciphertext key
-		 */
-		public LetterProbabilityTask(CipherSolution conditionalSolution, Character letter, String ciphertextKey) {
-			this.letter = letter;
-			this.ciphertextKey = ciphertextKey;
-			this.conditionalSolution = conditionalSolution;
-		}
-
-		@Override
-		public CipherSolution call() throws Exception {
-			if (conditionalSolution.getMappings().get(ciphertextKey).equals(new Plaintext(letter.toString()))) {
-				// No need to re-score the solution in this case
-				return conditionalSolution;
-			}
-
-			conditionalSolution.replaceMapping(ciphertextKey, new Plaintext(letter.toString()));
-
-			long startPlaintext = System.currentTimeMillis();
-			EvaluationResults remainingPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, conditionalSolution, ciphertextKey);
-			log.debug("Partial plaintext took {}ms.", (System.currentTimeMillis() - startPlaintext));
-
-			conditionalSolution.setProbability(remainingPlaintextResults.getProbability());
-			conditionalSolution.setLogProbability(remainingPlaintextResults.getLogProbability());
-
-			return conditionalSolution;
-		}
-	}
-
-	protected List<SolutionProbability> computeDistribution(String ciphertextKey, CipherSolution solution) {
-		List<SolutionProbability> plaintextDistribution = new ArrayList<>();
-		BigDecimal sumOfProbabilities = BigDecimal.ZERO;
-
-		List<FutureTask<CipherSolution>> futures = new ArrayList<FutureTask<CipherSolution>>(26);
-		FutureTask<CipherSolution> task;
-
-		// Calculate the full conditional probability for each possible plaintext substitution
-		for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
-			task = new FutureTask<CipherSolution>(new LetterProbabilityTask(solution.clone(), letter, ciphertextKey));
-			futures.add(task);
-			this.taskExecutor.execute(task);
-		}
-
-		CipherSolution next;
-
-		for (FutureTask<CipherSolution> future : futures) {
-			try {
-				next = future.get();
-
-				plaintextDistribution.add(new SolutionProbability(next, next.getProbability()));
-				sumOfProbabilities = sumOfProbabilities.add(next.getProbability(), MathConstants.PREC_10_HALF_UP);
-			} catch (InterruptedException ie) {
-				log.error("Caught InterruptedException while waiting for LetterProbabilityTask ", ie);
-			} catch (ExecutionException ee) {
-				log.error("Caught ExecutionException while waiting for LetterProbabilityTask ", ee);
-			}
-		}
-
-		// Normalize the probabilities
-		// TODO: should we also somehow normalize the log probabilities?
-		for (SolutionProbability solutionProbability : plaintextDistribution) {
-			solutionProbability.setProbability(solutionProbability.getProbability().divide(sumOfProbabilities, MathConstants.PREC_10_HALF_UP));
-		}
-
-		return plaintextDistribution;
-	}
-
-	protected CipherSolution runGibbsWordBoundarySampler(BigDecimal temperature, CipherSolution solution) {
-		int nextBoundary;
-		BigDecimal sumOfProbabilities = null;
-		List<BoundaryProbability> boundaryProbabilities = null;
-		boolean isAddBoundary = false;
-		CipherSolution addProposal = null;
-		CipherSolution removeProposal = null;
-		CipherSolution proposal = null;
-		EvaluationResults addPlaintextResults = null;
-		EvaluationResults removePlaintextResults = null;
-		BigDecimal totalProbability;
-		RouletteSampler<BoundaryProbability> rouletteSampler = new RouletteSampler<>();
-
-		for (int i = 0; i < cipher.getCiphertextCharacters().size() - 1; i++) {
-			boundaryProbabilities = new ArrayList<>();
-			nextBoundary = i;
-
-			addProposal = solution.clone();
-			if (!addProposal.getWordBoundaries().contains(nextBoundary)) {
-				addProposal.addWordBoundary(nextBoundary);
-				addPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, addProposal, null);
-				addProposal.setProbability(addPlaintextResults.getProbability());
-				addProposal.setLogProbability(addPlaintextResults.getLogProbability());
-			}
-
-			removeProposal = solution.clone();
-			if (removeProposal.getWordBoundaries().contains(nextBoundary)) {
-				removeProposal.removeWordBoundary(nextBoundary);
-				removePlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, removeProposal, null);
-				removeProposal.setProbability(removePlaintextResults.getProbability());
-				removeProposal.setLogProbability(removePlaintextResults.getLogProbability());
-			}
-
-			sumOfProbabilities = addProposal.getProbability().add(removeProposal.getProbability());
-
-			boundaryProbabilities.add(new BoundaryProbability(true,
-					addProposal.getProbability().divide(sumOfProbabilities, MathConstants.PREC_10_HALF_UP)));
-			boundaryProbabilities.add(new BoundaryProbability(false,
-					removeProposal.getProbability().divide(sumOfProbabilities, MathConstants.PREC_10_HALF_UP)));
-
-			Collections.sort(boundaryProbabilities);
-			totalProbability = rouletteSampler.reIndex(boundaryProbabilities);
-
-			isAddBoundary = boundaryProbabilities.get(rouletteSampler.getNextIndex(boundaryProbabilities, totalProbability)).getValue();
-
-			if (isAddBoundary) {
-				proposal = addProposal;
-			} else {
-				proposal = removeProposal;
-			}
+			EvaluationResults fullPlaintextResults = plaintextEvaluator.evaluate(letterMarkovModel, proposal, null);
+			proposal.setProbability(fullPlaintextResults.getProbability());
+			proposal.setLogProbability(fullPlaintextResults.getLogProbability());
 
 			solution = selectNext(temperature, solution, proposal);
 		}
@@ -508,14 +292,19 @@ public class BayesianDecipherManager {
 	}
 
 	protected CipherSolution selectNext(BigDecimal temperature, CipherSolution solution, CipherSolution proposal) {
-		BigDecimal acceptanceProbability = null;
+		BigDecimal acceptanceProbability;
 
-		if (proposal.getLogProbability().compareTo(solution.getLogProbability()) >= 0) {
+		BigDecimal solutionCoincidence = solution.computeIndexOfCoincidence();
+		BigDecimal proposalCoincidence = proposal.computeIndexOfCoincidence();
+		BigDecimal solutionScore = solution.getLogProbability().multiply(BigDecimalMath.sqrt(BigDecimalMath.sqrt(solutionCoincidence)));
+		BigDecimal proposalScore = proposal.getLogProbability().multiply(BigDecimalMath.sqrt(BigDecimalMath.sqrt(proposalCoincidence)));
+
+		if (proposalScore.compareTo(solutionScore) >= 0) {
 			log.debug("Better solution found");
 			return proposal;
 		} else {
 			// Need to convert to log probabilities in order for the acceptance probability calculation to be useful
-			acceptanceProbability = BigDecimalMath.exp(solution.getLogProbability().subtract(proposal.getLogProbability(), MathConstants.PREC_10_HALF_UP).divide(temperature, MathConstants.PREC_10_HALF_UP).negate());
+			acceptanceProbability = BigDecimalMath.exp(solutionScore.subtract(proposalScore, MathConstants.PREC_10_HALF_UP).divide(temperature, MathConstants.PREC_10_HALF_UP).negate());
 
 			log.debug("Acceptance probability: {}", acceptanceProbability);
 

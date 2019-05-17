@@ -20,12 +20,10 @@
 package com.ciphertool.zenith.inference.entities;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.math.MathContext;
+import java.util.*;
 
+import com.ciphertool.zenith.model.ModelConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +94,35 @@ public class CipherSolution {
 	 */
 	public void setLogProbability(BigDecimal logProbability) {
 		this.logProbability = logProbability;
+	}
+
+	public BigDecimal computeIndexOfCoincidence() {
+		String solutionString = asSingleLineString();
+
+		int totalLetters = solutionString.length();
+
+		List<Integer> counts = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+
+		int denominator = totalLetters * (totalLetters - 1);
+
+		for (Character c : ModelConstants.LOWERCASE_LETTERS) {
+			int count = 0;
+
+			for (int i = 0; i < totalLetters; i ++) {
+				if (c.equals(solutionString.charAt(i))) {
+					count ++;
+				}
+			}
+
+			counts.add(count);
+		}
+
+		int numerator = 0;
+		for (Integer count : counts) {
+			numerator += (count * (count - 1));
+		}
+
+		return BigDecimal.valueOf(numerator).divide(BigDecimal.valueOf(denominator), MathContext.DECIMAL32);
 	}
 
 	/**

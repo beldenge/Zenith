@@ -19,31 +19,42 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
+import com.ciphertool.zenith.math.MathConstants;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
-import com.ciphertool.zenith.math.BigDecimalFunctions;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
+@SpringBootTest
+@RunWith(SpringRunner.class)
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 	private static Logger				log				= LoggerFactory.getLogger(PlaintextEvaluatorTest.class);
 
 	private static TreeMarkovModel		letterMarkovModel;
 
-	private static PlaintextEvaluator	plaintextEvaluator;
-
 	private static CipherSolution		actualSolution	= new CipherSolution();
 	private static CipherSolution		solution2		= new CipherSolution();
 	private static CipherSolution		solution3		= new CipherSolution();
+
+	@Autowired
+	private LetterNGramDao letterNGramDao;
+
+	@Autowired
+	private PlaintextEvaluator plaintextEvaluator;
 
 	static {
 		int lastRowBegin = (zodiac408.getColumns() * (zodiac408.getRows() - 1));
@@ -328,31 +339,23 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		solution3.setCipher(zodiac408);
 	}
 
-	// @BeforeClass
-	public static void setUp() throws InterruptedException, ExecutionException {
-		int order = 6;
-
-		LetterNGramDao letterNGramDao = new LetterNGramDao();
-		letterMarkovModel = new TreeMarkovModel(order);
-
-		List<TreeNGram> nodes = letterNGramDao.findAll(2, false);
-
-		for (TreeNGram node : nodes) {
-			letterMarkovModel.addNode(node);
+	//@Before
+	public void initializeMarkovModel() {
+		if (letterMarkovModel != null) {
+			return;
 		}
 
-		plaintextEvaluator = new PlaintextEvaluator();
+		letterMarkovModel = new TreeMarkovModel(6);
 
-		Field bigDecimalFunctionsField = ReflectionUtils.findField(PlaintextEvaluator.class, "bigDecimalFunctions");
-		ReflectionUtils.makeAccessible(bigDecimalFunctionsField);
-		ReflectionUtils.setField(bigDecimalFunctionsField, plaintextEvaluator, new BigDecimalFunctions());
+		letterNGramDao.findAll(2, false).stream().forEach(letterMarkovModel::addNode);
 
-		Field includeWordBoundariesField = ReflectionUtils.findField(PlaintextEvaluator.class, "includeWordBoundaries");
-		ReflectionUtils.makeAccessible(includeWordBoundariesField);
-		ReflectionUtils.setField(includeWordBoundariesField, plaintextEvaluator, false);
+		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
+		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(rootNodeCount), MathConstants.PREC_10_HALF_UP);
+		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
 	}
 
-	// @Test
+	//@Test
 	public void testEvaluate() {
 		log.info("fitness1: " + plaintextEvaluator.evaluate(letterMarkovModel, actualSolution, null));
 		log.info("solution1: " + actualSolution);

@@ -28,16 +28,16 @@ corpus:
 
 markov:
   letter:
-    order: 7
+    order: 5
 
 letter:
   ngrams:
     with:
       spaces:
-        enabled: true
+        enabled: false
     without:
       spaces:
-        enabled: false
+        enabled: true
 
 # ---------------------------------------
 # Spring Concurrency Properties
