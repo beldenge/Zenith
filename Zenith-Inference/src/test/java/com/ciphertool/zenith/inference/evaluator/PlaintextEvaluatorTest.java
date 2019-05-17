@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.ciphertool.zenith.math.MathConstants;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
+@Ignore
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
@@ -339,7 +341,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		solution3.setCipher(zodiac408);
 	}
 
-	//@Before
+	@Before
 	public void initializeMarkovModel() {
 		if (letterMarkovModel != null) {
 			return;
@@ -355,7 +357,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
 	}
 
-	//@Test
+	@Test
 	public void testEvaluate() {
 		log.info("fitness1: " + plaintextEvaluator.evaluate(letterMarkovModel, actualSolution, null));
 		log.info("solution1: " + actualSolution);
@@ -367,7 +369,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		log.info("solution3: " + solution3);
 	}
 
-	// @Test
+	@Test
 	public void testPerf() {
 		long start = System.currentTimeMillis();
 		long evaluations = 10000;
