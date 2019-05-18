@@ -19,9 +19,8 @@
 
 package com.ciphertool.zenith.inference;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
+import com.ciphertool.zenith.math.MathCache;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +31,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import com.ciphertool.zenith.math.MathCache;
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
 
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, MathCache.class,
 		LetterNGramDao.class })
@@ -57,7 +53,7 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	@Autowired
 	private BayesianDecipherManager	manager;
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
+	public static void main(String[] args) {
 		SpringApplication.run(InferenceEngineBootstrapper.class, args);
 	}
 
@@ -68,7 +64,7 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	 *             if there's an error during initialization
 	 */
 	@Override
-	public void run(String... arg0) throws Exception {
+	public void run(String... arg0) {
 		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
 		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 

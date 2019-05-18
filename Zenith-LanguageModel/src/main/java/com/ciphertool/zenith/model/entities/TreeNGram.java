@@ -19,15 +19,15 @@
 
 package com.ciphertool.zenith.model.entities;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 @Document
 public class TreeNGram {
@@ -50,6 +50,9 @@ public class TreeNGram {
 
 	@Transient
 	private Map<Character, TreeNGram>	transitions;
+
+	// Required by Spring Data
+	public TreeNGram() {}
 
 	public TreeNGram(String nGramString) {
 		this.cumulativeString = nGramString;

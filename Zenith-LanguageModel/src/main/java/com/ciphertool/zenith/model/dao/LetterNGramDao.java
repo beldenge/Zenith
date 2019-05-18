@@ -19,12 +19,7 @@
 
 package com.ciphertool.zenith.model.dao;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.bson.types.ObjectId;
+import com.ciphertool.zenith.model.entities.TreeNGram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,23 +30,11 @@ import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.mongodb.Cursor;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.ParallelScanOptions;
+import java.util.List;
 
 @Component
 public class LetterNGramDao {
 	private Logger				log							= LoggerFactory.getLogger(getClass());
-
-	private static final String	ID_KEY						= "id";
-	private static final String	COUNT_KEY					= "count";
-	private static final String	PROBABILITY_KEY				= "probability";
-	private static final String	CONDITIONAL_PROBABILITY_KEY	= "conditionalProbability";
-	private static final String	CHAINED_PROBABILITY_KEY		= "chainedProbability";
-	private static final String	CUMULATIVE_STRING_KEY		= "cumulativeString";
-	private static final String	ORDER_KEY					= "order";
 
 	@Value("${collection.letter.ngram.with.spaces.name}")
 	private String				collectionWithSpaces;
@@ -68,45 +51,19 @@ public class LetterNGramDao {
 	@Autowired
 	private MongoOperations		mongoOperations;
 
-	public List<TreeNGram> findAll(Integer minimumCount, Boolean includeWordBoundaries) {
-		DBCollection collection = mongoOperations.getCollection((includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
-		List<Cursor> cursors = collection.parallelScan(ParallelScanOptions.builder().batchSize(batchSize).numCursors(numCursors).build());
+	// TODO: right now we are not using the minimumCount at all -- as the query was not returning anything
+	public List<TreeNGram> findAll(int minimumCount, boolean includeWordBoundaries) {
+		long startCount = System.currentTimeMillis();
+		log.info("Finding nodes with counts greater than or equal to the minimum of {}.", minimumCount);
 
-		List<TreeNGram> nodesToReturn = Collections.synchronizedList(new ArrayList<>());
+		BasicQuery query = new BasicQuery("{ count : { $gte : " + minimumCount + " } }");
 
-		cursors.parallelStream().forEach(cursor -> {
-			DBObject next;
-			TreeNGram nextNode;
+		List<TreeNGram> nGrams = mongoOperations.findAll(TreeNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));//.find(query, TreeNGram.class, (includeWordBoundaries ? collectionWithSpaces : collectionWithoutSpaces));
 
-			while (cursor.hasNext()) {
-				next = cursor.next();
+		log.info("Finished finding nodes greater than or equal to the minimum of {} in {}ms.", minimumCount, (System.currentTimeMillis()
+				- startCount));
 
-				if (((long) next.get(COUNT_KEY)) >= minimumCount) {
-					nextNode = new TreeNGram((String) next.get(CUMULATIVE_STRING_KEY));
-
-					nextNode.setId((ObjectId) next.get(ID_KEY));
-					nextNode.setCount((long) next.get(COUNT_KEY));
-					nextNode.setOrder((int) next.get(ORDER_KEY));
-
-					if (next.containsField(PROBABILITY_KEY)) {
-						nextNode.setProbability(new BigDecimal((String) next.get(PROBABILITY_KEY)));
-					}
-
-					if (next.containsField(CONDITIONAL_PROBABILITY_KEY)) {
-						nextNode.setConditionalProbability(new BigDecimal(
-								(String) next.get(CONDITIONAL_PROBABILITY_KEY)));
-					}
-
-					if (next.containsField(CHAINED_PROBABILITY_KEY)) {
-						nextNode.setChainedProbability(new BigDecimal((String) next.get(CHAINED_PROBABILITY_KEY)));
-					}
-
-					nodesToReturn.add(nextNode);
-				}
-			}
-		});
-
-		return nodesToReturn;
+		return nGrams;
 	}
 
 	public long countLessThan(int minimumCount, boolean includeWordBoundaries) {
