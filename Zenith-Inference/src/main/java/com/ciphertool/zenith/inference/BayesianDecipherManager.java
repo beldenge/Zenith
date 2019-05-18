@@ -23,7 +23,7 @@ import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
-import com.ciphertool.zenith.inference.evaluator.KnownPlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
@@ -79,7 +79,7 @@ public class BayesianDecipherManager {
 	private LetterNGramDao					letterNGramDao;
 
 	@Autowired(required = false)
-	private KnownPlaintextEvaluator			knownPlaintextEvaluator;
+	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
 
 	private Cipher							cipher;
 	private int								cipherKeySize;
@@ -103,14 +103,14 @@ public class BayesianDecipherManager {
 		cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
 		long startFindAll = System.currentTimeMillis();
-		log.info("Beginning retrieval of all n-grams without spaces.");
+		log.info("Beginning retrieval of all n-grams.");
 
 		/*
 		 * Begin setting up letter n-gram model
 		 */
 		List<TreeNGram> nGramNodes = letterNGramDao.findAll();
 
-		log.info("Finished retrieving {} n-grams without spaces in {}ms.", nGramNodes.size(), (System.currentTimeMillis()
+		log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis()
 				- startFindAll));
 
 		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder);
@@ -172,7 +172,7 @@ public class BayesianDecipherManager {
 			initialSolution.setKnownSolutionProximity(BigDecimal.valueOf(knownPlaintextEvaluator.evaluate(initialSolution)));
 		}
 
-		log.info(initialSolution.toString());
+		log.debug(initialSolution.toString());
 
 		BigDecimal maxTemp = BigDecimal.valueOf(annealingTemperatureMax);
 		BigDecimal minTemp = BigDecimal.valueOf(annealingTemperatureMin);
@@ -185,7 +185,7 @@ public class BayesianDecipherManager {
 		CipherSolution maxKnown = initialSolution;
 		int maxKnownIteration = 0;
 
-		log.info("Running Gibbs sampler for " + samplerIterations + " iterations.");
+		log.info("Running sampler for " + samplerIterations + " iterations.");
 		long start = System.currentTimeMillis();
 		long startLetterSampling;
 		long letterSamplingElapsed;
@@ -204,7 +204,7 @@ public class BayesianDecipherManager {
 			temperature = maxTemp.subtract(minTemp, MathConstants.PREC_10_HALF_UP).multiply(iterations.subtract(BigDecimal.valueOf(i), MathConstants.PREC_10_HALF_UP).divide(iterations, MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP).add(minTemp, MathConstants.PREC_10_HALF_UP);
 
 			startLetterSampling = System.currentTimeMillis();
-			next = runGibbsLetterSampler(temperature, next);
+			next = runLetterSampler(temperature, next);
 			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
 
 			startWordSampling = System.currentTimeMillis();
@@ -226,14 +226,11 @@ public class BayesianDecipherManager {
 				maxBayesIteration = i + 1;
 			}
 
-			log.info("Iteration " + (i + 1) + " complete.  [elapsed=" + (System.currentTimeMillis() - iterationStart)
-					+ "ms, letterSampling=" + letterSamplingElapsed + "ms, wordSampling=" + wordSamplingElapsed
-					+ "ms, temp=" + String.format("%1$,.2f", temperature) + "]");
-			log.info(next.toString());
+			log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, wordSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, wordSamplingElapsed, String.format("%1$,.2f", temperature));
+			log.debug(next.toString());
 		}
 
-		log.info("Gibbs sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average="
-				+ ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
+		log.info("Letter sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average=" + ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
 
 		log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
 		log.info("Mappings for best known:");
@@ -250,7 +247,7 @@ public class BayesianDecipherManager {
 		}
 	}
 
-	protected CipherSolution runGibbsLetterSampler(BigDecimal temperature, CipherSolution solution) {
+	protected CipherSolution runLetterSampler(BigDecimal temperature, CipherSolution solution) {
 		CipherSolution proposal;
 
 		List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();
@@ -258,13 +255,13 @@ public class BayesianDecipherManager {
 
 		Map.Entry<String, Plaintext> nextEntry;
 
-		// For each cipher symbol type, run the gibbs sampling
+		// For each cipher symbol type, run the letter sampling
 		for (int i = 0; i < solution.getMappings().size(); i++) {
 			proposal = solution.clone();
 
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-//			String letter = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
+			// String letter = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
 			String letter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size())).toString();
 
 			proposal.replaceMapping(nextEntry.getKey(), new Plaintext(letter));
