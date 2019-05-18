@@ -17,7 +17,7 @@
 #
 
 cipher:
-  name: zodiac408
+  name: zodiac340
 
 # ---------------------------------------
 # Spring Concurrency Properties
@@ -50,6 +50,7 @@ bayes:
     temperature:
       max: 20
       min: 1
+  useKnownEvaluator: false
 
 #----------------------------------------
 # MongoDB Properties

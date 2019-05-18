@@ -69,6 +69,9 @@ public class BayesianDecipherManager {
 	@Value("${markov.letter.order}")
 	private int								markovOrder;
 
+	@Value("${bayes.useKnownEvaluator:false}")
+	private boolean								useKnownEvaluator;
+
 	@Autowired
 	private PlaintextEvaluator				plaintextEvaluator;
 
@@ -168,7 +171,7 @@ public class BayesianDecipherManager {
 
 		plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
 
-		if (knownPlaintextEvaluator != null) {
+		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
 			initialSolution.setKnownSolutionProximity(BigDecimal.valueOf(knownPlaintextEvaluator.evaluate(initialSolution)));
 		}
 
@@ -211,7 +214,7 @@ public class BayesianDecipherManager {
 
 			wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
 
-			if (knownPlaintextEvaluator != null) {
+			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
 				knownProximity = knownPlaintextEvaluator.evaluate(next);
 				next.setKnownSolutionProximity(BigDecimal.valueOf(knownProximity));
 
@@ -232,11 +235,13 @@ public class BayesianDecipherManager {
 
 		log.info("Letter sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average=" + ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
 
-		log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
-		log.info("Mappings for best known:");
+		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
+			log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
+			log.info("Mappings for best known:");
 
-		for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
-			log.info(entry.getKey() + ": " + entry.getValue().getValue());
+			for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
+				log.info(entry.getKey() + ": " + entry.getValue().getValue());
+			}
 		}
 
 		log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
