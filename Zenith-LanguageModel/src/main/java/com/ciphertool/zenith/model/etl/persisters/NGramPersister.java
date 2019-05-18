@@ -19,13 +19,10 @@
 
 package com.ciphertool.zenith.model.etl.persisters;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +30,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.etl.importers.LetterNGramMarkovImporter;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 @Component
 public class NGramPersister {
@@ -51,53 +50,34 @@ public class NGramPersister {
 	@Autowired
 	private LetterNGramDao				letterNGramDao;
 
-	@Value("${letter.ngrams.with.spaces.enabled}")
-	private boolean						letterNGramsWithSpacesEnabled;
-
-	@Value("${letter.ngrams.without.spaces.enabled}")
-	private boolean						letterNGramsWithoutSpacesEnabled;
-
 	@Value("${mongodb.parallelScan.batchSize}")
 	private int							batchSize;
 
 	public void persistNGrams() {
-		int order = letterNGramMarkovImporter.getOrder();
-
-		if (letterNGramsWithSpacesEnabled) {
-			persistLetterNGrams(order, true);
-		}
-
-		if (letterNGramsWithoutSpacesEnabled) {
-			persistLetterNGrams(order, false);
-		}
-	}
-
-	protected void persistLetterNGrams(int order, boolean includeWordBoundaries) {
 		long startDeleteWithoutSpaces = System.currentTimeMillis();
 
-		log.info("Deleting all existing n-grams with" + (includeWordBoundaries ? "" : "out") + " spaces.");
+		log.info("Deleting all existing n-grams.");
 
-		letterNGramDao.deleteAll(includeWordBoundaries);
+		letterNGramDao.deleteAll();
 
-		log.info("Completed deletion of n-grams with" + (includeWordBoundaries ? "" : "out")
-				+ " spaces in {}ms.", (System.currentTimeMillis() - startDeleteWithoutSpaces));
+		log.info("Completed deletion of n-grams in {}ms.", (System.currentTimeMillis() - startDeleteWithoutSpaces));
 
-		TreeMarkovModel markovModel = letterNGramMarkovImporter.importCorpus(includeWordBoundaries);
+		TreeMarkovModel markovModel = letterNGramMarkovImporter.importCorpus();
 
 		long count = markovModel.size();
 
-		log.info("Total nodes with" + (includeWordBoundaries ? "" : "out") + " spaces: {}", count);
+		log.info("Total nodes: {}", count);
 
 		long startAdd = System.currentTimeMillis();
 
-		log.info("Starting persistence of n-grams with" + (includeWordBoundaries ? "" : "out") + " spaces.");
+		log.info("Starting persistence of n-grams.");
 
-		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		List<FutureTask<Void>> futures = new ArrayList<>(26);
 		FutureTask<Void> task;
 
-		for (Map.Entry<Character, TreeNGram> entry : ((TreeMarkovModel) markovModel).getRootNode().getTransitions().entrySet()) {
+		for (Map.Entry<Character, TreeNGram> entry : (markovModel).getRootNode().getTransitions().entrySet()) {
 			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new PersistNodesTask(entry.getValue(), includeWordBoundaries));
+				task = new FutureTask<>(new PersistNodesTask(entry.getValue()));
 				futures.add(task);
 				this.taskExecutor.execute(task);
 			}
@@ -113,20 +93,19 @@ public class NGramPersister {
 			}
 		}
 
-		log.info("Completed persistence of n-grams with" + (includeWordBoundaries ? "" : "out")
-				+ " spaces in {}ms.", (System.currentTimeMillis() - startAdd));
+		log.info("Completed persistence of n-grams in {}ms.", (System.currentTimeMillis() - startAdd));
 	}
 
-	protected List<TreeNGram> persistNodes(TreeNGram node, boolean includeWordBoundaries) {
+	protected List<TreeNGram> persistNodes(TreeNGram node) {
 		List<TreeNGram> nGrams = new ArrayList<>();
 
 		nGrams.add(node);
 
 		for (Map.Entry<Character, TreeNGram> entry : node.getTransitions().entrySet()) {
-			nGrams.addAll(persistNodes(entry.getValue(), includeWordBoundaries));
+			nGrams.addAll(persistNodes(entry.getValue()));
 
 			if (nGrams.size() >= batchSize) {
-				letterNGramDao.addAll(nGrams, includeWordBoundaries);
+				letterNGramDao.addAll(nGrams);
 
 				nGrams = new ArrayList<>();
 			}
@@ -140,24 +119,20 @@ public class NGramPersister {
 	 */
 	protected class PersistNodesTask implements Callable<Void> {
 		private TreeNGram	node;
-		private boolean		includeWordBoundaries;
 
 		/**
 		 * @param node
 		 *            the root node
-		 * @param includeWordBoundaries
-		 *            whether to include word boundaries
 		 */
-		public PersistNodesTask(TreeNGram node, boolean includeWordBoundaries) {
+		public PersistNodesTask(TreeNGram node) {
 			this.node = node;
-			this.includeWordBoundaries = includeWordBoundaries;
 		}
 
 		@Override
-		public Void call() throws Exception {
-			List<TreeNGram> nGrams = persistNodes(node, includeWordBoundaries);
+		public Void call() {
+			List<TreeNGram> nGrams = persistNodes(node);
 
-			letterNGramDao.addAll(nGrams, includeWordBoundaries);
+			letterNGramDao.addAll(nGrams);
 
 			return null;
 		}

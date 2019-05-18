@@ -19,6 +19,13 @@
 
 package com.ciphertool.zenith.model.markov;
 
+import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.task.TaskExecutor;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +33,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.task.TaskExecutor;
-
-import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.ModelConstants;
-import com.ciphertool.zenith.model.entities.TreeNGram;
 
 public class TreeMarkovModel {
 	private Logger		log			= LoggerFactory.getLogger(getClass());
@@ -170,26 +169,6 @@ public class TreeMarkovModel {
 		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
-	/**
-	 * @return the indexOfCoincidence
-	 */
-	public BigDecimal getIndexOfCoincidence() {
-		if (this.indexOfCoincidence == null) {
-			this.indexOfCoincidence = BigDecimal.ZERO;
-
-			BigDecimal occurences = null;
-			for (Map.Entry<Character, TreeNGram> entry : this.rootNode.getTransitions().entrySet()) {
-				occurences = BigDecimal.valueOf(entry.getValue().getCount());
-				this.indexOfCoincidence = this.indexOfCoincidence.add(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP));
-			}
-
-			occurences = BigDecimal.valueOf(this.rootNode.getCount());
-			this.indexOfCoincidence = this.indexOfCoincidence.divide(occurences.multiply(occurences.subtract(BigDecimal.ONE), MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP);
-		}
-
-		return indexOfCoincidence;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -221,36 +200,11 @@ public class TreeMarkovModel {
 		}
 	}
 
-	public void linkChildren(boolean includeWordBoundaries, TaskExecutor taskExecutor) {
-		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
-		FutureTask<Void> task;
-
-		futures = new ArrayList<FutureTask<Void>>(26);
-
-		for (Map.Entry<Character, TreeNGram> entry : this.rootNode.getTransitions().entrySet()) {
-			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new LinkChildTask(entry.getKey(), entry.getValue(), includeWordBoundaries));
-				futures.add(task);
-				taskExecutor.execute(task);
-			}
-		}
-
-		for (FutureTask<Void> future : futures) {
-			try {
-				future.get();
-			} catch (InterruptedException ie) {
-				log.error("Caught InterruptedException while waiting for LinkChildTask ", ie);
-			} catch (ExecutionException ee) {
-				log.error("Caught ExecutionException while waiting for LinkChildTask ", ee);
-			}
-		}
-	}
-
-	protected void linkChild(TreeNGram node, String nGram, boolean includeWordBoundaries) {
+	protected void linkChild(TreeNGram node, String nGram) {
 		Map<Character, TreeNGram> transitions = node.getTransitions();
 
 		if (nGram.length() == order) {
-			for (Character letter : (includeWordBoundaries ? ModelConstants.LOWERCASE_LETTERS_AND_SPACE : ModelConstants.LOWERCASE_LETTERS)) {
+			for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
 				TreeNGram match = this.findExact(nGram.substring(1) + letter.toString());
 
 				if (match != null) {
@@ -265,48 +219,18 @@ public class TreeMarkovModel {
 			TreeNGram nextNode = entry.getValue();
 
 			if (nextNode != null) {
-				linkChild(nextNode, nGram + String.valueOf(entry.getKey()), includeWordBoundaries);
+				linkChild(nextNode, nGram + entry.getKey());
 			}
 		}
 	}
 
-	/**
-	 * A concurrent task for linking leaf nodes in a Markov model.
-	 */
-	protected class LinkChildTask implements Callable<Void> {
-		private Character	key;
-		private TreeNGram	node;
-		private boolean		includeWordBoundaries;
-
-		/**
-		 * @param key
-		 *            the Character key to set
-		 * @param node
-		 *            the NGramIndexNode to set
-		 * @param includeWordBoundaries
-		 *            whether to include word boundaries
-		 */
-		public LinkChildTask(Character key, TreeNGram node, boolean includeWordBoundaries) {
-			this.key = key;
-			this.node = node;
-			this.includeWordBoundaries = includeWordBoundaries;
-		}
-
-		@Override
-		public Void call() throws Exception {
-			linkChild(this.node, String.valueOf(this.key), includeWordBoundaries);
-
-			return null;
-		}
-	}
-
 	public void normalize(int order, long orderTotal, TaskExecutor taskExecutor) {
-		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		List<FutureTask<Void>> futures = new ArrayList<>(26);
 		FutureTask<Void> task;
 
 		for (Map.Entry<Character, TreeNGram> entry : this.getRootNode().getTransitions().entrySet()) {
 			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new NormalizeTask(entry.getValue(), order, orderTotal));
+				task = new FutureTask<>(new NormalizeTask(entry.getValue(), order, orderTotal));
 				futures.add(task);
 				taskExecutor.execute(task);
 			}
@@ -346,7 +270,7 @@ public class TreeMarkovModel {
 		}
 
 		@Override
-		public Void call() throws Exception {
+		public Void call() {
 			normalizeTerminal(this.node, this.order, this.total);
 
 			return null;

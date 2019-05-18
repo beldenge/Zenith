@@ -246,7 +246,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 		letterMarkovModel = new TreeMarkovModel(6);
 
-		letterNGramDao.findAll(2, false).stream().forEach(letterMarkovModel::addNode);
+		letterNGramDao.findAll().stream().forEach(letterMarkovModel::addNode);
 
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
 		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();

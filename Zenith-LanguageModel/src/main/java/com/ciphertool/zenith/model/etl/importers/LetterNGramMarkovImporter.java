@@ -19,6 +19,17 @@
 
 package com.ciphertool.zenith.model.etl.importers;
 
+import com.ciphertool.zenith.math.MathConstants;
+import com.ciphertool.zenith.model.dto.ParseResults;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.DirectoryStream;
@@ -31,19 +42,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.stereotype.Component;
-
-import com.ciphertool.zenith.math.MathConstants;
-import com.ciphertool.zenith.model.ModelConstants;
-import com.ciphertool.zenith.model.dto.ParseResults;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 
 @Component
 public class LetterNGramMarkovImporter {
@@ -62,7 +60,7 @@ public class LetterNGramMarkovImporter {
 	@Value("${markov.letter.order}")
 	private int					order;
 
-	public TreeMarkovModel importCorpus(boolean includeWordBoundaries) {
+	public TreeMarkovModel importCorpus() {
 		TreeMarkovModel letterMarkovModel = new TreeMarkovModel(this.order);
 
 		long start = System.currentTimeMillis();
@@ -79,7 +77,7 @@ public class LetterNGramMarkovImporter {
 			}
 		}
 
-		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, includeWordBoundaries, letterMarkovModel);
+		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, letterMarkovModel);
 		ParseResults parseResults;
 		long total = 0L;
 		long unique = 0L;
@@ -113,7 +111,7 @@ public class LetterNGramMarkovImporter {
 
 		Map<Character, TreeNGram> initialTransitions = letterMarkovModel.getRootNode().getTransitions();
 
-		List<FutureTask<Void>> futures = new ArrayList<FutureTask<Void>>(26);
+		List<FutureTask<Void>> futures = new ArrayList<>(26);
 		FutureTask<Void> task;
 
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
@@ -122,7 +120,7 @@ public class LetterNGramMarkovImporter {
 
 		for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
 			if (entry.getValue() != null) {
-				task = new FutureTask<Void>(new ComputeConditionalTask(entry.getValue(), rootNodeCount));
+				task = new FutureTask<>(new ComputeConditionalTask(entry.getValue(), rootNodeCount));
 				futures.add(task);
 				this.taskExecutor.execute(task);
 			}
@@ -160,7 +158,7 @@ public class LetterNGramMarkovImporter {
 		}
 
 		@Override
-		public Void call() throws Exception {
+		public Void call() {
 			computeConditionalProbability(this.node, this.parentCount);
 
 			return null;
@@ -186,25 +184,21 @@ public class LetterNGramMarkovImporter {
 	 */
 	protected class ParseFileTask implements Callable<ParseResults> {
 		private Path			path;
-		private boolean			includeWordBoundaries;
 		private TreeMarkovModel	letterMarkovModel;
 
 		/**
 		 * @param path
 		 *            the Path to set
-		 * @param includeWordBoundaries
-		 *            whether to include word boundaries
 		 * @param letterMarkovModel
 		 *            the TreeMarkovModel to use
 		 */
-		public ParseFileTask(Path path, boolean includeWordBoundaries, TreeMarkovModel letterMarkovModel) {
+		public ParseFileTask(Path path, TreeMarkovModel letterMarkovModel) {
 			this.path = path;
-			this.includeWordBoundaries = includeWordBoundaries;
 			this.letterMarkovModel = letterMarkovModel;
 		}
 
 		@Override
-		public ParseResults call() throws Exception {
+		public ParseResults call() {
 			log.debug("Importing file {}", this.path.toString());
 
 			int order = letterMarkovModel.getOrder();
@@ -221,22 +215,7 @@ public class LetterNGramMarkovImporter {
 					sentence = (" " + sentences[i].replaceAll(NON_ALPHA_OR_SPACE, "").replaceAll("\\s+", " ").trim()
 							+ " ").toLowerCase();
 
-					if (!includeWordBoundaries) {
-						sentence = sentence.replaceAll(NON_ALPHA, "");
-					} else {
-						StringBuilder newSentence = new StringBuilder();
-						for (int j = 0; j < sentence.length() - 1; j++) {
-							newSentence.append(sentence.charAt(j));
-
-							if (sentence.charAt(j) != ' ' && sentence.charAt(j + 1) != ' ') {
-								newSentence.append(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR);
-							}
-						}
-
-						newSentence.append(sentence.charAt(sentence.length() - 1));
-
-						sentence = newSentence.toString();
-					}
+					sentence = sentence.replaceAll(NON_ALPHA, "");
 
 					if (sentence.trim().length() == 0) {
 						continue;
@@ -258,15 +237,15 @@ public class LetterNGramMarkovImporter {
 		}
 	}
 
-	protected List<FutureTask<ParseResults>> parseFiles(Path path, boolean includeWordBoundaries, TreeMarkovModel letterMarkovModel) {
-		List<FutureTask<ParseResults>> tasks = new ArrayList<FutureTask<ParseResults>>();
+	protected List<FutureTask<ParseResults>> parseFiles(Path path, TreeMarkovModel letterMarkovModel) {
+		List<FutureTask<ParseResults>> tasks = new ArrayList<>();
 		FutureTask<ParseResults> task;
 		String filename;
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, includeWordBoundaries, letterMarkovModel));
+					tasks.addAll(parseFiles(entry, letterMarkovModel));
 				} else {
 					filename = entry.toString();
 					String ext = filename.substring(filename.lastIndexOf('.'));
@@ -277,8 +256,7 @@ public class LetterNGramMarkovImporter {
 						continue;
 					}
 
-					task = new FutureTask<ParseResults>(new ParseFileTask(entry, includeWordBoundaries,
-							letterMarkovModel));
+					task = new FutureTask<>(new ParseFileTask(entry, letterMarkovModel));
 					tasks.add(task);
 					this.taskExecutor.execute(task);
 				}
@@ -288,12 +266,5 @@ public class LetterNGramMarkovImporter {
 		}
 
 		return tasks;
-	}
-
-	/**
-	 * @return the order
-	 */
-	public int getOrder() {
-		return order;
 	}
 }

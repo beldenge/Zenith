@@ -792,10 +792,5 @@ var zodiac408 = {
 db.ciphers.insert(zodiac340);
 db.ciphers.insert(zodiac408);
 
-db.createCollection("letterNGrams_withoutSpaces");
+db.createCollection("letterNGrams");
 db.letterNGrams_withoutSpaces.ensureIndex( { "count": -1 } );
-
-db.createCollection("letterNGrams_withSpaces");
-db.letterNGrams_withSpaces.ensureIndex( { "count": -1 } );
-
-db.createCollection("nGramCount_levelSums");

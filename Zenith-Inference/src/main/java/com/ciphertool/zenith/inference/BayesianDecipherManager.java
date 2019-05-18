@@ -69,12 +69,6 @@ public class BayesianDecipherManager {
 	@Value("${markov.letter.order}")
 	private int								markovOrder;
 
-	@Value("${markov.minimum.count}")
-	private int								minimumCount;
-
-	@Value("${bayes.sampler.letterTypeSampling.enabled}")
-	private boolean							letterTypeSamplingEnabled;
-
 	@Autowired
 	private PlaintextEvaluator				plaintextEvaluator;
 
@@ -114,7 +108,7 @@ public class BayesianDecipherManager {
 		/*
 		 * Begin setting up letter n-gram model
 		 */
-		List<TreeNGram> nGramNodes = letterNGramDao.findAll(minimumCount, false);
+		List<TreeNGram> nGramNodes = letterNGramDao.findAll();
 
 		log.info("Finished retrieving {} n-grams without spaces in {}ms.", nGramNodes.size(), (System.currentTimeMillis()
 				- startFindAll));
@@ -122,7 +116,7 @@ public class BayesianDecipherManager {
 		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder);
 
 		long startAdding = System.currentTimeMillis();
-		log.info("Adding nodes to the model.", minimumCount);
+		log.info("Adding nodes to the model.");
 
 		for (TreeNGram nGramNode : nGramNodes) {
 			this.letterMarkovModel.addNode(nGramNode);
@@ -138,13 +132,13 @@ public class BayesianDecipherManager {
 		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis()
 				- startAdding));
 
-		long total = firstOrderNodes.stream().filter(node -> !node.getCumulativeString().equals(" ")
-				&& !node.getCumulativeString().equals(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR)).mapToLong(TreeNGram::getCount).sum();
+		long total = firstOrderNodes.stream()
+				.filter(node -> !node.getCumulativeString().equals(" "))
+				.mapToLong(TreeNGram::getCount).sum();
 
 		BigDecimal probability;
 		for (TreeNGram node : firstOrderNodes) {
-			if (!node.getCumulativeString().equals(" ")
-					&& !node.getCumulativeString().equals(ModelConstants.CONNECTED_LETTERS_PLACEHOLDER_CHAR)) {
+			if (!node.getCumulativeString().equals(" ")) {
 				probability = BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
 
 				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0),

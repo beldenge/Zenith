@@ -30,15 +30,6 @@ markov:
   letter:
     order: 5
 
-letter:
-  ngrams:
-    with:
-      spaces:
-        enabled: false
-    without:
-      spaces:
-        enabled: true
-
 # ---------------------------------------
 # Spring Concurrency Properties
 # ---------------------------------------
@@ -63,20 +54,3 @@ mongodb:
   parallelScan:
     batchSize: 1000
     numCursors: 100
-
-#----------------------------------------
-# Data Properties
-#----------------------------------------
-collection:
-  letter:
-    ngram:
-      with:
-        spaces:
-          name: letterNGrams_withSpaces
-      without:
-        spaces:
-          name: letterNGrams_withoutSpaces
-  ngram:
-    count:
-      sum:
-        name: nGramCount_levelSums

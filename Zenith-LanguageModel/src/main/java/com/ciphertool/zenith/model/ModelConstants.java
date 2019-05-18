@@ -34,12 +34,4 @@ public class ModelConstants {
 		LOWERCASE_LETTERS.addAll(LOWERCASE_VOWELS);
 		LOWERCASE_LETTERS.addAll(LOWERCASE_CONSONANTS);
 	}
-
-	public static final List<Character> LOWERCASE_LETTERS_AND_SPACE = new ArrayList<>(LOWERCASE_LETTERS);
-
-	static {
-		LOWERCASE_LETTERS_AND_SPACE.add(' ');
-	}
-
-	public static final String CONNECTED_LETTERS_PLACEHOLDER_CHAR = ".";
 }
