@@ -19,11 +19,9 @@
 
 package com.ciphertool.zenith.inference.probability;
 
-import java.math.BigDecimal;
-
 public class LetterProbability implements Probability<Character>, Comparable<LetterProbability> {
 	private Character	letter;
-	private BigDecimal	probability;
+	private Double	probability;
 
 	/**
 	 * @param letter
@@ -31,7 +29,7 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	 * @param probability
 	 *            the probability
 	 */
-	public LetterProbability(Character letter, BigDecimal probability) {
+	public LetterProbability(Character letter, Double probability) {
 		this.letter = letter;
 		this.probability = probability;
 	}
@@ -42,21 +40,8 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
 	}
 
 	@Override
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return probability;
-	}
-
-	/**
-	 * @param probability
-	 *            the probability to set
-	 */
-	public void setProbability(BigDecimal probability) {
-		this.probability = probability;
-	}
-
-	@Override
-	public BigDecimal getLogProbability() {
-		throw new UnsupportedOperationException("Method not implemented!");
 	}
 
 	@Override

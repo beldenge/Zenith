@@ -20,12 +20,10 @@
 package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,9 +32,6 @@ import java.util.List;
 @Component
 public class PlaintextEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
-
-	@Autowired
-	private MathCache	bigDecimalFunctions;
 
 	public void evaluate(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
 		long startLetter = System.currentTimeMillis();
@@ -74,7 +69,7 @@ public class PlaintextEvaluator {
 				for (int i = start; i < end; i++) {
 					probability = computeNGramProbability(letterMarkovModel, sb.substring(i, i + order));
 
-					solution.replaceLogProbability(i, bigDecimalFunctions.log(probability));
+					solution.replaceLogProbability(i, Math.log(probability));
 				}
 
 				lastIndex = end;
@@ -83,7 +78,7 @@ public class PlaintextEvaluator {
 			for (int i = 0; i < sb.length() - order; i++) {
 				probability = computeNGramProbability(letterMarkovModel, sb.substring(i, i + order));
 
-				solution.addLogProbability(bigDecimalFunctions.log(probability));
+				solution.addLogProbability(Math.log(probability));
 			}
 		}
 	}

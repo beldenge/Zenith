@@ -19,8 +19,6 @@
 
 package com.ciphertool.zenith.inference.selection;
 
-import java.math.BigDecimal;
-
 public class BinaryRouletteTree {
 	private BinaryRouletteNode root;
 
@@ -59,17 +57,17 @@ public class BinaryRouletteTree {
 		insertNode(parent.getGreaterThan(), toInsert);
 	}
 
-	public BinaryRouletteNode find(BigDecimal value) {
+	public BinaryRouletteNode find(Double value) {
 		return findNode(this.root, value, null);
 	}
 
-	protected BinaryRouletteNode findNode(BinaryRouletteNode current, BigDecimal value, BinaryRouletteNode closestSoFar) {
-		if (value.compareTo(current.getValue()) <= 0) {
+	protected BinaryRouletteNode findNode(BinaryRouletteNode current, Double value, BinaryRouletteNode closestSoFar) {
+		if (value <= current.getValue()) {
 			if (current.getLessThan() == null) {
 				return current;
 			}
 
-			if (value.compareTo(current.getLessThan().getValue()) > 0) {
+			if (value > current.getLessThan().getValue()) {
 				closestSoFar = current;
 			}
 

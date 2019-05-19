@@ -19,21 +19,14 @@
 
 package com.ciphertool.zenith.inference.probability;
 
-import java.math.BigDecimal;
-
 public interface Probability<T> {
 	/**
 	 * @return the value
 	 */
-	public T getValue();
+	T getValue();
 
 	/**
 	 * @return the probability
 	 */
-	public BigDecimal getProbability();
-
-	/**
-	 * @return the log probability
-	 */
-	public BigDecimal getLogProbability();
+	Double getProbability();
 }

@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.inference;
 
-import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -27,8 +26,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 
-@SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, MathCache.class,
-		LetterNGramDao.class })
+@SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, LetterNGramDao.class })
 @EnableCaching
 public class InferenceEngineBootstrapper implements CommandLineRunner {
 	@Autowired

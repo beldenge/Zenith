@@ -27,7 +27,6 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -39,7 +38,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -89,7 +87,7 @@ public class BayesianDecipherManager {
 	private TreeMarkovModel					letterMarkovModel;
 
 	private RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
-	private BigDecimal totalUnigramProbability;
+	private Double totalUnigramProbability;
 
 	@PostConstruct
 	public void setUp() {
@@ -138,13 +136,12 @@ public class BayesianDecipherManager {
 				.filter(node -> !node.getCumulativeString().equals(" "))
 				.mapToLong(TreeNGram::getCount).sum();
 
-		BigDecimal probability;
+		Double probability;
 		for (TreeNGram node : firstOrderNodes) {
 			if (!node.getCumulativeString().equals(" ")) {
-				probability = BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP);
+				probability = (double) node.getCount() / (double) total;
 
-				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0),
-						probability));
+				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
 
 				log.info(node.getCumulativeString().charAt(0) + ": "
 						+ probability.toString().substring(0, Math.min(7, probability.toString().length())));
