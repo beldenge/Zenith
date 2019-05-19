@@ -110,8 +110,7 @@ public class BayesianDecipherManager {
 		 */
 		List<TreeNGram> nGramNodes = letterNGramDao.findAll();
 
-		log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis()
-				- startFindAll));
+		log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
 
 		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder);
 
@@ -130,8 +129,7 @@ public class BayesianDecipherManager {
 		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
 		letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
 
-		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis()
-				- startAdding));
+		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
 
 		long total = firstOrderNodes.stream()
 				.filter(node -> !node.getCumulativeString().equals(" "))
@@ -144,8 +142,7 @@ public class BayesianDecipherManager {
 
 				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
 
-				log.info(node.getCumulativeString().charAt(0) + ": "
-						+ probability.toString().substring(0, Math.min(7, probability.toString().length())));
+				log.info(node.getCumulativeString().charAt(0) + ": " + probability.toString());
 			}
 		}
 

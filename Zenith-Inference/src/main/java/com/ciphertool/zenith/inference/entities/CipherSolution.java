@@ -31,7 +31,7 @@ public class CipherSolution {
 	protected Cipher				cipher;
 
 	private Double				probability				= null;
-	private Double				logProbability			= null;
+	private Double				logProbability			= 0d;
 	private Double				knownSolutionProximity	= null;
 
 	private Map<String, Plaintext> mappings = new HashMap<>();
@@ -171,15 +171,20 @@ public class CipherSolution {
 		return Collections.unmodifiableList(logProbabilities);
 	}
 
-	public void addLogProbability(Double logProbability) {
-		this.logProbabilities.add(logProbability);
-		this.logProbability = null;
+	public void clearLogProbabilities() {
+		this.logProbabilities.clear();
 	}
 
-	public void replaceLogProbability(int i, Double logProbability) {
-		this.logProbabilities.remove(i);
-		this.logProbabilities.add(i, logProbability);
-		this.logProbability = null;
+	public void addLogProbability(Double logProbability) {
+		this.logProbabilities.add(logProbability);
+		this.logProbability += logProbability;
+	}
+
+	public void replaceLogProbability(int i, Double newLogProbability) {
+		Double oldLogProbability = this.logProbabilities.remove(i);
+		this.logProbabilities.add(i, newLogProbability);
+		this.logProbability -= oldLogProbability;
+		this.logProbability += newLogProbability;
 	}
 
 	/*
@@ -210,12 +215,13 @@ public class CipherSolution {
 			copySolution.putMapping(entry.getKey(), entry.getValue().clone());
 		}
 
+		copySolution.logProbability = 0d;
 		for (Double logProbability : this.logProbabilities) {
-			copySolution.addLogProbability(logProbability);
+			copySolution.addLogProbability(logProbability.doubleValue());
 		}
 
 		// We need to set these values last to maintain whether evaluation is needed on the clone
-		copySolution.setProbability(this.probability);
+		copySolution.setProbability(this.probability != null ? this.probability.doubleValue() : null);
 
 		return copySolution;
 	}

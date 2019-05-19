@@ -75,6 +75,8 @@ public class PlaintextEvaluator {
 				lastIndex = end;
 			}
 		} else {
+			solution.clearLogProbabilities();
+
 			for (int i = 0; i < sb.length() - order; i++) {
 				logProbability = computeNGramLogProbability(letterMarkovModel, sb.substring(i, i + order));
 
