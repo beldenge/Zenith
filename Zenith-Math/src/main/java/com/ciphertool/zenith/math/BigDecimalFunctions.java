@@ -19,17 +19,14 @@
 
 package com.ciphertool.zenith.math;
 
-import org.nevec.rjm.BigDecimalMath;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 @Component
 public class BigDecimalFunctions implements MathCache {
 	@Override
 	@Cacheable(value = "logarithmCache", key = "#x")
-	public BigDecimal log(BigDecimal x) {
-		return BigDecimalMath.log(x);
+	public Double log(Double x) {
+		return Math.log(x);
 	}
 }

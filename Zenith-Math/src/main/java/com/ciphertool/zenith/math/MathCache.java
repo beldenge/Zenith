@@ -19,13 +19,11 @@
 
 package com.ciphertool.zenith.math;
 
-import java.math.BigDecimal;
-
 public interface MathCache {
 	/**
 	 * @param x
 	 *            the BigDecimal to calculate the natural logarithm of
 	 * @return the natural logarithm of x
 	 */
-	BigDecimal log(BigDecimal x);
+	Double log(Double x);
 }

@@ -17,17 +17,7 @@
 #
 
 cipher:
-  name: zodiac340
-
-# ---------------------------------------
-# Spring Concurrency Properties
-# ---------------------------------------
-# The taskExecutor.poolSize.override property can be set to override the number of threads
-# (defaults to the number of available cores of the system)
-taskExecutor:
-  queueCapacity: 1000000
-  poolSize:
-    #override:
+  name: zodiac408
 
 # ---------------------------------------
 # Markov Model Properties

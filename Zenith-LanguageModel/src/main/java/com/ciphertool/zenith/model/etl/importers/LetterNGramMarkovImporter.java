@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.model.etl.importers;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.dto.ParseResults;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
@@ -31,7 +30,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -165,7 +163,7 @@ public class LetterNGramMarkovImporter {
 		}
 
 		protected void computeConditionalProbability(TreeNGram node, long parentCount) {
-			node.setConditionalProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(parentCount), MathConstants.PREC_10_HALF_UP));
+			node.setConditionalProbability((double) node.getCount() / (double) parentCount);
 
 			Map<Character, TreeNGram> transitions = node.getTransitions();
 

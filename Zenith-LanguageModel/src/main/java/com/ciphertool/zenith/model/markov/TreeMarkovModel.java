@@ -19,14 +19,12 @@
 
 package com.ciphertool.zenith.model.markov;
 
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +37,7 @@ public class TreeMarkovModel {
 
 	private TreeNGram	rootNode	= new TreeNGram("");
 	private Integer		order;
-	private BigDecimal	unknownLetterNGramProbability;
-	private BigDecimal	indexOfCoincidence;
+	private Double	unknownLetterNGramProbability;
 
 	public TreeMarkovModel(int order) {
 		this.order = order;
@@ -157,7 +154,7 @@ public class TreeMarkovModel {
 	/**
 	 * @return the unknownLetterNGramProbability
 	 */
-	public BigDecimal getUnknownLetterNGramProbability() {
+	public Double getUnknownLetterNGramProbability() {
 		return unknownLetterNGramProbability;
 	}
 
@@ -165,7 +162,7 @@ public class TreeMarkovModel {
 	 * @param unknownLetterNGramProbability
 	 *            the unknownLetterNGramProbability to set
 	 */
-	public void setUnknownLetterNGramProbability(BigDecimal unknownLetterNGramProbability) {
+	public void setUnknownLetterNGramProbability(Double unknownLetterNGramProbability) {
 		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
@@ -279,7 +276,7 @@ public class TreeMarkovModel {
 
 	protected void normalizeTerminal(TreeNGram node, int order, long total) {
 		if (node.getCumulativeString().length() == order) {
-			node.setProbability(BigDecimal.valueOf(node.getCount()).divide(BigDecimal.valueOf(total), MathConstants.PREC_10_HALF_UP));
+			node.setProbability((double) node.getCount() / (double) total);
 
 			return;
 		}

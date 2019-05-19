@@ -23,8 +23,8 @@ import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
-import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.math.MathConstants;
@@ -32,7 +32,6 @@ import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
-import org.nevec.rjm.BigDecimalMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +128,7 @@ public class BayesianDecipherManager {
 
 		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
 
-		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(rootNodeCount), MathConstants.PREC_10_HALF_UP);
+		Double unknownLetterNGramProbability = 1d / (double) rootNodeCount;
 		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
 
 		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis()
@@ -172,15 +171,15 @@ public class BayesianDecipherManager {
 		plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
 
 		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-			initialSolution.setKnownSolutionProximity(BigDecimal.valueOf(knownPlaintextEvaluator.evaluate(initialSolution)));
+			initialSolution.setKnownSolutionProximity(knownPlaintextEvaluator.evaluate(initialSolution));
 		}
 
 		log.debug(initialSolution.toString());
 
-		BigDecimal maxTemp = BigDecimal.valueOf(annealingTemperatureMax);
-		BigDecimal minTemp = BigDecimal.valueOf(annealingTemperatureMin);
-		BigDecimal iterations = BigDecimal.valueOf(samplerIterations);
-		BigDecimal temperature;
+		Double maxTemp = (double) annealingTemperatureMax;
+		Double minTemp = (double) annealingTemperatureMin;
+		Double iterations = (double) samplerIterations;
+		Double temperature;
 
 		CipherSolution next = initialSolution;
 		CipherSolution maxBayes = initialSolution;
@@ -204,7 +203,7 @@ public class BayesianDecipherManager {
 			 * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
 			 * temperature so as not to go below it
 			 */
-			temperature = maxTemp.subtract(minTemp, MathConstants.PREC_10_HALF_UP).multiply(iterations.subtract(BigDecimal.valueOf(i), MathConstants.PREC_10_HALF_UP).divide(iterations, MathConstants.PREC_10_HALF_UP), MathConstants.PREC_10_HALF_UP).add(minTemp, MathConstants.PREC_10_HALF_UP);
+			temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
 
 			startLetterSampling = System.currentTimeMillis();
 			next = runLetterSampler(temperature, next);
@@ -216,9 +215,9 @@ public class BayesianDecipherManager {
 
 			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
 				knownProximity = knownPlaintextEvaluator.evaluate(next);
-				next.setKnownSolutionProximity(BigDecimal.valueOf(knownProximity));
+				next.setKnownSolutionProximity(knownProximity);
 
-				if (maxKnown.getKnownSolutionProximity().compareTo(BigDecimal.valueOf(knownProximity)) < 0) {
+				if (maxKnown.getKnownSolutionProximity() < knownProximity) {
 					maxKnown = next;
 					maxKnownIteration = i + 1;
 				}
@@ -252,7 +251,7 @@ public class BayesianDecipherManager {
 		}
 	}
 
-	protected CipherSolution runLetterSampler(BigDecimal temperature, CipherSolution solution) {
+	protected CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {
 		CipherSolution proposal;
 
 		List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();
@@ -279,30 +278,28 @@ public class BayesianDecipherManager {
 		return solution;
 	}
 
-	protected CipherSolution selectNext(BigDecimal temperature, CipherSolution solution, CipherSolution proposal) {
-		BigDecimal acceptanceProbability;
+	protected CipherSolution selectNext(Double temperature, CipherSolution solution, CipherSolution proposal) {
+		Double acceptanceProbability;
 
-		BigDecimal solutionCoincidence = solution.computeIndexOfCoincidence();
-		BigDecimal proposalCoincidence = proposal.computeIndexOfCoincidence();
-		BigDecimal solutionScore = solution.getLogProbability().multiply(BigDecimalMath.root(5, solutionCoincidence));
-		BigDecimal proposalScore = proposal.getLogProbability().multiply(BigDecimalMath.root(5, proposalCoincidence));
+		Double solutionCoincidence = solution.computeIndexOfCoincidence();
+		Double proposalCoincidence = proposal.computeIndexOfCoincidence();
+		Double solutionScore = solution.getLogProbability() * Math.pow(solutionCoincidence, (1d/5d));
+		Double proposalScore = proposal.getLogProbability() * Math.pow(proposalCoincidence, (1d/5d));
 
 		if (proposalScore.compareTo(solutionScore) >= 0) {
 			log.debug("Better solution found");
 			return proposal;
 		} else {
 			// Need to convert to log probabilities in order for the acceptance probability calculation to be useful
-			acceptanceProbability = BigDecimalMath.exp(solutionScore.subtract(proposalScore, MathConstants.PREC_10_HALF_UP).divide(temperature, MathConstants.PREC_10_HALF_UP).negate());
+			acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
 
 			log.debug("Acceptance probability: {}", acceptanceProbability);
 
-			if (acceptanceProbability.compareTo(BigDecimal.ZERO) < 0) {
-				throw new IllegalStateException(
-						"Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
+			if (acceptanceProbability < 0d) {
+				throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
 			}
 
-			if (acceptanceProbability.compareTo(BigDecimal.ONE) > 0
-					|| ThreadLocalRandom.current().nextDouble() < acceptanceProbability.doubleValue()) {
+			if (acceptanceProbability > 1d || ThreadLocalRandom.current().nextDouble() < acceptanceProbability.doubleValue()) {
 				return proposal;
 			}
 		}

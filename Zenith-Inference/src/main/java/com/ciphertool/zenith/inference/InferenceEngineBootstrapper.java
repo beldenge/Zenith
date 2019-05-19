@@ -21,40 +21,21 @@ package com.ciphertool.zenith.inference;
 
 import com.ciphertool.zenith.math.MathCache;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, MathCache.class,
 		LetterNGramDao.class })
 @EnableCaching
 public class InferenceEngineBootstrapper implements CommandLineRunner {
-	private static Logger			log	= LoggerFactory.getLogger(InferenceEngineBootstrapper.class);
-
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						corePoolSize;
-
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						maxPoolSize;
-
-	@Value("${taskExecutor.queueCapacity}")
-	private int						queueCapacity;
-
-	@Autowired
-	private ThreadPoolTaskExecutor	taskExecutor;
-
 	@Autowired
 	private BayesianDecipherManager	manager;
 
 	public static void main(String[] args) {
-		SpringApplication.run(InferenceEngineBootstrapper.class, args);
+		SpringApplication.run(InferenceEngineBootstrapper.class, args).close();
 	}
 
 	/**
@@ -65,22 +46,6 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	 */
 	@Override
 	public void run(String... arg0) {
-		log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
-		log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
-
 		manager.run();
-	}
-
-	@Bean
-	public ThreadPoolTaskExecutor taskExecutor() {
-		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-
-		taskExecutor.setCorePoolSize(corePoolSize);
-		taskExecutor.setMaxPoolSize(maxPoolSize);
-		taskExecutor.setQueueCapacity(queueCapacity);
-		taskExecutor.setKeepAliveSeconds(5);
-		taskExecutor.setAllowCoreThreadTimeOut(true);
-
-		return taskExecutor;
 	}
 }

@@ -23,8 +23,6 @@ import com.ciphertool.zenith.model.ModelConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.*;
 
 public class CipherSolution {
@@ -32,13 +30,13 @@ public class CipherSolution {
 
 	protected Cipher				cipher;
 
-	private BigDecimal				probability				= null;
-	private BigDecimal				logProbability			= null;
-	private BigDecimal				knownSolutionProximity	= null;
+	private Double				probability				= null;
+	private Double				logProbability			= null;
+	private Double				knownSolutionProximity	= null;
 
 	private Map<String, Plaintext> mappings = new HashMap<>();
 
-	private List<BigDecimal> logProbabilities = new ArrayList<>();
+	private List<Double> logProbabilities = new ArrayList<>();
 
 	public CipherSolution() {
 	}
@@ -71,28 +69,28 @@ public class CipherSolution {
 	/**
 	 * @return the probability
 	 */
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return probability;
 	}
 
-	public void setProbability(BigDecimal score) {
+	public void setProbability(Double score) {
 		this.probability = score;
 	}
 
 	/**
 	 * @return the logProbability
 	 */
-	public BigDecimal getLogProbability() {
+	public Double getLogProbability() {
 		if (logProbability != null) {
 			return logProbability;
 		}
 
-		logProbability = logProbabilities.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+		logProbability = logProbabilities.stream().reduce(0d, (a, b) -> a + b);
 
 		return logProbability;
 	}
 
-	public BigDecimal computeIndexOfCoincidence() {
+	public Double computeIndexOfCoincidence() {
 		String solutionString = asSingleLineString();
 
 		int totalLetters = solutionString.length();
@@ -118,13 +116,13 @@ public class CipherSolution {
 			numerator += (count * (count - 1));
 		}
 
-		return BigDecimal.valueOf(numerator).divide(BigDecimal.valueOf(denominator), MathContext.DECIMAL32);
+		return (double) numerator / (double) denominator;
 	}
 
 	/**
 	 * @return the knownSolutionProximity
 	 */
-	public BigDecimal getKnownSolutionProximity() {
+	public Double getKnownSolutionProximity() {
 		return knownSolutionProximity;
 	}
 
@@ -132,7 +130,7 @@ public class CipherSolution {
 	 * @param knownSolutionProximity
 	 *            the knownSolutionProximity to set
 	 */
-	public void setKnownSolutionProximity(BigDecimal knownSolutionProximity) {
+	public void setKnownSolutionProximity(Double knownSolutionProximity) {
 		this.knownSolutionProximity = knownSolutionProximity;
 	}
 
@@ -169,16 +167,16 @@ public class CipherSolution {
 		return this.mappings.remove(key);
 	}
 
-	public List<BigDecimal> getLogProbabilities() {
+	public List<Double> getLogProbabilities() {
 		return Collections.unmodifiableList(logProbabilities);
 	}
 
-	public void addLogProbability(BigDecimal logProbability) {
+	public void addLogProbability(Double logProbability) {
 		this.logProbabilities.add(logProbability);
 		this.logProbability = null;
 	}
 
-	public void replaceLogProbability(int i, BigDecimal logProbability) {
+	public void replaceLogProbability(int i, Double logProbability) {
 		this.logProbabilities.remove(i);
 		this.logProbabilities.add(i, logProbability);
 		this.logProbability = null;
@@ -212,7 +210,7 @@ public class CipherSolution {
 			copySolution.putMapping(entry.getKey(), entry.getValue().clone());
 		}
 
-		for (BigDecimal logProbability : this.logProbabilities) {
+		for (Double logProbability : this.logProbabilities) {
 			copySolution.addLogProbability(logProbability);
 		}
 

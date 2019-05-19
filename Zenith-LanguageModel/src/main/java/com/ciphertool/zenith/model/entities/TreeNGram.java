@@ -24,7 +24,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -38,11 +37,11 @@ public class TreeNGram {
 
 	protected long						count						= 0L;
 
-	protected BigDecimal				probability;
+	protected Double				probability;
 
-	protected BigDecimal				conditionalProbability;
+	protected Double				conditionalProbability;
 
-	protected BigDecimal				chainedProbability;
+	protected Double				chainedProbability;
 
 	protected String					cumulativeString;
 
@@ -97,7 +96,7 @@ public class TreeNGram {
 	/**
 	 * @return the probability
 	 */
-	public BigDecimal getProbability() {
+	public Double getProbability() {
 		return this.probability;
 	}
 
@@ -108,14 +107,14 @@ public class TreeNGram {
 	 * @param probability
 	 *            the probability to set
 	 */
-	public synchronized void setProbability(BigDecimal probability) {
+	public synchronized void setProbability(Double probability) {
 		this.probability = probability;
 	}
 
 	/**
 	 * @return the conditionalProbability
 	 */
-	public BigDecimal getConditionalProbability() {
+	public Double getConditionalProbability() {
 		return conditionalProbability;
 	}
 
@@ -126,14 +125,14 @@ public class TreeNGram {
 	 * @param conditionalProbability
 	 *            the conditionalProbability to set
 	 */
-	public synchronized void setConditionalProbability(BigDecimal conditionalProbability) {
+	public synchronized void setConditionalProbability(Double conditionalProbability) {
 		this.conditionalProbability = conditionalProbability;
 	}
 
 	/**
 	 * @return the chainedProbability
 	 */
-	public BigDecimal getChainedProbability() {
+	public Double getChainedProbability() {
 		return chainedProbability;
 	}
 
@@ -141,7 +140,7 @@ public class TreeNGram {
 	 * @param chainedProbability
 	 *            the chainedProbability to set
 	 */
-	public synchronized void setChainedProbability(BigDecimal chainedProbability) {
+	public synchronized void setChainedProbability(Double chainedProbability) {
 		this.chainedProbability = chainedProbability;
 	}
 

@@ -21,7 +21,6 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
-import com.ciphertool.zenith.math.MathConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -250,7 +248,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
 		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
-		BigDecimal unknownLetterNGramProbability = BigDecimal.ONE.divide(BigDecimal.valueOf(rootNodeCount), MathConstants.PREC_10_HALF_UP);
+		Double unknownLetterNGramProbability = 1d / (double) rootNodeCount;
 		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
 	}
 

@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +49,7 @@ public class PlaintextEvaluator {
 	public void evaluateLetterNGrams(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
 		int order = letterMarkovModel.getOrder();
 
-		BigDecimal probability;
+		Double probability;
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(solution.asSingleLineString());
@@ -89,8 +88,8 @@ public class PlaintextEvaluator {
 		}
 	}
 
-	private BigDecimal computeNGramProbability(TreeMarkovModel letterMarkovModel, String ngram) {
-		BigDecimal probability;
+	private Double computeNGramProbability(TreeMarkovModel letterMarkovModel, String ngram) {
+		Double probability;
 		TreeNGram match = letterMarkovModel.findExact(ngram);
 
 		if (match != null) {
