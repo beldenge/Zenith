@@ -37,18 +37,17 @@ public class TreeNGram {
 
 	protected long						count						= 0L;
 
-	protected Double				probability;
-
-	protected Double				conditionalProbability;
-
-	protected Double				chainedProbability;
+	protected Double probability;
+	protected Double conditionalProbability;
+	protected Double logProbability;
+	protected Double logConditionalProbability;
 
 	protected String					cumulativeString;
 
 	protected Integer					order;
 
 	@Transient
-	private Map<Character, TreeNGram>	transitions;
+	private Map<Character, TreeNGram>	transitions = new HashMap<>(1);
 
 	// Required by Spring Data
 	public TreeNGram() {}
@@ -118,6 +117,22 @@ public class TreeNGram {
 		return conditionalProbability;
 	}
 
+	public Double getLogProbability() {
+		return logProbability;
+	}
+
+	public void setLogProbability(Double logProbability) {
+		this.logProbability = logProbability;
+	}
+
+	public Double getLogConditionalProbability() {
+		return logConditionalProbability;
+	}
+
+	public void setLogConditionalProbability(Double logConditionalProbability) {
+		this.logConditionalProbability = logConditionalProbability;
+	}
+
 	/**
 	 * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
 	 * defensive measure in case future usage changes are not thread-safe.
@@ -127,21 +142,6 @@ public class TreeNGram {
 	 */
 	public synchronized void setConditionalProbability(Double conditionalProbability) {
 		this.conditionalProbability = conditionalProbability;
-	}
-
-	/**
-	 * @return the chainedProbability
-	 */
-	public Double getChainedProbability() {
-		return chainedProbability;
-	}
-
-	/**
-	 * @param chainedProbability
-	 *            the chainedProbability to set
-	 */
-	public synchronized void setChainedProbability(Double chainedProbability) {
-		this.chainedProbability = chainedProbability;
 	}
 
 	/**
@@ -211,11 +211,12 @@ public class TreeNGram {
 			if (child == null) {
 				this.putChild(firstLetter, nodeToAdd);
 			} else {
-				child.setId(nodeToAdd.id);
-				child.setCount(nodeToAdd.count);
-				child.setConditionalProbability(nodeToAdd.conditionalProbability);
-				child.setProbability(nodeToAdd.probability);
-				child.setChainedProbability(nodeToAdd.chainedProbability);
+				child.id = nodeToAdd.id;
+				child.count = nodeToAdd.count;
+				child.conditionalProbability = nodeToAdd.conditionalProbability;
+				child.probability = nodeToAdd.probability;
+				child.logProbability = nodeToAdd.logProbability;
+				child.logConditionalProbability = nodeToAdd.logConditionalProbability;
 			}
 
 			return null;
@@ -240,10 +241,6 @@ public class TreeNGram {
 	 * @return the transitions array
 	 */
 	public Map<Character, TreeNGram> getTransitions() {
-		if (this.transitions == null) {
-			this.transitions = new HashMap<Character, TreeNGram>(1);
-		}
-
 		return this.transitions;
 	}
 }

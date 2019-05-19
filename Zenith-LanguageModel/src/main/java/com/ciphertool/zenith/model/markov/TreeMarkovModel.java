@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.model.markov;
 
-import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +37,7 @@ public class TreeMarkovModel {
 	private TreeNGram	rootNode	= new TreeNGram("");
 	private Integer		order;
 	private Double	unknownLetterNGramProbability;
+	private Double	unknownLetterNGramLogProbability;
 
 	public TreeMarkovModel(int order) {
 		this.order = order;
@@ -51,7 +51,8 @@ public class TreeMarkovModel {
 			rootNode.setCount(nodeToAdd.getCount());
 			rootNode.setConditionalProbability(nodeToAdd.getConditionalProbability());
 			rootNode.setProbability(nodeToAdd.getProbability());
-			rootNode.setChainedProbability(nodeToAdd.getChainedProbability());
+			rootNode.setLogConditionalProbability(nodeToAdd.getLogConditionalProbability());
+			rootNode.setLogProbability(nodeToAdd.getLogProbability());
 
 			return;
 		}
@@ -166,6 +167,14 @@ public class TreeMarkovModel {
 		this.unknownLetterNGramProbability = unknownLetterNGramProbability;
 	}
 
+	public Double getUnknownLetterNGramLogProbability() {
+		return unknownLetterNGramLogProbability;
+	}
+
+	public void setUnknownLetterNGramLogProbability(Double unknownLetterNGramLogProbability) {
+		this.unknownLetterNGramLogProbability = unknownLetterNGramLogProbability;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -193,30 +202,6 @@ public class TreeMarkovModel {
 		for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
 			if (entry.getValue() != null) {
 				appendTransitions(parent + entry.getKey(), entry.getKey(), entry.getValue(), sb);
-			}
-		}
-	}
-
-	protected void linkChild(TreeNGram node, String nGram) {
-		Map<Character, TreeNGram> transitions = node.getTransitions();
-
-		if (nGram.length() == order) {
-			for (Character letter : ModelConstants.LOWERCASE_LETTERS) {
-				TreeNGram match = this.findExact(nGram.substring(1) + letter.toString());
-
-				if (match != null) {
-					node.putChild(letter, match);
-				}
-			}
-
-			return;
-		}
-
-		for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
-			TreeNGram nextNode = entry.getValue();
-
-			if (nextNode != null) {
-				linkChild(nextNode, nGram + entry.getKey());
 			}
 		}
 	}
@@ -277,6 +262,7 @@ public class TreeMarkovModel {
 	protected void normalizeTerminal(TreeNGram node, int order, long total) {
 		if (node.getCumulativeString().length() == order) {
 			node.setProbability((double) node.getCount() / (double) total);
+			node.setLogProbability(Math.log(node.getProbability()));
 
 			return;
 		}

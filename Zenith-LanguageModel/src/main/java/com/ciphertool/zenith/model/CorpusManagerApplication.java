@@ -19,9 +19,8 @@
 
 package com.ciphertool.zenith.model;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
+import com.ciphertool.zenith.model.etl.persisters.NGramPersister;
+import com.ciphertool.zenith.model.etl.transformers.CorpusTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +29,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import com.ciphertool.zenith.model.etl.persisters.NGramPersister;
-import com.ciphertool.zenith.model.etl.transformers.CorpusTransformer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @SpringBootApplication
 public class CorpusManagerApplication implements CommandLineRunner {
@@ -87,6 +87,7 @@ public class CorpusManagerApplication implements CommandLineRunner {
 	}
 
 	@Bean
+	@Primary
 	public ThreadPoolTaskExecutor taskExecutor() {
 		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 

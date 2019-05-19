@@ -39,20 +39,6 @@ public class ParseResults {
 	}
 
 	/**
-	 * @param total
-	 *            the total count
-	 * @param levelTotals
-	 *            the total level counts
-	 * @param unique
-	 *            the unique count
-	 */
-	public ParseResults(long total, Map<Integer, Long> levelTotals, long unique) {
-		this.total = total;
-		this.levelTotals = levelTotals;
-		this.unique = unique;
-	}
-
-	/**
 	 * @return the total
 	 */
 	public long getTotal() {

@@ -164,6 +164,7 @@ public class LetterNGramMarkovImporter {
 
 		protected void computeConditionalProbability(TreeNGram node, long parentCount) {
 			node.setConditionalProbability((double) node.getCount() / (double) parentCount);
+			node.setLogConditionalProbability(Math.log(node.getConditionalProbability()));
 
 			Map<Character, TreeNGram> transitions = node.getTransitions();
 

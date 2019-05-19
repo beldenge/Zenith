@@ -128,6 +128,7 @@ public class BayesianDecipherManager {
 
 		Double unknownLetterNGramProbability = 1d / (double) rootNodeCount;
 		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
+		letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
 
 		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis()
 				- startAdding));

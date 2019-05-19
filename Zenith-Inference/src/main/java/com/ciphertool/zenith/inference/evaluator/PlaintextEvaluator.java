@@ -44,7 +44,7 @@ public class PlaintextEvaluator {
 	public void evaluateLetterNGrams(TreeMarkovModel letterMarkovModel, CipherSolution solution, String ciphertextKey) {
 		int order = letterMarkovModel.getOrder();
 
-		Double probability;
+		Double logProbability;
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(solution.asSingleLineString());
@@ -67,34 +67,34 @@ public class PlaintextEvaluator {
 				}
 
 				for (int i = start; i < end; i++) {
-					probability = computeNGramProbability(letterMarkovModel, sb.substring(i, i + order));
+					logProbability = computeNGramLogProbability(letterMarkovModel, sb.substring(i, i + order));
 
-					solution.replaceLogProbability(i, Math.log(probability));
+					solution.replaceLogProbability(i, logProbability);
 				}
 
 				lastIndex = end;
 			}
 		} else {
 			for (int i = 0; i < sb.length() - order; i++) {
-				probability = computeNGramProbability(letterMarkovModel, sb.substring(i, i + order));
+				logProbability = computeNGramLogProbability(letterMarkovModel, sb.substring(i, i + order));
 
-				solution.addLogProbability(Math.log(probability));
+				solution.addLogProbability(logProbability);
 			}
 		}
 	}
 
-	private Double computeNGramProbability(TreeMarkovModel letterMarkovModel, String ngram) {
-		Double probability;
+	private Double computeNGramLogProbability(TreeMarkovModel letterMarkovModel, String ngram) {
+		Double logProbability;
 		TreeNGram match = letterMarkovModel.findExact(ngram);
 
 		if (match != null) {
-			probability = match.getProbability();
-			log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), probability);
+			logProbability = match.getLogProbability();
+			log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), logProbability);
 		} else {
-			probability = letterMarkovModel.getUnknownLetterNGramProbability();
+			logProbability = letterMarkovModel.getUnknownLetterNGramLogProbability();
 			log.debug("No Letter N-Gram Match");
 		}
 
-		return probability;
+		return logProbability;
 	}
 }

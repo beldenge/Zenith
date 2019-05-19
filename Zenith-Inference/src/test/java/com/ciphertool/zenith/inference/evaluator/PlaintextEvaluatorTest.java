@@ -250,6 +250,7 @@ public class PlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
 		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
 		Double unknownLetterNGramProbability = 1d / (double) rootNodeCount;
 		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
+		letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
 	}
 
 	@Test
