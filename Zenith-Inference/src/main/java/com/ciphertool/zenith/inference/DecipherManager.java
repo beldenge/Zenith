@@ -45,29 +45,34 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class BayesianDecipherManager {
+public class DecipherManager {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
+
+	private static final double FIFTH_ROOT = 1d / 5d;
 
 	@Value("${cipher.name}")
 	private String							cipherName;
 
-	@Value("${bayes.sampler.iterations}")
+	@Value("${decipherment.sampler.iterations}")
 	private int								samplerIterations;
 
-	@Value("${bayes.annealing.temperature.max}")
+	@Value("${decipherment.annealing.temperature.max}")
 	private int								annealingTemperatureMax;
 
-	@Value("${bayes.annealing.temperature.min}")
+	@Value("${decipherment.annealing.temperature.min}")
 	private int								annealingTemperatureMin;
 
-	@Value("${bayes.sampler.iterateRandomly}")
+	@Value("${decipherment.sampler.iterateRandomly}")
 	private Boolean							iterateRandomly;
 
 	@Value("${markov.letter.order}")
 	private int								markovOrder;
 
-	@Value("${bayes.useKnownEvaluator:false}")
+	@Value("${decipherment.useKnownEvaluator:false}")
 	private boolean								useKnownEvaluator;
+
+	@Value("${decipherment.epochs:1}")
+	private int epochs;
 
 	@Autowired
 	private PlaintextEvaluator				plaintextEvaluator;
@@ -151,98 +156,100 @@ public class BayesianDecipherManager {
 
 	public void run() {
 		// Initialize the solution key
-		CipherSolution initialSolution = new CipherSolution(cipher, cipherKeySize);
-
 		Collections.sort(letterUnigramProbabilities);
 		totalUnigramProbability = unigramRouletteSampler.reIndex(letterUnigramProbabilities);
 
-		cipher.getCiphertextCharacters().stream().map(ciphertext -> ciphertext.getValue()).distinct().forEach(ciphertext -> {
-			// Pick a plaintext at random according to the language model
-			String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
+		for (int epoch = 0; epoch < epochs; epoch ++) {
+			CipherSolution initialSolution = new CipherSolution(cipher, cipherKeySize);
 
-			initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
-		});
+			cipher.getCiphertextCharacters().stream().map(ciphertext -> ciphertext.getValue()).distinct().forEach(ciphertext -> {
+				// Pick a plaintext at random according to the language model
+				String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
 
-		plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
+				initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
+			});
 
-		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-			initialSolution.setKnownSolutionProximity(knownPlaintextEvaluator.evaluate(initialSolution));
-		}
-
-		log.debug(initialSolution.toString());
-
-		Double maxTemp = (double) annealingTemperatureMax;
-		Double minTemp = (double) annealingTemperatureMin;
-		Double iterations = (double) samplerIterations;
-		Double temperature;
-
-		CipherSolution next = initialSolution;
-		CipherSolution maxBayes = initialSolution;
-		int maxBayesIteration = 0;
-		CipherSolution maxKnown = initialSolution;
-		int maxKnownIteration = 0;
-
-		log.info("Running sampler for " + samplerIterations + " iterations.");
-		long start = System.currentTimeMillis();
-		long startLetterSampling;
-		long letterSamplingElapsed;
-		long startWordSampling;
-		long wordSamplingElapsed;
-
-		Double knownProximity;
-		int i;
-		for (i = 0; i < samplerIterations; i++) {
-			long iterationStart = System.currentTimeMillis();
-
-			/*
-			 * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
-			 * temperature so as not to go below it
-			 */
-			temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
-
-			startLetterSampling = System.currentTimeMillis();
-			next = runLetterSampler(temperature, next);
-			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
-
-			startWordSampling = System.currentTimeMillis();
-
-			wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
+			plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
 
 			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-				knownProximity = knownPlaintextEvaluator.evaluate(next);
-				next.setKnownSolutionProximity(knownProximity);
+				initialSolution.setKnownSolutionProximity(knownPlaintextEvaluator.evaluate(initialSolution));
+			}
 
-				if (maxKnown.getKnownSolutionProximity() < knownProximity) {
-					maxKnown = next;
-					maxKnownIteration = i + 1;
+			log.debug(initialSolution.toString());
+
+			Double maxTemp = (double) annealingTemperatureMax;
+			Double minTemp = (double) annealingTemperatureMin;
+			Double iterations = (double) samplerIterations;
+			Double temperature;
+
+			CipherSolution next = initialSolution;
+			CipherSolution maxBayes = initialSolution;
+			int maxBayesIteration = 0;
+			CipherSolution maxKnown = initialSolution;
+			int maxKnownIteration = 0;
+
+			log.info("Running sampler for " + samplerIterations + " iterations.");
+			long start = System.currentTimeMillis();
+			long startLetterSampling;
+			long letterSamplingElapsed;
+			long startWordSampling;
+			long wordSamplingElapsed;
+
+			Double knownProximity;
+			int i;
+			for (i = 0; i < samplerIterations; i++) {
+				long iterationStart = System.currentTimeMillis();
+
+				/*
+				 * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
+				 * temperature so as not to go below it
+				 */
+				temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
+
+				startLetterSampling = System.currentTimeMillis();
+				next = runLetterSampler(temperature, next);
+				letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
+
+				startWordSampling = System.currentTimeMillis();
+
+				wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
+
+				if (useKnownEvaluator && knownPlaintextEvaluator != null) {
+					knownProximity = knownPlaintextEvaluator.evaluate(next);
+					next.setKnownSolutionProximity(knownProximity);
+
+					if (maxKnown.getKnownSolutionProximity() < knownProximity) {
+						maxKnown = next;
+						maxKnownIteration = i + 1;
+					}
+				}
+
+				if (maxBayes.getLogProbability().compareTo(next.getLogProbability()) < 0) {
+					maxBayes = next;
+					maxBayesIteration = i + 1;
+				}
+
+				log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, wordSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, wordSamplingElapsed, String.format("%1$,.2f", temperature));
+				log.debug(next.toString());
+			}
+
+			log.info("Letter sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average=" + ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
+
+			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
+				log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
+				log.info("Mappings for best known:");
+
+				for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
+					log.info(entry.getKey() + ": " + entry.getValue().getValue());
 				}
 			}
 
-			if (maxBayes.getLogProbability().compareTo(next.getLogProbability()) < 0) {
-				maxBayes = next;
-				maxBayesIteration = i + 1;
-			}
+			log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
+			log.info("Mappings for best probability:");
 
-			log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, wordSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, wordSamplingElapsed, String.format("%1$,.2f", temperature));
-			log.debug(next.toString());
-		}
-
-		log.info("Letter sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average=" + ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
-
-		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-			log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
-			log.info("Mappings for best known:");
-
-			for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
+			for (Map.Entry<String, Plaintext> entry : maxBayes.getMappings().entrySet()) {
 				log.info(entry.getKey() + ": " + entry.getValue().getValue());
 			}
-		}
-
-		log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
-		log.info("Mappings for best probability:");
-
-		for (Map.Entry<String, Plaintext> entry : maxBayes.getMappings().entrySet()) {
-			log.info(entry.getKey() + ": " + entry.getValue().getValue());
 		}
 	}
 
@@ -278,8 +285,8 @@ public class BayesianDecipherManager {
 
 		Double solutionCoincidence = solution.computeIndexOfCoincidence();
 		Double proposalCoincidence = proposal.computeIndexOfCoincidence();
-		Double solutionScore = solution.getLogProbability() * Math.pow(solutionCoincidence, (1d/5d));
-		Double proposalScore = proposal.getLogProbability() * Math.pow(proposalCoincidence, (1d/5d));
+		Double solutionScore = solution.getLogProbability() * Math.pow(solutionCoincidence, FIFTH_ROOT);
+		Double proposalScore = proposal.getLogProbability() * Math.pow(proposalCoincidence, FIFTH_ROOT);
 
 		if (proposalScore.compareTo(solutionScore) >= 0) {
 			log.debug("Better solution found");

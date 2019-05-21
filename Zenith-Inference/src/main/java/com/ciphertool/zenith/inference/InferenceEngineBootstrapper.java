@@ -30,7 +30,7 @@ import org.springframework.cache.annotation.EnableCaching;
 @EnableCaching
 public class InferenceEngineBootstrapper implements CommandLineRunner {
 	@Autowired
-	private BayesianDecipherManager	manager;
+	private DecipherManager manager;
 
 	public static void main(String[] args) {
 		SpringApplication.run(InferenceEngineBootstrapper.class, args).close();
