@@ -19,15 +19,15 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Document(collection = "ciphers")
 public class Cipher implements Serializable {
@@ -98,6 +98,11 @@ public class Cipher implements Serializable {
 
 	public void removeCiphertextCharacter(Ciphertext ciphertext) {
 		this.ciphertextCharacters.remove(ciphertext);
+	}
+
+	public void replaceCiphertextCharacter(int index, Ciphertext ciphertext) {
+		this.ciphertextCharacters.remove(index);
+		this.ciphertextCharacters.add(index, ciphertext);
 	}
 
 	public int length() {

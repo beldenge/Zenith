@@ -17,7 +17,7 @@
 #
 
 cipher:
-  name: zodiac408
+  name: zodiac340
 
 # ---------------------------------------
 # Markov Model Properties
@@ -41,6 +41,9 @@ decipherment:
       min: 5
   useKnownEvaluator: false
   epochs: 10
+  remove-last-row: true
+  transposition:
+    column-key: thezodiacspeaking
 
 #----------------------------------------
 # MongoDB Properties
@@ -56,11 +59,3 @@ mongodb:
   parallelScan:
     batchSize: 2500
     numCursors: 25
-
-# ---------------------------------------
-# Thermal Control Properties
-# ---------------------------------------
-app:
-  commands:
-    before:
-    after:

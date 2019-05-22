@@ -76,8 +76,8 @@ public class DecipherManager {
 	@Value("${decipherment.transposition.column-key:#{null}}")
 	private String transpositionKey;
 
-	@Value("${decipherment.transposition.perform-transpose:false}")
-	private boolean performTranspose;
+	@Value("${decipherment.remove-last-row:true}")
+	private boolean removeLastRow;
 
 	@Autowired
 	private PlaintextEvaluator				plaintextEvaluator;
@@ -92,14 +92,7 @@ public class DecipherManager {
 	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
 
 	public void run() {
-		Cipher cipher = cipherDao.findByCipherName(cipherName);
-		int totalCharacters = cipher.getCiphertextCharacters().size();
-		int lastRowBegin = (cipher.getColumns() * (cipher.getRows() - 1));
-
-		// Remove the last row altogether
-		for (int i = lastRowBegin; i < totalCharacters; i++) {
-			cipher.removeCiphertextCharacter(cipher.getCiphertextCharacters().get(lastRowBegin));
-		}
+		Cipher cipher = transformCipher(cipherDao.findByCipherName(cipherName));
 
 		int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
@@ -120,31 +113,27 @@ public class DecipherManager {
 
 		nGramNodes.stream().forEach(letterMarkovModel::addNode);
 
-		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
-
-		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
-
-		Double unknownLetterNGramProbability = 1d / (double) rootNodeCount;
-		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-		letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
-
 		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
 
-		long total = firstOrderNodes.stream()
-				.filter(node -> !node.getCumulativeString().equals(" "))
-				.mapToLong(TreeNGram::getCount).sum();
+		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+
+		long totalNumberOfNgrams = firstOrderNodes.stream()
+				.mapToLong(TreeNGram::getCount)
+				.sum();
+
+		Double unknownLetterNGramProbability = 1d / (double) totalNumberOfNgrams;
+		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
+		letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
 
 		List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
 
 		Double probability;
 		for (TreeNGram node : firstOrderNodes) {
-			if (!node.getCumulativeString().equals(" ")) {
-				probability = (double) node.getCount() / (double) total;
+			probability = (double) node.getCount() / (double) totalNumberOfNgrams;
 
-				letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
+			letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
 
-				log.info(node.getCumulativeString().charAt(0) + ": " + probability.toString());
-			}
+			log.info(node.getCumulativeString().charAt(0) + ": " + probability.toString());
 		}
 
 		log.info("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
@@ -156,8 +145,67 @@ public class DecipherManager {
 		for (int epoch = 0; epoch < epochs; epoch ++) {
 			CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities, totalUnigramProbability);
 
+			log.info("Epoch {}.  Running sampler for {} iterations.", (epoch + 1), samplerIterations);
+
 			performEpoch(initialSolution, letterMarkovModel);
 		}
+	}
+
+	private Cipher transformCipher(Cipher cipher) {
+		Cipher transformed = cipher.clone();
+
+		if (transpositionKey != null && !transpositionKey.isEmpty()) {
+			int next = 0;
+			int[] columnIndices = new int[transpositionKey.length()];
+
+			for (int i = 0; i < ModelConstants.LOWERCASE_LETTERS.size(); i ++) {
+				char letter = ModelConstants.LOWERCASE_LETTERS.get(i);
+
+				for (int j = 0; j < transpositionKey.length(); j++) {
+					if (transpositionKey.charAt(j) == letter) {
+						columnIndices[j] = next;
+						next ++;
+					}
+				}
+			}
+
+			log.info("Transposition column key '{}' produced indices {}.", transpositionKey, columnIndices);
+
+			if (cipher.length() % transpositionKey.length() != 0) {
+				throw new IllegalArgumentException("The cipher length of " + cipher.length()
+						+ " is not evenly divisible by the transposition key length of " + transpositionKey.length()
+						+ ".  This is not currently supported.");
+			}
+
+			int rows = cipher.length() / transpositionKey.length();
+
+			int k = 0;
+			for (int i = 0; i < transpositionKey.length(); i ++) {
+				for (int j = 0; j < rows; j ++) {
+					transformed.replaceCiphertextCharacter((j * transpositionKey.length()) + i, cipher.getCiphertextCharacters().get(k).clone());
+					k ++;
+				}
+			}
+
+			Cipher cloneAfterTranspose = transformed.clone();
+			for (int i = 0; i < transpositionKey.length(); i ++) {
+				for (int j = 0; j < rows; j ++) {
+					transformed.replaceCiphertextCharacter((j * transpositionKey.length()) + i, cloneAfterTranspose.getCiphertextCharacters().get((j * transpositionKey.length()) + columnIndices[i]).clone());
+				}
+			}
+		}
+
+		if (removeLastRow) {
+			int totalCharacters = transformed.getCiphertextCharacters().size();
+			int lastRowBegin = (transformed.getColumns() * (transformed.getRows() - 1));
+
+			// Remove the last row altogether
+			for (int i = lastRowBegin; i < totalCharacters; i++) {
+				transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(lastRowBegin));
+			}
+		}
+
+		return transformed;
 	}
 
 	private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability>	letterUnigramProbabilities, double totalUnigramProbability) {
@@ -196,7 +244,6 @@ public class DecipherManager {
 		CipherSolution maxKnown = initialSolution;
 		int maxKnownIteration = 0;
 
-		log.info("Running sampler for " + samplerIterations + " iterations.");
 		long start = System.currentTimeMillis();
 		long startLetterSampling;
 		long letterSamplingElapsed;

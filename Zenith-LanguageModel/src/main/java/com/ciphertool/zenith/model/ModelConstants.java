@@ -21,6 +21,7 @@ package com.ciphertool.zenith.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class ModelConstants {
@@ -32,5 +33,6 @@ public class ModelConstants {
 	static {
 		LOWERCASE_LETTERS.addAll(LOWERCASE_VOWELS);
 		LOWERCASE_LETTERS.addAll(LOWERCASE_CONSONANTS);
+		LOWERCASE_LETTERS.sort(Comparator.comparing(Character::charValue));
 	}
 }
