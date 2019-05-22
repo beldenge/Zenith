@@ -37,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,28 +50,34 @@ public class DecipherManager {
 	private static final double FIFTH_ROOT = 1d / 5d;
 
 	@Value("${cipher.name}")
-	private String							cipherName;
+	private String cipherName;
 
 	@Value("${decipherment.sampler.iterations}")
-	private int								samplerIterations;
+	private int	samplerIterations;
 
 	@Value("${decipherment.annealing.temperature.max}")
-	private int								annealingTemperatureMax;
+	private int	annealingTemperatureMax;
 
 	@Value("${decipherment.annealing.temperature.min}")
-	private int								annealingTemperatureMin;
+	private int	annealingTemperatureMin;
 
 	@Value("${decipherment.sampler.iterateRandomly}")
-	private Boolean							iterateRandomly;
+	private Boolean	iterateRandomly;
 
 	@Value("${markov.letter.order}")
-	private int								markovOrder;
+	private int	markovOrder;
 
 	@Value("${decipherment.useKnownEvaluator:false}")
-	private boolean								useKnownEvaluator;
+	private boolean	useKnownEvaluator;
 
 	@Value("${decipherment.epochs:1}")
 	private int epochs;
+
+	@Value("${decipherment.transposition.column-key:#{null}}")
+	private String transpositionKey;
+
+	@Value("${decipherment.transposition.perform-transpose:false}")
+	private boolean performTranspose;
 
 	@Autowired
 	private PlaintextEvaluator				plaintextEvaluator;
@@ -86,26 +91,17 @@ public class DecipherManager {
 	@Autowired(required = false)
 	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
 
-	private Cipher							cipher;
-	private int								cipherKeySize;
-	private static List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>();
-	private TreeMarkovModel					letterMarkovModel;
-
-	private RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
-	private Double totalUnigramProbability;
-
-	@PostConstruct
-	public void setUp() {
-		this.cipher = cipherDao.findByCipherName(cipherName);
-		int totalCharacters = this.cipher.getCiphertextCharacters().size();
-		int lastRowBegin = (this.cipher.getColumns() * (this.cipher.getRows() - 1));
+	public void run() {
+		Cipher cipher = cipherDao.findByCipherName(cipherName);
+		int totalCharacters = cipher.getCiphertextCharacters().size();
+		int lastRowBegin = (cipher.getColumns() * (cipher.getRows() - 1));
 
 		// Remove the last row altogether
 		for (int i = lastRowBegin; i < totalCharacters; i++) {
-			this.cipher.removeCiphertextCharacter(this.cipher.getCiphertextCharacters().get(lastRowBegin));
+			cipher.removeCiphertextCharacter(cipher.getCiphertextCharacters().get(lastRowBegin));
 		}
 
-		cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
+		int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
 		long startFindAll = System.currentTimeMillis();
 		log.info("Beginning retrieval of all n-grams.");
@@ -117,14 +113,12 @@ public class DecipherManager {
 
 		log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
 
-		this.letterMarkovModel = new TreeMarkovModel(this.markovOrder);
+		TreeMarkovModel letterMarkovModel = new TreeMarkovModel(this.markovOrder);
 
 		long startAdding = System.currentTimeMillis();
 		log.info("Adding nodes to the model.");
 
-		for (TreeNGram nGramNode : nGramNodes) {
-			this.letterMarkovModel.addNode(nGramNode);
-		}
+		nGramNodes.stream().forEach(letterMarkovModel::addNode);
 
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
 
@@ -140,6 +134,8 @@ public class DecipherManager {
 				.filter(node -> !node.getCumulativeString().equals(" "))
 				.mapToLong(TreeNGram::getCount).sum();
 
+		List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+
 		Double probability;
 		for (TreeNGram node : firstOrderNodes) {
 			if (!node.getCumulativeString().equals(" ")) {
@@ -151,109 +147,120 @@ public class DecipherManager {
 			}
 		}
 
-		log.info("unknownLetterNGramProbability: {}", this.letterMarkovModel.getUnknownLetterNGramProbability());
-	}
+		log.info("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
 
-	public void run() {
-		// Initialize the solution key
 		Collections.sort(letterUnigramProbabilities);
-		totalUnigramProbability = unigramRouletteSampler.reIndex(letterUnigramProbabilities);
+		RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
+		double totalUnigramProbability = unigramRouletteSampler.reIndex(letterUnigramProbabilities);
 
 		for (int epoch = 0; epoch < epochs; epoch ++) {
-			CipherSolution initialSolution = new CipherSolution(cipher, cipherKeySize);
+			CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities, totalUnigramProbability);
 
-			cipher.getCiphertextCharacters().stream().map(ciphertext -> ciphertext.getValue()).distinct().forEach(ciphertext -> {
-				// Pick a plaintext at random according to the language model
-				String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
-
-				initialSolution.putMapping(ciphertext, new Plaintext(nextPlaintext));
-			});
-
-			plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
-
-			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-				initialSolution.setKnownSolutionProximity(knownPlaintextEvaluator.evaluate(initialSolution));
-			}
-
-			log.debug(initialSolution.toString());
-
-			Double maxTemp = (double) annealingTemperatureMax;
-			Double minTemp = (double) annealingTemperatureMin;
-			Double iterations = (double) samplerIterations;
-			Double temperature;
-
-			CipherSolution next = initialSolution;
-			CipherSolution maxBayes = initialSolution;
-			int maxBayesIteration = 0;
-			CipherSolution maxKnown = initialSolution;
-			int maxKnownIteration = 0;
-
-			log.info("Running sampler for " + samplerIterations + " iterations.");
-			long start = System.currentTimeMillis();
-			long startLetterSampling;
-			long letterSamplingElapsed;
-			long startWordSampling;
-			long wordSamplingElapsed;
-
-			Double knownProximity;
-			int i;
-			for (i = 0; i < samplerIterations; i++) {
-				long iterationStart = System.currentTimeMillis();
-
-				/*
-				 * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
-				 * temperature so as not to go below it
-				 */
-				temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
-
-				startLetterSampling = System.currentTimeMillis();
-				next = runLetterSampler(temperature, next);
-				letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
-
-				startWordSampling = System.currentTimeMillis();
-
-				wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
-
-				if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-					knownProximity = knownPlaintextEvaluator.evaluate(next);
-					next.setKnownSolutionProximity(knownProximity);
-
-					if (maxKnown.getKnownSolutionProximity() < knownProximity) {
-						maxKnown = next;
-						maxKnownIteration = i + 1;
-					}
-				}
-
-				if (maxBayes.getLogProbability().compareTo(next.getLogProbability()) < 0) {
-					maxBayes = next;
-					maxBayesIteration = i + 1;
-				}
-
-				log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, wordSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, wordSamplingElapsed, String.format("%1$,.2f", temperature));
-				log.debug(next.toString());
-			}
-
-			log.info("Letter sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average=" + ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
-
-			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-				log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
-				log.info("Mappings for best known:");
-
-				for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
-					log.info(entry.getKey() + ": " + entry.getValue().getValue());
-				}
-			}
-
-			log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
-			log.info("Mappings for best probability:");
-
-			for (Map.Entry<String, Plaintext> entry : maxBayes.getMappings().entrySet()) {
-				log.info(entry.getKey() + ": " + entry.getValue().getValue());
-			}
+			performEpoch(initialSolution, letterMarkovModel);
 		}
 	}
 
-	protected CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {
+	private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability>	letterUnigramProbabilities, double totalUnigramProbability) {
+		CipherSolution solutionProposal = new CipherSolution(cipher, cipherKeySize);
+
+		cipher.getCiphertextCharacters().stream()
+				.map(ciphertext -> ciphertext.getValue())
+				.distinct()
+				.forEach(ciphertext -> {
+					// Pick a plaintext at random according to the language model
+					String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
+
+					solutionProposal.putMapping(ciphertext, new Plaintext(nextPlaintext));
+				});
+
+		return solutionProposal;
+	}
+
+	private void performEpoch(CipherSolution initialSolution, TreeMarkovModel letterMarkovModel) {
+		plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
+
+		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
+			initialSolution.setKnownSolutionProximity(knownPlaintextEvaluator.evaluate(initialSolution));
+		}
+
+		log.debug(initialSolution.toString());
+
+		Double maxTemp = (double) annealingTemperatureMax;
+		Double minTemp = (double) annealingTemperatureMin;
+		Double iterations = (double) samplerIterations;
+		Double temperature;
+
+		CipherSolution next = initialSolution;
+		CipherSolution maxBayes = initialSolution;
+		int maxBayesIteration = 0;
+		CipherSolution maxKnown = initialSolution;
+		int maxKnownIteration = 0;
+
+		log.info("Running sampler for " + samplerIterations + " iterations.");
+		long start = System.currentTimeMillis();
+		long startLetterSampling;
+		long letterSamplingElapsed;
+		long startWordSampling;
+		long wordSamplingElapsed;
+
+		Double knownProximity;
+		int i;
+		for (i = 0; i < samplerIterations; i++) {
+			long iterationStart = System.currentTimeMillis();
+
+			/*
+			 * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
+			 * temperature so as not to go below it
+			 */
+			temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
+
+			startLetterSampling = System.currentTimeMillis();
+			next = runLetterSampler(temperature, next, letterMarkovModel);
+			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
+
+			startWordSampling = System.currentTimeMillis();
+
+			wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
+
+			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
+				knownProximity = knownPlaintextEvaluator.evaluate(next);
+				next.setKnownSolutionProximity(knownProximity);
+
+				if (maxKnown.getKnownSolutionProximity() < knownProximity) {
+					maxKnown = next;
+					maxKnownIteration = i + 1;
+				}
+			}
+
+			if (maxBayes.getLogProbability().compareTo(next.getLogProbability()) < 0) {
+				maxBayes = next;
+				maxBayesIteration = i + 1;
+			}
+
+			log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, wordSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, wordSamplingElapsed, String.format("%1$,.2f", temperature));
+			log.debug(next.toString());
+		}
+
+		log.info("Letter sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average=" + ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
+
+		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
+			log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
+			log.info("Mappings for best known:");
+
+			for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
+				log.info(entry.getKey() + ": " + entry.getValue().getValue());
+			}
+		}
+
+		log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
+		log.info("Mappings for best probability:");
+
+		for (Map.Entry<String, Plaintext> entry : maxBayes.getMappings().entrySet()) {
+			log.info(entry.getKey() + ": " + entry.getValue().getValue());
+		}
+	}
+
+	private CipherSolution runLetterSampler(Double temperature, CipherSolution solution, TreeMarkovModel letterMarkovModel) {
 		CipherSolution proposal;
 
 		List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();
@@ -267,7 +274,6 @@ public class DecipherManager {
 
 			nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-			// String letter = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
 			String letter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size())).toString();
 
 			proposal.replaceMapping(nextEntry.getKey(), new Plaintext(letter));
@@ -280,7 +286,7 @@ public class DecipherManager {
 		return solution;
 	}
 
-	protected CipherSolution selectNext(Double temperature, CipherSolution solution, CipherSolution proposal) {
+	private CipherSolution selectNext(Double temperature, CipherSolution solution, CipherSolution proposal) {
 		Double acceptanceProbability;
 
 		Double solutionCoincidence = solution.computeIndexOfCoincidence();

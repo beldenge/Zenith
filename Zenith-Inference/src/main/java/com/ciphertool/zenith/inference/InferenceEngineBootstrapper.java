@@ -24,10 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, LetterNGramDao.class })
-@EnableCaching
 public class InferenceEngineBootstrapper implements CommandLineRunner {
 	@Autowired
 	private DecipherManager manager;
