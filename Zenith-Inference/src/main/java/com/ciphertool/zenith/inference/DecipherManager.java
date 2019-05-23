@@ -145,7 +145,7 @@ public class DecipherManager {
 		for (int epoch = 0; epoch < epochs; epoch ++) {
 			CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities, totalUnigramProbability);
 
-			log.info("Epoch {}.  Running sampler for {} iterations.", (epoch + 1), samplerIterations);
+			log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
 			performEpoch(initialSolution, letterMarkovModel);
 		}
@@ -155,6 +155,11 @@ public class DecipherManager {
 		Cipher transformed = cipher.clone();
 
 		if (transpositionKey != null && !transpositionKey.isEmpty()) {
+			if (transpositionKey.length() < 2 || transpositionKey.length() >= cipher.length()) {
+				throw new IllegalArgumentException("The transposition key length of " + transpositionKey.length()
+						+ " must be greater than one and less than the cipher length of " + cipher.length() + ".");
+			}
+
 			int next = 0;
 			int[] columnIndices = new int[transpositionKey.length()];
 
@@ -170,12 +175,6 @@ public class DecipherManager {
 			}
 
 			log.info("Transposition column key '{}' produced indices {}.", transpositionKey, columnIndices);
-
-			if (cipher.length() % transpositionKey.length() != 0) {
-				throw new IllegalArgumentException("The cipher length of " + cipher.length()
-						+ " is not evenly divisible by the transposition key length of " + transpositionKey.length()
-						+ ".  This is not currently supported.");
-			}
 
 			int rows = cipher.length() / transpositionKey.length();
 
@@ -200,9 +199,11 @@ public class DecipherManager {
 			int lastRowBegin = (transformed.getColumns() * (transformed.getRows() - 1));
 
 			// Remove the last row altogether
-			for (int i = lastRowBegin; i < totalCharacters; i++) {
-				transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(lastRowBegin));
+			for (int i = totalCharacters - 1; i >= lastRowBegin; i--) {
+				transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(i));
 			}
+
+			transformed.setRows(transformed.getRows() - 1);
 		}
 
 		return transformed;
@@ -237,20 +238,16 @@ public class DecipherManager {
 		Double minTemp = (double) annealingTemperatureMin;
 		Double iterations = (double) samplerIterations;
 		Double temperature;
-
 		CipherSolution next = initialSolution;
 		CipherSolution maxBayes = initialSolution;
 		int maxBayesIteration = 0;
 		CipherSolution maxKnown = initialSolution;
 		int maxKnownIteration = 0;
-
 		long start = System.currentTimeMillis();
 		long startLetterSampling;
 		long letterSamplingElapsed;
-		long startWordSampling;
-		long wordSamplingElapsed;
-
 		Double knownProximity;
+
 		int i;
 		for (i = 0; i < samplerIterations; i++) {
 			long iterationStart = System.currentTimeMillis();
@@ -264,10 +261,6 @@ public class DecipherManager {
 			startLetterSampling = System.currentTimeMillis();
 			next = runLetterSampler(temperature, next, letterMarkovModel);
 			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
-
-			startWordSampling = System.currentTimeMillis();
-
-			wordSamplingElapsed = (System.currentTimeMillis() - startWordSampling);
 
 			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
 				knownProximity = knownPlaintextEvaluator.evaluate(next);
@@ -284,7 +277,7 @@ public class DecipherManager {
 				maxBayesIteration = i + 1;
 			}
 
-			log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, wordSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, wordSamplingElapsed, String.format("%1$,.2f", temperature));
+			log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.2f", temperature));
 			log.debug(next.toString());
 		}
 
