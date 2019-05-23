@@ -103,6 +103,7 @@ public class Cipher implements Serializable {
 	public void replaceCiphertextCharacter(int index, Ciphertext ciphertext) {
 		this.ciphertextCharacters.remove(index);
 		this.ciphertextCharacters.add(index, ciphertext);
+		ciphertext.setCiphertextId(index);
 	}
 
 	public int length() {

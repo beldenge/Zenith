@@ -27,6 +27,7 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
+import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -73,12 +74,6 @@ public class DecipherManager {
 	@Value("${decipherment.epochs:1}")
 	private int epochs;
 
-	@Value("${decipherment.transposition.column-key:#{null}}")
-	private String transpositionKey;
-
-	@Value("${decipherment.transposition.iterations:1}")
-	private int transpositionIterations;
-
 	@Value("${decipherment.remove-last-row:true}")
 	private boolean removeLastRow;
 
@@ -90,6 +85,9 @@ public class DecipherManager {
 
 	@Autowired
 	private LetterNGramDao					letterNGramDao;
+
+	@Autowired
+	private TranspositionCipherTransformer transpositionCipherTransformer;
 
 	@Autowired(required = false)
 	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
@@ -155,45 +153,7 @@ public class DecipherManager {
 	}
 
 	private Cipher transformCipher(Cipher cipher) {
-		Cipher transformed = cipher.clone();
-
-		if (transpositionKey != null && !transpositionKey.isEmpty()) {
-			if (transpositionKey.length() < 2 || transpositionKey.length() >= cipher.length()) {
-				throw new IllegalArgumentException("The transposition key length of " + transpositionKey.length()
-						+ " must be greater than one and less than the cipher length of " + cipher.length() + ".");
-			}
-
-			int next = 0;
-			int[] columnIndices = new int[transpositionKey.length()];
-
-			for (int i = 0; i < ModelConstants.LOWERCASE_LETTERS.size(); i ++) {
-				char letter = ModelConstants.LOWERCASE_LETTERS.get(i);
-
-				for (int j = 0; j < transpositionKey.length(); j++) {
-					if (transpositionKey.charAt(j) == letter) {
-						columnIndices[j] = next;
-						next ++;
-					}
-				}
-			}
-
-			log.info("Unwrapping transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKey, columnIndices);
-
-			int rows = cipher.length() / transpositionKey.length();
-
-			Cipher clone;
-			for (int iter = 0; iter < transpositionIterations; iter ++) {
-				clone = transformed.clone();
-				int k = 0;
-
-				for (int i = 0; i < transpositionKey.length(); i++) {
-					for (int j = 0; j < rows; j++) {
-						transformed.replaceCiphertextCharacter((j * transpositionKey.length()) + columnIndices[i], clone.getCiphertextCharacters().get(k).clone());
-						k++;
-					}
-				}
-			}
-		}
+		Cipher transformed = transpositionCipherTransformer.transform(cipher);
 
 		if (removeLastRow) {
 			int totalCharacters = transformed.getCiphertextCharacters().size();

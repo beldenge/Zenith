@@ -40,7 +40,7 @@ decipherment:
       max: 8
       min: 5
   useKnownEvaluator: false
-  epochs: 10
+  epochs: 1
   remove-last-row: true
   transposition:
     column-key: thezodiacspeaking
