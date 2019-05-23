@@ -76,6 +76,9 @@ public class DecipherManager {
 	@Value("${decipherment.transposition.column-key:#{null}}")
 	private String transpositionKey;
 
+	@Value("${decipherment.transposition.iterations:1}")
+	private int transpositionIterations;
+
 	@Value("${decipherment.remove-last-row:true}")
 	private boolean removeLastRow;
 
@@ -174,22 +177,20 @@ public class DecipherManager {
 				}
 			}
 
-			log.info("Transposition column key '{}' produced indices {}.", transpositionKey, columnIndices);
+			log.info("Unwrapping transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKey, columnIndices);
 
 			int rows = cipher.length() / transpositionKey.length();
 
-			int k = 0;
-			for (int i = 0; i < transpositionKey.length(); i ++) {
-				for (int j = 0; j < rows; j ++) {
-					transformed.replaceCiphertextCharacter((j * transpositionKey.length()) + i, cipher.getCiphertextCharacters().get(k).clone());
-					k ++;
-				}
-			}
+			Cipher clone;
+			for (int iter = 0; iter < transpositionIterations; iter ++) {
+				clone = transformed.clone();
+				int k = 0;
 
-			Cipher cloneAfterTranspose = transformed.clone();
-			for (int i = 0; i < transpositionKey.length(); i ++) {
-				for (int j = 0; j < rows; j ++) {
-					transformed.replaceCiphertextCharacter((j * transpositionKey.length()) + i, cloneAfterTranspose.getCiphertextCharacters().get((j * transpositionKey.length()) + columnIndices[i]).clone());
+				for (int i = 0; i < transpositionKey.length(); i++) {
+					for (int j = 0; j < rows; j++) {
+						transformed.replaceCiphertextCharacter((j * transpositionKey.length()) + columnIndices[i], clone.getCiphertextCharacters().get(k).clone());
+						k++;
+					}
 				}
 			}
 		}

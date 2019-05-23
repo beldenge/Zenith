@@ -44,6 +44,7 @@ decipherment:
   remove-last-row: true
   transposition:
     column-key: thezodiacspeaking
+    iterations: 2
 
 #----------------------------------------
 # MongoDB Properties
