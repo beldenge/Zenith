@@ -57,10 +57,10 @@ public class DecipherManager {
 	private int	samplerIterations;
 
 	@Value("${decipherment.annealing.temperature.max}")
-	private int	annealingTemperatureMax;
+	private double annealingTemperatureMax;
 
 	@Value("${decipherment.annealing.temperature.min}")
-	private int	annealingTemperatureMin;
+	private double annealingTemperatureMin;
 
 	@Value("${decipherment.sampler.iterateRandomly}")
 	private Boolean	iterateRandomly;
@@ -195,13 +195,13 @@ public class DecipherManager {
 
 		log.debug(initialSolution.toString());
 
-		Double maxTemp = (double) annealingTemperatureMax;
-		Double minTemp = (double) annealingTemperatureMin;
+		Double maxTemp = annealingTemperatureMax;
+		Double minTemp = annealingTemperatureMin;
 		Double iterations = (double) samplerIterations;
 		Double temperature;
 		CipherSolution next = initialSolution;
-		CipherSolution maxBayes = initialSolution;
-		int maxBayesIteration = 0;
+		CipherSolution maxProbability = initialSolution;
+		int maxProbabilityIteration = 0;
 		CipherSolution maxKnown = initialSolution;
 		int maxKnownIteration = 0;
 		long start = System.currentTimeMillis();
@@ -233,31 +233,31 @@ public class DecipherManager {
 				}
 			}
 
-			if (maxBayes.getLogProbability().compareTo(next.getLogProbability()) < 0) {
-				maxBayes = next;
-				maxBayesIteration = i + 1;
+			if (maxProbability.getLogProbability().compareTo(next.getLogProbability()) < 0) {
+				maxProbability = next;
+				maxProbabilityIteration = i + 1;
 			}
 
 			log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.2f", temperature));
 			log.debug(next.toString());
 		}
 
-		log.info("Letter sampling completed in " + (System.currentTimeMillis() - start) + "ms.  Average=" + ((double) (System.currentTimeMillis() - start) / (double) i) + "ms.");
+		log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
 
 		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-			log.info("Best known found at iteration " + maxKnownIteration + ": " + maxKnown);
+			log.info("Best known found at iteration {}: {}", maxKnownIteration, maxKnown);
 			log.info("Mappings for best known:");
 
 			for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
-				log.info(entry.getKey() + ": " + entry.getValue().getValue());
+				log.info("{}: {}", entry.getKey(), entry.getValue().getValue());
 			}
 		}
 
-		log.info("Best probability found at iteration " + maxBayesIteration + ": " + maxBayes);
+		log.info("Best probability found at iteration {}: {}", maxProbabilityIteration, maxProbability);
 		log.info("Mappings for best probability:");
 
-		for (Map.Entry<String, Plaintext> entry : maxBayes.getMappings().entrySet()) {
-			log.info(entry.getKey() + ": " + entry.getValue().getValue());
+		for (Map.Entry<String, Plaintext> entry : maxProbability.getMappings().entrySet()) {
+			log.info("{}: {}", entry.getKey(), entry.getValue().getValue());
 		}
 	}
 

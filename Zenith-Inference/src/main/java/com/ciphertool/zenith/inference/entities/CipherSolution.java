@@ -173,6 +173,7 @@ public class CipherSolution {
 
 	public void clearLogProbabilities() {
 		this.logProbabilities.clear();
+		this.logProbability = 0d;
 	}
 
 	public void addLogProbability(Double logProbability) {

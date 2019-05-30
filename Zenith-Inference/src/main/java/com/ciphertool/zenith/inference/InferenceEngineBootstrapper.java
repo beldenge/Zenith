@@ -28,6 +28,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineBootstrapper.class, LetterNGramDao.class })
 public class InferenceEngineBootstrapper implements CommandLineRunner {
 	@Autowired
+	private TranspositionSearcher searcher;
+
+	@Autowired
 	private DecipherManager manager;
 
 	public static void main(String[] args) {
@@ -42,6 +45,7 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	 */
 	@Override
 	public void run(String... arg0) {
+		//searcher.run();
 		manager.run();
 	}
 }

@@ -17,7 +17,7 @@
 #
 
 cipher:
-  name: zodiac340
+  name: zodiac408
 
 # ---------------------------------------
 # Markov Model Properties
@@ -40,11 +40,13 @@ decipherment:
       max: 8
       min: 5
   useKnownEvaluator: false
-  epochs: 1
+  epochs: 10
   remove-last-row: true
   transposition:
-    column-key: thezodiacspeaking
+    column-key:
     iterations: 2
+    key-length-min: 17
+    key-length-max: 17
 
 #----------------------------------------
 # MongoDB Properties

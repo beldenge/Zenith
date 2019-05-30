@@ -1,3 +1,22 @@
+/**
+ * Copyright 2017-2019 George Belden
+ *
+ * This file is part of Zenith.
+ *
+ * Zenith is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * Zenith is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * Zenith. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.ciphertool.zenith.inference.transformer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
@@ -32,20 +51,32 @@ public class TranspositionCipherTransformer implements CipherTransformer {
                     + " must be greater than one and less than the cipher length of " + cipher.length() + ".");
         }
 
-        List<Integer> columnIndices = getIndicesForTranspositionKey();
+        return unwrap(cipher, getIndicesForTranspositionKey());
+    }
 
-        log.info("Unwrapping transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKey, columnIndices);
+    @Override
+    public Cipher transform(Cipher cipher, List<Integer> columnIndices) {
+        if (columnIndices.size() < 2 || columnIndices.size() >= cipher.length()) {
+            throw new IllegalArgumentException("The transposition key length of " + columnIndices.size()
+                    + " must be greater than one and less than the cipher length of " + cipher.length() + ".");
+        }
 
-        int rows = cipher.length() / transpositionKey.length();
+        return unwrap(cipher, columnIndices);
+    }
+
+    private Cipher unwrap(Cipher cipher, List<Integer> columnIndices) {
+        log.debug("Unwrapping transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKey, columnIndices);
+
+        int rows = cipher.length() / columnIndices.size();
 
         Cipher transformed = cipher.clone();
         Cipher clone = cipher;
         for (int iter = 0; iter < transpositionIterations; iter ++) {
             int k = 0;
 
-            for (int i = 0; i < transpositionKey.length(); i++) {
+            for (int i = 0; i < columnIndices.size(); i++) {
                 for (int j = 0; j < rows; j++) {
-                    transformed.replaceCiphertextCharacter((j * transpositionKey.length()) + columnIndices.indexOf(i), clone.getCiphertextCharacters().get(k).clone());
+                    transformed.replaceCiphertextCharacter((j * columnIndices.size()) + columnIndices.indexOf(i), clone.getCiphertextCharacters().get(k).clone());
                     k++;
                 }
             }
