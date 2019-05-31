@@ -77,7 +77,7 @@ public class TranspositionSearcher {
             throw new IllegalArgumentException("The transposition key length must be greater than or equal to 2.");
         }
 
-        cipher = cipherDao.findByCipherName(cipherName).clone();
+        cipher = cipherDao.findByCipherName(cipherName);
 
         if (keyLengthMax >= cipher.length()) {
             throw new IllegalArgumentException("The transposition key length must be less than the cipher length of " + cipher.length() + ".");
@@ -88,12 +88,18 @@ public class TranspositionSearcher {
         for (int keyLength = keyLengthMin; keyLength <= keyLengthMax; keyLength ++) {
             for (int epoch = 0; epoch < epochs; epoch++) {
                 CipherSolution cipherProposal = new CipherSolution();
-                cipherProposal.setCipher(cipher.clone());
+
+                List<Integer> transpositionKeyIndicesSource = new ArrayList<>(keyLength);
+                for (int i = 0; i < keyLength; i++) {
+                    transpositionKeyIndicesSource.add(i);
+                }
 
                 List<Integer> transpositionKeyIndices = new ArrayList<>(keyLength);
                 for (int i = 0; i < keyLength; i++) {
-                    transpositionKeyIndices.add(i);
+                    transpositionKeyIndices.add(transpositionKeyIndicesSource.remove(ThreadLocalRandom.current().nextInt(transpositionKeyIndicesSource.size())));
                 }
+
+                cipherProposal.setCipher(transpositionCipherTransformer.transform(cipher.clone(), transpositionKeyIndices));
 
                 log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
@@ -113,7 +119,7 @@ public class TranspositionSearcher {
         Double temperature;
         CipherSolution next = initialCipher;
         CipherSolution maxProbability = initialCipher;
-        List<Integer> maxIndices = transpositionKeyIndices;
+        List<Integer> maxIndices = new ArrayList<>(transpositionKeyIndices);
         int maxProbabilityIteration = 0;
         long start = System.currentTimeMillis();
         long startSampling;
@@ -122,19 +128,6 @@ public class TranspositionSearcher {
         int i;
         for (i = 0; i < samplerIterations; i++) {
             long iterationStart = System.currentTimeMillis();
-
-            int firstIndex = ThreadLocalRandom.current().nextInt(transpositionKeyIndices.size());
-            int secondIndex = ThreadLocalRandom.current().nextInt(transpositionKeyIndices.size());
-
-            if (firstIndex == secondIndex) {
-                i --;
-                continue;
-            }
-
-            int firstValue = transpositionKeyIndices.get(firstIndex);
-            int secondValue = transpositionKeyIndices.get(secondIndex);
-            transpositionKeyIndices.set(firstIndex, secondValue);
-            transpositionKeyIndices.set(secondIndex, firstValue);
 
             /*
              * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
@@ -146,32 +139,57 @@ public class TranspositionSearcher {
             next = runSampler(temperature, next, transpositionKeyIndices);
             letterSamplingElapsed = (System.currentTimeMillis() - startSampling);
 
-            if (maxProbability.getLogProbability().compareTo(next.getLogProbability()) < 0) {
+            if (maxProbability.getLogProbability() < next.getLogProbability()) {
                 maxProbability = next;
                 maxProbabilityIteration = i + 1;
                 maxIndices = new ArrayList<>(transpositionKeyIndices);
             }
 
-            log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.2f", temperature));
-            log.debug("Indices: {}, Bigrams: {}, KeyLength: {}", transpositionKeyIndices, ciphertextEvaluator.evaluate(next), keyLength);
+//            if (log.isDebugEnabled()) {
+                log.info("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
+                log.info("Indices: {}, Bigrams: {}, KeyLength: {}", transpositionKeyIndices, ciphertextEvaluator.evaluate(next), keyLength);
+//            }
         }
 
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
-
         log.info("Best probability found at iteration {}", maxProbabilityIteration);
         log.info("Indices for best probability: {}, Bigrams: {}, KeyLength: {}", maxIndices, ciphertextEvaluator.evaluate(maxProbability), keyLength);
+        log.debug("Cipher: {}", maxProbability.getCipher());
     }
 
     private CipherSolution runSampler(Double temperature, CipherSolution solution, List<Integer> transpositionKeyIndices) {
-        CipherSolution proposal = solution.clone();
+        CipherSolution proposal;
+        CipherSolution best = solution;
+        List<Integer> bestTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
 
-        proposal.setCipher(transpositionCipherTransformer.transform(solution.getCipher(), transpositionKeyIndices));
+        for (int i = 0; i < transpositionKeyIndices.size(); i ++) {
+            // Start at i + 1, as all previous swaps will have already been tried
+            for (int j = i + 1; j < transpositionKeyIndices.size(); j ++) {
+                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(bestTranspositionKeyIndices);
+                int firstValue = nextTranspositionKeyIndices.get(i);
+                int secondValue = nextTranspositionKeyIndices.get(j);
+                nextTranspositionKeyIndices.set(i, secondValue);
+                nextTranspositionKeyIndices.set(j, firstValue);
 
-        ciphertextEvaluator.evaluate(proposal);
+                proposal = best.clone();
 
-        solution = selectNext(temperature, solution, proposal);
+                proposal.setCipher(transpositionCipherTransformer.transform(best.getCipher(), nextTranspositionKeyIndices));
 
-        return solution;
+                ciphertextEvaluator.evaluate(proposal);
+
+                best = selectNext(temperature, best, proposal);
+
+                if (best == proposal) {
+                    bestTranspositionKeyIndices.clear();
+                    bestTranspositionKeyIndices.addAll(nextTranspositionKeyIndices);
+                }
+            }
+        }
+
+        transpositionKeyIndices.clear();
+        transpositionKeyIndices.addAll(bestTranspositionKeyIndices);
+
+        return best;
     }
 
     private CipherSolution selectNext(Double temperature, CipherSolution solution, CipherSolution proposal) {

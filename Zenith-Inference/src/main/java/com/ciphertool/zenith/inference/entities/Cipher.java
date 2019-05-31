@@ -27,6 +27,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Document(collection = "ciphers")
@@ -45,7 +46,7 @@ public class Cipher implements Serializable {
 
 	private boolean				hasKnownSolution;
 
-	private List<Ciphertext>	ciphertextCharacters	= new ArrayList<Ciphertext>();
+	private List<Ciphertext>	ciphertextCharacters	= new ArrayList<>();
 
 	public Cipher() {
 	}
@@ -195,9 +196,44 @@ public class Cipher implements Serializable {
 		return true;
 	}
 
+	/*
+	 * Prints the properties of the cipher and then outputs the entire ciphertext list in block format.
+	 */
 	@Override
 	public String toString() {
-		return "Cipher [id=" + id + ", name=" + name + ", columns=" + columns + ", rows=" + rows + ", hasKnownSolution="
-				+ hasKnownSolution + ", ciphertextCharacters=" + ciphertextCharacters + "]";
+		StringBuilder sb = new StringBuilder();
+		sb.append("Cipher [id=" + id + ", name=" + name + ", columns=" + columns + ", rows=" + rows + ", hasKnownSolution="
+				+ hasKnownSolution + ", ciphertextCharacters=" + ciphertextCharacters + "]\n");
+
+		int maxLength = this.ciphertextCharacters.stream()
+				.map(Ciphertext::getValue)
+				.map(String::length)
+				.max(Comparator.comparing(Integer::intValue))
+				.get();
+
+		int actualSize = this.ciphertextCharacters.size();
+		for (int i = 0; i < actualSize; i++) {
+			String nextValue = this.ciphertextCharacters.get(i).getValue();
+
+			sb.append(" ");
+			sb.append(nextValue);
+			sb.append(" ");
+
+			for (int j = 0; j < (maxLength - nextValue.length()); j ++) {
+				sb.append(" ");
+			}
+
+			/*
+			 * Print a newline if we are at the end of the row. Add 1 to the index so the modulus function doesn't
+			 * break.
+			 */
+			if (((i + 1) % this.columns) == 0) {
+				sb.append("\n");
+			} else {
+				sb.append(" ");
+			}
+		}
+
+		return sb.toString();
 	}
 }

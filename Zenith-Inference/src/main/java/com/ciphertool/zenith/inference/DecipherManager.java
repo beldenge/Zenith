@@ -233,13 +233,15 @@ public class DecipherManager {
 				}
 			}
 
-			if (maxProbability.getLogProbability().compareTo(next.getLogProbability()) < 0) {
+			if (maxProbability.getLogProbability() < next.getLogProbability()) {
 				maxProbability = next;
 				maxProbabilityIteration = i + 1;
 			}
 
-			log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.2f", temperature));
-			log.debug(next.toString());
+			if (log.isDebugEnabled()) {
+				log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
+				log.debug(next.toString());
+			}
 		}
 
 		log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
