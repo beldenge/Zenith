@@ -99,7 +99,7 @@ public class TranspositionSearcher {
                     transpositionKeyIndices.add(transpositionKeyIndicesSource.remove(ThreadLocalRandom.current().nextInt(transpositionKeyIndicesSource.size())));
                 }
 
-                cipherProposal.setCipher(transpositionCipherTransformer.transform(cipher.clone(), transpositionKeyIndices));
+                cipherProposal.setCipher(cipher);
 
                 log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
@@ -117,8 +117,9 @@ public class TranspositionSearcher {
         Double minTemp = annealingTemperatureMin;
         Double iterations = (double) samplerIterations;
         Double temperature;
-        CipherSolution next = initialCipher;
-        CipherSolution maxProbability = initialCipher;
+        CipherSolution next;
+        CipherSolution maxProbability = initialCipher.clone();
+        maxProbability.setCipher(transpositionCipherTransformer.transform(initialCipher.getCipher().clone(), transpositionKeyIndices));
         List<Integer> maxIndices = new ArrayList<>(transpositionKeyIndices);
         int maxProbabilityIteration = 0;
         long start = System.currentTimeMillis();
@@ -136,7 +137,7 @@ public class TranspositionSearcher {
             temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
 
             startSampling = System.currentTimeMillis();
-            next = runSampler(temperature, next, transpositionKeyIndices);
+            next = runSampler(temperature, initialCipher, transpositionKeyIndices);
             letterSamplingElapsed = (System.currentTimeMillis() - startSampling);
 
             if (maxProbability.getLogProbability() < next.getLogProbability()) {
@@ -145,10 +146,10 @@ public class TranspositionSearcher {
                 maxIndices = new ArrayList<>(transpositionKeyIndices);
             }
 
-//            if (log.isDebugEnabled()) {
-                log.info("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
-                log.info("Indices: {}, Bigrams: {}, KeyLength: {}", transpositionKeyIndices, ciphertextEvaluator.evaluate(next), keyLength);
-//            }
+            if (log.isDebugEnabled()) {
+                log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
+                log.debug("Indices: {}, Bigrams: {}, KeyLength: {}", transpositionKeyIndices, ciphertextEvaluator.evaluate(next), keyLength);
+            }
         }
 
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
@@ -165,15 +166,15 @@ public class TranspositionSearcher {
         for (int i = 0; i < transpositionKeyIndices.size(); i ++) {
             // Start at i + 1, as all previous swaps will have already been tried
             for (int j = i + 1; j < transpositionKeyIndices.size(); j ++) {
-                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(bestTranspositionKeyIndices);
+                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
                 int firstValue = nextTranspositionKeyIndices.get(i);
                 int secondValue = nextTranspositionKeyIndices.get(j);
                 nextTranspositionKeyIndices.set(i, secondValue);
                 nextTranspositionKeyIndices.set(j, firstValue);
 
-                proposal = best.clone();
+                proposal = solution.clone();
 
-                proposal.setCipher(transpositionCipherTransformer.transform(best.getCipher(), nextTranspositionKeyIndices));
+                proposal.setCipher(transpositionCipherTransformer.transform(solution.getCipher(), nextTranspositionKeyIndices));
 
                 ciphertextEvaluator.evaluate(proposal);
 
