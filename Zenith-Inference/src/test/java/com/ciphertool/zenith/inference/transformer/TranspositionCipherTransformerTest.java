@@ -9,7 +9,7 @@ public class TranspositionCipherTransformerTest {
     public void testTransposeOnce() {
         TranspositionCipherTransformer transpositionCipherTransformer = new TranspositionCipherTransformer();
         transpositionCipherTransformer.transpositionIterations = 1;
-        transpositionCipherTransformer.transpositionKey = "TOMATO";
+        transpositionCipherTransformer.transpositionKeyString = "TOMATO";
 
         Cipher cipher = new Cipher("tomato", 7, 6);
 
@@ -65,7 +65,7 @@ public class TranspositionCipherTransformerTest {
     public void testTransposeTwice() {
         TranspositionCipherTransformer transpositionCipherTransformer = new TranspositionCipherTransformer();
         transpositionCipherTransformer.transpositionIterations = 2;
-        transpositionCipherTransformer.transpositionKey = "TOMATO";
+        transpositionCipherTransformer.transpositionKeyString = "TOMATO";
 
         Cipher cipher = new Cipher("tomato", 7, 6);
 

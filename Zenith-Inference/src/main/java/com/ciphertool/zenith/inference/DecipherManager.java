@@ -153,6 +153,20 @@ public class DecipherManager {
 	}
 
 	private Cipher transformCipher(Cipher cipher) {
+//		Cipher quadrant1 = new Cipher("quadrant1", 10, 8);
+//
+//		int id = 0;
+//		for (int i = 0; i < cipher.getRows() / 2; i ++) {
+//			for (int j = 0; j < (cipher.getColumns() / 2) + 1; j ++) {
+//				Ciphertext toAdd = cipher.getCiphertextCharacters().get((i * cipher.getColumns()) + j).clone();
+//				toAdd.setCiphertextId(id);
+//				quadrant1.addCiphertextCharacter(toAdd);
+//				id++;
+//			}
+//		}
+//
+//		Cipher transformed = transpositionCipherTransformer.transform(quadrant1);
+
 		Cipher transformed = transpositionCipherTransformer.transform(cipher);
 
 		if (removeLastRow) {

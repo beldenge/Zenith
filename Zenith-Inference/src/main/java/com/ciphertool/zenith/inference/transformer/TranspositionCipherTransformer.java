@@ -26,7 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -34,10 +37,31 @@ public class TranspositionCipherTransformer implements CipherTransformer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${decipherment.transposition.column-key:#{null}}")
-    protected String transpositionKey;
+    protected List<Integer> transpositionKey;
+
+    @Value("${decipherment.transposition.column-key-string:#{null}}")
+    protected String transpositionKeyString;
 
     @Value("${decipherment.transposition.iterations:1}")
     protected int transpositionIterations;
+
+    @PostConstruct
+    public void init() {
+        if (transpositionKeyString != null && !transpositionKeyString.isEmpty()) {
+           transpositionKey = getIndicesForTranspositionKey();
+        }
+
+        List<Integer> toCheck = new ArrayList<>(transpositionKey);
+
+        toCheck.sort(Comparator.comparing(Integer::intValue));
+
+        for (int i = 0; i < toCheck.size(); i ++) {
+            if (toCheck.get(i) != i) {
+                throw new IllegalArgumentException("The transposition column key indices must be zero-based with no gaps or duplicates.");
+            }
+        }
+    }
+
 
     @Override
     public Cipher transform(Cipher cipher) {
@@ -46,12 +70,12 @@ public class TranspositionCipherTransformer implements CipherTransformer {
             return cipher;
         }
 
-        if (transpositionKey.length() < 2 || transpositionKey.length() >= cipher.length()) {
-            throw new IllegalArgumentException("The transposition key length of " + transpositionKey.length()
+        if (transpositionKey.size() < 2 || transpositionKey.size() >= cipher.length()) {
+            throw new IllegalArgumentException("The transposition key length of " + transpositionKeyString.length()
                     + " must be greater than one and less than the cipher length of " + cipher.length() + ".");
         }
 
-        return unwrap(cipher, getIndicesForTranspositionKey());
+        return unwrap(cipher, transpositionKey);
     }
 
     @Override
@@ -65,7 +89,7 @@ public class TranspositionCipherTransformer implements CipherTransformer {
     }
 
     private Cipher unwrap(Cipher cipher, List<Integer> columnIndices) {
-        log.debug("Unwrapping transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKey, columnIndices);
+        log.debug("Unwrapping transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKeyString, columnIndices);
 
         int rows = cipher.length() / columnIndices.size();
 
@@ -89,13 +113,13 @@ public class TranspositionCipherTransformer implements CipherTransformer {
 
     protected List<Integer> getIndicesForTranspositionKey() {
         int next = 0;
-        Integer[] columnIndices = new Integer[transpositionKey.length()];
+        Integer[] columnIndices = new Integer[transpositionKeyString.length()];
 
         for (int i = 0; i < ModelConstants.LOWERCASE_LETTERS.size(); i ++) {
             char letter = ModelConstants.LOWERCASE_LETTERS.get(i);
 
-            for (int j = 0; j < transpositionKey.length(); j++) {
-                if (transpositionKey.toLowerCase().charAt(j) == letter) {
+            for (int j = 0; j < transpositionKeyString.length(); j++) {
+                if (transpositionKeyString.toLowerCase().charAt(j) == letter) {
                     columnIndices[j] = next;
                     next ++;
                 }

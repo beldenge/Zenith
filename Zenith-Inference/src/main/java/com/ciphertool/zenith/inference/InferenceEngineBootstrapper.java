@@ -45,7 +45,7 @@ public class InferenceEngineBootstrapper implements CommandLineRunner {
 	 */
 	@Override
 	public void run(String... arg0) {
-		//searcher.run();
+//		searcher.run();
 		manager.run();
 	}
 }
