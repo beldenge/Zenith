@@ -19,8 +19,6 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import org.bson.types.ObjectId;
-
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 
@@ -28,7 +26,6 @@ public class FitnessEvaluatorTestBase {
 	protected static Cipher zodiac408 = new Cipher("zodiac408", 24, 17);
 
 	static {
-		zodiac408.setId(new ObjectId("999999999999999999999999"));
 		zodiac408.setHasKnownSolution(true);
 
 		zodiac408.addCiphertextCharacter(new Ciphertext(0, "tri"));

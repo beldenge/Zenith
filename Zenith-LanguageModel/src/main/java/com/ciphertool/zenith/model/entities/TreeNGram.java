@@ -19,58 +19,42 @@
 
 package com.ciphertool.zenith.model.entities;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.opencsv.bean.CsvBindByName;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-@Document
 public class TreeNGram {
 	private static final Pattern		LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z \\.]");
 
-	@Id
-	protected ObjectId					id;
-
-	protected long						count						= 0L;
-
-	protected Double probability;
-	protected Double conditionalProbability;
-	protected Double logProbability;
-	protected Double logConditionalProbability;
-
-	protected String					cumulativeString;
-
+	@CsvBindByName(required = true)
 	protected Integer					order;
 
-	@Transient
-	private Map<Character, TreeNGram>	transitions = new HashMap<>(1);
+	@CsvBindByName(required = true)
+	protected String					cumulativeString;
 
-	// Required by Spring Data
-	public TreeNGram() {}
+	@CsvBindByName(required = true)
+	protected long						count						= 0L;
+
+	@CsvBindByName(required = true)
+	protected Double probability;
+
+	@CsvBindByName(required = true)
+	protected Double conditionalProbability;
+
+	@CsvBindByName(required = true)
+	protected Double logProbability;
+
+	@CsvBindByName(required = true)
+	protected Double logConditionalProbability;
+
+	private Map<Character, TreeNGram>	transitions = new HashMap<>(1);
 
 	public TreeNGram(String nGramString) {
 		this.cumulativeString = nGramString;
 
 		this.order = nGramString.length();
-	}
-
-	/**
-	 * @return the id
-	 */
-	public ObjectId getId() {
-		return id;
-	}
-
-	/**
-	 * @param id
-	 *            the id to set
-	 */
-	public void setId(ObjectId id) {
-		this.id = id;
 	}
 
 	public void increment() {
@@ -211,7 +195,6 @@ public class TreeNGram {
 			if (child == null) {
 				this.putChild(firstLetter, nodeToAdd);
 			} else {
-				child.id = nodeToAdd.id;
 				child.count = nodeToAdd.count;
 				child.conditionalProbability = nodeToAdd.conditionalProbability;
 				child.probability = nodeToAdd.probability;

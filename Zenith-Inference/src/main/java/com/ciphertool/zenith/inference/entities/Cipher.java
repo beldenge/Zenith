@@ -19,25 +19,15 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-@Document(collection = "ciphers")
 public class Cipher implements Serializable {
 	private static final long	serialVersionUID		= 3417112220260206089L;
 
-	@Id
-	private ObjectId			id;
-
-	@Indexed(background = true)
 	private String				name;
 
 	private int					columns;
@@ -55,14 +45,6 @@ public class Cipher implements Serializable {
 		this.name = name;
 		this.rows = rows;
 		this.columns = columns;
-	}
-
-	public ObjectId getId() {
-		return id;
-	}
-
-	public void setId(ObjectId id) {
-		this.id = id;
 	}
 
 	public String getName() {
@@ -128,7 +110,6 @@ public class Cipher implements Serializable {
 
 	public Cipher clone() {
 		Cipher cloned = new Cipher(this.name, this.rows, this.columns);
-		cloned.setId(this.id);
 		cloned.setHasKnownSolution(this.hasKnownSolution);
 
 		for (Ciphertext ciphertext : this.ciphertextCharacters) {
@@ -145,7 +126,6 @@ public class Cipher implements Serializable {
 		result = prime * result + ((ciphertextCharacters == null) ? 0 : ciphertextCharacters.hashCode());
 		result = prime * result + columns;
 		result = prime * result + (hasKnownSolution ? 1231 : 1237);
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + rows;
 		return result;
@@ -176,13 +156,6 @@ public class Cipher implements Serializable {
 		if (hasKnownSolution != other.hasKnownSolution) {
 			return false;
 		}
-		if (id == null) {
-			if (other.id != null) {
-				return false;
-			}
-		} else if (!id.equals(other.id)) {
-			return false;
-		}
 		if (name == null) {
 			if (other.name != null) {
 				return false;
@@ -202,7 +175,7 @@ public class Cipher implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Cipher [id=" + id + ", name=" + name + ", columns=" + columns + ", rows=" + rows + ", hasKnownSolution="
+		sb.append("Cipher [name=" + name + ", columns=" + columns + ", rows=" + rows + ", hasKnownSolution="
 				+ hasKnownSolution + ", ciphertextCharacters=" + ciphertextCharacters + "]\n");
 
 		int maxLength = this.ciphertextCharacters.stream()

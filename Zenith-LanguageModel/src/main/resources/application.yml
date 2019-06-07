@@ -26,6 +26,9 @@ corpus:
   output:
     directory: /Users/george/Desktop/zenith-transformed
 
+model:
+  output-filename: /Users/george/Desktop/zenith-model.csv
+
 markov:
   letter:
     order: 5
@@ -40,17 +43,3 @@ taskExecutor:
   poolSize:
     #override:
 
-#----------------------------------------
-# MongoDB Properties
-#----------------------------------------
-spring:
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: Zenith
-
-mongodb:
-  parallelScan:
-    batchSize: 1000
-    numCursors: 100

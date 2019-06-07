@@ -47,7 +47,6 @@ public class TreeMarkovModel {
 		if (nodeToAdd.getCumulativeString() == null || nodeToAdd.getCumulativeString().length() == 0) {
 			// This is the root node
 
-			rootNode.setId(nodeToAdd.getId());
 			rootNode.setCount(nodeToAdd.getCount());
 			rootNode.setConditionalProbability(nodeToAdd.getConditionalProbability());
 			rootNode.setProbability(nodeToAdd.getProbability());

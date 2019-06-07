@@ -19,24 +19,27 @@
 
 package com.ciphertool.zenith.inference.dao;
 
-import java.util.List;
-
+import com.ciphertool.zenith.inference.entities.Cipher;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.inference.entities.Cipher;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class CipherDao {
 	private static Logger	log	= LoggerFactory.getLogger(CipherDao.class);
 
-	@Autowired
-	private MongoOperations	mongoOperations;
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+	@Value("${cipher.repository-filename}")
+	private String ciphersFilename;
 
 	public Cipher findByCipherName(String name) {
 		if (name == null || name.isEmpty()) {
@@ -45,15 +48,21 @@ public class CipherDao {
 			return null;
 		}
 
-		Query selectByNameQuery = new Query(Criteria.where("name").is(name));
-
-		Cipher cipher = mongoOperations.findOne(selectByNameQuery, Cipher.class);
-
-		return cipher;
+		return findAll().stream()
+				.filter(cipher -> name.equalsIgnoreCase(cipher.getName()))
+				.findAny()
+				.orElse(null);
 	}
 
 	public List<Cipher> findAll() {
-		List<Cipher> ciphers = mongoOperations.findAll(Cipher.class);
+		List<Cipher> ciphers = new ArrayList<>();
+
+		try {
+			ciphers.addAll(Arrays.asList(OBJECT_MAPPER.readValue(Paths.get(ciphersFilename).toFile(), Cipher[].class)));
+		} catch (IOException e) {
+			log.error("Unable to read Ciphers from file: {}.", ciphersFilename, e);
+			throw new IllegalStateException(e);
+		}
 
 		return ciphers;
 	}

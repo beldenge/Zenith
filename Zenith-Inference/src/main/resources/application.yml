@@ -18,6 +18,7 @@
 
 cipher:
   name: zodiac340
+  repository-filename: ciphers.json
 
 # ---------------------------------------
 # Markov Model Properties
@@ -53,17 +54,3 @@ decipherment:
     key-length-min: 17
     key-length-max: 17
 
-#----------------------------------------
-# MongoDB Properties
-#----------------------------------------
-spring:
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: Zenith
-
-mongodb:
-  parallelScan:
-    batchSize: 2500
-    numCursors: 25

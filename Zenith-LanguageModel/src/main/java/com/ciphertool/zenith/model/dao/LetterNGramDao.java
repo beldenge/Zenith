@@ -20,40 +20,50 @@
 package com.ciphertool.zenith.model.dao;
 
 import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.stereotype.Component;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class LetterNGramDao {
 	private Logger				log							= LoggerFactory.getLogger(getClass());
 
-	private static final String COLLECTION_NAME = "letterNGrams";
-
-	@Value("${mongodb.parallelScan.batchSize}")
-	private int					batchSize;
-
-	@Value("${mongodb.parallelScan.numCursors}")
-	private int					numCursors;
-
-	@Autowired
-	private MongoOperations		mongoOperations;
+	@Value("${model.output-filename}")
+	private String outputFilename;
 
 	public List<TreeNGram> findAll() {
 		long startCount = System.currentTimeMillis();
 
-		List<TreeNGram> nGrams = mongoOperations.findAll(TreeNGram.class, COLLECTION_NAME);
+		List<TreeNGram> treeNGrams = new ArrayList<>();
+
+		try(Reader reader = Files.newBufferedReader(Paths.get(outputFilename))) {
+			List<TreeNGram> records = new CsvToBeanBuilder(reader)
+					.withType(TreeNGram.class)
+					.build()
+					.parse();
+
+			treeNGrams.addAll(records);
+		} catch (IOException e) {
+			log.error("Unable to find ngrams from file: {}.", outputFilename, e);
+			throw new IllegalStateException(e);
+		}
 
 		log.info("Finished finding nodes in {}ms.", (System.currentTimeMillis() - startCount));
 
-		return nGrams;
+		return treeNGrams;
 	}
 
 	public void addAll(List<TreeNGram> nodes) {
@@ -61,12 +71,26 @@ public class LetterNGramDao {
 			return;
 		}
 
-		mongoOperations.insert(nodes, COLLECTION_NAME);
+		try(Writer writer  = Files.newBufferedWriter(Paths.get(outputFilename))) {
+			StatefulBeanToCsv sbc = new StatefulBeanToCsvBuilder(writer)
+					.withSeparator(CSVWriter.DEFAULT_SEPARATOR)
+					.build();
+
+			sbc.write(nodes);
+		} catch(IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
+			log.error("Unable to add nodes to output file: {}.", outputFilename, e);
+			throw new IllegalStateException(e);
+		}
 	}
 
 	public void deleteAll() {
-		mongoOperations.dropCollection(COLLECTION_NAME);
-		mongoOperations.createCollection(COLLECTION_NAME);
-		mongoOperations.indexOps(COLLECTION_NAME).ensureIndex(new Index("count", Direction.DESC));
+		if (Files.exists(Paths.get(outputFilename))) {
+			try {
+				Files.delete(Paths.get(outputFilename));
+			} catch (IOException e) {
+				log.error("Unable to delete file at path: {}.", outputFilename, e);
+				throw new IllegalStateException(e);
+			}
+		}
 	}
 }
