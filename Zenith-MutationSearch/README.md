@@ -1,0 +1,1 @@
+This module encompasses hill climbing algorithm(s) for detecting cipher mutations which are likely to have been performed during encipherment.

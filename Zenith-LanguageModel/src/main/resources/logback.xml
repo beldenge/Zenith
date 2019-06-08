@@ -22,9 +22,9 @@ You should have received a copy of the GNU General Public License along with Zen
 		<encoder>
 			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p %t %c - %m%n</pattern>
 		</encoder>
-		<file>log/Zenith-LanguageModel.log</file>
+		<file>log/zenith-language-model.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>log/Zenith-LanguageModel-%d{yyyy-MM-dd}.log</fileNamePattern>
+			<fileNamePattern>log/zenith-language-model-%d{yyyy-MM-dd}.log</fileNamePattern>
 			<maxHistory>10</maxHistory>
 		</rollingPolicy>
 	</appender>

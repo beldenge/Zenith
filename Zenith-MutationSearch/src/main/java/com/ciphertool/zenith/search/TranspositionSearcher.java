@@ -17,12 +17,12 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference;
+package com.ciphertool.zenith.search;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.evaluator.CiphertextBigramEvaluator;
+import com.ciphertool.zenith.search.evaluator.CiphertextBigramEvaluator;
 import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

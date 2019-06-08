@@ -37,7 +37,8 @@ You should have received a copy of the GNU General Public License along with Zen
 	<modules>
 		<module>Zenith-LanguageModel</module>
 		<module>Zenith-Inference</module>
-	</modules>
+        <module>Zenith-MutationSearch</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
