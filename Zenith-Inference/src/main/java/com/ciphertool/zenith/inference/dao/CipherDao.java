@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +58,8 @@ public class CipherDao {
 		List<Cipher> ciphers = new ArrayList<>();
 
 		try {
-			ciphers.addAll(Arrays.asList(OBJECT_MAPPER.readValue(Paths.get(ciphersFilename).toFile(), Cipher[].class)));
+			File file = new File(getClass().getClassLoader().getResource(ciphersFilename).getFile());
+			ciphers.addAll(Arrays.asList(OBJECT_MAPPER.readValue(file, Cipher[].class)));
 		} catch (IOException e) {
 			log.error("Unable to read Ciphers from file: {}.", ciphersFilename, e);
 			throw new IllegalStateException(e);

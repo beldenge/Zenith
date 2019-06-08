@@ -26,8 +26,8 @@ corpus:
   output:
     directory: /Users/george/Desktop/zenith-transformed
 
-model:
-  output-filename: /Users/george/Desktop/zenith-model.csv
+language-model:
+  filename: /Users/george/Desktop/zenith-model.csv
 
 markov:
   letter:
@@ -43,3 +43,6 @@ taskExecutor:
   poolSize:
     #override:
 
+ngram:
+  persistence:
+    batch-size: 1000

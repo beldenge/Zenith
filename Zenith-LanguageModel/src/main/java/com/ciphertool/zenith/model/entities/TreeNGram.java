@@ -19,7 +19,7 @@
 
 package com.ciphertool.zenith.model.entities;
 
-import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,28 +28,31 @@ import java.util.regex.Pattern;
 public class TreeNGram {
 	private static final Pattern		LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z \\.]");
 
-	@CsvBindByName(required = true)
-	protected Integer					order;
-
-	@CsvBindByName(required = true)
+	@CsvBindByPosition(position = 0, required = true)
 	protected String					cumulativeString;
 
-	@CsvBindByName(required = true)
+	@CsvBindByPosition(position = 1, required = true)
+	protected Integer					order;
+
+	@CsvBindByPosition(position = 2, required = true)
 	protected long						count						= 0L;
 
-	@CsvBindByName(required = true)
+	@CsvBindByPosition(position = 3)
 	protected Double probability;
 
-	@CsvBindByName(required = true)
-	protected Double conditionalProbability;
-
-	@CsvBindByName(required = true)
+	@CsvBindByPosition(position = 4)
 	protected Double logProbability;
 
-	@CsvBindByName(required = true)
+	@CsvBindByPosition(position = 5, required = true)
+	protected Double conditionalProbability;
+
+	@CsvBindByPosition(position = 6, required = true)
 	protected Double logConditionalProbability;
 
 	private Map<Character, TreeNGram>	transitions = new HashMap<>(1);
+
+	// Needed for de-serialization
+	public TreeNGram() {}
 
 	public TreeNGram(String nGramString) {
 		this.cumulativeString = nGramString;

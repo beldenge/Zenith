@@ -50,17 +50,17 @@ public class NGramPersister {
 	@Autowired
 	private LetterNGramDao				letterNGramDao;
 
-	@Value("${mongodb.parallelScan.batchSize}")
+	@Value("${ngram.persistence.batch-size}")
 	private int							batchSize;
 
 	public void persistNGrams() {
-		long startDeleteWithoutSpaces = System.currentTimeMillis();
+		long startDelete = System.currentTimeMillis();
 
 		log.info("Deleting all existing n-grams.");
 
 		letterNGramDao.deleteAll();
 
-		log.info("Completed deletion of n-grams in {}ms.", (System.currentTimeMillis() - startDeleteWithoutSpaces));
+		log.info("Completed deletion of n-grams in {}ms.", (System.currentTimeMillis() - startDelete));
 
 		TreeMarkovModel markovModel = letterNGramMarkovImporter.importCorpus();
 

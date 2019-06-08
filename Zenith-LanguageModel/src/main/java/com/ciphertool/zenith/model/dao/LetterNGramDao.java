@@ -20,7 +20,6 @@
 package com.ciphertool.zenith.model.dao;
 
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.opencsv.CSVWriter;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -31,9 +30,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,15 +43,15 @@ import java.util.List;
 public class LetterNGramDao {
 	private Logger				log							= LoggerFactory.getLogger(getClass());
 
-	@Value("${model.output-filename}")
-	private String outputFilename;
+	@Value("${language-model.filename}")
+	private String modelFilename;
 
 	public List<TreeNGram> findAll() {
 		long startCount = System.currentTimeMillis();
 
 		List<TreeNGram> treeNGrams = new ArrayList<>();
 
-		try(Reader reader = Files.newBufferedReader(Paths.get(outputFilename))) {
+		try(Reader reader = Files.newBufferedReader(Paths.get(modelFilename))) {
 			List<TreeNGram> records = new CsvToBeanBuilder(reader)
 					.withType(TreeNGram.class)
 					.build()
@@ -57,7 +59,7 @@ public class LetterNGramDao {
 
 			treeNGrams.addAll(records);
 		} catch (IOException e) {
-			log.error("Unable to find ngrams from file: {}.", outputFilename, e);
+			log.error("Unable to find ngrams from file: {}.", modelFilename, e);
 			throw new IllegalStateException(e);
 		}
 
@@ -66,29 +68,28 @@ public class LetterNGramDao {
 		return treeNGrams;
 	}
 
-	public void addAll(List<TreeNGram> nodes) {
+	public synchronized void addAll(List<TreeNGram> nodes) {
 		if (nodes == null || nodes.isEmpty()) {
 			return;
 		}
 
-		try(Writer writer  = Files.newBufferedWriter(Paths.get(outputFilename))) {
+		try(Writer writer = Files.newBufferedWriter(Paths.get(modelFilename), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 			StatefulBeanToCsv sbc = new StatefulBeanToCsvBuilder(writer)
-					.withSeparator(CSVWriter.DEFAULT_SEPARATOR)
 					.build();
 
 			sbc.write(nodes);
 		} catch(IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
-			log.error("Unable to add nodes to output file: {}.", outputFilename, e);
+			log.error("Unable to add nodes to output file: {}.", modelFilename, e);
 			throw new IllegalStateException(e);
 		}
 	}
 
 	public void deleteAll() {
-		if (Files.exists(Paths.get(outputFilename))) {
+		if (Files.exists(Paths.get(modelFilename))) {
 			try {
-				Files.delete(Paths.get(outputFilename));
+				Files.delete(Paths.get(modelFilename));
 			} catch (IOException e) {
-				log.error("Unable to delete file at path: {}.", outputFilename, e);
+				log.error("Unable to delete file at path: {}.", modelFilename, e);
 				throw new IllegalStateException(e);
 			}
 		}

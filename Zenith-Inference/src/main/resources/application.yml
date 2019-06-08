@@ -17,8 +17,11 @@
 #
 
 cipher:
-  name: zodiac340
+  name: zodiac408
   repository-filename: ciphers.json
+
+language-model:
+  filename: /Users/george/Desktop/zenith-model.csv
 
 # ---------------------------------------
 # Markov Model Properties
@@ -38,19 +41,18 @@ decipherment:
     iterateRandomly: false
   annealing:
     temperature:
-#      max: 8
-#      min: 5
+      max: 8
+      min: 5
 #      max: 0.1
 #      min: 0.001
-      max: 5
-      min: 1
+#      max: 5
+#      min: 1
   useKnownEvaluator: false
   epochs: 10
   remove-last-row: true
   transposition:
-    column-key-string: byfire
+    column-key-string:
     column-key:
     iterations: 1
     key-length-min: 17
     key-length-max: 17
-
