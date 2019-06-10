@@ -28,7 +28,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(scanBasePackageClasses = { InferenceEngineApplication.class, LetterNGramDao.class })
 public class InferenceEngineApplication implements CommandLineRunner {
 	@Autowired
-	private DecipherManager manager;
+	private CipherSolutionOptimizer manager;
 
 	public static void main(String[] args) {
 		SpringApplication.run(InferenceEngineApplication.class, args).close();

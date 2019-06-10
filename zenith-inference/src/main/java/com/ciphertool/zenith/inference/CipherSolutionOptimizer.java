@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class DecipherManager {
+public class CipherSolutionOptimizer {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
 
 	private static final double FIFTH_ROOT = 1d / 5d;
