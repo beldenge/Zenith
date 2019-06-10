@@ -27,6 +27,7 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
+import com.ciphertool.zenith.inference.transformer.RemoveLastRowCipherTransformer;
 import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
@@ -88,6 +89,9 @@ public class CipherSolutionOptimizer {
 
 	@Autowired
 	private TranspositionCipherTransformer transpositionCipherTransformer;
+
+	@Autowired
+	private RemoveLastRowCipherTransformer removeLastRowCipherTransformer;
 
 	@Autowired(required = false)
 	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
@@ -153,32 +157,10 @@ public class CipherSolutionOptimizer {
 	}
 
 	private Cipher transformCipher(Cipher cipher) {
-//		Cipher quadrant1 = new Cipher("quadrant1", 10, 8);
-//
-//		int id = 0;
-//		for (int i = 0; i < cipher.getRows() / 2; i ++) {
-//			for (int j = 0; j < (cipher.getColumns() / 2) + 1; j ++) {
-//				Ciphertext toAdd = cipher.getCiphertextCharacters().get((i * cipher.getColumns()) + j).clone();
-//				toAdd.setCiphertextId(id);
-//				quadrant1.addCiphertextCharacter(toAdd);
-//				id++;
-//			}
-//		}
-//
-//		Cipher transformed = transpositionCipherTransformer.transform(quadrant1);
-
 		Cipher transformed = transpositionCipherTransformer.transform(cipher);
 
 		if (removeLastRow) {
-			int totalCharacters = transformed.getCiphertextCharacters().size();
-			int lastRowBegin = (transformed.getColumns() * (transformed.getRows() - 1));
-
-			// Remove the last row altogether
-			for (int i = totalCharacters - 1; i >= lastRowBegin; i--) {
-				transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(i));
-			}
-
-			transformed.setRows(transformed.getRows() - 1);
+			transformed = removeLastRowCipherTransformer.transform(transformed);
 		}
 
 		return transformed;

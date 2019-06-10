@@ -20,7 +20,28 @@
 package com.ciphertool.zenith.inference.transformer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.Ciphertext;
+import org.springframework.stereotype.Component;
 
-public interface CipherTransformer {
-    Cipher transform(Cipher cipher);
+@Component
+public class UpperLeftQuadrantCipherTransformer implements CipherTransformer {
+    @Override
+    public Cipher transform(Cipher cipher) {
+        int halfOfRows = cipher.getRows() / 2;
+        int halfOfColumns = cipher.getColumns() / 2;
+
+        Cipher quadrant = new Cipher(cipher.getName() + "_upperLeftQuadrant", halfOfRows, halfOfColumns);
+
+		int id = 0;
+		for (int i = 0; i < halfOfRows; i ++) {
+			for (int j = 0; j < halfOfColumns; j ++) {
+				Ciphertext toAdd = cipher.getCiphertextCharacters().get((i * cipher.getColumns()) + j).clone();
+				toAdd.setCiphertextId(id);
+				quadrant.addCiphertextCharacter(toAdd);
+				id++;
+			}
+		}
+
+		return quadrant;
+    }
 }

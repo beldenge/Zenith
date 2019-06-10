@@ -78,7 +78,6 @@ public class TranspositionCipherTransformer implements CipherTransformer {
         return unwrap(cipher, transpositionKey);
     }
 
-    @Override
     public Cipher transform(Cipher cipher, List<Integer> columnIndices) {
         if (columnIndices.size() < 2 || columnIndices.size() >= cipher.length()) {
             throw new IllegalArgumentException("The transposition key length of " + columnIndices.size()

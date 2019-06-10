@@ -20,7 +20,24 @@
 package com.ciphertool.zenith.inference.transformer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import org.springframework.stereotype.Component;
 
-public interface CipherTransformer {
-    Cipher transform(Cipher cipher);
+@Component
+public class RemoveLastRowCipherTransformer implements CipherTransformer {
+    @Override
+    public Cipher transform(Cipher cipher) {
+        Cipher transformed = cipher.clone();
+
+        int totalCharacters = transformed.getCiphertextCharacters().size();
+        int lastRowBegin = (transformed.getColumns() * (transformed.getRows() - 1));
+
+        // Remove the last row altogether
+        for (int i = totalCharacters - 1; i >= lastRowBegin; i--) {
+            transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(i));
+        }
+
+        transformed.setRows(transformed.getRows() - 1);
+
+        return transformed;
+    }
 }
