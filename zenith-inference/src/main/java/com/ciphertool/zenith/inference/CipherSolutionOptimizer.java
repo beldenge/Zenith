@@ -49,8 +49,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class CipherSolutionOptimizer {
 	private Logger				log						= LoggerFactory.getLogger(getClass());
 
-	private static final double FIFTH_ROOT = 1d / 5d;
-
 	@Value("${cipher.name}")
 	private String cipherName;
 
@@ -287,11 +285,8 @@ public class CipherSolutionOptimizer {
 
 	private CipherSolution selectNext(Double temperature, CipherSolution solution, CipherSolution proposal) {
 		Double acceptanceProbability;
-
-		Double solutionCoincidence = solution.computeIndexOfCoincidence();
-		Double proposalCoincidence = proposal.computeIndexOfCoincidence();
-		Double solutionScore = solution.getLogProbability() * Math.pow(solutionCoincidence, FIFTH_ROOT);
-		Double proposalScore = proposal.getLogProbability() * Math.pow(proposalCoincidence, FIFTH_ROOT);
+		Double solutionScore = solution.getScore();
+		Double proposalScore = proposal.getScore();
 
 		if (proposalScore.compareTo(solutionScore) >= 0) {
 			log.debug("Better solution found");

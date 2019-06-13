@@ -28,6 +28,9 @@ import java.util.*;
 public class CipherSolution {
 	private static Logger			log						= LoggerFactory.getLogger(CipherSolution.class);
 
+	// The fifth root seems to be the right scale
+	private static final double FIFTH_ROOT = 1d / 5d;
+
 	protected Cipher				cipher;
 
 	private Double				probability				= null;
@@ -90,7 +93,7 @@ public class CipherSolution {
 		return logProbability;
 	}
 
-	public Double computeIndexOfCoincidence() {
+	protected Double computeIndexOfCoincidence() {
 		String solutionString = asSingleLineString();
 
 		int totalLetters = solutionString.length();
@@ -225,6 +228,12 @@ public class CipherSolution {
 		copySolution.setProbability(this.probability != null ? this.probability.doubleValue() : null);
 
 		return copySolution;
+	}
+
+	public Double getScore() {
+		// Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
+		// This has not been determined empirically but has worked well through experimentation
+		return getLogProbability() * Math.pow(computeIndexOfCoincidence(), FIFTH_ROOT);
 	}
 
 	/**

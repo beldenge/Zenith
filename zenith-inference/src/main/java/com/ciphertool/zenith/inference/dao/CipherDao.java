@@ -24,10 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,8 +59,8 @@ public class CipherDao {
 		List<Cipher> ciphers = new ArrayList<>();
 
 		try {
-			File file = new File(getClass().getClassLoader().getResource(ciphersFilename).getFile());
-			ciphers.addAll(Arrays.asList(OBJECT_MAPPER.readValue(file, Cipher[].class)));
+			InputStream is = new ClassPathResource(ciphersFilename).getInputStream();
+			ciphers.addAll(Arrays.asList(OBJECT_MAPPER.readValue(is, Cipher[].class)));
 		} catch (IOException e) {
 			log.error("Unable to read Ciphers from file: {}.", ciphersFilename, e);
 			throw new IllegalStateException(e);
