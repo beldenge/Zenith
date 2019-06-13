@@ -58,9 +58,8 @@ public class CipherDao {
 	public List<Cipher> findAll() {
 		List<Cipher> ciphers = new ArrayList<>();
 
-		try {
-			InputStream is = new ClassPathResource(ciphersFilename).getInputStream();
-			ciphers.addAll(Arrays.asList(OBJECT_MAPPER.readValue(is, Cipher[].class)));
+		try(InputStream inputStream = new ClassPathResource(ciphersFilename).getInputStream()) {
+			ciphers.addAll(Arrays.asList(OBJECT_MAPPER.readValue(inputStream, Cipher[].class)));
 		} catch (IOException e) {
 			log.error("Unable to read Ciphers from file: {}.", ciphersFilename, e);
 			throw new IllegalStateException(e);

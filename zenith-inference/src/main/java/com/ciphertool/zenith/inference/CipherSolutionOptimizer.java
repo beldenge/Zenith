@@ -25,6 +25,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
+import com.ciphertool.zenith.inference.model.ModelUnzipper;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.inference.transformer.RemoveLastRowCipherTransformer;
@@ -39,6 +40,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -76,6 +80,9 @@ public class CipherSolutionOptimizer {
 	@Value("${decipherment.remove-last-row:true}")
 	private boolean removeLastRow;
 
+	@Value("${language-model.filename}")
+	private String modelFilename;
+
 	@Autowired
 	private PlaintextEvaluator				plaintextEvaluator;
 
@@ -93,6 +100,21 @@ public class CipherSolutionOptimizer {
 
 	@Autowired(required = false)
 	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
+
+	@Autowired
+	private ModelUnzipper modelUnzipper;
+
+	@PostConstruct
+	public void init() {
+		if (!Files.exists(Paths.get(modelFilename))) {
+			long start = System.currentTimeMillis();
+			log.info("Language model file {} not found.  Unzipping from archive.", modelFilename);
+
+			modelUnzipper.unzip();
+
+			log.info("Finished unzipping language model archive in {}ms.", (System.currentTimeMillis() - start));
+		}
+	}
 
 	public void run() {
 		Cipher cipher = transformCipher(cipherDao.findByCipherName(cipherName));

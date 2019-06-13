@@ -21,7 +21,8 @@ cipher:
   repository-filename: ciphers.json
 
 language-model:
-  filename: /Users/george/Desktop/zenith-model.csv
+  filename: zenith-model.csv
+  archive-filename: zenith-model.zip
 
 # ---------------------------------------
 # Markov Model Properties
