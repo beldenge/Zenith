@@ -28,8 +28,7 @@ import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluato
 import com.ciphertool.zenith.inference.model.ModelUnzipper;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
-import com.ciphertool.zenith.inference.transformer.RemoveLastRowCipherTransformer;
-import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
+import com.ciphertool.zenith.inference.transformer.CipherTransformer;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -48,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Component
 public class CipherSolutionOptimizer {
@@ -77,11 +77,11 @@ public class CipherSolutionOptimizer {
 	@Value("${decipherment.epochs:1}")
 	private int epochs;
 
-	@Value("${decipherment.remove-last-row:true}")
-	private boolean removeLastRow;
-
 	@Value("${language-model.filename}")
 	private String modelFilename;
+
+	@Value("${decipherment.transformers.list}")
+	private List<String> transformersToUse;
 
 	@Autowired
 	private PlaintextEvaluator				plaintextEvaluator;
@@ -93,10 +93,7 @@ public class CipherSolutionOptimizer {
 	private LetterNGramDao					letterNGramDao;
 
 	@Autowired
-	private TranspositionCipherTransformer transpositionCipherTransformer;
-
-	@Autowired
-	private RemoveLastRowCipherTransformer removeLastRowCipherTransformer;
+	private List<CipherTransformer> cipherTransformers;
 
 	@Autowired(required = false)
 	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
@@ -113,6 +110,34 @@ public class CipherSolutionOptimizer {
 			modelUnzipper.unzip();
 
 			log.info("Finished unzipping language model archive in {}ms.", (System.currentTimeMillis() - start));
+		}
+
+		if (cipherTransformers != null && !cipherTransformers.isEmpty()) {
+			List<CipherTransformer> toUse = new ArrayList<>();
+			List<String> existentCipherTransformers = cipherTransformers.stream()
+					.map(transformer -> transformer.getClass().getSimpleName())
+					.collect(Collectors.toList());
+
+			for (String transformerName : transformersToUse) {
+				if (!existentCipherTransformers.contains(transformerName)) {
+					log.error("The cipher transformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentCipherTransformers);
+					throw new IllegalArgumentException("The cipher transformer with name " + transformerName + " does not exist.");
+				}
+
+				for (CipherTransformer cipherTransformer : cipherTransformers) {
+					if (cipherTransformer.getClass().getSimpleName().equals(transformerName)) {
+						if (toUse.contains(cipherTransformer)) {
+							log.warn("Transformer with name {} has already been declared.  This will result in the transformer being performed more than once.  Please double check that this is desired.", transformerName);
+						}
+
+						toUse.add(cipherTransformer);
+						break;
+					}
+				}
+			}
+
+			cipherTransformers.clear();
+			cipherTransformers.addAll(toUse);
 		}
 	}
 
@@ -177,13 +202,11 @@ public class CipherSolutionOptimizer {
 	}
 
 	private Cipher transformCipher(Cipher cipher) {
-		Cipher transformed = transpositionCipherTransformer.transform(cipher);
-
-		if (removeLastRow) {
-			transformed = removeLastRowCipherTransformer.transform(transformed);
+		for (CipherTransformer cipherTransformer : cipherTransformers) {
+			cipher = cipherTransformer.transform(cipher);
 		}
 
-		return transformed;
+		return cipher;
 	}
 
 	private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability>	letterUnigramProbabilities, double totalUnigramProbability) {

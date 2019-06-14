@@ -11,7 +11,7 @@ There are a number of configuration settings that can be set for the application
 Property Key | Default Value | Description
 --- | --- | ---
 cipher.repository-filename | ciphers.json | The file on the classpath which contains any number of ciphers specified as JSON objects
-cipher.name | zodiac340 | The name of a particular cipher within the ciphers.json file
+cipher.name | zodiac340 | The name of a particular cipher within the ciphers.json file (zodiac408 and zodiac340 are provided)
 decipherment.epochs | 10 | The number of times to run the hill climbing algorithm (essentially the number of random restarts) 
 decipherment.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
 decipherment.annealing.temperature.max | 0.1 | Annealing temperature at the beginning of each epoch
