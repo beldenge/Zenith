@@ -1,6 +1,10 @@
 # Zenith
 The aim of this project is to provide a tool that is easy to use for somewhat technical people in solving homophonic substitution ciphers.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
 
+It currently is successful at deciphering the Zodiac 408 cipher at a rate of roughly 70% per epoch.
+
+It takes roughly 20 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to complete one epoch.
+
 # Building
 1. Download and install Java 8 or later
 2. Download and install [Apache Maven](https://maven.apache.org/download.cgi)

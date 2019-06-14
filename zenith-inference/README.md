@@ -29,19 +29,25 @@ decipherment.transposition.key-length.min | 17 | When the transposition key leng
 decipherment.transposition.key-length.max | 17 | When the transposition key length is not known, this is the key length to end hill climbing with (must be greater than or equal to decipherment.transposition.key-length.min)
 decipherment.transformers.list | RemoveLastRowCipherTransformer | A comma-separated list of names of transformers to use to mutate the cipher, in order
 
+# Algorithm and Scoring
+
+The algorithm is standard hill climbing with random restarts and an annealing schedule to aid in convergence.  Many other more complex types of algorithms have been attempted, but they have been found to either be unsuccessful or too slow.  Furthermore, the simplest solution that works is most often the best solution. 
+
+The solution scoring works by using a language model to estimate the probability of the solution and then penalizing the solution with a compution of the index of coincidence.  The language model is a Markov model of order 5 whereby any n-grams of the same length can each be assigned probabilities.  For n-grams that occur in solutions and which we do not have a match in the language model, we assign an "unknown n-gram probability".  We convert all probabilties to log probabilities, and this is done both for performance reasons and for ease of penalizing them by the aforementioned index of coincidence.  The index of coincidence turns out to be a critical component, as without it the hill climbing algorithm gets very easily stuck at local optima.  We take the fifth root of the index of coincidence and then multiply that by the sum of log probabilities as determined by the language model.
+
 # Transformers
 For ciphers that are more complex than homophonic substitution ciphers read left-to-right as normal, it's assumed that some sort of mutation(s) have been performed to throw off various types of cryptanalysis.  When this is the case, it's anyone's guess as to what type(s) of mutation(s) may have been performed during encipherment.  Therefore Zenith comes with an extensible facility for specifying transformations to perform to "unwrap" the cipher before doing hill climbing.  
 
 The following transformers are provided out of the box.  More can be added by implementing the CipherTransformer interface.
-* RemoveListRowCipherTransformer \
-   Removes the last row of the cipher.  This is useful for block ciphers where the last row contains mostly jibberish.
-* TranspositionCipherTransformer \
-   Transposes the cipher using a configured column key.
-* UpperLeftQuadrantCipherTransformer \
-   Replaces the cipher with its upper left quadrant.
-* UpperRightQuadrantCipherTransformer \
-   Replaces the cipher with its upper right quadrant.
-* LowerLeftQuadrantCipherTransformer \
-   Replaces the cipher with its lower left quadrant.
-* LowerRightQuadrantCipherTransformer \
-   Replaces the cipher with its lower right quadrant.
+### RemoveListRowCipherTransformer
+Removes the last row of the cipher.  This is useful for block ciphers where the last row contains mostly jibberish.
+### TranspositionCipherTransformer
+Transposes the cipher using a configured column key.
+### UpperLeftQuadrantCipherTransformer
+Replaces the cipher with its upper left quadrant.
+### UpperRightQuadrantCipherTransformer
+Replaces the cipher with its upper right quadrant.
+### LowerLeftQuadrantCipherTransformer
+Replaces the cipher with its lower left quadrant.
+### LowerRightQuadrantCipherTransformer
+Replaces the cipher with its lower right quadrant.
