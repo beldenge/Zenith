@@ -39,13 +39,13 @@ import java.nio.file.Paths;
 public class CorpusProcessorApplication implements CommandLineRunner {
 	private static Logger			log	= LoggerFactory.getLogger(CorpusProcessorApplication.class);
 
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;
 
-	@Value("${taskExecutor.poolSize.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						maxPoolSize;
 
-	@Value("${taskExecutor.queueCapacity}")
+	@Value("${task-executor.queue-capacity}")
 	private int						queueCapacity;
 
 	@Value("${corpus.output.directory}")

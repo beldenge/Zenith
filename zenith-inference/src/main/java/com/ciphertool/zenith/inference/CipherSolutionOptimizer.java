@@ -65,13 +65,13 @@ public class CipherSolutionOptimizer {
 	@Value("${decipherment.annealing.temperature.min}")
 	private double annealingTemperatureMin;
 
-	@Value("${decipherment.sampler.iterateRandomly}")
+	@Value("${decipherment.sampler.iterate-randomly}")
 	private Boolean	iterateRandomly;
 
 	@Value("${markov.letter.order}")
 	private int	markovOrder;
 
-	@Value("${decipherment.useKnownEvaluator:false}")
+	@Value("${decipherment.use-known-evaluator:false}")
 	private boolean	useKnownEvaluator;
 
 	@Value("${decipherment.epochs:1}")

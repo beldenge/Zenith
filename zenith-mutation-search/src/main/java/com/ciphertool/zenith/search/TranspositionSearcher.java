@@ -54,10 +54,10 @@ public class TranspositionSearcher {
     @Value("${decipherment.epochs:1}")
     private int epochs;
 
-    @Value("${decipherment.transposition.key-length-min:2}")
+    @Value("${decipherment.transposition.key-length.min:2}")
     private int keyLengthMin;
 
-    @Value("${decipherment.transposition.key-length-max}")
+    @Value("${decipherment.transposition.key-length.max}")
     private int keyLengthMax;
 
     @Autowired
@@ -74,7 +74,11 @@ public class TranspositionSearcher {
     @PostConstruct
     public void init() {
         if (keyLengthMin < 2) {
-            throw new IllegalArgumentException("The transposition key length must be greater than or equal to 2.");
+            throw new IllegalArgumentException("The minimum transposition key length must be greater than or equal to 2, but it was found to be " + keyLengthMin + ".");
+        }
+
+        if (keyLengthMin > keyLengthMax) {
+            throw new IllegalArgumentException("The minimum transposition key length which was " + keyLengthMin + " must be less than or equal to the maximum key length which was " + keyLengthMax + ".");
         }
 
         cipher = cipherDao.findByCipherName(cipherName);
