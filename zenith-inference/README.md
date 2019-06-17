@@ -18,6 +18,8 @@ cipher.name | zodiac340 | The name of a particular cipher within the ciphers.jso
 language-model.filename | zenith-model.csv | The language model file to use (CSV only) which should exist in the same directory where the application is run from
 language-model.archive-filename | zenith-model.zip | The language model zip file on the classpath which will be unzipped if language-model.filename does not exist
 markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
+decipherment.evaluator.plaintext | MarkovModelPlaintextEvaluator | The PlaintextEvaluator implementation class name to use
+decipherment.evaluator.known-plaintext | Zodiac408KnownPlaintextEvaluator | The KnownPlaintextEvaluator implementation class name to use, ignored if decipherment.use-known-evaluator is set to false, and required if decipherment.use-known-evaluator is set to true
 decipherment.epochs | 10 | The number of times to run the hill climbing algorithm (essentially the number of random restarts) 
 decipherment.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
 decipherment.annealing.temperature.max | 0.1 | Annealing temperature at the beginning of each epoch
@@ -28,6 +30,7 @@ decipherment.transposition.iterations | 1 | The number of times to perform trans
 decipherment.transposition.key-length.min | 17 | When the transposition key length is not known, this is the key length to start hill climbing with (must be greater than 1 and less than or equal to decipherment.transposition.key-length.max)
 decipherment.transposition.key-length.max | 17 | When the transposition key length is not known, this is the key length to end hill climbing with (must be greater than or equal to decipherment.transposition.key-length.min)
 decipherment.transformers.list | RemoveLastRowCipherTransformer | A comma-separated list of names of transformers to use to mutate the cipher, in order
+lstm.service-url | N/A | The URL for the LSTM network REST service, required only if decipherment.evaluator.plaintext is set to LstmNetworkPlaintextEvaluator
 
 # Algorithm and Scoring
 

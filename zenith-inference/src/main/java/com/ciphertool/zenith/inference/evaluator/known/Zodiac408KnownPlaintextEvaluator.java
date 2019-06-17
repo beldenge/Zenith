@@ -17,17 +17,16 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.evaluator;
+package com.ciphertool.zenith.inference.evaluator.known;
 
+import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.Plaintext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Plaintext;
-
 @Component
-public class Zodiac408KnownPlaintextEvaluator {
+public class Zodiac408KnownPlaintextEvaluator implements KnownPlaintextEvaluator {
 	private Logger					log				= LoggerFactory.getLogger(getClass());
 
 	private static CipherSolution	knownSolution	= new CipherSolution();
@@ -95,6 +94,7 @@ public class Zodiac408KnownPlaintextEvaluator {
 	public Zodiac408KnownPlaintextEvaluator() {
 	}
 
+	@Override
 	public Double evaluate(CipherSolution solution) {
 		double total = 0.0;
 

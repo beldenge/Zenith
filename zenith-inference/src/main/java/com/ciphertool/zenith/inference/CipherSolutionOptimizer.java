@@ -24,13 +24,12 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.Zodiac408KnownPlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.known.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.model.ModelUnzipper;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
 import com.ciphertool.zenith.inference.transformer.CipherTransformer;
 import com.ciphertool.zenith.model.ModelConstants;
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
@@ -51,7 +50,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class CipherSolutionOptimizer {
-	private Logger				log						= LoggerFactory.getLogger(getClass());
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Value("${cipher.name}")
 	private String cipherName;
@@ -83,23 +82,33 @@ public class CipherSolutionOptimizer {
 	@Value("${decipherment.transformers.list}")
 	private List<String> transformersToUse;
 
-	@Autowired
-	private PlaintextEvaluator				plaintextEvaluator;
+	@Value("${decipherment.evaluator.plaintext}")
+	private String plaintextEvaluatorName;
+
+	@Value("${decipherment.evaluator.known-plaintext:#{null}}")
+	private String knownPlaintextEvaluatorName;
 
 	@Autowired
-	private CipherDao						cipherDao;
+	private CipherDao cipherDao;
 
 	@Autowired
-	private LetterNGramDao					letterNGramDao;
+	private TreeMarkovModel letterMarkovModel;
 
 	@Autowired
 	private List<CipherTransformer> cipherTransformers;
 
-	@Autowired(required = false)
-	private Zodiac408KnownPlaintextEvaluator knownPlaintextEvaluator;
+	@Autowired
+	private List<PlaintextEvaluator> plaintextEvaluators;
+
+	@Autowired
+	private List<KnownPlaintextEvaluator> knownPlaintextEvaluators;
 
 	@Autowired
 	private ModelUnzipper modelUnzipper;
+
+	private PlaintextEvaluator plaintextEvaluator;
+
+	private KnownPlaintextEvaluator knownPlaintextEvaluator;
 
 	@PostConstruct
 	public void init() {
@@ -139,6 +148,45 @@ public class CipherSolutionOptimizer {
 			cipherTransformers.clear();
 			cipherTransformers.addAll(toUse);
 		}
+
+		if (useKnownEvaluator && knownPlaintextEvaluators != null && !knownPlaintextEvaluators.isEmpty()) {
+			if (knownPlaintextEvaluatorName == null || knownPlaintextEvaluatorName.isEmpty()) {
+				log.error("The property decipherment.use-known-evaluator was set to true, but no KnownPlaintextEvaluator implementation was specified.  Please set decipherment.evaluator.known-plaintext to a valid KnownPlaintextEvaluator or set the former property to false.");
+				throw new IllegalArgumentException("The property decipherment.evaluator.known-plaintext cannot be null if decipherment.use-known-evaluator is set to true.");
+			}
+
+			List<String> existentKnownPlaintextEvaluators = knownPlaintextEvaluators.stream()
+					.map(evaluator -> evaluator.getClass().getSimpleName())
+					.collect(Collectors.toList());
+
+			for (KnownPlaintextEvaluator evaluator : knownPlaintextEvaluators) {
+				if (evaluator.getClass().getSimpleName().equalsIgnoreCase(knownPlaintextEvaluatorName)) {
+					knownPlaintextEvaluator = evaluator;
+					break;
+				}
+			}
+
+			if (knownPlaintextEvaluator == null) {
+				log.error("The known plaintext evaluator with name {} does not exist.  Please use a name from the following: {}", knownPlaintextEvaluatorName, existentKnownPlaintextEvaluators);
+				throw new IllegalArgumentException("The known plaintext evaluator with name " + knownPlaintextEvaluatorName + " does not exist.");
+			}
+		}
+
+		List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
+				.map(evaluator -> evaluator.getClass().getSimpleName())
+				.collect(Collectors.toList());
+
+		for (PlaintextEvaluator evaluator : plaintextEvaluators) {
+			if (evaluator.getClass().getSimpleName().equalsIgnoreCase(plaintextEvaluatorName)) {
+				plaintextEvaluator = evaluator;
+				break;
+			}
+		}
+
+		if (plaintextEvaluator == null) {
+			log.error("The plaintext evaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
+			throw new IllegalArgumentException("The plaintext evaluator with name " + plaintextEvaluatorName + " does not exist.");
+		}
 	}
 
 	public void run() {
@@ -146,40 +194,13 @@ public class CipherSolutionOptimizer {
 
 		int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
-		long startFindAll = System.currentTimeMillis();
-		log.info("Beginning retrieval of all n-grams.");
-
-		/*
-		 * Begin setting up letter n-gram model
-		 */
-		List<TreeNGram> nGramNodes = letterNGramDao.findAll();
-
-		log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
-
-		TreeMarkovModel letterMarkovModel = new TreeMarkovModel(this.markovOrder);
-
-		long startAdding = System.currentTimeMillis();
-		log.info("Adding nodes to the model.");
-
-		nGramNodes.stream().forEach(letterMarkovModel::addNode);
-
-		log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
-
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
-
-		long totalNumberOfNgrams = firstOrderNodes.stream()
-				.mapToLong(TreeNGram::getCount)
-				.sum();
-
-		Double unknownLetterNGramProbability = 1d / (double) totalNumberOfNgrams;
-		letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-		letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
 
 		List<LetterProbability>	letterUnigramProbabilities	= new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
 
 		Double probability;
 		for (TreeNGram node : firstOrderNodes) {
-			probability = (double) node.getCount() / (double) totalNumberOfNgrams;
+			probability = (double) node.getCount() / (double) letterMarkovModel.getRootNode().getCount();
 
 			letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
 
@@ -226,7 +247,7 @@ public class CipherSolutionOptimizer {
 	}
 
 	private void performEpoch(CipherSolution initialSolution, TreeMarkovModel letterMarkovModel) {
-		plaintextEvaluator.evaluate(letterMarkovModel, initialSolution, null);
+		plaintextEvaluator.evaluate(initialSolution, null);
 
 		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
 			initialSolution.setKnownSolutionProximity(knownPlaintextEvaluator.evaluate(initialSolution));
@@ -320,7 +341,7 @@ public class CipherSolutionOptimizer {
 
 			proposal.replaceMapping(nextEntry.getKey(), new Plaintext(letter));
 
-			plaintextEvaluator.evaluate(letterMarkovModel, proposal, nextEntry.getKey());
+			plaintextEvaluator.evaluate(proposal, nextEntry.getKey());
 
 			solution = selectNext(temperature, solution, proposal);
 		}

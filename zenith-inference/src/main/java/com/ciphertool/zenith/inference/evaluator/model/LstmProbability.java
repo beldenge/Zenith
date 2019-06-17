@@ -17,10 +17,20 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.evaluator;
+package com.ciphertool.zenith.inference.evaluator.model;
 
-import com.ciphertool.zenith.inference.entities.CipherSolution;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-public interface PlaintextEvaluator {
-    void evaluate(CipherSolution solution, String ciphertextKey);
+import java.math.BigDecimal;
+
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+public class LstmProbability {
+    private BigDecimal probability;
+    private Double logProbability;
 }
