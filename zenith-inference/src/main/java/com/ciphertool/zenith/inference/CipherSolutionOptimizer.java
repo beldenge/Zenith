@@ -218,7 +218,7 @@ public class CipherSolutionOptimizer {
 
 			log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
-			performEpoch(initialSolution, letterMarkovModel);
+			performEpoch(initialSolution);
 		}
 	}
 
@@ -246,7 +246,7 @@ public class CipherSolutionOptimizer {
 		return solutionProposal;
 	}
 
-	private void performEpoch(CipherSolution initialSolution, TreeMarkovModel letterMarkovModel) {
+	private void performEpoch(CipherSolution initialSolution) {
 		plaintextEvaluator.evaluate(initialSolution, null);
 
 		if (useKnownEvaluator && knownPlaintextEvaluator != null) {
@@ -280,7 +280,7 @@ public class CipherSolutionOptimizer {
 			temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
 
 			startLetterSampling = System.currentTimeMillis();
-			next = runLetterSampler(temperature, next, letterMarkovModel);
+			next = runLetterSampler(temperature, next);
 			letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
 
 			if (useKnownEvaluator && knownPlaintextEvaluator != null) {
@@ -323,7 +323,7 @@ public class CipherSolutionOptimizer {
 		}
 	}
 
-	private CipherSolution runLetterSampler(Double temperature, CipherSolution solution, TreeMarkovModel letterMarkovModel) {
+	private CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {
 		CipherSolution proposal;
 
 		List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();

@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -36,30 +37,21 @@ import java.net.URI;
 import java.util.Collections;
 
 @Component
+@ConditionalOnProperty(value="decipherment.evaluator.plaintext", havingValue = "LstmNetworkPlaintextEvaluator")
 public class LstmNetworkPlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${decipherment.evaluator.plaintext}")
-    private String plaintextEvaluatorName;
-
-    @Value("${lstm.service-url:#{null}")
+    @Value("${lstm.service-url}")
     private String lstmServiceUrl;
 
     private URI lstmServiceEndpoint;
 
     @PostConstruct
     public void init() {
-        if (getClass().getSimpleName().equals(plaintextEvaluatorName)) {
-            if ((lstmServiceUrl == null || lstmServiceUrl.isEmpty())) {
-                log.error("The LstmNetworkPlaintextEvaluator was chosen as the PlaintextEvaluator implementation, but the lstm.service-url property was not set.");
-                throw new IllegalArgumentException("The property lstm.service-url cannot be null.");
-            }
-
-            lstmServiceEndpoint = UriComponentsBuilder.fromHttpUrl(lstmServiceUrl).build().encode().toUri();
-        }
+        lstmServiceEndpoint = UriComponentsBuilder.fromHttpUrl(lstmServiceUrl).build().encode().toUri();
     }
 
     @Override

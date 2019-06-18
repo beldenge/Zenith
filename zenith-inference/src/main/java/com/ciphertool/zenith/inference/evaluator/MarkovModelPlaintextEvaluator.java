@@ -25,12 +25,14 @@ import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(value="decipherment.evaluator.plaintext", havingValue = "MarkovModelPlaintextEvaluator")
 public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 	private Logger		log	= LoggerFactory.getLogger(getClass());
 
