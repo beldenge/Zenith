@@ -20,6 +20,7 @@ language-model.archive-filename | zenith-model.zip | The language model zip file
 markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
 decipherment.evaluator.plaintext | MarkovModelPlaintextEvaluator | The PlaintextEvaluator implementation class name to use
 decipherment.evaluator.known-plaintext | Zodiac408KnownPlaintextEvaluator | The KnownPlaintextEvaluator implementation class name to use, ignored if decipherment.use-known-evaluator is set to false, and required if decipherment.use-known-evaluator is set to true
+decipherment.use-known-evaluator | false | If the cipher has a known solution, this controls whether to also evaluate it against the known solution (primarily for debugging purposes)
 decipherment.epochs | 10 | The number of times to run the hill climbing algorithm (essentially the number of random restarts) 
 decipherment.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
 decipherment.annealing.temperature.max | 0.1 | Annealing temperature at the beginning of each epoch
