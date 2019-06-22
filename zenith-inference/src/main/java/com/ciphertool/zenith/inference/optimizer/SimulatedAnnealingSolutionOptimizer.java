@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference;
+package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
@@ -49,7 +49,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Component
-public class CipherSolutionOptimizer {
+public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Value("${cipher.name}")
@@ -189,7 +189,8 @@ public class CipherSolutionOptimizer {
 		}
 	}
 
-	public void run() {
+	@Override
+	public void optimize() {
 		Cipher cipher = transformCipher(cipherDao.findByCipherName(cipherName));
 
 		int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();

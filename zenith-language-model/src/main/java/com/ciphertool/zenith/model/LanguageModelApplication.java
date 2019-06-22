@@ -36,8 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @SpringBootApplication
-public class CorpusProcessorApplication implements CommandLineRunner {
-	private static Logger			log	= LoggerFactory.getLogger(CorpusProcessorApplication.class);
+public class LanguageModelApplication implements CommandLineRunner {
+	private static Logger			log	= LoggerFactory.getLogger(LanguageModelApplication.class);
 
 	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;
@@ -64,7 +64,7 @@ public class CorpusProcessorApplication implements CommandLineRunner {
 	private ThreadPoolTaskExecutor	taskExecutor;
 
 	public static void main(String[] args) {
-		SpringApplication.run(CorpusProcessorApplication.class, args);
+		SpringApplication.run(LanguageModelApplication.class, args);
 	}
 
 	@Override

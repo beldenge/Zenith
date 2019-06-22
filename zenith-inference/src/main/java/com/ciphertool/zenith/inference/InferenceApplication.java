@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference;
 
+import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
@@ -40,8 +41,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-@SpringBootApplication(scanBasePackageClasses = { InferenceEngineApplication.class, LetterNGramDao.class })
-public class InferenceEngineApplication implements CommandLineRunner {
+@SpringBootApplication(scanBasePackageClasses = { InferenceApplication.class, LetterNGramDao.class })
+public class InferenceApplication implements CommandLineRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Value("${markov.letter.order}")
@@ -51,15 +52,15 @@ public class InferenceEngineApplication implements CommandLineRunner {
 	private LetterNGramDao letterNGramDao;
 
 	@Autowired
-	private CipherSolutionOptimizer manager;
+	private SimulatedAnnealingSolutionOptimizer optimizer;
 
 	public static void main(String[] args) {
-		SpringApplication.run(InferenceEngineApplication.class, args).close();
+		SpringApplication.run(InferenceApplication.class, args).close();
 	}
 
 	@Override
 	public void run(String... arg0) {
-		manager.run();
+		optimizer.optimize();
 	}
 
 	@Bean
