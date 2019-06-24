@@ -4,4 +4,6 @@
 .settings
 .project
 .classpath
+.idea
+*.iml
 zenith-model.csv

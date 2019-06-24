@@ -31,6 +31,11 @@ You should have received a copy of the GNU General Public License along with Zen
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.ciphertool.zenith</groupId>
+			<artifactId>zenith-genetic-algorithm</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>

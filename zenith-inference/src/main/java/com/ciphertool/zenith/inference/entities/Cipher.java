@@ -182,7 +182,7 @@ public class Cipher implements Serializable {
 				.map(Ciphertext::getValue)
 				.map(String::length)
 				.max(Comparator.comparing(Integer::intValue))
-				.get();
+				.orElse(0);
 
 		int actualSize = this.ciphertextCharacters.size();
 		for (int i = 0; i < actualSize; i++) {

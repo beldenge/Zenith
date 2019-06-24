@@ -20,6 +20,8 @@
 package com.ciphertool.zenith.inference.selection;
 
 import com.ciphertool.zenith.inference.probability.Probability;
+import com.ciphertool.zenith.math.selection.BinaryRouletteNode;
+import com.ciphertool.zenith.math.selection.BinaryRouletteTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +32,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RouletteSampler<T extends Probability<?>> {
 	private Logger				log	= LoggerFactory.getLogger(getClass());
 
-	private BinaryRouletteTree	rouletteWheel;
+	private BinaryRouletteTree rouletteWheel;
 
 	public synchronized Double reIndex(List<T> probabilities) {
 		this.rouletteWheel = new BinaryRouletteTree();

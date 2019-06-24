@@ -38,6 +38,8 @@ You should have received a copy of the GNU General Public License along with Zen
 		<module>zenith-language-model</module>
 		<module>zenith-inference</module>
         <module>zenith-mutation-search</module>
+        <module>zenith-genetic-algorithm</module>
+        <module>zenith-math</module>
     </modules>
 
 	<dependencies>
