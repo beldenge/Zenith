@@ -35,7 +35,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -44,6 +46,15 @@ import java.util.List;
 @SpringBootApplication(scanBasePackageClasses = { InferenceApplication.class, LetterNGramDao.class })
 public class InferenceApplication implements CommandLineRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
+
+	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	private int						corePoolSize;
+
+	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	private int						maxPoolSize;
+
+	@Value("${task-executor.queue-capacity}")
+	private int						queueCapacity;
 
 	@Value("${markov.letter.order}")
 	private int	markovOrder;
@@ -118,5 +129,19 @@ public class InferenceApplication implements CommandLineRunner {
 		});
 
 		return builder.build();
+	}
+
+	@Bean
+	@Primary
+	public ThreadPoolTaskExecutor taskExecutor() {
+		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+		taskExecutor.setCorePoolSize(corePoolSize);
+		taskExecutor.setMaxPoolSize(maxPoolSize);
+		taskExecutor.setQueueCapacity(queueCapacity);
+		taskExecutor.setKeepAliveSeconds(5);
+		taskExecutor.setAllowCoreThreadTimeOut(true);
+
+		return taskExecutor;
 	}
 }

@@ -1,150 +1,123 @@
- /**
+/**
  * Copyright 2017-2019 George Belden
- *
+ * <p>
  * This file is part of Zenith.
- *
+ * <p>
  * Zenith is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * Zenith is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.ciphertool.zenith.genetic.algorithms.selection.modes;
 
- import com.ciphertool.zenith.genetic.entities.Chromosome;
- import com.ciphertool.zenith.genetic.mocks.MockKeyedChromosome;
- import org.junit.Before;
- import org.junit.BeforeClass;
- import org.junit.Test;
- import org.slf4j.Logger;
- import org.springframework.util.ReflectionUtils;
+import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.mocks.MockKeyedChromosome;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.springframework.util.ReflectionUtils;
 
- import java.lang.reflect.Field;
- import java.math.BigDecimal;
- import java.util.ArrayList;
- import java.util.List;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
- import static org.junit.Assert.assertEquals;
- import static org.junit.Assert.assertTrue;
- import static org.mockito.Matchers.anyString;
- import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class TournamentSelectorTest {
-	private static TournamentSelector	tournamentSelector;
-	private static Logger				logMock;
+    private static TournamentSelector tournamentSelector;
+    private static Logger logMock;
 
-	@BeforeClass
-	public static void setUp() {
-		tournamentSelector = new TournamentSelector();
-		tournamentSelector.setSelectionAccuracy(0.9);
+    @BeforeClass
+    public static void setUp() {
+        tournamentSelector = new TournamentSelector();
 
-		logMock = mock(Logger.class);
-		Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
-		ReflectionUtils.makeAccessible(logField);
-		ReflectionUtils.setField(logField, tournamentSelector, logMock);
-	}
+        Field selectionAccuracyField = ReflectionUtils.findField(TournamentSelector.class, "selectionAccuracy");
+        ReflectionUtils.makeAccessible(selectionAccuracyField);
+        ReflectionUtils.setField(selectionAccuracyField, tournamentSelector, 0.9);
 
-	@Before
-	public void resetMocks() {
-		reset(logMock);
-	}
+        logMock = mock(Logger.class);
+        Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
+        ReflectionUtils.makeAccessible(logField);
+        ReflectionUtils.setField(logField, tournamentSelector, logMock);
+    }
 
-	@Test
-	public void testSetSelectionAccuracy() {
-		Double selectionAccuracyToSet = 0.9d;
+    @Before
+    public void resetMocks() {
+        reset(logMock);
+    }
 
-		TournamentSelector tournamentSelector = new TournamentSelector();
-		tournamentSelector.setSelectionAccuracy(selectionAccuracyToSet);
+    @Test
+    public void testGetNextIndex() {
+        List<Chromosome> individuals = new ArrayList<>();
 
-		Field selectionAccuracyField = ReflectionUtils.findField(TournamentSelector.class, "selectionAccuracy");
-		ReflectionUtils.makeAccessible(selectionAccuracyField);
+        MockKeyedChromosome chromosome1 = new MockKeyedChromosome();
+        chromosome1.setFitness(2.0d);
+        individuals.add(chromosome1);
 
-		assertEquals(selectionAccuracyToSet, ReflectionUtils.getField(selectionAccuracyField, tournamentSelector));
-	}
+        Double bestFitness = 3.0d;
+        MockKeyedChromosome chromosome2 = new MockKeyedChromosome();
+        chromosome2.setFitness(bestFitness);
+        individuals.add(chromosome2);
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testSetSelectionAccuracyInvalidNegative() {
-		Double selectionAccuracyToSet = -0.9d;
+        MockKeyedChromosome chromosome3 = new MockKeyedChromosome();
+        chromosome3.setFitness(1.0d);
+        individuals.add(chromosome3);
 
-		TournamentSelector tournamentSelector = new TournamentSelector();
-		tournamentSelector.setSelectionAccuracy(selectionAccuracyToSet);
-	}
+        int selectedIndex = tournamentSelector.getNextIndex(individuals, 6.0d);
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testSetSelectionAccuracyInvalidPositive() {
-		Double selectionAccuracyToSet = 1.9d;
+        assertTrue(selectedIndex > -1);
+        verifyZeroInteractions(logMock);
+    }
 
-		TournamentSelector tournamentSelector = new TournamentSelector();
-		tournamentSelector.setSelectionAccuracy(selectionAccuracyToSet);
-	}
+    @Test
+    public void testGetNextIndexWithNullPopulation() {
+        int selectedIndex = tournamentSelector.getNextIndex(null, 6.0d);
 
-	@Test
-	public void testGetNextIndex() {
-		List<Chromosome> individuals = new ArrayList<>();
+        assertEquals(-1, selectedIndex);
+        verify(logMock, times(1)).warn(anyString());
+    }
 
-		MockKeyedChromosome chromosome1 = new MockKeyedChromosome();
-		chromosome1.setFitness(2.0d);
-		individuals.add(chromosome1);
+    @Test
+    public void testGetNextIndexWithEmptyPopulation() {
+        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>(), 6.0d);
 
-		Double bestFitness = 3.0d;
-		MockKeyedChromosome chromosome2 = new MockKeyedChromosome();
-		chromosome2.setFitness(bestFitness);
-		individuals.add(chromosome2);
+        assertEquals(-1, selectedIndex);
+        verify(logMock, times(1)).warn(anyString());
+    }
 
-		MockKeyedChromosome chromosome3 = new MockKeyedChromosome();
-		chromosome3.setFitness(1.0d);
-		individuals.add(chromosome3);
+    @Test
+    public void testGetNextIndexWithNullTotalFitness() {
+        List<Chromosome> individuals = new ArrayList<>();
 
-		int selectedIndex = tournamentSelector.getNextIndex(individuals, 6.0d);
+        MockKeyedChromosome chromosome1 = new MockKeyedChromosome();
+        chromosome1.setFitness(2.0d);
+        individuals.add(chromosome1);
 
-		assertTrue(selectedIndex > -1);
-		verifyZeroInteractions(logMock);
-	}
+        Double bestFitness = 3.0d;
+        MockKeyedChromosome chromosome2 = new MockKeyedChromosome();
+        chromosome2.setFitness(bestFitness);
+        individuals.add(chromosome2);
 
-	@Test
-	public void testGetNextIndexWithNullPopulation() {
-		int selectedIndex = tournamentSelector.getNextIndex(null, 6.0d);
+        MockKeyedChromosome chromosome3 = new MockKeyedChromosome();
+        chromosome3.setFitness(1.0d);
+        individuals.add(chromosome3);
 
-		assertEquals(-1, selectedIndex);
-		verify(logMock, times(1)).warn(anyString());
-	}
+        int selectedIndex = tournamentSelector.getNextIndex(individuals, null);
 
-	@Test
-	public void testGetNextIndexWithEmptyPopulation() {
-		int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>(), 6.0d);
-
-		assertEquals(-1, selectedIndex);
-		verify(logMock, times(1)).warn(anyString());
-	}
-
-	@Test
-	public void testGetNextIndexWithNullTotalFitness() {
-		List<Chromosome> individuals = new ArrayList<>();
-
-		MockKeyedChromosome chromosome1 = new MockKeyedChromosome();
-		chromosome1.setFitness(2.0d);
-		individuals.add(chromosome1);
-
-		Double bestFitness = 3.0d;
-		MockKeyedChromosome chromosome2 = new MockKeyedChromosome();
-		chromosome2.setFitness(bestFitness);
-		individuals.add(chromosome2);
-
-		MockKeyedChromosome chromosome3 = new MockKeyedChromosome();
-		chromosome3.setFitness(1.0d);
-		individuals.add(chromosome3);
-
-		int selectedIndex = tournamentSelector.getNextIndex(individuals, null);
-
-		assertTrue(selectedIndex > -1);
-		verifyZeroInteractions(logMock);
-	}
+        assertTrue(selectedIndex > -1);
+        verifyZeroInteractions(logMock);
+    }
 }
