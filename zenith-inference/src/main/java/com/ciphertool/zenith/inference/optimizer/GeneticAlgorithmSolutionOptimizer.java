@@ -19,13 +19,14 @@
 
 package com.ciphertool.zenith.inference.optimizer;
 
+import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.selection.modes.Selector;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.genetic.fitness.KnownPlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,9 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     @Value("${genetic-algorithm.mutation.max-per-individual}")
     private int maxMutationsPerIndividual;
 
+    @Value("${genetic-algorithm.breeder.implementation}")
+    private String breederName;
+
     @Value("${genetic-algorithm.crossover.implementation}")
     private String crossoverAlgorithmName;
 
@@ -74,6 +78,9 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     private StandardGeneticAlgorithm geneticAlgorithm;
 
     @Autowired
+    private List<Breeder> breeders;
+
+    @Autowired
     private List<CrossoverAlgorithm> crossoverAlgorithms;
 
     @Autowired
@@ -82,8 +89,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     @Autowired
     private List<Selector> selectors;
 
-    @Autowired
-    private List<PlaintextEvaluator> plaintextEvaluators;
+    private Breeder breeder;
 
     private CrossoverAlgorithm crossoverAlgorithm;
 
@@ -93,8 +99,27 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     private FitnessEvaluator fitnessEvaluator;
 
+    private FitnessEvaluator knownSolutionFitnessEvaluator;
+
     @PostConstruct
     public void init() {
+        // Set the proper Breeder
+        List<String> existentBreeders = breeders.stream()
+                .map(breeder -> breeder.getClass().getSimpleName())
+                .collect(Collectors.toList());
+
+        for (Breeder breeder : breeders) {
+            if (breeder.getClass().getSimpleName().equals(breederName)) {
+                this.breeder = breeder;
+                break;
+            }
+        }
+
+        if (breeder == null) {
+            log.error("The Breeder with name {} does not exist.  Please use a name from the following: {}", breederName, existentBreeders);
+            throw new IllegalArgumentException("The Breeder with name " + breederName + " does not exist.");
+        }
+
         // Set the proper CrossoverAlgorithm
         List<String> existentCrossoverAlgorithms = crossoverAlgorithms.stream()
                 .map(crossoverAlgorithm -> crossoverAlgorithm.getClass().getSimpleName())
@@ -146,22 +171,8 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
             throw new IllegalArgumentException("The Selector with name " + selectorName + " does not exist.");
         }
 
-        // Set the proper FitnessEvaluator
-        List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
-                .map(evaluator -> evaluator.getClass().getSimpleName())
-                .collect(Collectors.toList());
-
-        for (PlaintextEvaluator evaluator : plaintextEvaluators) {
-            if (evaluator.getClass().getSimpleName().equals(fitnessEvaluatorName)) {
-                fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(evaluator);
-                break;
-            }
-        }
-
-        if (fitnessEvaluator == null) {
-            log.error("The PlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", fitnessEvaluatorName, existentPlaintextEvaluators);
-            throw new IllegalArgumentException("The PlaintextEvaluator with name " + fitnessEvaluatorName + " does not exist.");
-        }
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator);
+        knownSolutionFitnessEvaluator = new KnownPlaintextEvaluatorWrappingFitnessEvaluator(knownPlaintextEvaluator);
     }
 
     @Override
@@ -175,6 +186,8 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .maxGenerations(numberOfGenerations)
                 .mutationRate(mutationRate)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
+                .compareToKnownSolution(useKnownEvaluator)
+                .knownSolutionFitnessEvaluator(knownSolutionFitnessEvaluator)
                 .build();
 
         geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);

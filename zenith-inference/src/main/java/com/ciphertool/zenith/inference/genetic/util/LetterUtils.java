@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.genetic.common;
+package com.ciphertool.zenith.inference.genetic.util;
 
 import java.util.concurrent.ThreadLocalRandom;
 

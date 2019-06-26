@@ -128,8 +128,7 @@ public class StandardPopulation implements Population {
      * @throws InterruptedException
      *             if stop is requested
      */
-    protected int doConcurrentFitnessEvaluations(FitnessEvaluator fitnessEvaluator)
-            throws InterruptedException {
+    protected int doConcurrentFitnessEvaluations(FitnessEvaluator fitnessEvaluator) {
         List<FutureTask<Void>> futureTasks = new ArrayList<>();
         FutureTask<Void> futureTask;
 

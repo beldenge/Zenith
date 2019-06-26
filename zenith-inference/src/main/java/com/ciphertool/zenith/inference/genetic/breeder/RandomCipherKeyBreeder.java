@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.genetic;
+package com.ciphertool.zenith.inference.genetic.breeder;
 
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
-public class CipherKeyBreeder implements Breeder {
+public class RandomCipherKeyBreeder implements Breeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static final String[] KEYS = {"a", "anchor", "b", "backc", "backd", "backe", "backf", "backj",
@@ -51,7 +51,7 @@ public class CipherKeyBreeder implements Breeder {
     /**
      * Default no-args constructor
      */
-    public CipherKeyBreeder() {
+    public RandomCipherKeyBreeder() {
     }
 
     @Override

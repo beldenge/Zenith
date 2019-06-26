@@ -39,10 +39,10 @@ import java.nio.file.Paths;
 public class LanguageModelApplication implements CommandLineRunner {
 	private static Logger			log	= LoggerFactory.getLogger(LanguageModelApplication.class);
 
-	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	@Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;
 
-	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	@Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						maxPoolSize;
 
 	@Value("${task-executor.queue-capacity}")

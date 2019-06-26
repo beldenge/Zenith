@@ -22,21 +22,19 @@ package com.ciphertool.zenith.inference.genetic.fitness;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.known.KnownPlaintextEvaluator;
 
-public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
-    private PlaintextEvaluator plaintextEvaluator;
+public class KnownPlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
+    private KnownPlaintextEvaluator knownPlaintextEvaluator;
 
-    public PlaintextEvaluatorWrappingFitnessEvaluator(PlaintextEvaluator plaintextEvaluator) {
-        this.plaintextEvaluator = plaintextEvaluator;
+    public KnownPlaintextEvaluatorWrappingFitnessEvaluator(KnownPlaintextEvaluator knownPlaintextEvaluator) {
+        this.knownPlaintextEvaluator = knownPlaintextEvaluator;
     }
 
     @Override
     public Double evaluate(Chromosome chromosome) {
         CipherSolution cipherSolution = ChromosomeToCipherSolutionMapper.map(chromosome);
 
-        plaintextEvaluator.evaluate(cipherSolution, null);
-
-        return cipherSolution.getLogProbability();
+        return knownPlaintextEvaluator.evaluate(cipherSolution);
     }
 }

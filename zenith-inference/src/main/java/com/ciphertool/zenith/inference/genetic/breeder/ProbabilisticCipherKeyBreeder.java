@@ -42,7 +42,7 @@ import java.util.Map;
 
 @Component
 @ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
-public class ProbabilisticBreeder implements Breeder {
+public class ProbabilisticCipherKeyBreeder implements Breeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static List<LetterProbability> letterUnigramProbabilities = new ArrayList<>();

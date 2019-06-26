@@ -13,6 +13,8 @@ There are a number of configuration settings that can be set for the application
 
 Property Key | Default Value | Description
 --- | --- | ---
+task-executor.pool-size | Number of available cores on host | The number of threads to use for parallel tasks
+task-executor.queue-capacity | 100000 | The number of tasks which can be queued at any given time when performing multi-threaded operations
 cipher.repository-filename | ciphers.json | The file on the classpath which contains any number of ciphers specified as JSON objects
 cipher.name | zodiac340 | The name of a particular cipher within the ciphers.json file (zodiac408 and zodiac340 are provided)
 language-model.filename | zenith-model.csv | The language model file to use (CSV only) which should exist in the same directory where the application is run from

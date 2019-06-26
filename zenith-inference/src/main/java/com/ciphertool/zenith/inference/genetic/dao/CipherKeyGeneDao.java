@@ -22,7 +22,7 @@ package com.ciphertool.zenith.inference.genetic.dao;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.inference.genetic.common.LetterUtils;
+import com.ciphertool.zenith.inference.genetic.util.LetterUtils;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;

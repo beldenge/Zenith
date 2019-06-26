@@ -20,23 +20,25 @@
 package com.ciphertool.zenith.inference.genetic.fitness;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
+import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.entities.Plaintext;
+import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
+import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 
-public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
-    private PlaintextEvaluator plaintextEvaluator;
+import java.util.Map;
 
-    public PlaintextEvaluatorWrappingFitnessEvaluator(PlaintextEvaluator plaintextEvaluator) {
-        this.plaintextEvaluator = plaintextEvaluator;
-    }
+public class ChromosomeToCipherSolutionMapper {
+    public static CipherSolution map(Chromosome chromosome) {
+        CipherKeyChromosome cipherKeyChromosome = (CipherKeyChromosome) chromosome;
 
-    @Override
-    public Double evaluate(Chromosome chromosome) {
-        CipherSolution cipherSolution = ChromosomeToCipherSolutionMapper.map(chromosome);
+        CipherSolution cipherSolution = new CipherSolution(cipherKeyChromosome.getCipher(), chromosome.getGenes().size());
 
-        plaintextEvaluator.evaluate(cipherSolution, null);
+        for (Map.Entry<String, Gene> entry : cipherKeyChromosome.getGenes().entrySet()) {
+            CipherKeyGene cipherKeyGene = (CipherKeyGene) entry.getValue();
+            cipherSolution.putMapping(entry.getKey(), new Plaintext(cipherKeyGene.getValue()));
+        }
 
-        return cipherSolution.getLogProbability();
+        return cipherSolution;
     }
 }

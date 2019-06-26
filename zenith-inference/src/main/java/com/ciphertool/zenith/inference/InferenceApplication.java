@@ -49,7 +49,6 @@ import java.util.stream.Collectors;
 @SpringBootApplication(scanBasePackages = {
 	"com.ciphertool.zenith.inference",
 	"com.ciphertool.zenith.model.dao",
-	"com.ciphertool.zenith.genetic",
 	"com.ciphertool.zenith.genetic.algorithms.crossover.impl",
 	"com.ciphertool.zenith.genetic.algorithms.mutation",
 	"com.ciphertool.zenith.genetic.algorithms.mutation.impl",
@@ -60,10 +59,10 @@ import java.util.stream.Collectors;
 public class InferenceApplication implements CommandLineRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	@Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						corePoolSize;
 
-	@Value("${task-executor.pool-size.override:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	@Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
 	private int						maxPoolSize;
 
 	@Value("${task-executor.queue-capacity}")
