@@ -19,15 +19,12 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class Cipher implements Serializable {
-	private static final long	serialVersionUID		= 3417112220260206089L;
-
+public class Cipher {
 	private String				name;
 
 	private int					columns;

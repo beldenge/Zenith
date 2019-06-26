@@ -35,7 +35,7 @@ import java.util.List;
 
 @Component
 public class CipherDao {
-	private static Logger	log	= LoggerFactory.getLogger(CipherDao.class);
+	private static Logger log = LoggerFactory.getLogger(CipherDao.class);
 
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 

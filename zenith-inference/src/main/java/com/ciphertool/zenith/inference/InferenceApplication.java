@@ -35,8 +35,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -48,25 +51,32 @@ import java.util.stream.Collectors;
 
 @SpringBootApplication(scanBasePackages = {
 	"com.ciphertool.zenith.inference",
-	"com.ciphertool.zenith.model.dao",
-	"com.ciphertool.zenith.genetic.algorithms.crossover.impl",
-	"com.ciphertool.zenith.genetic.algorithms.mutation",
-	"com.ciphertool.zenith.genetic.algorithms.mutation.impl",
-	"com.ciphertool.zenith.genetic.algorithms",
-	"com.ciphertool.zenith.genetic.algorithms.selection",
-	"com.ciphertool.zenith.genetic.population"
+	"com.ciphertool.zenith.model.dao"
 })
 public class InferenceApplication implements CommandLineRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						corePoolSize;
+	@Configuration
+	@ComponentScan({
+		"com.ciphertool.zenith.genetic.algorithms.crossover.impl",
+		"com.ciphertool.zenith.genetic.algorithms.mutation",
+		"com.ciphertool.zenith.genetic.algorithms.mutation.impl",
+		"com.ciphertool.zenith.genetic.algorithms",
+		"com.ciphertool.zenith.genetic.algorithms.selection",
+		"com.ciphertool.zenith.genetic.population"
+	})
+	@ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
+	public class GeneticAlgorithmConfiguration {
+	}
 
 	@Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
-	private int						maxPoolSize;
+	private int	corePoolSize;
+
+	@Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+	private int	maxPoolSize;
 
 	@Value("${task-executor.queue-capacity}")
-	private int						queueCapacity;
+	private int	queueCapacity;
 
 	@Value("${markov.letter.order}")
 	private int	markovOrder;
@@ -84,9 +94,6 @@ public class InferenceApplication implements CommandLineRunner {
 	private List<SolutionOptimizer> optimizers;
 
 	private SolutionOptimizer solutionOptimizer;
-
-	@Autowired
-	private CipherDao cipherDao;
 
 	public static void main(String[] args) {
 		SpringApplication.run(InferenceApplication.class, args).close();
@@ -114,7 +121,7 @@ public class InferenceApplication implements CommandLineRunner {
 	}
 
 	@Bean
-	public Cipher cipher() {
+	public Cipher cipher(CipherDao cipherDao) {
 		return cipherDao.findByCipherName(cipherName);
 	}
 
