@@ -34,9 +34,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 
@@ -94,8 +94,8 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void testInitialize() throws InterruptedException {
-        Date beforeInitialize = new Date();
+    public void testInitialize() {
+        LocalDateTime beforeInitialize = LocalDateTime.now();
 
         int populationSize = 100;
         double mutationRate = 0.0;
@@ -147,7 +147,7 @@ public class StandardGeneticAlgorithmTest {
 
         assertEquals(0, generationCountFromObject);
         assertNotNull(executionStatisticsFromObject);
-        assertTrue(executionStatisticsFromObject.getStartDateTime().getTime() >= beforeInitialize.getTime());
+        assertTrue(executionStatisticsFromObject.getStartDateTime().compareTo(beforeInitialize) >= 0);
         assertEquals(populationSize, executionStatisticsFromObject.getPopulationSize().intValue());
         assertEquals(new Double(mutationRate), executionStatisticsFromObject.getMutationRate());
         assertEquals(crossoverAlgorithmMock.getClass().getSimpleName(), executionStatisticsFromObject.getCrossoverAlgorithm());
@@ -164,7 +164,7 @@ public class StandardGeneticAlgorithmTest {
 
     @Test
     public void testFinish() {
-        Date beforeFinish = new Date();
+        LocalDateTime beforeFinish = LocalDateTime.now();
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
@@ -179,7 +179,7 @@ public class StandardGeneticAlgorithmTest {
 
         standardGeneticAlgorithm.finish();
 
-        assertTrue(executionStatistics.getEndDateTime().getTime() >= beforeFinish.getTime());
+        assertTrue(executionStatistics.getEndDateTime().compareTo(beforeFinish) >= 0);
 
         ExecutionStatistics executionStatisticsFromObject = (ExecutionStatistics) ReflectionUtils.getField(executionStatisticsField, standardGeneticAlgorithm);
         assertNull(executionStatisticsFromObject);
@@ -187,7 +187,7 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
-    public void testProceedWithNextGeneration() throws InterruptedException {
+    public void testProceedWithNextGeneration() {
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         int initialPopulationSize = 100;
@@ -531,12 +531,12 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
-    public void testMutate_SmallPopulation() throws InterruptedException {
+    public void testMutate_SmallPopulation() {
         int initialPopulationSize = 100;
         int actualPopulationSize = 25;
         int index = 0;
 
-        List<Chromosome> individuals = new ArrayList<Chromosome>();
+        List<Chromosome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
             individuals.add(new MockChromosome());
         }
@@ -589,7 +589,7 @@ public class StandardGeneticAlgorithmTest {
     }
 
     @Test
-    public void testSpawnInitialPopulation() throws InterruptedException {
+    public void testSpawnInitialPopulation() {
         int populationSize = 100;
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
@@ -599,7 +599,7 @@ public class StandardGeneticAlgorithmTest {
         StandardPopulation populationMock = mock(StandardPopulation.class);
 
         // Setting the individuals to something non-empty so the calculateEntropy() method won't fail
-        List<Chromosome> individuals = new ArrayList<Chromosome>();
+        List<Chromosome> individuals = new ArrayList<>();
         individuals.add(new MockChromosome());
         when(populationMock.getIndividuals()).thenReturn(individuals);
 

@@ -25,8 +25,7 @@ import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import org.junit.Test;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -35,7 +34,7 @@ import static org.mockito.Mockito.mock;
 public class ExecutionStatisticsTest {
     @Test
     public void testConstructor() {
-        Date startDateToSet = new Date();
+        LocalDateTime startDateToSet = LocalDateTime.now();
         GeneticAlgorithmStrategy strategy = createGeneticAlgorithmStrategy();
 
         ExecutionStatistics executionStatistics = new ExecutionStatistics(startDateToSet, strategy);
@@ -50,7 +49,7 @@ public class ExecutionStatisticsTest {
 
     @Test
     public void testSetStartDate() {
-        Date startDateToSet = new Date();
+        LocalDateTime startDateToSet = LocalDateTime.now();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setStartDateTime(startDateToSet);
 
@@ -59,7 +58,7 @@ public class ExecutionStatisticsTest {
 
     @Test
     public void testSetEndDate() {
-        Date endDateToSet = new Date();
+        LocalDateTime endDateToSet = LocalDateTime.now();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setEndDateTime(endDateToSet);
 
@@ -169,7 +168,7 @@ public class ExecutionStatisticsTest {
 
     @Test
     public void testEquals() {
-        Date baseStartDate = new Date();
+        LocalDateTime baseStartDate = LocalDateTime.now();
         GeneticAlgorithmStrategy baseStrategy = createGeneticAlgorithmStrategy();
 
         ExecutionStatistics base = new ExecutionStatistics(baseStartDate, baseStrategy);
@@ -177,9 +176,7 @@ public class ExecutionStatisticsTest {
         ExecutionStatistics executionStatisticsEqualToBase = new ExecutionStatistics(baseStartDate, baseStrategy);
         assertEquals(base, executionStatisticsEqualToBase);
 
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.YEAR, -1);
-        Date differentStartDate = cal.getTime();
+        LocalDateTime differentStartDate = LocalDateTime.now().minusYears(1);
         ExecutionStatistics executionStatisticsWithDifferentStartDate = new ExecutionStatistics(differentStartDate,
                 baseStrategy);
         assertFalse(base.equals(executionStatisticsWithDifferentStartDate));

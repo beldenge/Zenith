@@ -33,8 +33,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -61,8 +61,7 @@ public class StandardGeneticAlgorithm {
 
         this.generationCount = 0;
 
-        Date startDate = new Date();
-        this.executionStatistics = new ExecutionStatistics(startDate, this.strategy);
+        this.executionStatistics = new ExecutionStatistics(LocalDateTime.now(), this.strategy);
 
         this.spawnInitialPopulation();
     }
@@ -376,7 +375,7 @@ public class StandardGeneticAlgorithm {
 
         log.info("Average generation time is {}ms.", averageExecutionTime);
 
-        this.executionStatistics.setEndDateTime(new Date());
+        this.executionStatistics.setEndDateTime(LocalDateTime.now());
 
         // This needs to be reset to null in case the algorithm is re-run
         this.executionStatistics = null;

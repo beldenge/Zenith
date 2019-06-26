@@ -22,9 +22,9 @@ package com.ciphertool.zenith.genetic.statistics;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor
@@ -33,8 +33,8 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 public class ExecutionStatistics {
-    private Date startDateTime;
-    private Date endDateTime;
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
     private Integer populationSize;
     private Double mutationRate;
     private String crossoverAlgorithm;
@@ -43,7 +43,7 @@ public class ExecutionStatistics {
 
     private List<GenerationStatistics> generationStatisticsList = new ArrayList<>();
 
-    public ExecutionStatistics(Date startDateTime, GeneticAlgorithmStrategy strategy) {
+    public ExecutionStatistics(LocalDateTime startDateTime, GeneticAlgorithmStrategy strategy) {
         this.startDateTime = startDateTime;
 
         if (strategy == null) {
