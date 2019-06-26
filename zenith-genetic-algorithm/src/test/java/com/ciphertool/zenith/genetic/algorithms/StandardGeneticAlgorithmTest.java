@@ -519,7 +519,7 @@ public class StandardGeneticAlgorithmTest {
         ReflectionUtils.makeAccessible(strategyField);
         ReflectionUtils.setField(strategyField, standardGeneticAlgorithm, strategyToSet);
 
-        standardGeneticAlgorithm.mutate(initialPopulationSize);
+        standardGeneticAlgorithm.mutate();
 
         verify(populationMock, times(100)).getIndividuals();
         verify(populationMock, times(1)).size();
@@ -578,7 +578,7 @@ public class StandardGeneticAlgorithmTest {
         ReflectionUtils.makeAccessible(strategyField);
         ReflectionUtils.setField(strategyField, standardGeneticAlgorithm, strategyToSet);
 
-        standardGeneticAlgorithm.mutate(initialPopulationSize);
+        standardGeneticAlgorithm.mutate();
 
         verify(populationMock, times(actualPopulationSize)).getIndividuals();
         verify(populationMock, times(1)).size();

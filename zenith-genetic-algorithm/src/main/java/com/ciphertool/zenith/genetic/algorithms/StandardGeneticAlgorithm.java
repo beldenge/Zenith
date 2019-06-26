@@ -182,7 +182,7 @@ public class StandardGeneticAlgorithm {
         performanceStats.setCrossoverMillis(System.currentTimeMillis() - startCrossover);
 
         long startMutation = System.currentTimeMillis();
-        generationStatistics.setNumberOfMutations(mutate(populationSizeBeforeGeneration));
+        generationStatistics.setNumberOfMutations(mutate());
         performanceStats.setMutationMillis(System.currentTimeMillis() - startMutation);
 
         long startEntropyCalculation = System.currentTimeMillis();
@@ -325,7 +325,7 @@ public class StandardGeneticAlgorithm {
         return childrenToAdd;
     }
 
-    public int mutate(int initialPopulationSize) {
+    public int mutate() {
         StandardPopulation standardPopulation = (StandardPopulation) this.population;
 
         List<FutureTask<Void>> futureTasks = new ArrayList<>();
