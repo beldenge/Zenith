@@ -33,6 +33,7 @@ public class GeneticAlgorithmStrategy {
     private Double mutationRate;
     private Integer maxMutationsPerIndividual;
     private Integer maxGenerations;
+    private Integer elitism;
     private CrossoverAlgorithm crossoverAlgorithm;
     private FitnessEvaluator fitnessEvaluator;
     private MutationAlgorithm mutationAlgorithm;

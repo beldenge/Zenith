@@ -23,60 +23,24 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
+@NoArgsConstructor
+@Getter
+@Setter
 @EqualsAndHashCode
 @ToString
-@NoArgsConstructor
 public class GenerationStatistics {
-    @Getter
-    @Setter
     private ExecutionStatistics executionStatistics;
-
-    @Getter
-    @Setter
     private int generation;
-
-    @Getter
-    @Setter
     private Double bestFitness;
-
-    @Getter
-    @Setter
     private Double averageFitness;
-
-    @Getter
-    @Setter
     private BigDecimal entropy;
-
-    @Getter
-    @Setter
     private Double knownSolutionProximity;
-
-    @Getter
-    @Setter
     private int numberOfCrossovers;
-
-    @Getter
-    @Setter
     private int numberOfMutations;
-
-    @Getter
-    @Setter
     private int numberOfEvaluations;
-
-    @Getter
-    @Setter
     private int numberOfMajorEvaluations;
-
-    @Getter
-    @Setter
     private int numberRandomlyGenerated;
-
-    @Getter
-    @Setter
     private int numberSelectedOut;
-
-    @Getter
-    @Setter
     private PerformanceStatistics performanceStatistics = new PerformanceStatistics();
 
     /**

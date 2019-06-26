@@ -186,6 +186,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .maxGenerations(numberOfGenerations)
                 .mutationRate(mutationRate)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
+                .elitism(elitism)
                 .compareToKnownSolution(useKnownEvaluator)
                 .knownSolutionFitnessEvaluator(knownSolutionFitnessEvaluator)
                 .build();

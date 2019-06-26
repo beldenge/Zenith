@@ -30,8 +30,6 @@ import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ReflectionUtils;
 
@@ -43,25 +41,10 @@ import java.util.List;
 import java.util.concurrent.FutureTask;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class StandardGeneticAlgorithmTest {
-    @Test
-    public void testSetPopulation() {
-        StandardPopulation populationToSet = mock(StandardPopulation.class);
-
-        StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-        standardGeneticAlgorithm.setPopulation(populationToSet);
-
-        StandardPopulation populationFromObject = (StandardPopulation) standardGeneticAlgorithm.getPopulation();
-
-        assertSame(populationToSet, populationFromObject);
-    }
-
     @SuppressWarnings({"rawtypes"})
     @Test
     public void testSetStrategy() {
@@ -87,7 +70,11 @@ public class StandardGeneticAlgorithmTest {
                 .build();
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-        standardGeneticAlgorithm.setPopulation(populationMock);
+
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, populationMock);
+
         standardGeneticAlgorithm.setStrategy(strategyToSet);
 
         Field strategyField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "strategy");
@@ -101,22 +88,8 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).setTargetSize(eq(populationSizeToSet));
         verify(populationMock, times(1)).setSelector(eq(selectorMock));
         verifyNoMoreInteractions(populationMock);
-
         verifyNoMoreInteractions(crossoverAlgorithmMock);
-
         verifyNoMoreInteractions(mutationAlgorithmMock);
-
-        Field crossoverAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "crossoverAlgorithm");
-        ReflectionUtils.makeAccessible(crossoverAlgorithmField);
-        CrossoverAlgorithm crossoverAlgorithmFromObject = (CrossoverAlgorithm) ReflectionUtils.getField(crossoverAlgorithmField, standardGeneticAlgorithm);
-
-        assertSame(crossoverAlgorithmMock, crossoverAlgorithmFromObject);
-
-        Field mutationAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "mutationAlgorithm");
-        ReflectionUtils.makeAccessible(mutationAlgorithmField);
-        MutationAlgorithm mutationAlgorithmFromObject = (MutationAlgorithm) ReflectionUtils.getField(mutationAlgorithmField, standardGeneticAlgorithm);
-
-        assertSame(mutationAlgorithmMock, mutationAlgorithmFromObject);
     }
 
     @SuppressWarnings("rawtypes")
@@ -149,7 +122,10 @@ public class StandardGeneticAlgorithmTest {
         when(populationMock.getIndividuals()).thenReturn(individuals);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-        standardGeneticAlgorithm.setPopulation(populationMock);
+
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, populationMock);
 
         Field strategyField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "strategy");
         ReflectionUtils.makeAccessible(strategyField);
@@ -221,7 +197,7 @@ public class StandardGeneticAlgorithmTest {
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
 
-        List<Chromosome> individuals = new ArrayList<Chromosome>();
+        List<Chromosome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
             individuals.add(new MockChromosome());
         }
@@ -231,11 +207,21 @@ public class StandardGeneticAlgorithmTest {
         when(populationMock.removeIndividual(anyInt())).thenReturn(new MockChromosome());
         when(populationMock.size()).thenReturn(initialPopulationSize);
         when(populationMock.selectIndex()).thenReturn(0);
-        standardGeneticAlgorithm.setPopulation(populationMock);
+
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, populationMock);
+
+        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
+        CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
+        when(crossoverAlgorithmMock.numberOfOffspring()).thenReturn(1);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .populationSize(populationSize)
                 .mutationRate(mutationRate)
+                .mutationAlgorithm(mutationAlgorithmMock)
+                .crossoverAlgorithm(crossoverAlgorithmMock)
+                .elitism(0)
                 .build();
 
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
@@ -257,18 +243,6 @@ public class StandardGeneticAlgorithmTest {
         ReflectionUtils.makeAccessible(generationCountField);
         ReflectionUtils.setField(generationCountField, standardGeneticAlgorithm, 0);
 
-        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
-        Field mutationAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "mutationAlgorithm");
-        ReflectionUtils.makeAccessible(mutationAlgorithmField);
-        ReflectionUtils.setField(mutationAlgorithmField, standardGeneticAlgorithm, mutationAlgorithmMock);
-
-        CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
-        when(crossoverAlgorithmMock.numberOfOffspring()).thenReturn(1);
-
-        Field crossoverAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "crossoverAlgorithm");
-        ReflectionUtils.makeAccessible(crossoverAlgorithmField);
-        ReflectionUtils.setField(crossoverAlgorithmField, standardGeneticAlgorithm, crossoverAlgorithmMock);
-
         Chromosome chromosomeToReturn = new MockChromosome();
         when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(Arrays.asList(chromosomeToReturn));
 
@@ -276,9 +250,6 @@ public class StandardGeneticAlgorithmTest {
         Field executionStatisticsField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "executionStatistics");
         ReflectionUtils.makeAccessible(executionStatisticsField);
         ReflectionUtils.setField(executionStatisticsField, standardGeneticAlgorithm, executionStatistics);
-
-        standardGeneticAlgorithm.setMajorEvaluationPercentage(0.1d);
-        standardGeneticAlgorithm.setMajorEvaluationStepSize(1);
 
         assertEquals(0, executionStatistics.getGenerationStatisticsList().size());
 
@@ -403,16 +374,15 @@ public class StandardGeneticAlgorithmTest {
         when(populationMock.removeIndividual(anyInt())).thenReturn(new MockChromosome());
         when(populationMock.selectIndex()).thenReturn(0);
 
-        standardGeneticAlgorithm.setPopulation(populationMock);
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, populationMock);
 
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                ((FutureTask) invocation.getArguments()[0]).run();
+        doAnswer(invocation -> {
+            ((FutureTask) invocation.getArguments()[0]).run();
 
-                return null;
-            }
+            return null;
         }).when(taskExecutorMock).execute(any(FutureTask.class));
 
         Field taskExecutorField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "taskExecutor");
@@ -422,14 +392,13 @@ public class StandardGeneticAlgorithmTest {
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
         when(crossoverAlgorithmMock.numberOfOffspring()).thenReturn(1);
 
-        Field crossoverAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "crossoverAlgorithm");
-        ReflectionUtils.makeAccessible(crossoverAlgorithmField);
-        ReflectionUtils.setField(crossoverAlgorithmField, standardGeneticAlgorithm, crossoverAlgorithmMock);
-
         Chromosome chromosomeToReturn = new MockChromosome();
         when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(Arrays.asList(chromosomeToReturn));
 
-        GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder().build();
+        GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .crossoverAlgorithm(crossoverAlgorithmMock)
+                .elitism(0)
+                .build();
 
         Field strategyField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "strategy");
         ReflectionUtils.makeAccessible(strategyField);
@@ -460,7 +429,7 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"rawtypes"})
     @Test
-    public void testCrossover_SmallPopulation() throws InterruptedException {
+    public void testCrossover_SmallPopulation() {
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         StandardPopulation population = new StandardPopulation();
@@ -469,20 +438,27 @@ public class StandardGeneticAlgorithmTest {
 
         Chromosome chromosome = new MockChromosome();
         population.addIndividual(chromosome);
-        standardGeneticAlgorithm.setPopulation(population);
+
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, population);
 
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
 
-        Field crossoverAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "crossoverAlgorithm");
-        ReflectionUtils.makeAccessible(crossoverAlgorithmField);
-        ReflectionUtils.setField(crossoverAlgorithmField, standardGeneticAlgorithm, crossoverAlgorithmMock);
+        GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
+                .crossoverAlgorithm(crossoverAlgorithmMock)
+                .build();
 
-        List<Chromosome> moms = new ArrayList<Chromosome>();
+        Field strategyField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "strategy");
+        ReflectionUtils.makeAccessible(strategyField);
+        ReflectionUtils.setField(strategyField, standardGeneticAlgorithm, strategyToSet);
+
+        List<Chromosome> moms = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize / 2; i++) {
             moms.add(new MockChromosome());
         }
 
-        List<Chromosome> dads = new ArrayList<Chromosome>();
+        List<Chromosome> dads = new ArrayList<>();
         for (int i = initialPopulationSize / 2; i < initialPopulationSize; i++) {
             dads.add(new MockChromosome());
         }
@@ -498,11 +474,11 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void testMutate() throws InterruptedException {
+    public void testMutate() {
         int initialPopulationSize = 100;
         int index = 0;
 
-        List<Chromosome> individuals = new ArrayList<Chromosome>();
+        List<Chromosome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
             individuals.add(new MockChromosome());
         }
@@ -513,16 +489,16 @@ public class StandardGeneticAlgorithmTest {
         when(populationMock.size()).thenReturn(initialPopulationSize);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-        standardGeneticAlgorithm.setPopulation(populationMock);
+
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, populationMock);
 
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                ((FutureTask) invocation.getArguments()[0]).run();
+        doAnswer(invocation -> {
+            ((FutureTask) invocation.getArguments()[0]).run();
 
-                return null;
-            }
+            return null;
         }).when(taskExecutorMock).execute(any(FutureTask.class));
 
         Field taskExecutorField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "taskExecutor");
@@ -531,18 +507,17 @@ public class StandardGeneticAlgorithmTest {
 
         double mutationRate = 0.5;
 
+        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
+
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .mutationRate(mutationRate)
+                .mutationAlgorithm(mutationAlgorithmMock)
+                .elitism(0)
                 .build();
 
         Field strategyField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "strategy");
         ReflectionUtils.makeAccessible(strategyField);
         ReflectionUtils.setField(strategyField, standardGeneticAlgorithm, strategyToSet);
-
-        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
-        Field mutationAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "mutationAlgorithm");
-        ReflectionUtils.makeAccessible(mutationAlgorithmField);
-        ReflectionUtils.setField(mutationAlgorithmField, standardGeneticAlgorithm, mutationAlgorithmMock);
 
         standardGeneticAlgorithm.mutate(initialPopulationSize);
 
@@ -573,7 +548,10 @@ public class StandardGeneticAlgorithmTest {
         when(populationMock.size()).thenReturn(actualPopulationSize);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-        standardGeneticAlgorithm.setPopulation(populationMock);
+
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, populationMock);
 
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
         doAnswer(invocation -> {
@@ -588,18 +566,17 @@ public class StandardGeneticAlgorithmTest {
 
         double mutationRate = 0.5;
 
+        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
+
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .mutationRate(mutationRate)
+                .mutationAlgorithm(mutationAlgorithmMock)
+                .elitism(0)
                 .build();
 
         Field strategyField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "strategy");
         ReflectionUtils.makeAccessible(strategyField);
         ReflectionUtils.setField(strategyField, standardGeneticAlgorithm, strategyToSet);
-
-        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
-        Field mutationAlgorithmField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "mutationAlgorithm");
-        ReflectionUtils.makeAccessible(mutationAlgorithmField);
-        ReflectionUtils.setField(mutationAlgorithmField, standardGeneticAlgorithm, mutationAlgorithmMock);
 
         standardGeneticAlgorithm.mutate(initialPopulationSize);
 
@@ -628,7 +605,10 @@ public class StandardGeneticAlgorithmTest {
         when(populationMock.getIndividuals()).thenReturn(individuals);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-        standardGeneticAlgorithm.setPopulation(populationMock);
+
+        Field populationField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "population");
+        ReflectionUtils.makeAccessible(populationField);
+        ReflectionUtils.setField(populationField, standardGeneticAlgorithm, populationMock);
 
         Field executionStatisticsField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "executionStatistics");
         ReflectionUtils.makeAccessible(executionStatisticsField);

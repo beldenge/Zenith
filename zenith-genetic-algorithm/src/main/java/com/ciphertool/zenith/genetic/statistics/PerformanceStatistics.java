@@ -24,34 +24,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@ToString
 @NoArgsConstructor
+@Getter
+@Setter
+@ToString
 public class PerformanceStatistics {
-    @Getter
-    @Setter
     private long totalMillis;
-
-    @Getter
-    @Setter
     private long selectionMillis;
-
-    @Getter
-    @Setter
     private long crossoverMillis;
-
-    @Getter
-    @Setter
     private long mutationMillis;
-
-    @Getter
-    @Setter
     private long evaluationMillis;
-
-    @Getter
-    @Setter
     private long majorEvaluationMillis;
-
-    @Getter
-    @Setter
     private long entropyMillis;
 }

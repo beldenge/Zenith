@@ -27,36 +27,18 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+@NoArgsConstructor
+@Getter
+@Setter
 @EqualsAndHashCode
 @ToString
-@NoArgsConstructor
 public class ExecutionStatistics {
-    @Getter
-    @Setter
     private Date startDateTime;
-
-    @Getter
-    @Setter
     private Date endDateTime;
-
-    @Getter
-    @Setter
     private Integer populationSize;
-
-    @Getter
-    @Setter
     private Double mutationRate;
-
-    @Getter
-    @Setter
     private String crossoverAlgorithm;
-
-    @Getter
-    @Setter
     private String fitnessEvaluator;
-
-    @Getter
-    @Setter
     private String mutationAlgorithm;
 
     private List<GenerationStatistics> generationStatisticsList = new ArrayList<>();
