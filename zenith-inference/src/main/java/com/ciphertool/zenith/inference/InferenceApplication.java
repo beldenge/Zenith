@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 	"com.ciphertool.zenith.genetic.algorithms.mutation",
 	"com.ciphertool.zenith.genetic.algorithms.mutation.impl",
 	"com.ciphertool.zenith.genetic.algorithms",
-	"com.ciphertool.zenith.genetic.algorithms.selection.modes",
+	"com.ciphertool.zenith.genetic.algorithms.selection",
 	"com.ciphertool.zenith.genetic.population"
 })
 public class InferenceApplication implements CommandLineRunner {

@@ -21,7 +21,7 @@ package com.ciphertool.zenith.genetic;
 
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.selection.modes.Selector;
+import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import lombok.Builder;
 import lombok.Getter;

@@ -17,10 +17,12 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.selection.modes;
+package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.mocks.MockChromosome;
+import com.ciphertool.zenith.math.selection.BinaryRouletteNode;
+import com.ciphertool.zenith.math.selection.BinaryRouletteTree;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,21 +34,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class AlphaSelectorTest {
-    private static AlphaSelector alphaSelector;
+public class RouletteSelectorTest {
+    private static RouletteSelector rouletteSelector;
     private static Logger logMock;
 
     @BeforeClass
     public static void setUp() {
-        alphaSelector = new AlphaSelector();
+        rouletteSelector = new RouletteSelector();
 
         logMock = mock(Logger.class);
-        Field logField = ReflectionUtils.findField(AlphaSelector.class, "log");
+        Field logField = ReflectionUtils.findField(RouletteSelector.class, "log");
         ReflectionUtils.makeAccessible(logField);
-        ReflectionUtils.setField(logField, alphaSelector, logMock);
+        ReflectionUtils.setField(logField, rouletteSelector, logMock);
     }
 
     @Before
@@ -56,6 +59,13 @@ public class AlphaSelectorTest {
 
     @Test
     public void testGetNextIndex() {
+        BinaryRouletteTree binaryRouletteTree = new BinaryRouletteTree();
+        binaryRouletteTree.insert(new BinaryRouletteNode(0, 7.0d));
+
+        Field rouletteWheelField = ReflectionUtils.findField(RouletteSelector.class, "rouletteWheel");
+        ReflectionUtils.makeAccessible(rouletteWheelField);
+        ReflectionUtils.setField(rouletteWheelField, rouletteSelector, binaryRouletteTree);
+
         List<Chromosome> individuals = new ArrayList<>();
 
         MockChromosome chromosome1 = new MockChromosome();
@@ -71,16 +81,15 @@ public class AlphaSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = alphaSelector.getNextIndex(individuals, null);
+        int selectedIndex = rouletteSelector.getNextIndex(individuals, (6.0));
 
-        assertEquals(1, selectedIndex);
-        assertEquals(bestFitness, individuals.get(selectedIndex).getFitness());
+        assertTrue(selectedIndex > -1);
         verifyZeroInteractions(logMock);
     }
 
     @Test
     public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = alphaSelector.getNextIndex(null, 6.0d);
+        int selectedIndex = rouletteSelector.getNextIndex(null, 6.0d);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -88,7 +97,30 @@ public class AlphaSelectorTest {
 
     @Test
     public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = alphaSelector.getNextIndex(new ArrayList<>(), 6.0d);
+        int selectedIndex = rouletteSelector.getNextIndex(new ArrayList<>(), 6.0d);
+
+        assertEquals(-1, selectedIndex);
+        verify(logMock, times(1)).warn(anyString());
+    }
+
+    @Test
+    public void testGetNextIndexWithNullTotalFitness() {
+        List<Chromosome> individuals = new ArrayList<>();
+
+        MockChromosome chromosome1 = new MockChromosome();
+        chromosome1.setFitness(2.0d);
+        individuals.add(chromosome1);
+
+        Double bestFitness = 3.0d;
+        MockChromosome chromosome2 = new MockChromosome();
+        chromosome2.setFitness(bestFitness);
+        individuals.add(chromosome2);
+
+        MockChromosome chromosome3 = new MockChromosome();
+        chromosome3.setFitness(1.0d);
+        individuals.add(chromosome3);
+
+        int selectedIndex = rouletteSelector.getNextIndex(individuals, null);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());

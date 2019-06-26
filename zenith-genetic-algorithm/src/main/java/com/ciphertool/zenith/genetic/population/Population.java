@@ -19,7 +19,7 @@
 
 package com.ciphertool.zenith.genetic.population;
 
-import com.ciphertool.zenith.genetic.algorithms.selection.modes.Selector;
+import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;

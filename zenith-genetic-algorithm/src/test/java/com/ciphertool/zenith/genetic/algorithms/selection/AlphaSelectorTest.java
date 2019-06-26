@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.selection.modes;
+package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.mocks.MockChromosome;
@@ -32,26 +32,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class TournamentSelectorTest {
-    private static TournamentSelector tournamentSelector;
+public class AlphaSelectorTest {
+    private static AlphaSelector alphaSelector;
     private static Logger logMock;
 
     @BeforeClass
     public static void setUp() {
-        tournamentSelector = new TournamentSelector();
-
-        Field selectionAccuracyField = ReflectionUtils.findField(TournamentSelector.class, "selectionAccuracy");
-        ReflectionUtils.makeAccessible(selectionAccuracyField);
-        ReflectionUtils.setField(selectionAccuracyField, tournamentSelector, 0.9);
+        alphaSelector = new AlphaSelector();
 
         logMock = mock(Logger.class);
-        Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
+        Field logField = ReflectionUtils.findField(AlphaSelector.class, "log");
         ReflectionUtils.makeAccessible(logField);
-        ReflectionUtils.setField(logField, tournamentSelector, logMock);
+        ReflectionUtils.setField(logField, alphaSelector, logMock);
     }
 
     @Before
@@ -76,15 +71,16 @@ public class TournamentSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = tournamentSelector.getNextIndex(individuals, 6.0d);
+        int selectedIndex = alphaSelector.getNextIndex(individuals, null);
 
-        assertTrue(selectedIndex > -1);
+        assertEquals(1, selectedIndex);
+        assertEquals(bestFitness, individuals.get(selectedIndex).getFitness());
         verifyZeroInteractions(logMock);
     }
 
     @Test
     public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(null, 6.0d);
+        int selectedIndex = alphaSelector.getNextIndex(null, 6.0d);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -92,32 +88,9 @@ public class TournamentSelectorTest {
 
     @Test
     public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>(), 6.0d);
+        int selectedIndex = alphaSelector.getNextIndex(new ArrayList<>(), 6.0d);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
-    }
-
-    @Test
-    public void testGetNextIndexWithNullTotalFitness() {
-        List<Chromosome> individuals = new ArrayList<>();
-
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(2.0d);
-        individuals.add(chromosome1);
-
-        Double bestFitness = 3.0d;
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(bestFitness);
-        individuals.add(chromosome2);
-
-        MockChromosome chromosome3 = new MockChromosome();
-        chromosome3.setFitness(1.0d);
-        individuals.add(chromosome3);
-
-        int selectedIndex = tournamentSelector.getNextIndex(individuals, null);
-
-        assertTrue(selectedIndex > -1);
-        verifyZeroInteractions(logMock);
     }
 }

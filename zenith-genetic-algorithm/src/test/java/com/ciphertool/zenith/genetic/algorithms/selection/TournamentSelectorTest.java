@@ -17,12 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.selection.modes;
+package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.mocks.MockChromosome;
-import com.ciphertool.zenith.math.selection.BinaryRouletteNode;
-import com.ciphertool.zenith.math.selection.BinaryRouletteTree;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,18 +36,22 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class RouletteSelectorTest {
-    private static RouletteSelector rouletteSelector;
+public class TournamentSelectorTest {
+    private static TournamentSelector tournamentSelector;
     private static Logger logMock;
 
     @BeforeClass
     public static void setUp() {
-        rouletteSelector = new RouletteSelector();
+        tournamentSelector = new TournamentSelector();
+
+        Field selectionAccuracyField = ReflectionUtils.findField(TournamentSelector.class, "selectionAccuracy");
+        ReflectionUtils.makeAccessible(selectionAccuracyField);
+        ReflectionUtils.setField(selectionAccuracyField, tournamentSelector, 0.9);
 
         logMock = mock(Logger.class);
-        Field logField = ReflectionUtils.findField(RouletteSelector.class, "log");
+        Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
         ReflectionUtils.makeAccessible(logField);
-        ReflectionUtils.setField(logField, rouletteSelector, logMock);
+        ReflectionUtils.setField(logField, tournamentSelector, logMock);
     }
 
     @Before
@@ -59,13 +61,6 @@ public class RouletteSelectorTest {
 
     @Test
     public void testGetNextIndex() {
-        BinaryRouletteTree binaryRouletteTree = new BinaryRouletteTree();
-        binaryRouletteTree.insert(new BinaryRouletteNode(0, 7.0d));
-
-        Field rouletteWheelField = ReflectionUtils.findField(RouletteSelector.class, "rouletteWheel");
-        ReflectionUtils.makeAccessible(rouletteWheelField);
-        ReflectionUtils.setField(rouletteWheelField, rouletteSelector, binaryRouletteTree);
-
         List<Chromosome> individuals = new ArrayList<>();
 
         MockChromosome chromosome1 = new MockChromosome();
@@ -81,7 +76,7 @@ public class RouletteSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = rouletteSelector.getNextIndex(individuals, (6.0));
+        int selectedIndex = tournamentSelector.getNextIndex(individuals, 6.0d);
 
         assertTrue(selectedIndex > -1);
         verifyZeroInteractions(logMock);
@@ -89,7 +84,7 @@ public class RouletteSelectorTest {
 
     @Test
     public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = rouletteSelector.getNextIndex(null, 6.0d);
+        int selectedIndex = tournamentSelector.getNextIndex(null, 6.0d);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -97,7 +92,7 @@ public class RouletteSelectorTest {
 
     @Test
     public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = rouletteSelector.getNextIndex(new ArrayList<>(), 6.0d);
+        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>(), 6.0d);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -120,9 +115,9 @@ public class RouletteSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = rouletteSelector.getNextIndex(individuals, null);
+        int selectedIndex = tournamentSelector.getNextIndex(individuals, null);
 
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
+        assertTrue(selectedIndex > -1);
+        verifyZeroInteractions(logMock);
     }
 }

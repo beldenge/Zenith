@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.Breeder;
-import com.ciphertool.zenith.genetic.algorithms.selection.modes.Selector;
+import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.fitness.AscendingFitnessComparator;
 import com.ciphertool.zenith.genetic.fitness.FitnessComparator;
