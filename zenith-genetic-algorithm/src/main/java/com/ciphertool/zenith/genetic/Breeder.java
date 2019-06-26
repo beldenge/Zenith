@@ -23,12 +23,4 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 
 public interface Breeder {
     Chromosome breed();
-
-    /**
-     * The source structure for which this genetic algorithm should generate chromosomes.
-     *
-     * @param obj
-     *            the Object
-     */
-    void setGeneticStructure(Object obj);
 }

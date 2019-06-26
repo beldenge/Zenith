@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.algorithms.selection.modes;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.mocks.MockKeyedChromosome;
+import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import com.ciphertool.zenith.math.selection.BinaryRouletteNode;
 import com.ciphertool.zenith.math.selection.BinaryRouletteTree;
 import org.junit.Before;
@@ -68,16 +68,16 @@ public class RouletteSelectorTest {
 
         List<Chromosome> individuals = new ArrayList<>();
 
-        MockKeyedChromosome chromosome1 = new MockKeyedChromosome();
+        MockChromosome chromosome1 = new MockChromosome();
         chromosome1.setFitness(2.0d);
         individuals.add(chromosome1);
 
         Double bestFitness = 3.0d;
-        MockKeyedChromosome chromosome2 = new MockKeyedChromosome();
+        MockChromosome chromosome2 = new MockChromosome();
         chromosome2.setFitness(bestFitness);
         individuals.add(chromosome2);
 
-        MockKeyedChromosome chromosome3 = new MockKeyedChromosome();
+        MockChromosome chromosome3 = new MockChromosome();
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
@@ -107,16 +107,16 @@ public class RouletteSelectorTest {
     public void testGetNextIndexWithNullTotalFitness() {
         List<Chromosome> individuals = new ArrayList<>();
 
-        MockKeyedChromosome chromosome1 = new MockKeyedChromosome();
+        MockChromosome chromosome1 = new MockChromosome();
         chromosome1.setFitness(2.0d);
         individuals.add(chromosome1);
 
         Double bestFitness = 3.0d;
-        MockKeyedChromosome chromosome2 = new MockKeyedChromosome();
+        MockChromosome chromosome2 = new MockChromosome();
         chromosome2.setFitness(bestFitness);
         individuals.add(chromosome2);
 
-        MockKeyedChromosome chromosome3 = new MockKeyedChromosome();
+        MockChromosome chromosome3 = new MockChromosome();
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 

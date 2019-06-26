@@ -19,16 +19,11 @@
 
 package com.ciphertool.zenith.inference.optimizer;
 
-import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.known.KnownPlaintextEvaluator;
-import com.ciphertool.zenith.inference.model.ModelUnzipper;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.selection.RouletteSampler;
-import com.ciphertool.zenith.inference.transformer.CipherTransformer;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
@@ -36,24 +31,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 @Component
-public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
+@ConditionalOnProperty(value="decipherment.optimizer", havingValue = "SimulatedAnnealingSolutionOptimizer")
+public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimizer implements SolutionOptimizer {
 	private Logger log = LoggerFactory.getLogger(getClass());
-
-	@Value("${cipher.name}")
-	private String cipherName;
 
 	@Value("${decipherment.sampler.iterations}")
 	private int	samplerIterations;
@@ -70,129 +60,14 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 	@Value("${markov.letter.order}")
 	private int	markovOrder;
 
-	@Value("${decipherment.use-known-evaluator:false}")
-	private boolean	useKnownEvaluator;
-
 	@Value("${decipherment.epochs:1}")
 	private int epochs;
-
-	@Value("${language-model.filename}")
-	private String modelFilename;
-
-	@Value("${decipherment.transformers.list}")
-	private List<String> transformersToUse;
-
-	@Value("${decipherment.evaluator.plaintext}")
-	private String plaintextEvaluatorName;
-
-	@Value("${decipherment.evaluator.known-plaintext:#{null}}")
-	private String knownPlaintextEvaluatorName;
-
-	@Autowired
-	private CipherDao cipherDao;
 
 	@Autowired
 	private TreeMarkovModel letterMarkovModel;
 
-	@Autowired
-	private List<CipherTransformer> cipherTransformers;
-
-	@Autowired
-	private List<PlaintextEvaluator> plaintextEvaluators;
-
-	@Autowired
-	private List<KnownPlaintextEvaluator> knownPlaintextEvaluators;
-
-	@Autowired
-	private ModelUnzipper modelUnzipper;
-
-	private PlaintextEvaluator plaintextEvaluator;
-
-	private KnownPlaintextEvaluator knownPlaintextEvaluator;
-
-	@PostConstruct
-	public void init() {
-		if (!Files.exists(Paths.get(modelFilename))) {
-			long start = System.currentTimeMillis();
-			log.info("Language model file {} not found.  Unzipping from archive.", modelFilename);
-
-			modelUnzipper.unzip();
-
-			log.info("Finished unzipping language model archive in {}ms.", (System.currentTimeMillis() - start));
-		}
-
-		if (cipherTransformers != null && !cipherTransformers.isEmpty()) {
-			List<CipherTransformer> toUse = new ArrayList<>();
-			List<String> existentCipherTransformers = cipherTransformers.stream()
-					.map(transformer -> transformer.getClass().getSimpleName())
-					.collect(Collectors.toList());
-
-			for (String transformerName : transformersToUse) {
-				if (!existentCipherTransformers.contains(transformerName)) {
-					log.error("The cipher transformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentCipherTransformers);
-					throw new IllegalArgumentException("The cipher transformer with name " + transformerName + " does not exist.");
-				}
-
-				for (CipherTransformer cipherTransformer : cipherTransformers) {
-					if (cipherTransformer.getClass().getSimpleName().equals(transformerName)) {
-						if (toUse.contains(cipherTransformer)) {
-							log.warn("Transformer with name {} has already been declared.  This will result in the transformer being performed more than once.  Please double check that this is desired.", transformerName);
-						}
-
-						toUse.add(cipherTransformer);
-						break;
-					}
-				}
-			}
-
-			cipherTransformers.clear();
-			cipherTransformers.addAll(toUse);
-		}
-
-		if (useKnownEvaluator && knownPlaintextEvaluators != null && !knownPlaintextEvaluators.isEmpty()) {
-			if (knownPlaintextEvaluatorName == null || knownPlaintextEvaluatorName.isEmpty()) {
-				log.error("The property decipherment.use-known-evaluator was set to true, but no KnownPlaintextEvaluator implementation was specified.  Please set decipherment.evaluator.known-plaintext to a valid KnownPlaintextEvaluator or set the former property to false.");
-				throw new IllegalArgumentException("The property decipherment.evaluator.known-plaintext cannot be null if decipherment.use-known-evaluator is set to true.");
-			}
-
-			List<String> existentKnownPlaintextEvaluators = knownPlaintextEvaluators.stream()
-					.map(evaluator -> evaluator.getClass().getSimpleName())
-					.collect(Collectors.toList());
-
-			for (KnownPlaintextEvaluator evaluator : knownPlaintextEvaluators) {
-				if (evaluator.getClass().getSimpleName().equalsIgnoreCase(knownPlaintextEvaluatorName)) {
-					knownPlaintextEvaluator = evaluator;
-					break;
-				}
-			}
-
-			if (knownPlaintextEvaluator == null) {
-				log.error("The known plaintext evaluator with name {} does not exist.  Please use a name from the following: {}", knownPlaintextEvaluatorName, existentKnownPlaintextEvaluators);
-				throw new IllegalArgumentException("The known plaintext evaluator with name " + knownPlaintextEvaluatorName + " does not exist.");
-			}
-		}
-
-		List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
-				.map(evaluator -> evaluator.getClass().getSimpleName())
-				.collect(Collectors.toList());
-
-		for (PlaintextEvaluator evaluator : plaintextEvaluators) {
-			if (evaluator.getClass().getSimpleName().equalsIgnoreCase(plaintextEvaluatorName)) {
-				plaintextEvaluator = evaluator;
-				break;
-			}
-		}
-
-		if (plaintextEvaluator == null) {
-			log.error("The plaintext evaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
-			throw new IllegalArgumentException("The plaintext evaluator with name " + plaintextEvaluatorName + " does not exist.");
-		}
-	}
-
 	@Override
 	public void optimize() {
-		Cipher cipher = transformCipher(cipherDao.findByCipherName(cipherName));
-
 		int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
 		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
@@ -221,14 +96,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
 			performEpoch(initialSolution);
 		}
-	}
-
-	private Cipher transformCipher(Cipher cipher) {
-		for (CipherTransformer cipherTransformer : cipherTransformers) {
-			cipher = cipherTransformer.transform(cipher);
-		}
-
-		return cipher;
 	}
 
 	private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability>	letterUnigramProbabilities, double totalUnigramProbability) {

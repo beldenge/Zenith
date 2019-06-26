@@ -24,7 +24,6 @@ import com.ciphertool.zenith.genetic.algorithms.mutation.MutationHelper;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class MultipleMutationAlgorithm implements MutationAlgorithm<KeyedChromosome<Object>> {
+public class MultipleMutationAlgorithm implements MutationAlgorithm<Chromosome<Object>> {
     @Autowired
     private MutationHelper mutationHelper;
 
@@ -43,7 +42,7 @@ public class MultipleMutationAlgorithm implements MutationAlgorithm<KeyedChromos
     private GeneDao geneDao;
 
     @Override
-    public boolean mutateChromosome(KeyedChromosome<Object> chromosome) {
+    public boolean mutateChromosome(Chromosome<Object> chromosome) {
         Chromosome original = chromosome.clone();
         int numMutations;
 

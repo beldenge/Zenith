@@ -21,7 +21,6 @@ package com.ciphertool.zenith.inference.genetic.entities;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import org.slf4j.Logger;
@@ -31,7 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CipherKeyChromosome implements KeyedChromosome<String> {
+public class CipherKeyChromosome implements Chromosome<String> {
     private static Logger log = LoggerFactory.getLogger(CipherKeyChromosome.class);
 
     private static final int KEY_SIZE = 54;
@@ -251,15 +250,9 @@ public class CipherKeyChromosome implements KeyedChromosome<String> {
 
                 nextPlaintext = (CipherKeyGene) this.genes.get(this.cipher.getCiphertextCharacters().get(i).getValue());
 
-                if (nextPlaintext.hasMatch()) {
-                    sb.append("[");
-                    sb.append(nextPlaintext.getValue());
-                    sb.append("]");
-                } else {
-                    sb.append(" ");
-                    sb.append(nextPlaintext.getValue());
-                    sb.append(" ");
-                }
+                sb.append(" ");
+                sb.append(nextPlaintext.getValue());
+                sb.append(" ");
 
                 /*
                  * Print a newline if we are at the end of the row. Add 1 to the index so the modulus function doesn't

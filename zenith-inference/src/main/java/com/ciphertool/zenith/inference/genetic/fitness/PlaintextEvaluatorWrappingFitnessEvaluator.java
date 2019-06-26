@@ -23,7 +23,11 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
+@Component
+@ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
     private PlaintextEvaluator plaintextEvaluator;
 

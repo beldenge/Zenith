@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.algorithms.crossover.impl;
 
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
+import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -29,12 +29,12 @@ import java.util.Random;
 import java.util.Set;
 
 @Component
-public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<KeyedChromosome<Object>> {
+public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
     @Override
-    public List<KeyedChromosome<Object>> crossover(KeyedChromosome<Object> parentA, KeyedChromosome<Object> parentB) {
-        List<KeyedChromosome<Object>> children = new ArrayList<KeyedChromosome<Object>>(1);
+    public List<Chromosome<Object>> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
+        List<Chromosome<Object>> children = new ArrayList<>(1);
 
-        KeyedChromosome<Object> child = performCrossover(parentA, parentB);
+        Chromosome<Object> child = performCrossover(parentA, parentB);
 
         // The Chromosome could be null if it's identical to one of its parents
         if (child != null) {
@@ -45,7 +45,7 @@ public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<K
     }
 
     @SuppressWarnings("unchecked")
-    protected KeyedChromosome<Object> performCrossover(KeyedChromosome<Object> parentA, KeyedChromosome<Object> parentB) {
+    protected Chromosome<Object> performCrossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
         Random generator = new Random();
         Set<Object> availableKeys = parentA.getGenes().keySet();
         Object[] keys = availableKeys.toArray();
@@ -54,7 +54,7 @@ public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<K
         int randomIndex = generator.nextInt(keys.length);
 
         // Replace all the Genes from the map key to the end of the array
-        KeyedChromosome<Object> child = (KeyedChromosome<Object>) parentA.clone();
+        Chromosome<Object> child = (Chromosome<Object>) parentA.clone();
         for (int i = 0; i <= randomIndex; i++) {
             Object nextKey = keys[i];
 

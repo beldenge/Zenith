@@ -20,7 +20,6 @@
 package com.ciphertool.zenith.genetic.entities;
 
 public interface Gene extends Cloneable {
-
     Gene clone();
 
     /**
@@ -34,15 +33,4 @@ public interface Gene extends Cloneable {
      * @return the Chromosome that this Gene is a part of
      */
     Chromosome getChromosome();
-
-    /**
-     * @return whether this Gene matches that of a known solution
-     */
-    boolean hasMatch();
-
-    /**
-     * @param hasMatch
-     *            the hasMatch to set
-     */
-    void setHasMatch(boolean hasMatch);
 }

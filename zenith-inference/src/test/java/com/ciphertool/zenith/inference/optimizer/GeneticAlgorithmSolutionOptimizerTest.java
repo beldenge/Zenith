@@ -17,11 +17,12 @@
  * DecipherEngine. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.genetic.service;
+package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
+import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.springframework.util.ReflectionUtils;

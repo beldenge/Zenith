@@ -22,7 +22,6 @@ package com.ciphertool.zenith.genetic.algorithms.mutation.impl;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class RandomValueMutationAlgorithm implements MutationAlgorithm<KeyedChromosome<Object>> {
+public class RandomValueMutationAlgorithm implements MutationAlgorithm<Chromosome<Object>> {
     private static Logger log = LoggerFactory.getLogger(RandomValueMutationAlgorithm.class);
 
     @Value("${genetic-algorithm.mutation.max-per-individual}")
@@ -45,7 +44,7 @@ public class RandomValueMutationAlgorithm implements MutationAlgorithm<KeyedChro
     private GeneDao geneDao;
 
     @Override
-    public boolean mutateChromosome(KeyedChromosome<Object> chromosome) {
+    public boolean mutateChromosome(Chromosome<Object> chromosome) {
         if (maxMutationsPerChromosome == null) {
             throw new IllegalStateException("The maxMutationsPerChromosome cannot be null.");
         }
@@ -81,7 +80,7 @@ public class RandomValueMutationAlgorithm implements MutationAlgorithm<KeyedChro
      * @param availableIndices
      *            the Set of available indices to mutate
      */
-    protected void mutateRandomGene(KeyedChromosome<Object> chromosome, Set<Object> availableIndices) {
+    protected void mutateRandomGene(Chromosome<Object> chromosome, Set<Object> availableIndices) {
         if (availableIndices == null || availableIndices.isEmpty()) {
             log.warn("List of available indices is null or empty.  Unable to find a Gene to mutate.  Returning null.");
 

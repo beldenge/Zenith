@@ -19,7 +19,7 @@
 
 package com.ciphertool.zenith.genetic.fitness;
 
-import com.ciphertool.zenith.genetic.mocks.MockKeyedChromosome;
+import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -27,10 +27,10 @@ import static org.junit.Assert.assertEquals;
 public class DescendingFitnessComparatorTest {
     @Test
     public void testCompare() {
-        MockKeyedChromosome higherFitness = new MockKeyedChromosome();
+        MockChromosome higherFitness = new MockChromosome();
         higherFitness.setFitness(2.0d);
 
-        MockKeyedChromosome lowerFitness = new MockKeyedChromosome();
+        MockChromosome lowerFitness = new MockChromosome();
         lowerFitness.setFitness(1.0d);
 
         DescendingFitnessComparator descendingFitnessComparator = new DescendingFitnessComparator();
@@ -44,10 +44,10 @@ public class DescendingFitnessComparatorTest {
 
     @Test
     public void testCompareEqual() {
-        MockKeyedChromosome mockA = new MockKeyedChromosome();
+        MockChromosome mockA = new MockChromosome();
         mockA.setFitness(3.0d);
 
-        MockKeyedChromosome mockB = new MockKeyedChromosome();
+        MockChromosome mockB = new MockChromosome();
         mockB.setFitness(3.0d);
 
         DescendingFitnessComparator descendingFitnessComparator = new DescendingFitnessComparator();

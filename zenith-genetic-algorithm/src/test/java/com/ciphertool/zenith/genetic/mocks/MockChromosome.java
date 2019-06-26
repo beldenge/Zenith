@@ -21,13 +21,12 @@ package com.ciphertool.zenith.genetic.mocks;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
 import com.ciphertool.zenith.genetic.population.Population;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MockKeyedChromosome implements KeyedChromosome<Object> {
+public class MockChromosome implements Chromosome<Object> {
     private boolean needsEvaluation;
     private Double fitness = 0d;
     private Map<Object, Gene> genes = new HashMap<>();
@@ -101,8 +100,8 @@ public class MockKeyedChromosome implements KeyedChromosome<Object> {
     }
 
     @Override
-    public MockKeyedChromosome clone() {
-        MockKeyedChromosome copyChromosome = new MockKeyedChromosome();
+    public MockChromosome clone() {
+        MockChromosome copyChromosome = new MockChromosome();
 
         copyChromosome.genes = new HashMap<>();
         copyChromosome.setEvaluationNeeded(this.needsEvaluation);
@@ -139,7 +138,7 @@ public class MockKeyedChromosome implements KeyedChromosome<Object> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        MockKeyedChromosome other = (MockKeyedChromosome) obj;
+        MockChromosome other = (MockChromosome) obj;
         if (genes == null) {
             if (other.genes != null) {
                 return false;
@@ -152,7 +151,7 @@ public class MockKeyedChromosome implements KeyedChromosome<Object> {
 
     @Override
     public String toString() {
-        return "MockKeyedChromosome [needsEvaluation=" + needsEvaluation + ", fitness=" + fitness + ", genes=" + genes
+        return "MockChromosome [needsEvaluation=" + needsEvaluation + ", fitness=" + fitness + ", genes=" + genes
                 + "]";
     }
 

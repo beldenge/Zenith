@@ -142,10 +142,6 @@ public abstract class AbstractGeneticAlgorithm {
     protected void validateParameters() {
         List<String> validationErrors = new ArrayList<>();
 
-        if (strategy.getGeneticStructure() == null) {
-            validationErrors.add("Parameter 'geneticStructure' cannot be null.");
-        }
-
         if (strategy.getPopulationSize() == null || strategy.getPopulationSize() <= 0) {
             validationErrors.add("Parameter 'populationSize' must be greater than zero.");
         }
@@ -296,7 +292,6 @@ public abstract class AbstractGeneticAlgorithm {
 
     @SuppressWarnings({"rawtypes"})
     public void setStrategy(GeneticAlgorithmStrategy geneticAlgorithmStrategy) {
-        this.population.setGeneticStructure(geneticAlgorithmStrategy.getGeneticStructure());
         this.population.setFitnessEvaluator(geneticAlgorithmStrategy.getFitnessEvaluator());
         this.population.setKnownSolutionFitnessEvaluator(geneticAlgorithmStrategy.getKnownSolutionFitnessEvaluator());
         this.population.setCompareToKnownSolution(geneticAlgorithmStrategy.getCompareToKnownSolution());

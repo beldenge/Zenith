@@ -21,7 +21,9 @@ package com.ciphertool.zenith.genetic.entities;
 
 import com.ciphertool.zenith.genetic.population.Population;
 
-public interface Chromosome extends Cloneable {
+import java.util.Map;
+
+public interface Chromosome<T> extends Cloneable {
     Double getFitness();
 
     /**
@@ -66,4 +68,24 @@ public interface Chromosome extends Cloneable {
      *            the population to set
      */
     void setPopulation(Population population);
+
+    /**
+     * @return an unmodifiable Map of this Chromosome's Genes
+     */
+    Map<T, Gene> getGenes();
+
+    /**
+     * Adds a Gene at the specified key.
+     */
+    void putGene(T key, Gene gene);
+
+    /**
+     * Removes a Gene at the specified key.
+     */
+    Gene removeGene(T key);
+
+    /**
+     * Replaces a Gene at the specified key.
+     */
+    void replaceGene(T key, Gene newGene);
 }

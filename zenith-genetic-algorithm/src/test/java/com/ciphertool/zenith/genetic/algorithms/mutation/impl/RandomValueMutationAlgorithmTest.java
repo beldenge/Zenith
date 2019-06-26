@@ -22,8 +22,8 @@ package com.ciphertool.zenith.genetic.algorithms.mutation.impl;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import com.ciphertool.zenith.genetic.mocks.MockGene;
-import com.ciphertool.zenith.genetic.mocks.MockKeyedChromosome;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -76,15 +76,15 @@ public class RandomValueMutationAlgorithmTest {
         ReflectionUtils.makeAccessible(maxMutationsPerChromosomeField);
         ReflectionUtils.setField(maxMutationsPerChromosomeField, randomValueMutationAlgorithm, null);
 
-        MockKeyedChromosome mockKeyedChromosome = new MockKeyedChromosome();
+        MockChromosome mockChromosome = new MockChromosome();
 
         MockGene mockGene1 = new MockGene();
-        mockKeyedChromosome.putGene("1", mockGene1);
+        mockChromosome.putGene("1", mockGene1);
 
         MockGene mockGene2 = new MockGene();
-        mockKeyedChromosome.putGene("2", mockGene2);
+        mockChromosome.putGene("2", mockGene2);
 
-        randomValueMutationAlgorithm.mutateChromosome(mockKeyedChromosome);
+        randomValueMutationAlgorithm.mutateChromosome(mockChromosome);
     }
 
     @Test
@@ -93,106 +93,106 @@ public class RandomValueMutationAlgorithmTest {
         ReflectionUtils.makeAccessible(maxMutationsPerChromosomeField);
         ReflectionUtils.setField(maxMutationsPerChromosomeField, randomValueMutationAlgorithm, MAX_MUTATIONS);
 
-        MockKeyedChromosome mockKeyedChromosome = new MockKeyedChromosome();
+        MockChromosome mockChromosome = new MockChromosome();
         List<Gene> originalGenes = new ArrayList<Gene>();
 
         MockGene mockGene1 = new MockGene();
-        mockKeyedChromosome.putGene("1", mockGene1);
+        mockChromosome.putGene("1", mockGene1);
         originalGenes.add(mockGene1);
 
         MockGene mockGene2 = new MockGene();
-        mockKeyedChromosome.putGene("2", mockGene2);
+        mockChromosome.putGene("2", mockGene2);
         originalGenes.add(mockGene2);
 
         MockGene mockGeneToReturn = new MockGene();
-        when(geneDaoMock.findRandomGene(same(mockKeyedChromosome))).thenReturn(mockGeneToReturn);
+        when(geneDaoMock.findRandomGene(same(mockChromosome))).thenReturn(mockGeneToReturn);
 
-        randomValueMutationAlgorithm.mutateChromosome(mockKeyedChromosome);
+        randomValueMutationAlgorithm.mutateChromosome(mockChromosome);
 
-        assertFalse(originalGenes.equals(mockKeyedChromosome.getGenes()));
-        verify(geneDaoMock, atLeastOnce()).findRandomGene(same(mockKeyedChromosome));
-        verify(geneDaoMock, atMost(2)).findRandomGene(same(mockKeyedChromosome));
+        assertFalse(originalGenes.equals(mockChromosome.getGenes()));
+        verify(geneDaoMock, atLeastOnce()).findRandomGene(same(mockChromosome));
+        verify(geneDaoMock, atMost(2)).findRandomGene(same(mockChromosome));
         verifyZeroInteractions(logMock);
     }
 
     @Test
     public void testMutateRandomGene() {
-        MockKeyedChromosome mockKeyedChromosome = new MockKeyedChromosome();
+        MockChromosome mockChromosome = new MockChromosome();
 
         MockGene mockGene1 = new MockGene();
-        mockKeyedChromosome.putGene("1", mockGene1);
+        mockChromosome.putGene("1", mockGene1);
 
         MockGene mockGene2 = new MockGene();
-        mockKeyedChromosome.putGene("2", mockGene2);
+        mockChromosome.putGene("2", mockGene2);
 
         MockGene mockGeneToReturn = new MockGene();
-        when(geneDaoMock.findRandomGene(same(mockKeyedChromosome))).thenReturn(mockGeneToReturn);
+        when(geneDaoMock.findRandomGene(same(mockChromosome))).thenReturn(mockGeneToReturn);
 
         Set<Object> availableIndices = new HashSet<Object>();
         availableIndices.add("1");
         availableIndices.add("2");
-        randomValueMutationAlgorithm.mutateRandomGene(mockKeyedChromosome, availableIndices);
+        randomValueMutationAlgorithm.mutateRandomGene(mockChromosome, availableIndices);
 
         /*
          * Only one Gene should be mutated.
          */
-        assertTrue((mockGene1 == mockKeyedChromosome.getGenes().get("1")
-                && mockGeneToReturn == mockKeyedChromosome.getGenes().get("2"))
-                || (mockGeneToReturn == mockKeyedChromosome.getGenes().get("1")
-                && mockGene2 == mockKeyedChromosome.getGenes().get("2")));
+        assertTrue((mockGene1 == mockChromosome.getGenes().get("1")
+                && mockGeneToReturn == mockChromosome.getGenes().get("2"))
+                || (mockGeneToReturn == mockChromosome.getGenes().get("1")
+                && mockGene2 == mockChromosome.getGenes().get("2")));
         assertEquals(1, availableIndices.size());
         assertTrue(availableIndices.toArray()[0] == "1" || availableIndices.toArray()[0] == "2");
-        verify(geneDaoMock, times(1)).findRandomGene(same(mockKeyedChromosome));
+        verify(geneDaoMock, times(1)).findRandomGene(same(mockChromosome));
         verifyZeroInteractions(logMock);
     }
 
     @Test
     public void testMutateRandomGeneWithUsedIndex() {
-        MockKeyedChromosome mockKeyedChromosome = new MockKeyedChromosome();
+        MockChromosome mockChromosome = new MockChromosome();
 
         MockGene mockGene1 = new MockGene();
-        mockKeyedChromosome.putGene("1", mockGene1);
+        mockChromosome.putGene("1", mockGene1);
 
         MockGene mockGene2 = new MockGene();
-        mockKeyedChromosome.putGene("2", mockGene2);
+        mockChromosome.putGene("2", mockGene2);
 
         MockGene mockGeneToReturn = new MockGene();
-        when(geneDaoMock.findRandomGene(same(mockKeyedChromosome))).thenReturn(mockGeneToReturn);
+        when(geneDaoMock.findRandomGene(same(mockChromosome))).thenReturn(mockGeneToReturn);
 
         Set<Object> availableIndices = new HashSet<Object>();
         availableIndices.add("2");
-        randomValueMutationAlgorithm.mutateRandomGene(mockKeyedChromosome, availableIndices);
+        randomValueMutationAlgorithm.mutateRandomGene(mockChromosome, availableIndices);
 
         /*
          * Only the second Gene should be mutated.
          */
-        assertTrue(mockGene1 == mockKeyedChromosome.getGenes().get("1")
-                && mockGeneToReturn == mockKeyedChromosome.getGenes().get("2"));
+        assertTrue(mockGene1 == mockChromosome.getGenes().get("1")
+                && mockGeneToReturn == mockChromosome.getGenes().get("2"));
         assertTrue(availableIndices.isEmpty());
-        verify(geneDaoMock, times(1)).findRandomGene(same(mockKeyedChromosome));
+        verify(geneDaoMock, times(1)).findRandomGene(same(mockChromosome));
         verifyZeroInteractions(logMock);
     }
 
     @Test
     public void testMutateRandomGeneWithAllIndicesUsed() {
-        MockKeyedChromosome mockKeyedChromosome = new MockKeyedChromosome();
+        MockChromosome mockChromosome = new MockChromosome();
 
         MockGene mockGene1 = new MockGene();
-        mockKeyedChromosome.putGene("1", mockGene1);
+        mockChromosome.putGene("1", mockGene1);
 
         MockGene mockGene2 = new MockGene();
-        mockKeyedChromosome.putGene("2", mockGene2);
+        mockChromosome.putGene("2", mockGene2);
 
         when(geneDaoMock.findRandomGene(any(Chromosome.class))).thenReturn(null);
 
         Set<Object> availableIndices = new HashSet<Object>();
-        randomValueMutationAlgorithm.mutateRandomGene(mockKeyedChromosome, availableIndices);
+        randomValueMutationAlgorithm.mutateRandomGene(mockChromosome, availableIndices);
 
         /*
          * No Genes should be mutated.
          */
-        assertTrue(mockGene1 == mockKeyedChromosome.getGenes().get("1")
-                && mockGene2 == mockKeyedChromosome.getGenes().get("2"));
+        assertTrue(mockGene1 == mockChromosome.getGenes().get("1")
+                && mockGene2 == mockChromosome.getGenes().get("2"));
         assertTrue(availableIndices.isEmpty());
         verifyZeroInteractions(geneDaoMock);
         verify(logMock, times(1)).warn(anyString());

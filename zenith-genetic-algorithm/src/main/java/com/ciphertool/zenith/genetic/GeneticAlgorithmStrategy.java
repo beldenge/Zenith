@@ -29,7 +29,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class GeneticAlgorithmStrategy {
-    private Object geneticStructure;
     private Integer populationSize;
     private Double mutationRate;
     private Integer maxMutationsPerIndividual;

@@ -27,12 +27,14 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
+@Component
+@ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class CipherKeyBreeder implements Breeder {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    private GeneDao geneDao;
 
     private static final String[] KEYS = {"a", "anchor", "b", "backc", "backd", "backe", "backf", "backj",
             "backk", "backl", "backp", "backq", "backr", "backslash", "box", "boxdot", "carrot", "circledot", "d", "e",
@@ -40,7 +42,11 @@ public class CipherKeyBreeder implements Breeder {
             "lrbox", "m", "n", "o", "p", "pi", "plus", "q", "r", "s", "t", "tri", "tridot", "u", "v", "vertstrike", "w",
             "x", "y", "z", "zodiac"};
 
+    @Autowired
     private Cipher cipher;
+
+    @Autowired
+    private GeneDao geneDao;
 
     /**
      * Default no-args constructor
@@ -68,19 +74,5 @@ public class CipherKeyBreeder implements Breeder {
         log.debug(chromosome.toString());
 
         return chromosome;
-    }
-
-    @Override
-    public void setGeneticStructure(Object cipher) {
-        this.cipher = (Cipher) cipher;
-    }
-
-    /**
-     * @param geneDao
-     *            the geneDao to set
-     */
-    @Required
-    public void setGeneDao(GeneDao geneDao) {
-        this.geneDao = geneDao;
     }
 }

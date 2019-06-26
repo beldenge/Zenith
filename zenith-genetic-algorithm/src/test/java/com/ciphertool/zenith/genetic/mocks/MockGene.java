@@ -20,23 +20,11 @@
 package com.ciphertool.zenith.genetic.mocks;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.entities.Sequence;
-import com.ciphertool.zenith.genetic.entities.VariableLengthGene;
+import com.ciphertool.zenith.genetic.entities.Gene;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class MockGene implements VariableLengthGene {
+public class MockGene implements Gene {
 
     private Chromosome chromosome;
-    private List<Sequence> sequences = new ArrayList<>();
-
-    private boolean hasMatch;
-
-    @Override
-    public int size() {
-        return this.sequences.size();
-    }
 
     @Override
     public void setChromosome(Chromosome chromosome) {
@@ -49,34 +37,6 @@ public class MockGene implements VariableLengthGene {
     }
 
     @Override
-    public List<Sequence> getSequences() {
-        return this.sequences;
-    }
-
-    @Override
-    public void addSequence(Sequence sequence) {
-        sequence.setGene(this);
-        sequences.add(sequence);
-    }
-
-    @Override
-    public void insertSequence(int index, Sequence sequence) {
-        sequence.setGene(this);
-        sequences.add(index, sequence);
-    }
-
-    @Override
-    public void removeSequence(Sequence sequence) {
-        sequences.remove(sequence);
-    }
-
-    @Override
-    public void replaceSequence(int index, Sequence newSequence) {
-        this.removeSequence(sequences.get(index));
-        this.insertSequence(index, newSequence);
-    }
-
-    @Override
     public MockGene clone() {
         MockGene clone;
 
@@ -85,13 +45,6 @@ public class MockGene implements VariableLengthGene {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
             return null;
-        }
-
-        // We intentionally do not override the cloning of the Chromosome
-        clone.sequences = new ArrayList<Sequence>();
-
-        for (Sequence sequence : this.sequences) {
-            clone.addSequence(sequence.clone());
         }
 
         return clone;
@@ -108,29 +61,7 @@ public class MockGene implements VariableLengthGene {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        MockGene other = (MockGene) obj;
-        if (sequences == null) {
-            if (other.sequences != null) {
-                return false;
-            }
-        } else if (!sequences.equals(other.sequences)) {
-            return false;
-        }
+
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "MockGene [sequences=" + sequences + "]";
-    }
-
-    @Override
-    public boolean hasMatch() {
-        return this.hasMatch;
-    }
-
-    @Override
-    public void setHasMatch(boolean hasMatch) {
-        this.hasMatch = hasMatch;
     }
 }

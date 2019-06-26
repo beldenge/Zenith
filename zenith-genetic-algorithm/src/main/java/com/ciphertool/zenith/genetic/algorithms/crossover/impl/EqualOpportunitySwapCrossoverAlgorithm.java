@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.algorithms.crossover.impl;
 
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
+import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
@@ -28,18 +28,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class EqualOpportunitySwapCrossoverAlgorithm implements CrossoverAlgorithm<KeyedChromosome<Object>> {
+public class EqualOpportunitySwapCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
     private Coin coin = new Coin();
 
     @Override
-    public List<KeyedChromosome<Object>> crossover(KeyedChromosome<Object> parentA, KeyedChromosome<Object> parentB) {
+    public List<Chromosome<Object>> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
         return performCrossover(parentA, parentB);
     }
 
     @SuppressWarnings("unchecked")
-    protected List<KeyedChromosome<Object>> performCrossover(KeyedChromosome<Object> parentA, KeyedChromosome<Object> parentB) {
-        KeyedChromosome<Object> childA = (KeyedChromosome<Object>) parentA.clone();
-        KeyedChromosome<Object> childB = (KeyedChromosome<Object>) parentB.clone();
+    protected List<Chromosome<Object>> performCrossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
+        Chromosome<Object> childA = (Chromosome<Object>) parentA.clone();
+        Chromosome<Object> childB = (Chromosome<Object>) parentB.clone();
 
         for (Object key : parentA.getGenes().keySet()) {
             if (coin.flip()) {
@@ -48,7 +48,7 @@ public class EqualOpportunitySwapCrossoverAlgorithm implements CrossoverAlgorith
             }
         }
 
-        List<KeyedChromosome<Object>> children = new ArrayList<>(2);
+        List<Chromosome<Object>> children = new ArrayList<>(2);
         children.add(childA);
         children.add(childB);
 

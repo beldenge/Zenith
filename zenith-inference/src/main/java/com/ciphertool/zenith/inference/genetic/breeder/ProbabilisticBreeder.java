@@ -30,7 +30,9 @@ import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -38,19 +40,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Component
+@ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class ProbabilisticBreeder implements Breeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static List<LetterProbability> letterUnigramProbabilities = new ArrayList<>();
-    private TreeMarkovModel letterMarkovModel;
-    private Cipher cipher;
-    private RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
-    private Double totalProbability;
     private static final String[] KEYS = {"a", "anchor", "b", "backc", "backd",
             "backe", "backf", "backj", "backk", "backl", "backp", "backq", "backr", "backslash", "box", "boxdot",
             "carrot", "circledot", "d", "e", "f", "flipt", "forslash", "fullbox", "fullcircle", "fulltri", "g", "h",
             "horstrike", "i", "j", "k", "l", "lrbox", "m", "n", "o", "p", "pi", "plus", "q", "r", "s", "t", "tri",
             "tridot", "u", "v", "vertstrike", "w", "x", "y", "z", "zodiac"};
+
+    private RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
+    private Double totalProbability;
+
+    @Autowired
+    private Cipher cipher;
+
+    @Autowired
+    private TreeMarkovModel letterMarkovModel;
 
     @PostConstruct
     public void init() {
@@ -89,19 +98,5 @@ public class ProbabilisticBreeder implements Breeder {
         log.debug(chromosome.toString());
 
         return chromosome;
-    }
-
-    @Override
-    public void setGeneticStructure(Object obj) {
-        this.cipher = (Cipher) obj;
-    }
-
-    /**
-     * @param letterMarkovModel
-     *            the letterMarkovModel to set
-     */
-    @Required
-    public void setLetterMarkovModel(TreeMarkovModel letterMarkovModel) {
-        this.letterMarkovModel = letterMarkovModel;
     }
 }

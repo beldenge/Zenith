@@ -21,7 +21,7 @@ package com.ciphertool.zenith.genetic.algorithms.crossover.impl;
 
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
+import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
@@ -30,14 +30,14 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class EqualOpportunityGeneCrossoverAlgorithm implements CrossoverAlgorithm<KeyedChromosome<Object>> {
+public class EqualOpportunityGeneCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
     private Coin coin = new Coin();
 
     @Override
-    public List<KeyedChromosome<Object>> crossover(KeyedChromosome<Object> parentA, KeyedChromosome<Object> parentB) {
-        List<KeyedChromosome<Object>> children = new ArrayList<>(1);
+    public List<Chromosome<Object>> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
+        List<Chromosome<Object>> children = new ArrayList<>(1);
 
-        KeyedChromosome<Object> child = performCrossover(parentA, parentB);
+        Chromosome<Object> child = performCrossover(parentA, parentB);
 
         // The Chromosome could be null if it's identical to one of its parents
         if (child != null) {
@@ -48,8 +48,8 @@ public class EqualOpportunityGeneCrossoverAlgorithm implements CrossoverAlgorith
     }
 
     @SuppressWarnings("unchecked")
-    protected KeyedChromosome<Object> performCrossover(KeyedChromosome<Object> parentA, KeyedChromosome<Object> parentB) {
-        KeyedChromosome<Object> child = (KeyedChromosome<Object>) parentA.clone();
+    protected Chromosome<Object> performCrossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
+        Chromosome<Object> child = (Chromosome<Object>) parentA.clone();
 
         Object key;
 

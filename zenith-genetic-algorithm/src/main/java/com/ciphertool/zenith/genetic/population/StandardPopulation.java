@@ -316,11 +316,6 @@ public class StandardPopulation implements Population {
         return totalFitness;
     }
 
-    @Override
-    public void setGeneticStructure(Object obj) {
-        this.breeder.setGeneticStructure(obj);
-    }
-
     /**
      * @param breeder
      *            the breeder to set

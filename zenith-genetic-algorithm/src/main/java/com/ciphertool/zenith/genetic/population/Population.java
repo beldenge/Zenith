@@ -22,9 +22,8 @@ package com.ciphertool.zenith.genetic.population;
 import com.ciphertool.zenith.genetic.algorithms.selection.modes.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.entities.KeyedChromosome;
-import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
+import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -49,12 +48,6 @@ public interface Population {
     List<Chromosome> getIndividuals();
 
     void reIndexSelector();
-
-    /**
-     * @param geneticStructure
-     *            the geneticStructure to set
-     */
-    void setGeneticStructure(Object geneticStructure);
 
     /**
      * @param fitnessEvaluator
@@ -92,9 +85,9 @@ public interface Population {
 
     @SuppressWarnings({"unchecked"})
     default BigDecimal calculateEntropy() {
-        if (!(this.getIndividuals().get(0) instanceof KeyedChromosome)) {
+        if (!(this.getIndividuals().get(0) instanceof Chromosome)) {
             throw new UnsupportedOperationException(
-                    "Calculation of entropy is currently only supported for KeyedChromosome types.");
+                    "Calculation of entropy is currently only supported for Chromosome types.");
         }
 
         Map<Object, Map<Object, Integer>> symbolCounts = new HashMap<>();
@@ -106,7 +99,7 @@ public interface Population {
 
         // Count occurrences of each Gene value
         for (Chromosome chromosome : this.getIndividuals()) {
-            for (Map.Entry<Object, Gene> entry : ((KeyedChromosome<Object>) chromosome).getGenes().entrySet()) {
+            for (Map.Entry<Object, Gene> entry : ((Chromosome<Object>) chromosome).getGenes().entrySet()) {
                 geneKey = entry.getKey();
 
                 symbolCountMap = symbolCounts.get(geneKey);

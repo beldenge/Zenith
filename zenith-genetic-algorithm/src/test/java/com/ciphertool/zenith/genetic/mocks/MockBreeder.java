@@ -30,10 +30,4 @@ public class MockBreeder implements Breeder {
     public Chromosome breed() {
         throw new UnsupportedOperationException("Method stub not yet implemented");
     }
-
-    @Override
-    public void setGeneticStructure(Object geneticStructure) {
-        this.geneticStructure = geneticStructure;
-    }
-
 }

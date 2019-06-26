@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.genetic.service;
+package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
@@ -27,17 +27,20 @@ import com.ciphertool.zenith.genetic.algorithms.selection.modes.Selector;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
-import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
+@Component
+@ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
+public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${genetic-algorithm.population.size}")
@@ -98,7 +101,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
                 .collect(Collectors.toList());
 
         for (CrossoverAlgorithm crossoverAlgorithm : crossoverAlgorithms) {
-            if (crossoverAlgorithm.getClass().getSimpleName().equalsIgnoreCase(crossoverAlgorithmName)) {
+            if (crossoverAlgorithm.getClass().getSimpleName().equals(crossoverAlgorithmName)) {
                 this.crossoverAlgorithm = crossoverAlgorithm;
                 break;
             }
@@ -115,7 +118,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
                 .collect(Collectors.toList());
 
         for (MutationAlgorithm mutationAlgorithm : mutationAlgorithms) {
-            if (mutationAlgorithm.getClass().getSimpleName().equalsIgnoreCase(mutationAlgorithmName)) {
+            if (mutationAlgorithm.getClass().getSimpleName().equals(mutationAlgorithmName)) {
                 this.mutationAlgorithm = mutationAlgorithm;
                 break;
             }
@@ -132,7 +135,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
                 .collect(Collectors.toList());
 
         for (Selector selector : selectors) {
-            if (selector.getClass().getSimpleName().equalsIgnoreCase(selectorName)) {
+            if (selector.getClass().getSimpleName().equals(selectorName)) {
                 this.selector = selector;
                 break;
             }
@@ -149,7 +152,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
                 .collect(Collectors.toList());
 
         for (PlaintextEvaluator evaluator : plaintextEvaluators) {
-            if (evaluator.getClass().getSimpleName().equalsIgnoreCase(fitnessEvaluatorName)) {
+            if (evaluator.getClass().getSimpleName().equals(fitnessEvaluatorName)) {
                 fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(evaluator);
                 break;
             }

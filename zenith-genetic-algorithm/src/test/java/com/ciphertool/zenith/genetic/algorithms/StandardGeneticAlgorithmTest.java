@@ -25,7 +25,7 @@ import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.selection.modes.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
-import com.ciphertool.zenith.genetic.mocks.MockKeyedChromosome;
+import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
@@ -71,13 +71,11 @@ public class StandardGeneticAlgorithmTest {
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
         FitnessEvaluator knownSolutionFitnessEvaluatorMock = mock(FitnessEvaluator.class);
         Selector selectorMock = mock(Selector.class);
-        Object geneticStructure = new Object();
         boolean compareToKnownSolution = true;
         int maxMutationsPerIndividual = 5;
         int populationSizeToSet = 100;
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .geneticStructure(geneticStructure)
                 .fitnessEvaluator(fitnessEvaluatorMock)
                 .knownSolutionFitnessEvaluator(knownSolutionFitnessEvaluatorMock)
                 .compareToKnownSolution(compareToKnownSolution)
@@ -97,7 +95,6 @@ public class StandardGeneticAlgorithmTest {
         GeneticAlgorithmStrategy strategyFromObject = (GeneticAlgorithmStrategy) ReflectionUtils.getField(strategyField, standardGeneticAlgorithm);
 
         assertSame(strategyToSet, strategyFromObject);
-        verify(populationMock, times(1)).setGeneticStructure(same(geneticStructure));
         verify(populationMock, times(1)).setFitnessEvaluator(same(fitnessEvaluatorMock));
         verify(populationMock, times(1)).setKnownSolutionFitnessEvaluator(same(knownSolutionFitnessEvaluatorMock));
         verify(populationMock, times(1)).setCompareToKnownSolution(eq(compareToKnownSolution));
@@ -134,7 +131,6 @@ public class StandardGeneticAlgorithmTest {
         MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .geneticStructure(new Object())
                 .fitnessEvaluator(fitnessEvaluatorMock)
                 .crossoverAlgorithm(crossoverAlgorithmMock)
                 .mutationAlgorithm(mutationAlgorithmMock)
@@ -149,7 +145,7 @@ public class StandardGeneticAlgorithmTest {
 
         // Setting the individuals to something non-empty so the calculateEntropy() method won't fail
         List<Chromosome> individuals = new ArrayList<>();
-        individuals.add(new MockKeyedChromosome());
+        individuals.add(new MockChromosome());
         when(populationMock.getIndividuals()).thenReturn(individuals);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
@@ -227,12 +223,12 @@ public class StandardGeneticAlgorithmTest {
 
         List<Chromosome> individuals = new ArrayList<Chromosome>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockKeyedChromosome());
+            individuals.add(new MockChromosome());
         }
 
         when(populationMock.selectIndex()).thenReturn(index);
         when(populationMock.getIndividuals()).thenReturn(individuals);
-        when(populationMock.removeIndividual(anyInt())).thenReturn(new MockKeyedChromosome());
+        when(populationMock.removeIndividual(anyInt())).thenReturn(new MockChromosome());
         when(populationMock.size()).thenReturn(initialPopulationSize);
         when(populationMock.selectIndex()).thenReturn(0);
         standardGeneticAlgorithm.setPopulation(populationMock);
@@ -273,7 +269,7 @@ public class StandardGeneticAlgorithmTest {
         ReflectionUtils.makeAccessible(crossoverAlgorithmField);
         ReflectionUtils.setField(crossoverAlgorithmField, standardGeneticAlgorithm, crossoverAlgorithmMock);
 
-        Chromosome chromosomeToReturn = new MockKeyedChromosome();
+        Chromosome chromosomeToReturn = new MockChromosome();
         when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(Arrays.asList(chromosomeToReturn));
 
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
@@ -324,7 +320,6 @@ public class StandardGeneticAlgorithmTest {
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .geneticStructure(new Object())
                 .fitnessEvaluator(mock(FitnessEvaluator.class))
                 .crossoverAlgorithm(mock(CrossoverAlgorithm.class))
                 .mutationAlgorithm(mock(MutationAlgorithm.class))
@@ -345,7 +340,6 @@ public class StandardGeneticAlgorithmTest {
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .geneticStructure(null)
                 .fitnessEvaluator(null)
                 .crossoverAlgorithm(null)
                 .mutationAlgorithm(null)
@@ -372,7 +366,6 @@ public class StandardGeneticAlgorithmTest {
             standardGeneticAlgorithm.validateParameters();
         } catch (IllegalStateException ise) {
             String expectedMessage = "Unable to execute genetic algorithm because one or more of the required parameters are missing.  The validation errors are:";
-            expectedMessage += "\n\t-Parameter 'geneticStructure' cannot be null.";
             expectedMessage += "\n\t-Parameter 'populationSize' must be greater than zero.";
             expectedMessage += "\n\t-Parameter 'mutationRate' must be greater than or equal to zero.";
             expectedMessage += "\n\t-Parameter 'maxMutationsPerIndividual' must be greater than or equal to zero.";
@@ -392,22 +385,22 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void testCrossover() throws InterruptedException {
+    public void testCrossover() {
         int index = 0;
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         int initialPopulationSize = 50;
 
-        List<Chromosome> individuals = new ArrayList<Chromosome>();
+        List<Chromosome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockKeyedChromosome());
+            individuals.add(new MockChromosome());
         }
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
         when(populationMock.selectIndex()).thenReturn(index);
         when(populationMock.getIndividuals()).thenReturn(individuals);
         when(populationMock.size()).thenReturn(initialPopulationSize);
-        when(populationMock.removeIndividual(anyInt())).thenReturn(new MockKeyedChromosome());
+        when(populationMock.removeIndividual(anyInt())).thenReturn(new MockChromosome());
         when(populationMock.selectIndex()).thenReturn(0);
 
         standardGeneticAlgorithm.setPopulation(populationMock);
@@ -433,7 +426,7 @@ public class StandardGeneticAlgorithmTest {
         ReflectionUtils.makeAccessible(crossoverAlgorithmField);
         ReflectionUtils.setField(crossoverAlgorithmField, standardGeneticAlgorithm, crossoverAlgorithmMock);
 
-        Chromosome chromosomeToReturn = new MockKeyedChromosome();
+        Chromosome chromosomeToReturn = new MockChromosome();
         when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(Arrays.asList(chromosomeToReturn));
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder().build();
@@ -474,7 +467,7 @@ public class StandardGeneticAlgorithmTest {
 
         int initialPopulationSize = 10;
 
-        Chromosome chromosome = new MockKeyedChromosome();
+        Chromosome chromosome = new MockChromosome();
         population.addIndividual(chromosome);
         standardGeneticAlgorithm.setPopulation(population);
 
@@ -486,12 +479,12 @@ public class StandardGeneticAlgorithmTest {
 
         List<Chromosome> moms = new ArrayList<Chromosome>();
         for (int i = 0; i < initialPopulationSize / 2; i++) {
-            moms.add(new MockKeyedChromosome());
+            moms.add(new MockChromosome());
         }
 
         List<Chromosome> dads = new ArrayList<Chromosome>();
         for (int i = initialPopulationSize / 2; i < initialPopulationSize; i++) {
-            dads.add(new MockKeyedChromosome());
+            dads.add(new MockChromosome());
         }
 
         int childrenProduced = standardGeneticAlgorithm.crossover(initialPopulationSize, moms, dads);
@@ -511,7 +504,7 @@ public class StandardGeneticAlgorithmTest {
 
         List<Chromosome> individuals = new ArrayList<Chromosome>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockKeyedChromosome());
+            individuals.add(new MockChromosome());
         }
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
@@ -571,7 +564,7 @@ public class StandardGeneticAlgorithmTest {
 
         List<Chromosome> individuals = new ArrayList<Chromosome>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockKeyedChromosome());
+            individuals.add(new MockChromosome());
         }
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
@@ -631,7 +624,7 @@ public class StandardGeneticAlgorithmTest {
 
         // Setting the individuals to something non-empty so the calculateEntropy() method won't fail
         List<Chromosome> individuals = new ArrayList<Chromosome>();
-        individuals.add(new MockKeyedChromosome());
+        individuals.add(new MockChromosome());
         when(populationMock.getIndividuals()).thenReturn(individuals);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();

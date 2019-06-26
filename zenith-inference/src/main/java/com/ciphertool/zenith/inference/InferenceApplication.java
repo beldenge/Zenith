@@ -19,7 +19,9 @@
 
 package com.ciphertool.zenith.inference;
 
-import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
+import com.ciphertool.zenith.inference.dao.CipherDao;
+import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
@@ -42,8 +44,19 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@SpringBootApplication(scanBasePackageClasses = { InferenceApplication.class, LetterNGramDao.class })
+@SpringBootApplication(scanBasePackages = {
+	"com.ciphertool.zenith.inference",
+	"com.ciphertool.zenith.model.dao",
+	"com.ciphertool.zenith.genetic",
+	"com.ciphertool.zenith.genetic.algorithms.crossover.impl",
+	"com.ciphertool.zenith.genetic.algorithms.mutation",
+	"com.ciphertool.zenith.genetic.algorithms.mutation.impl",
+	"com.ciphertool.zenith.genetic.algorithms",
+	"com.ciphertool.zenith.genetic.algorithms.selection.modes",
+	"com.ciphertool.zenith.genetic.population"
+})
 public class InferenceApplication implements CommandLineRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -59,11 +72,22 @@ public class InferenceApplication implements CommandLineRunner {
 	@Value("${markov.letter.order}")
 	private int	markovOrder;
 
+	@Value("${cipher.name}")
+	private String cipherName;
+
+	@Value("${decipherment.optimizer}")
+	private String optimizerName;
+
 	@Autowired
 	private LetterNGramDao letterNGramDao;
 
 	@Autowired
-	private SimulatedAnnealingSolutionOptimizer optimizer;
+	private List<SolutionOptimizer> optimizers;
+
+	private SolutionOptimizer solutionOptimizer;
+
+	@Autowired
+	private CipherDao cipherDao;
 
 	public static void main(String[] args) {
 		SpringApplication.run(InferenceApplication.class, args).close();
@@ -71,7 +95,28 @@ public class InferenceApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... arg0) {
-		optimizer.optimize();
+		List<String> existentOptimizers = optimizers.stream()
+				.map(optimizer -> optimizer.getClass().getSimpleName())
+				.collect(Collectors.toList());
+
+		for (SolutionOptimizer optimizer : optimizers) {
+			if (optimizer.getClass().getSimpleName().equals(optimizerName)) {
+				solutionOptimizer = optimizer;
+				break;
+			}
+		}
+
+		if (solutionOptimizer == null) {
+			log.error("The SolutionOptimizer with name {} does not exist.  Please use a name from the following: {}", optimizerName, existentOptimizers);
+			throw new IllegalArgumentException("The SolutionOptimizer with name " + optimizerName + " does not exist.");
+		}
+
+		solutionOptimizer.optimize();
+	}
+
+	@Bean
+	public Cipher cipher() {
+		return cipherDao.findByCipherName(cipherName);
 	}
 
 	@Bean
