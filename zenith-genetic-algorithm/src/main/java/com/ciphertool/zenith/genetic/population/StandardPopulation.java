@@ -164,7 +164,7 @@ public class StandardPopulation implements Population {
     }
 
     @Override
-    public Chromosome evaluateFitness(GenerationStatistics generationStatistics) throws InterruptedException {
+    public Chromosome evaluateFitness(GenerationStatistics generationStatistics) {
         generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.fitnessEvaluator));
 
         return updateFitness(generationStatistics);
@@ -235,36 +235,10 @@ public class StandardPopulation implements Population {
     }
 
     @Override
-    public void recoverFromBackup() {
-        if (this.backup == null || this.backup.isEmpty()) {
-            log.info("Attempted to recover from backup, but backup was empty.  Nothing to do.");
-
-            return;
-        }
-
-        clearIndividuals();
-
-        addAllIndividuals(this.backup);
-    }
-
-    @Override
-    public void backupIndividuals() {
-        this.backup.clear();
-
-        this.backup.addAll(this.individuals);
-    }
-
-    @Override
     public void clearIndividuals() {
         this.individuals.clear();
 
         this.totalFitness = 0d;
-    }
-
-    public void addAllIndividuals(List<Chromosome> individuals) {
-        for (Chromosome individual : individuals) {
-            addIndividual(individual);
-        }
     }
 
     /**

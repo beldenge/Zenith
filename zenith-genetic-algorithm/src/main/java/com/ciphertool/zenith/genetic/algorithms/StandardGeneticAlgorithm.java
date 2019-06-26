@@ -56,7 +56,7 @@ public class StandardGeneticAlgorithm {
     private ExecutionStatistics executionStatistics;
     private AtomicInteger mutations = new AtomicInteger(0);
 
-    public void initialize() throws InterruptedException {
+    public void initialize() {
         validateParameters();
 
         this.generationCount = 0;
@@ -67,7 +67,7 @@ public class StandardGeneticAlgorithm {
         this.spawnInitialPopulation();
     }
 
-    public void spawnInitialPopulation() throws InterruptedException {
+    public void spawnInitialPopulation() {
         GenerationStatistics generationStatistics = new GenerationStatistics(this.executionStatistics, this.generationCount);
 
         long start = System.currentTimeMillis();
@@ -94,17 +94,11 @@ public class StandardGeneticAlgorithm {
     }
 
     public void evolveAutonomously() {
-        try {
-            initialize();
+        initialize();
 
-            do {
-                proceedWithNextGeneration();
-            } while ((this.strategy.getMaxGenerations() < 0 || this.generationCount < this.strategy.getMaxGenerations()));
-        } catch (InterruptedException ie) {
-            log.info(ie.getMessage());
-
-            this.population.recoverFromBackup();
-        }
+        do {
+            proceedWithNextGeneration();
+        } while ((this.strategy.getMaxGenerations() < 0 || this.generationCount < this.strategy.getMaxGenerations()));
 
         finish();
     }
@@ -156,9 +150,7 @@ public class StandardGeneticAlgorithm {
         }
     }
 
-    public void proceedWithNextGeneration() throws InterruptedException {
-        this.population.backupIndividuals();
-
+    public void proceedWithNextGeneration() {
         this.generationCount++;
 
         GenerationStatistics generationStatistics = new GenerationStatistics(this.executionStatistics, this.generationCount);

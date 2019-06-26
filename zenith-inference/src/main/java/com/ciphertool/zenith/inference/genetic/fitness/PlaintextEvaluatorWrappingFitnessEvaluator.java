@@ -37,6 +37,6 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
 
         plaintextEvaluator.evaluate(cipherSolution, null);
 
-        return cipherSolution.getLogProbability();
+        return cipherSolution.getScore();
     }
 }

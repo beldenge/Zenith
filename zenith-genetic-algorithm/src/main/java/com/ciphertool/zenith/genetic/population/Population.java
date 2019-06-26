@@ -31,13 +31,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface Population {
-    Chromosome evaluateFitness(GenerationStatistics generationStatistics) throws InterruptedException;
+    Chromosome evaluateFitness(GenerationStatistics generationStatistics);
 
     int breed();
-
-    void recoverFromBackup();
-
-    void backupIndividuals();
 
     void clearIndividuals();
 

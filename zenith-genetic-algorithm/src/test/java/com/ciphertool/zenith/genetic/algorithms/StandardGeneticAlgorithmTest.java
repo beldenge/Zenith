@@ -265,7 +265,6 @@ public class StandardGeneticAlgorithmTest {
         int generationCountFromObject = (int) ReflectionUtils.getField(generationCountField, standardGeneticAlgorithm);
         assertEquals(1, generationCountFromObject);
 
-        verify(populationMock, times(1)).backupIndividuals();
         verify(populationMock, times(200)).selectIndex();
         verify(populationMock, times(300)).getIndividuals();
         verify(populationMock, times(4)).size();
