@@ -27,22 +27,11 @@ import static org.junit.Assert.assertSame;
 public class GenerationStatisticsTest {
     @Test
     public void testConstructor() {
-        ExecutionStatistics executionStatisticsToSet = new ExecutionStatistics();
         int generationToSet = 1;
 
-        GenerationStatistics generationStatistics = new GenerationStatistics(executionStatisticsToSet, generationToSet);
+        GenerationStatistics generationStatistics = new GenerationStatistics(generationToSet);
 
-        assertSame(executionStatisticsToSet, generationStatistics.getExecutionStatistics());
         assertEquals(generationToSet, generationStatistics.getGeneration());
-    }
-
-    @Test
-    public void testSetExecutionStatistics() {
-        ExecutionStatistics executionStatisticsToSet = new ExecutionStatistics();
-        GenerationStatistics generationStatistics = new GenerationStatistics();
-        generationStatistics.setExecutionStatistics(executionStatisticsToSet);
-
-        assertSame(executionStatisticsToSet, generationStatistics.getExecutionStatistics());
     }
 
     @Test

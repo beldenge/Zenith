@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 @ToString
 public class GenerationStatistics {
-    private ExecutionStatistics executionStatistics;
     private int generation;
     private Double bestFitness;
     private Double averageFitness;
@@ -38,17 +37,14 @@ public class GenerationStatistics {
     private int numberOfCrossovers;
     private int numberOfMutations;
     private int numberOfEvaluations;
-    private int numberOfMajorEvaluations;
     private int numberRandomlyGenerated;
     private int numberSelectedOut;
     private PerformanceStatistics performanceStatistics = new PerformanceStatistics();
 
     /**
-     * @param executionStatistics the executionStatistics to set
      * @param generation          the generation to set
      */
-    public GenerationStatistics(ExecutionStatistics executionStatistics, int generation) {
-        this.executionStatistics = executionStatistics;
+    public GenerationStatistics(int generation) {
         this.generation = generation;
     }
 }

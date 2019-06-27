@@ -150,11 +150,11 @@ public class ExecutionStatisticsTest {
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         assertEquals(0, executionStatistics.getGenerationStatisticsList().size());
 
-        GenerationStatistics generationStatistics1 = new GenerationStatistics(null, 0);
+        GenerationStatistics generationStatistics1 = new GenerationStatistics(0);
         executionStatistics.addGenerationStatistics(generationStatistics1);
-        GenerationStatistics generationStatistics2 = new GenerationStatistics(null, 1);
+        GenerationStatistics generationStatistics2 = new GenerationStatistics(1);
         executionStatistics.addGenerationStatistics(generationStatistics2);
-        GenerationStatistics generationStatistics3 = new GenerationStatistics(null, 2);
+        GenerationStatistics generationStatistics3 = new GenerationStatistics(2);
         executionStatistics.addGenerationStatistics(generationStatistics3);
 
         assertEquals(3, executionStatistics.getGenerationStatisticsList().size());

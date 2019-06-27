@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.genetic.algorithms;
 
+import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
@@ -54,6 +55,7 @@ public class StandardGeneticAlgorithmTest {
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
         FitnessEvaluator knownSolutionFitnessEvaluatorMock = mock(FitnessEvaluator.class);
         Selector selectorMock = mock(Selector.class);
+        Breeder breederMock = mock(Breeder.class);
         boolean compareToKnownSolution = true;
         int maxMutationsPerIndividual = 5;
         int populationSizeToSet = 100;
@@ -67,6 +69,7 @@ public class StandardGeneticAlgorithmTest {
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
                 .populationSize(populationSizeToSet)
                 .selector(selectorMock)
+                .breeder(breederMock)
                 .build();
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
@@ -87,6 +90,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).setCompareToKnownSolution(eq(compareToKnownSolution));
         verify(populationMock, times(1)).setTargetSize(eq(populationSizeToSet));
         verify(populationMock, times(1)).setSelector(eq(selectorMock));
+        verify(populationMock, times(1)).setBreeder(eq(breederMock));
         verifyNoMoreInteractions(populationMock);
         verifyNoMoreInteractions(crossoverAlgorithmMock);
         verifyNoMoreInteractions(mutationAlgorithmMock);

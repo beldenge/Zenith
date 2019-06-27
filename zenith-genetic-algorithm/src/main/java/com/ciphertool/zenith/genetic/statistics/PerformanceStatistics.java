@@ -34,6 +34,5 @@ public class PerformanceStatistics {
     private long crossoverMillis;
     private long mutationMillis;
     private long evaluationMillis;
-    private long majorEvaluationMillis;
     private long entropyMillis;
 }

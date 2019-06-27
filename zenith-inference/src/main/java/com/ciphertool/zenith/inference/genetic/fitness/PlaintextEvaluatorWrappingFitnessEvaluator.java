@@ -37,6 +37,14 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
 
         plaintextEvaluator.evaluate(cipherSolution, null);
 
-        return cipherSolution.getScore();
+        return convertNegativeLogProbabilityToPositiveScore(cipherSolution.getScore());
+    }
+
+    /*
+     * We are applying the function: (x - 10000) / (x / 100)
+     * Model it in a graphing calculator (i.e. paste it into Google) to see what the curve looks like
+     */
+    private static Double convertNegativeLogProbabilityToPositiveScore(Double negativeLogProbability) {
+        return (negativeLogProbability - 10000d) / (negativeLogProbability / 100d);
     }
 }

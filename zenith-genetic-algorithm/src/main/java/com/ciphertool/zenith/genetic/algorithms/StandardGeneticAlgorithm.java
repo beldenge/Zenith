@@ -67,7 +67,7 @@ public class StandardGeneticAlgorithm {
     }
 
     public void spawnInitialPopulation() {
-        GenerationStatistics generationStatistics = new GenerationStatistics(this.executionStatistics, this.generationCount);
+        GenerationStatistics generationStatistics = new GenerationStatistics(this.generationCount);
 
         long start = System.currentTimeMillis();
 
@@ -152,7 +152,7 @@ public class StandardGeneticAlgorithm {
     public void proceedWithNextGeneration() {
         this.generationCount++;
 
-        GenerationStatistics generationStatistics = new GenerationStatistics(this.executionStatistics, this.generationCount);
+        GenerationStatistics generationStatistics = new GenerationStatistics(this.generationCount);
 
         long generationStart = System.currentTimeMillis();
 
@@ -391,6 +391,7 @@ public class StandardGeneticAlgorithm {
         this.population.setCompareToKnownSolution(geneticAlgorithmStrategy.getCompareToKnownSolution());
         this.population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
         this.population.setSelector(geneticAlgorithmStrategy.getSelector());
+        this.population.setBreeder(geneticAlgorithmStrategy.getBreeder());
 
         this.strategy = geneticAlgorithmStrategy;
     }

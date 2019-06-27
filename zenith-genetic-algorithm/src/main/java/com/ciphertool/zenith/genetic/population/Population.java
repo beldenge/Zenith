@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.genetic.population;
 
+import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
@@ -44,6 +45,11 @@ public interface Population {
     List<Chromosome> getIndividuals();
 
     void reIndexSelector();
+
+    /**
+     * @param breeder the breeder to set
+     */
+    void setBreeder(Breeder breeder);
 
     /**
      * @param fitnessEvaluator the fitnessEvaluator to set

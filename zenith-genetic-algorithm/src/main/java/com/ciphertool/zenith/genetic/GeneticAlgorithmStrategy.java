@@ -37,6 +37,7 @@ public class GeneticAlgorithmStrategy {
     private CrossoverAlgorithm crossoverAlgorithm;
     private FitnessEvaluator fitnessEvaluator;
     private MutationAlgorithm mutationAlgorithm;
+    private Breeder breeder;
     private Selector selector;
     private FitnessEvaluator knownSolutionFitnessEvaluator;
     private Boolean compareToKnownSolution;

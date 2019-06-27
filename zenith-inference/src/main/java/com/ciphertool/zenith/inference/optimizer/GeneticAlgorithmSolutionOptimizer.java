@@ -101,8 +101,11 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     private FitnessEvaluator knownSolutionFitnessEvaluator;
 
+    @Override
     @PostConstruct
     public void init() {
+        super.init();
+
         // Set the proper Breeder
         List<String> existentBreeders = breeders.stream()
                 .map(breeder -> breeder.getClass().getSimpleName())
@@ -182,6 +185,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .mutationAlgorithm(mutationAlgorithm)
                 .selector(selector)
                 .fitnessEvaluator(fitnessEvaluator)
+                .breeder(breeder)
                 .populationSize(populationSize)
                 .maxGenerations(numberOfGenerations)
                 .mutationRate(mutationRate)
