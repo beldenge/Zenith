@@ -57,3 +57,13 @@ Replaces the cipher with its upper right quadrant.
 Replaces the cipher with its lower left quadrant.
 ### LowerRightQuadrantCipherTransformer
 Replaces the cipher with its lower right quadrant.
+### ReverseCipherTransformer
+Reverses the cipher
+### RotateClockwiseCipherTransformer
+Rotates the cipher clockwise (number of rows and columns are swapped)
+### RotateCounterClockwiseCipherTransformer
+Rotates the cipher counter-clockwise (number of rows and columns are swapped)
+## InvertHorizontallyCipherTransformer
+Inverts the cipher horizontally (as if looking in a mirror)
+## InvertVerticallyCipherTransformer
+Inverts the cipher vertically (as if looking in a mirror with your head sideways...?)

@@ -62,7 +62,6 @@ public class TranspositionCipherTransformer implements CipherTransformer {
         }
     }
 
-
     @Override
     public Cipher transform(Cipher cipher) {
         if (transpositionKey == null || transpositionKey.isEmpty()) {
