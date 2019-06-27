@@ -196,7 +196,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         long start = System.currentTimeMillis();
 
         try {
-            geneticAlgorithm.evolveAutonomously();
+            geneticAlgorithm.evolve();
         } catch (Throwable t) {
             log.error("Caught Throwable while running cipher solution service.  Cannot continue.  Performing tear-down tasks.", t);
         } finally {

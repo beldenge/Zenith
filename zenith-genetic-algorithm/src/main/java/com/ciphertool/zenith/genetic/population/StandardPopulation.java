@@ -44,7 +44,6 @@ public class StandardPopulation implements Population {
     private Logger log = LoggerFactory.getLogger(getClass());
     private Breeder breeder;
     private List<Chromosome> individuals = new ArrayList<>();
-    private List<Chromosome> backup = new ArrayList<>();
     private FitnessEvaluator fitnessEvaluator;
     private FitnessComparator fitnessComparator = new AscendingFitnessComparator();
     private Selector selector;

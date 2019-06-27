@@ -92,7 +92,7 @@ public class StandardGeneticAlgorithm {
         log.info(generationStatistics.toString());
     }
 
-    public void evolveAutonomously() {
+    public void evolve() {
         initialize();
 
         do {

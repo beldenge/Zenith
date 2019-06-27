@@ -22,7 +22,6 @@ package com.ciphertool.zenith.inference.optimizer;
 import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
-import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.springframework.util.ReflectionUtils;
@@ -52,7 +51,7 @@ public class GeneticAlgorithmSolutionOptimizerTest {
 
         geneticAlgorithmSolutionOptimizer.optimize();
 
-        verify(standardGeneticAlgorithm, times(1)).evolveAutonomously();
+        verify(standardGeneticAlgorithm, times(1)).evolve();
     }
 
     @Test
@@ -67,7 +66,7 @@ public class GeneticAlgorithmSolutionOptimizerTest {
         population.addIndividual(solutionChromosome);
         when(standardGeneticAlgorithm.getPopulation()).thenReturn(population);
 
-        doThrow(new IllegalStateException()).when(standardGeneticAlgorithm).evolveAutonomously();
+        doThrow(new IllegalStateException()).when(standardGeneticAlgorithm).evolve();
 
         Field geneticAlgorithmField = ReflectionUtils.findField(GeneticAlgorithmSolutionOptimizer.class, "geneticAlgorithm");
         ReflectionUtils.makeAccessible(geneticAlgorithmField);
@@ -84,6 +83,6 @@ public class GeneticAlgorithmSolutionOptimizerTest {
 
         verify(mockLogger, times(1)).error(anyString(), any(Throwable.class));
 
-        verify(standardGeneticAlgorithm, times(1)).evolveAutonomously();
+        verify(standardGeneticAlgorithm, times(1)).evolve();
     }
 }
