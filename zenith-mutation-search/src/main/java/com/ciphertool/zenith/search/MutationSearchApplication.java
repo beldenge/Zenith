@@ -25,9 +25,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {
-    "com.ciphertool.zenith.search",
-    "com.ciphertool.zenith.inference.dao",
-    "com.ciphertool.zenith.inference.transformer"
+        "com.ciphertool.zenith.search",
+        "com.ciphertool.zenith.inference.dao",
+        "com.ciphertool.zenith.inference.transformer"
 })
 public class MutationSearchApplication implements CommandLineRunner {
     @Autowired
@@ -39,6 +39,6 @@ public class MutationSearchApplication implements CommandLineRunner {
 
     @Override
     public void run(String... arg0) {
-		searcher.run();
+        searcher.run();
     }
 }

@@ -65,16 +65,14 @@ public class ExecutionStatistics {
     }
 
     /**
-     * @param generationStatistics
-     *            the GenerationStatistics to add
+     * @param generationStatistics the GenerationStatistics to add
      */
     public void addGenerationStatistics(GenerationStatistics generationStatistics) {
         this.generationStatisticsList.add(generationStatistics);
     }
 
     /**
-     * @param generationStatistics
-     *            the GenerationStatistics to remove
+     * @param generationStatistics the GenerationStatistics to remove
      */
     public void removeGenerationStatistics(GenerationStatistics generationStatistics) {
         this.generationStatisticsList.remove(generationStatistics);

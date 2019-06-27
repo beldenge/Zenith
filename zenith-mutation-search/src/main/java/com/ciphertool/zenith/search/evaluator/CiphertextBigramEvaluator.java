@@ -32,7 +32,7 @@ import java.util.Map;
 
 @Component
 public class CiphertextBigramEvaluator {
-    private Logger log	= LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${decipherment.remove-last-row:true}")
     private boolean removeLastRow;
@@ -50,7 +50,7 @@ public class CiphertextBigramEvaluator {
 
         Map<String, Integer> repeatingBigramCounts = new HashMap<>();
 
-        for (int i = 0; i < end - 1; i ++) {
+        for (int i = 0; i < end - 1; i++) {
             Ciphertext first = cipher.getCiphertextCharacters().get(i);
             Ciphertext second = cipher.getCiphertextCharacters().get(i + 1);
 

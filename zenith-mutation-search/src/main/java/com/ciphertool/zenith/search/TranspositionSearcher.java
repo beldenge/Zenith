@@ -22,8 +22,8 @@ package com.ciphertool.zenith.search;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.search.evaluator.CiphertextBigramEvaluator;
 import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
+import com.ciphertool.zenith.search.evaluator.CiphertextBigramEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,19 +37,19 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class TranspositionSearcher {
-    private Logger log						= LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${cipher.name}")
     private String cipherName;
 
     @Value("${decipherment.sampler.iterations}")
-    private int	samplerIterations;
+    private int samplerIterations;
 
     @Value("${decipherment.annealing.temperature.max}")
-    private double	annealingTemperatureMax;
+    private double annealingTemperatureMax;
 
     @Value("${decipherment.annealing.temperature.min}")
-    private double	annealingTemperatureMin;
+    private double annealingTemperatureMin;
 
     @Value("${decipherment.epochs:1}")
     private int epochs;
@@ -89,7 +89,7 @@ public class TranspositionSearcher {
     }
 
     public void run() {
-        for (int keyLength = keyLengthMin; keyLength <= keyLengthMax; keyLength ++) {
+        for (int keyLength = keyLengthMin; keyLength <= keyLengthMax; keyLength++) {
             for (int epoch = 0; epoch < epochs; epoch++) {
                 CipherSolution cipherProposal = new CipherSolution();
 
@@ -167,9 +167,9 @@ public class TranspositionSearcher {
         CipherSolution best = solution;
         List<Integer> bestTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
 
-        for (int i = 0; i < transpositionKeyIndices.size(); i ++) {
+        for (int i = 0; i < transpositionKeyIndices.size(); i++) {
             // Start at i + 1, as all previous swaps will have already been tried
-            for (int j = i + 1; j < transpositionKeyIndices.size(); j ++) {
+            for (int j = i + 1; j < transpositionKeyIndices.size(); j++) {
                 List<Integer> nextTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
                 int firstValue = nextTranspositionKeyIndices.get(i);
                 int secondValue = nextTranspositionKeyIndices.get(j);

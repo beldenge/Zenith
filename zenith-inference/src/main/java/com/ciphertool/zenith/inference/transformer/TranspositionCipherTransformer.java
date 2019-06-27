@@ -48,14 +48,14 @@ public class TranspositionCipherTransformer implements CipherTransformer {
     @PostConstruct
     public void init() {
         if (transpositionKeyString != null && !transpositionKeyString.isEmpty()) {
-           transpositionKey = getIndicesForTranspositionKey();
+            transpositionKey = getIndicesForTranspositionKey();
         }
 
         List<Integer> toCheck = new ArrayList<>(transpositionKey);
 
         toCheck.sort(Comparator.comparing(Integer::intValue));
 
-        for (int i = 0; i < toCheck.size(); i ++) {
+        for (int i = 0; i < toCheck.size(); i++) {
             if (toCheck.get(i) != i) {
                 throw new IllegalArgumentException("The transposition column key indices must be zero-based with no gaps or duplicates.");
             }
@@ -94,7 +94,7 @@ public class TranspositionCipherTransformer implements CipherTransformer {
 
         Cipher transformed = cipher.clone();
         Cipher clone = cipher;
-        for (int iter = 0; iter < transpositionIterations; iter ++) {
+        for (int iter = 0; iter < transpositionIterations; iter++) {
             int k = 0;
 
             for (int i = 0; i < columnIndices.size(); i++) {
@@ -114,13 +114,13 @@ public class TranspositionCipherTransformer implements CipherTransformer {
         int next = 0;
         Integer[] columnIndices = new Integer[transpositionKeyString.length()];
 
-        for (int i = 0; i < ModelConstants.LOWERCASE_LETTERS.size(); i ++) {
+        for (int i = 0; i < ModelConstants.LOWERCASE_LETTERS.size(); i++) {
             char letter = ModelConstants.LOWERCASE_LETTERS.get(i);
 
             for (int j = 0; j < transpositionKeyString.length(); j++) {
                 if (transpositionKeyString.toLowerCase().charAt(j) == letter) {
                     columnIndices[j] = next;
-                    next ++;
+                    next++;
                 }
             }
         }

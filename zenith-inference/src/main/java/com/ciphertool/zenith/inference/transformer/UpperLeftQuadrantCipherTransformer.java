@@ -32,16 +32,16 @@ public class UpperLeftQuadrantCipherTransformer implements CipherTransformer {
 
         Cipher quadrant = new Cipher(cipher.getName() + "_upperLeftQuadrant", halfOfRows, halfOfColumns);
 
-		int id = 0;
-		for (int i = 0; i < halfOfRows; i ++) {
-			for (int j = 0; j < halfOfColumns; j ++) {
-				Ciphertext toAdd = cipher.getCiphertextCharacters().get((i * cipher.getColumns()) + j).clone();
-				toAdd.setCiphertextId(id);
-				quadrant.addCiphertextCharacter(toAdd);
-				id++;
-			}
-		}
+        int id = 0;
+        for (int i = 0; i < halfOfRows; i++) {
+            for (int j = 0; j < halfOfColumns; j++) {
+                Ciphertext toAdd = cipher.getCiphertextCharacters().get((i * cipher.getColumns()) + j).clone();
+                toAdd.setCiphertextId(id);
+                quadrant.addCiphertextCharacter(toAdd);
+                id++;
+            }
+        }
 
-		return quadrant;
+        return quadrant;
     }
 }

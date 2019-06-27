@@ -1,18 +1,18 @@
 /**
  * Copyright 2017-2019 George Belden
- * <p>
+ *
  * This file is part of Zenith.
- * <p>
+ *
  * Zenith is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * <p>
+ *
  * Zenith is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * <p>
+ *
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -46,36 +46,31 @@ public interface Population {
     void reIndexSelector();
 
     /**
-     * @param fitnessEvaluator
-     *            the fitnessEvaluator to set
+     * @param fitnessEvaluator the fitnessEvaluator to set
      */
     void setFitnessEvaluator(FitnessEvaluator fitnessEvaluator);
 
     /**
      * This is NOT required. We will not always know the solution. In fact, that should be the rare case.
      *
-     * @param knownSolutionFitnessEvaluator
-     *            the knownSolutionFitnessEvaluator to set
+     * @param knownSolutionFitnessEvaluator the knownSolutionFitnessEvaluator to set
      */
     void setKnownSolutionFitnessEvaluator(FitnessEvaluator knownSolutionFitnessEvaluator);
 
     /**
      * This is NOT required.
      *
-     * @param compareToKnownSolution
-     *            the compareToKnownSolution to set
+     * @param compareToKnownSolution the compareToKnownSolution to set
      */
     void setCompareToKnownSolution(Boolean compareToKnownSolution);
 
     /**
-     * @param targetSize
-     *            the targetSize to set
+     * @param targetSize the targetSize to set
      */
     void setTargetSize(int targetSize);
 
     /**
-     * @param selector
-     *            the Selector to set
+     * @param selector the Selector to set
      */
     void setSelector(Selector selector);
 

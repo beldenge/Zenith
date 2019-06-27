@@ -20,10 +20,10 @@
 package com.ciphertool.zenith.math.selection;
 
 public class BinaryRouletteNode {
-    private Double			value;
-    private int					index;
-    private BinaryRouletteNode	lessThan;
-    private BinaryRouletteNode	greaterThan;
+    private Double value;
+    private int index;
+    private BinaryRouletteNode lessThan;
+    private BinaryRouletteNode greaterThan;
 
     /**
      * @param index

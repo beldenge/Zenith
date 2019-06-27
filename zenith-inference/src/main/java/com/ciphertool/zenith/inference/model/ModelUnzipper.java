@@ -43,13 +43,13 @@ public class ModelUnzipper {
         File destinationDirectory = new File(Paths.get("").toAbsolutePath().toString());
         byte[] buffer = new byte[1024];
 
-        try(ZipInputStream zis = new ZipInputStream(new ClassPathResource(modelArchiveFilename).getInputStream())) {
+        try (ZipInputStream zis = new ZipInputStream(new ClassPathResource(modelArchiveFilename).getInputStream())) {
             ZipEntry zipEntry = zis.getNextEntry();
 
             while (zipEntry != null) {
                 File newFile = newFile(destinationDirectory, zipEntry);
 
-                try(FileOutputStream fos = new FileOutputStream(newFile)) {
+                try (FileOutputStream fos = new FileOutputStream(newFile)) {
                     int len;
                     while ((len = zis.read(buffer)) > 0) {
                         fos.write(buffer, 0, len);
@@ -58,7 +58,7 @@ public class ModelUnzipper {
 
                 zipEntry = zis.getNextEntry();
             }
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             log.error("Unable to unzip language model archive file: {}", modelArchiveFilename, ioe);
             throw new IllegalStateException(ioe);
         }

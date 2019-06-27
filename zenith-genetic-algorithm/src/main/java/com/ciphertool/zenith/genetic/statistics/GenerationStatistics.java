@@ -44,10 +44,8 @@ public class GenerationStatistics {
     private PerformanceStatistics performanceStatistics = new PerformanceStatistics();
 
     /**
-     * @param executionStatistics
-     *            the executionStatistics to set
-     * @param generation
-     *            the generation to set
+     * @param executionStatistics the executionStatistics to set
+     * @param generation          the generation to set
      */
     public GenerationStatistics(ExecutionStatistics executionStatistics, int generation) {
         this.executionStatistics = executionStatistics;

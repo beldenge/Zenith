@@ -1,18 +1,18 @@
 /**
  * Copyright 2017-2019 George Belden
- * 
+ * <p>
  * This file is part of Zenith.
- * 
+ * <p>
  * Zenith is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * 
+ * <p>
  * Zenith is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -41,57 +41,57 @@ import java.util.List;
 
 @Component
 public class LetterNGramDao {
-	private Logger				log							= LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Value("${language-model.filename}")
-	private String modelFilename;
+    @Value("${language-model.filename}")
+    private String modelFilename;
 
-	public List<TreeNGram> findAll() {
-		long startCount = System.currentTimeMillis();
+    public List<TreeNGram> findAll() {
+        long startCount = System.currentTimeMillis();
 
-		List<TreeNGram> treeNGrams = new ArrayList<>();
+        List<TreeNGram> treeNGrams = new ArrayList<>();
 
-		try(Reader reader = Files.newBufferedReader(Paths.get(modelFilename))) {
-			List<TreeNGram> records = new CsvToBeanBuilder(reader)
-					.withType(TreeNGram.class)
-					.build()
-					.parse();
+        try (Reader reader = Files.newBufferedReader(Paths.get(modelFilename))) {
+            List<TreeNGram> records = new CsvToBeanBuilder(reader)
+                    .withType(TreeNGram.class)
+                    .build()
+                    .parse();
 
-			treeNGrams.addAll(records);
-		} catch (IOException e) {
-			log.error("Unable to find ngrams from file: {}.", modelFilename, e);
-			throw new IllegalStateException(e);
-		}
+            treeNGrams.addAll(records);
+        } catch (IOException e) {
+            log.error("Unable to find ngrams from file: {}.", modelFilename, e);
+            throw new IllegalStateException(e);
+        }
 
-		log.info("Finished finding nodes in {}ms.", (System.currentTimeMillis() - startCount));
+        log.info("Finished finding nodes in {}ms.", (System.currentTimeMillis() - startCount));
 
-		return treeNGrams;
-	}
+        return treeNGrams;
+    }
 
-	public synchronized void addAll(List<TreeNGram> nodes) {
-		if (nodes == null || nodes.isEmpty()) {
-			return;
-		}
+    public synchronized void addAll(List<TreeNGram> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
 
-		try(Writer writer = Files.newBufferedWriter(Paths.get(modelFilename), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-			StatefulBeanToCsv sbc = new StatefulBeanToCsvBuilder(writer)
-					.build();
+        try (Writer writer = Files.newBufferedWriter(Paths.get(modelFilename), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            StatefulBeanToCsv sbc = new StatefulBeanToCsvBuilder(writer)
+                    .build();
 
-			sbc.write(nodes);
-		} catch(IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
-			log.error("Unable to add nodes to output file: {}.", modelFilename, e);
-			throw new IllegalStateException(e);
-		}
-	}
+            sbc.write(nodes);
+        } catch (IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
+            log.error("Unable to add nodes to output file: {}.", modelFilename, e);
+            throw new IllegalStateException(e);
+        }
+    }
 
-	public void deleteAll() {
-		if (Files.exists(Paths.get(modelFilename))) {
-			try {
-				Files.delete(Paths.get(modelFilename));
-			} catch (IOException e) {
-				log.error("Unable to delete file at path: {}.", modelFilename, e);
-				throw new IllegalStateException(e);
-			}
-		}
-	}
+    public void deleteAll() {
+        if (Files.exists(Paths.get(modelFilename))) {
+            try {
+                Files.delete(Paths.get(modelFilename));
+            } catch (IOException e) {
+                log.error("Unable to delete file at path: {}.", modelFilename, e);
+                throw new IllegalStateException(e);
+            }
+        }
+    }
 }

@@ -37,7 +37,7 @@ import java.net.URI;
 import java.util.Collections;
 
 @Component
-@ConditionalOnProperty(value="decipherment.evaluator.plaintext", havingValue = "LstmNetworkPlaintextEvaluator")
+@ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "LstmNetworkPlaintextEvaluator")
 public class LstmNetworkPlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 

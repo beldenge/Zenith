@@ -1,18 +1,18 @@
 /**
  * Copyright 2017-2019 George Belden
- * <p>
+ *
  * This file is part of Zenith.
- * <p>
+ *
  * Zenith is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * <p>
+ *
  * Zenith is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * <p>
+ *
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@ConditionalOnProperty(value="decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
+@ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -139,7 +139,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
         // Set the proper MutationAlgorithm
         List<String> existentMutationAlgorithms = mutationAlgorithms.stream()
-                .map(mutationAlgorithm ->  mutationAlgorithm.getClass().getSimpleName())
+                .map(mutationAlgorithm -> mutationAlgorithm.getClass().getSimpleName())
                 .collect(Collectors.toList());
 
         for (MutationAlgorithm mutationAlgorithm : mutationAlgorithms) {
@@ -156,7 +156,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
         // Set the proper Selector
         List<String> existentSelectors = selectors.stream()
-                .map(selector ->  selector.getClass().getSimpleName())
+                .map(selector -> selector.getClass().getSimpleName())
                 .collect(Collectors.toList());
 
         for (Selector selector : selectors) {

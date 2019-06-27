@@ -1,18 +1,18 @@
 /**
  * Copyright 2017-2019 George Belden
- * 
+ * <p>
  * This file is part of Zenith.
- * 
+ * <p>
  * Zenith is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * 
+ * <p>
  * Zenith is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -26,207 +26,208 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class TreeNGram {
-	private static final Pattern		LOWERCASE_LETTERS_AND_SPACE	= Pattern.compile("[a-z \\.]");
+    private static final Pattern LOWERCASE_LETTERS_AND_SPACE = Pattern.compile("[a-z \\.]");
 
-	@CsvBindByPosition(position = 0, required = true)
-	protected String					cumulativeString;
+    @CsvBindByPosition(position = 0, required = true)
+    protected String cumulativeString;
 
-	@CsvBindByPosition(position = 1, required = true)
-	protected Integer					order;
+    @CsvBindByPosition(position = 1, required = true)
+    protected Integer order;
 
-	@CsvBindByPosition(position = 2, required = true)
-	protected long						count						= 0L;
+    @CsvBindByPosition(position = 2, required = true)
+    protected long count = 0L;
 
-	@CsvBindByPosition(position = 3)
-	protected Double probability;
+    @CsvBindByPosition(position = 3)
+    protected Double probability;
 
-	@CsvBindByPosition(position = 4)
-	protected Double logProbability;
+    @CsvBindByPosition(position = 4)
+    protected Double logProbability;
 
-	@CsvBindByPosition(position = 5, required = true)
-	protected Double conditionalProbability;
+    @CsvBindByPosition(position = 5, required = true)
+    protected Double conditionalProbability;
 
-	@CsvBindByPosition(position = 6, required = true)
-	protected Double logConditionalProbability;
+    @CsvBindByPosition(position = 6, required = true)
+    protected Double logConditionalProbability;
 
-	private Map<Character, TreeNGram>	transitions = new HashMap<>(1);
+    private Map<Character, TreeNGram> transitions = new HashMap<>(1);
 
-	// Needed for de-serialization
-	public TreeNGram() {}
+    // Needed for de-serialization
+    public TreeNGram() {
+    }
 
-	public TreeNGram(String nGramString) {
-		this.cumulativeString = nGramString;
+    public TreeNGram(String nGramString) {
+        this.cumulativeString = nGramString;
 
-		this.order = nGramString.length();
-	}
+        this.order = nGramString.length();
+    }
 
-	public void increment() {
-		this.count += 1L;
-	}
+    public void increment() {
+        this.count += 1L;
+    }
 
-	/**
-	 * @return the count
-	 */
-	public long getCount() {
-		return this.count;
-	}
+    /**
+     * @return the count
+     */
+    public long getCount() {
+        return this.count;
+    }
 
-	/**
-	 * @param count
-	 *            the count to set
-	 */
-	public void setCount(long count) {
-		this.count = count;
-	}
+    /**
+     * @param count
+     *            the count to set
+     */
+    public void setCount(long count) {
+        this.count = count;
+    }
 
-	/**
-	 * @return the probability
-	 */
-	public Double getProbability() {
-		return this.probability;
-	}
+    /**
+     * @return the probability
+     */
+    public Double getProbability() {
+        return this.probability;
+    }
 
-	/**
-	 * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
-	 * defensive measure in case future usage changes are not thread-safe.
-	 * 
-	 * @param probability
-	 *            the probability to set
-	 */
-	public synchronized void setProbability(Double probability) {
-		this.probability = probability;
-	}
+    /**
+     * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
+     * defensive measure in case future usage changes are not thread-safe.
+     *
+     * @param probability
+     *            the probability to set
+     */
+    public synchronized void setProbability(Double probability) {
+        this.probability = probability;
+    }
 
-	/**
-	 * @return the conditionalProbability
-	 */
-	public Double getConditionalProbability() {
-		return conditionalProbability;
-	}
+    /**
+     * @return the conditionalProbability
+     */
+    public Double getConditionalProbability() {
+        return conditionalProbability;
+    }
 
-	public Double getLogProbability() {
-		return logProbability;
-	}
+    public Double getLogProbability() {
+        return logProbability;
+    }
 
-	public void setLogProbability(Double logProbability) {
-		this.logProbability = logProbability;
-	}
+    public void setLogProbability(Double logProbability) {
+        this.logProbability = logProbability;
+    }
 
-	public Double getLogConditionalProbability() {
-		return logConditionalProbability;
-	}
+    public Double getLogConditionalProbability() {
+        return logConditionalProbability;
+    }
 
-	public void setLogConditionalProbability(Double logConditionalProbability) {
-		this.logConditionalProbability = logConditionalProbability;
-	}
+    public void setLogConditionalProbability(Double logConditionalProbability) {
+        this.logConditionalProbability = logConditionalProbability;
+    }
 
-	/**
-	 * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
-	 * defensive measure in case future usage changes are not thread-safe.
-	 * 
-	 * @param conditionalProbability
-	 *            the conditionalProbability to set
-	 */
-	public synchronized void setConditionalProbability(Double conditionalProbability) {
-		this.conditionalProbability = conditionalProbability;
-	}
+    /**
+     * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
+     * defensive measure in case future usage changes are not thread-safe.
+     *
+     * @param conditionalProbability
+     *            the conditionalProbability to set
+     */
+    public synchronized void setConditionalProbability(Double conditionalProbability) {
+        this.conditionalProbability = conditionalProbability;
+    }
 
-	/**
-	 * @return the order
-	 */
-	public Integer getOrder() {
-		return order;
-	}
+    /**
+     * @return the order
+     */
+    public Integer getOrder() {
+        return order;
+    }
 
-	/**
-	 * @param order
-	 *            the order to set
-	 */
-	public void setOrder(Integer order) {
-		this.order = order;
-	}
+    /**
+     * @param order
+     *            the order to set
+     */
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
 
-	/**
-	 * @return the cumulativeString
-	 */
-	public String getCumulativeString() {
-		return cumulativeString;
-	}
+    /**
+     * @return the cumulativeString
+     */
+    public String getCumulativeString() {
+        return cumulativeString;
+    }
 
-	/**
-	 * @param cumulativeString
-	 *            the cumulativeString to set
-	 */
-	public void setCumulativeString(String cumulativeString) {
-		this.cumulativeString = cumulativeString;
-	}
+    /**
+     * @param cumulativeString
+     *            the cumulativeString to set
+     */
+    public void setCumulativeString(String cumulativeString) {
+        this.cumulativeString = cumulativeString;
+    }
 
-	public boolean containsChild(Character c) {
-		return this.getTransitions().containsKey(c);
-	}
+    public boolean containsChild(Character c) {
+        return this.getTransitions().containsKey(c);
+    }
 
-	public TreeNGram getChild(Character c) {
-		return this.getTransitions().get(c);
-	}
+    public TreeNGram getChild(Character c) {
+        return this.getTransitions().get(c);
+    }
 
-	public synchronized boolean addOrIncrementChildAsync(String nGramString, int order) {
-		Character firstLetter = nGramString.charAt(order - 1);
+    public synchronized boolean addOrIncrementChildAsync(String nGramString, int order) {
+        Character firstLetter = nGramString.charAt(order - 1);
 
-		TreeNGram child = this.getChild(firstLetter);
+        TreeNGram child = this.getChild(firstLetter);
 
-		boolean isNew = false;
+        boolean isNew = false;
 
-		if (child == null) {
-			this.putChild(firstLetter, new TreeNGram(nGramString.substring(0, order)));
+        if (child == null) {
+            this.putChild(firstLetter, new TreeNGram(nGramString.substring(0, order)));
 
-			child = this.getChild(firstLetter);
+            child = this.getChild(firstLetter);
 
-			isNew = true;
-		}
+            isNew = true;
+        }
 
-		child.increment();
+        child.increment();
 
-		return isNew;
-	}
+        return isNew;
+    }
 
-	public synchronized TreeNGram addExistingNodeAsync(TreeNGram nodeToAdd, int order) {
-		Character firstLetter = nodeToAdd.cumulativeString.charAt(order - 1);
+    public synchronized TreeNGram addExistingNodeAsync(TreeNGram nodeToAdd, int order) {
+        Character firstLetter = nodeToAdd.cumulativeString.charAt(order - 1);
 
-		TreeNGram child = this.getChild(firstLetter);
+        TreeNGram child = this.getChild(firstLetter);
 
-		if (order == nodeToAdd.cumulativeString.length()) {
-			if (child == null) {
-				this.putChild(firstLetter, nodeToAdd);
-			} else {
-				child.count = nodeToAdd.count;
-				child.conditionalProbability = nodeToAdd.conditionalProbability;
-				child.probability = nodeToAdd.probability;
-				child.logProbability = nodeToAdd.logProbability;
-				child.logConditionalProbability = nodeToAdd.logConditionalProbability;
-			}
+        if (order == nodeToAdd.cumulativeString.length()) {
+            if (child == null) {
+                this.putChild(firstLetter, nodeToAdd);
+            } else {
+                child.count = nodeToAdd.count;
+                child.conditionalProbability = nodeToAdd.conditionalProbability;
+                child.probability = nodeToAdd.probability;
+                child.logProbability = nodeToAdd.logProbability;
+                child.logConditionalProbability = nodeToAdd.logConditionalProbability;
+            }
 
-			return null;
-		} else if (child == null) {
-			this.putChild(firstLetter, new TreeNGram(nodeToAdd.cumulativeString.substring(0, order)));
-		}
+            return null;
+        } else if (child == null) {
+            this.putChild(firstLetter, new TreeNGram(nodeToAdd.cumulativeString.substring(0, order)));
+        }
 
-		return this.getChild(firstLetter);
-	}
+        return this.getChild(firstLetter);
+    }
 
-	public TreeNGram putChild(Character c, TreeNGram child) {
-		if (!LOWERCASE_LETTERS_AND_SPACE.matcher(c.toString()).matches()) {
-			throw new IllegalArgumentException(
-					"Attempted to add a character to the Markov Model which is outside the range of "
-							+ LOWERCASE_LETTERS_AND_SPACE);
-		}
+    public TreeNGram putChild(Character c, TreeNGram child) {
+        if (!LOWERCASE_LETTERS_AND_SPACE.matcher(c.toString()).matches()) {
+            throw new IllegalArgumentException(
+                    "Attempted to add a character to the Markov Model which is outside the range of "
+                            + LOWERCASE_LETTERS_AND_SPACE);
+        }
 
-		return this.getTransitions().put(c, child);
-	}
+        return this.getTransitions().put(c, child);
+    }
 
-	/**
-	 * @return the transitions array
-	 */
-	public Map<Character, TreeNGram> getTransitions() {
-		return this.transitions;
-	}
+    /**
+     * @return the transitions array
+     */
+    public Map<Character, TreeNGram> getTransitions() {
+        return this.transitions;
+    }
 }

@@ -1,18 +1,18 @@
 /**
  * Copyright 2017-2019 George Belden
- * 
+ * <p>
  * This file is part of Zenith.
- * 
+ * <p>
  * Zenith is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * 
+ * <p>
  * Zenith is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -43,227 +43,227 @@ import java.util.concurrent.FutureTask;
 
 @Component
 public class LetterNGramMarkovImporter {
-	private static Logger		log					= LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
+    private static Logger log = LoggerFactory.getLogger(LetterNGramMarkovImporter.class);
 
-	private static final String	EXTENSION			= ".txt";
-	private static final String	NON_ALPHA			= "[^a-zA-Z]";
-	private static final String	NON_ALPHA_OR_SPACE	= "[^a-zA-Z ]";
+    private static final String EXTENSION = ".txt";
+    private static final String NON_ALPHA = "[^a-zA-Z]";
+    private static final String NON_ALPHA_OR_SPACE = "[^a-zA-Z ]";
 
-	@Autowired
-	private TaskExecutor		taskExecutor;
+    @Autowired
+    private TaskExecutor taskExecutor;
 
-	@Value("${corpus.output.directory}")
-	private String				corpusDirectory;
+    @Value("${corpus.output.directory}")
+    private String corpusDirectory;
 
-	@Value("${markov.letter.order}")
-	private int					order;
+    @Value("${markov.letter.order}")
+    private int order;
 
-	public TreeMarkovModel importCorpus() {
-		TreeMarkovModel letterMarkovModel = new TreeMarkovModel(this.order);
+    public TreeMarkovModel importCorpus() {
+        TreeMarkovModel letterMarkovModel = new TreeMarkovModel(this.order);
 
-		long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
-		log.info("Starting corpus text import...");
+        log.info("Starting corpus text import...");
 
-		Path corpusDirectoryPath = Paths.get(this.corpusDirectory);
+        Path corpusDirectoryPath = Paths.get(this.corpusDirectory);
 
-		if (!Files.exists(corpusDirectoryPath)) {
-			try {
-				Files.createDirectories(corpusDirectoryPath);
-			} catch (IOException ioe) {
-				throw new IllegalStateException("Unable to create directory: " + this.corpusDirectory, ioe);
-			}
-		}
+        if (!Files.exists(corpusDirectoryPath)) {
+            try {
+                Files.createDirectories(corpusDirectoryPath);
+            } catch (IOException ioe) {
+                throw new IllegalStateException("Unable to create directory: " + this.corpusDirectory, ioe);
+            }
+        }
 
-		List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, letterMarkovModel);
-		ParseResults parseResults;
-		long total = 0L;
-		long unique = 0L;
+        List<FutureTask<ParseResults>> futures = parseFiles(corpusDirectoryPath, letterMarkovModel);
+        ParseResults parseResults;
+        long total = 0L;
+        long unique = 0L;
 
-		for (FutureTask<ParseResults> future : futures) {
-			try {
-				parseResults = future.get();
-				total += parseResults.getTotal();
-				unique += parseResults.getUnique();
-			} catch (InterruptedException ie) {
-				log.error("Caught InterruptedException while waiting for ParseFileTask ", ie);
-			} catch (ExecutionException ee) {
-				log.error("Caught ExecutionException while waiting for ParseFileTask ", ee);
-			}
-		}
+        for (FutureTask<ParseResults> future : futures) {
+            try {
+                parseResults = future.get();
+                total += parseResults.getTotal();
+                unique += parseResults.getUnique();
+            } catch (InterruptedException ie) {
+                log.error("Caught InterruptedException while waiting for ParseFileTask ", ie);
+            } catch (ExecutionException ee) {
+                log.error("Caught ExecutionException while waiting for ParseFileTask ", ee);
+            }
+        }
 
-		log.info("Imported " + unique + " distinct letter N-Grams out of " + total + " total in "
-				+ (System.currentTimeMillis() - start) + "ms");
+        log.info("Imported " + unique + " distinct letter N-Grams out of " + total + " total in "
+                + (System.currentTimeMillis() - start) + "ms");
 
-		computeConditionalProbabilityAsync(letterMarkovModel);
+        computeConditionalProbabilityAsync(letterMarkovModel);
 
-		letterMarkovModel.normalize(order, total, taskExecutor);
+        letterMarkovModel.normalize(order, total, taskExecutor);
 
-		return letterMarkovModel;
-	}
+        return letterMarkovModel;
+    }
 
-	public void computeConditionalProbabilityAsync(TreeMarkovModel letterMarkovModel) {
-		long start = System.currentTimeMillis();
+    public void computeConditionalProbabilityAsync(TreeMarkovModel letterMarkovModel) {
+        long start = System.currentTimeMillis();
 
-		log.info("Starting calculation of conditional probabilities...");
+        log.info("Starting calculation of conditional probabilities...");
 
-		Map<Character, TreeNGram> initialTransitions = letterMarkovModel.getRootNode().getTransitions();
+        Map<Character, TreeNGram> initialTransitions = letterMarkovModel.getRootNode().getTransitions();
 
-		List<FutureTask<Void>> futures = new ArrayList<>(26);
-		FutureTask<Void> task;
+        List<FutureTask<Void>> futures = new ArrayList<>(26);
+        FutureTask<Void> task;
 
-		List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
 
-		long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
+        long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
 
-		for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
-			if (entry.getValue() != null) {
-				task = new FutureTask<>(new ComputeConditionalTask(entry.getValue(), rootNodeCount));
-				futures.add(task);
-				this.taskExecutor.execute(task);
-			}
-		}
+        for (Map.Entry<Character, TreeNGram> entry : initialTransitions.entrySet()) {
+            if (entry.getValue() != null) {
+                task = new FutureTask<>(new ComputeConditionalTask(entry.getValue(), rootNodeCount));
+                futures.add(task);
+                this.taskExecutor.execute(task);
+            }
+        }
 
-		for (FutureTask<Void> future : futures) {
-			try {
-				future.get();
-			} catch (InterruptedException ie) {
-				log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
-			} catch (ExecutionException ee) {
-				log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
-			}
-		}
+        for (FutureTask<Void> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException ie) {
+                log.error("Caught InterruptedException while waiting for NormalizeTask ", ie);
+            } catch (ExecutionException ee) {
+                log.error("Caught ExecutionException while waiting for NormalizeTask ", ee);
+            }
+        }
 
-		log.info("Finished calculating conditional probabilities in {}ms", (System.currentTimeMillis() - start));
-	}
+        log.info("Finished calculating conditional probabilities in {}ms", (System.currentTimeMillis() - start));
+    }
 
-	/**
-	 * A concurrent task for computing the conditional probability of a Markov node.
-	 */
-	protected class ComputeConditionalTask implements Callable<Void> {
-		private TreeNGram	node;
-		private long		parentCount;
+    /**
+     * A concurrent task for computing the conditional probability of a Markov node.
+     */
+    protected class ComputeConditionalTask implements Callable<Void> {
+        private TreeNGram node;
+        private long parentCount;
 
-		/**
-		 * @param node
-		 *            the NGramIndexNode to set
-		 * @param parentCount
-		 *            the parentCount to set
-		 */
-		public ComputeConditionalTask(TreeNGram node, long parentCount) {
-			this.node = node;
-			this.parentCount = parentCount;
-		}
+        /**
+         * @param node
+         *            the NGramIndexNode to set
+         * @param parentCount
+         *            the parentCount to set
+         */
+        public ComputeConditionalTask(TreeNGram node, long parentCount) {
+            this.node = node;
+            this.parentCount = parentCount;
+        }
 
-		@Override
-		public Void call() {
-			computeConditionalProbability(this.node, this.parentCount);
+        @Override
+        public Void call() {
+            computeConditionalProbability(this.node, this.parentCount);
 
-			return null;
-		}
+            return null;
+        }
 
-		protected void computeConditionalProbability(TreeNGram node, long parentCount) {
-			node.setConditionalProbability((double) node.getCount() / (double) parentCount);
-			node.setLogConditionalProbability(Math.log(node.getConditionalProbability()));
+        protected void computeConditionalProbability(TreeNGram node, long parentCount) {
+            node.setConditionalProbability((double) node.getCount() / (double) parentCount);
+            node.setLogConditionalProbability(Math.log(node.getConditionalProbability()));
 
-			Map<Character, TreeNGram> transitions = node.getTransitions();
+            Map<Character, TreeNGram> transitions = node.getTransitions();
 
-			if (transitions == null || transitions.isEmpty()) {
-				return;
-			}
+            if (transitions == null || transitions.isEmpty()) {
+                return;
+            }
 
-			for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
-				computeConditionalProbability(entry.getValue(), node.getCount());
-			}
-		}
-	}
+            for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
+                computeConditionalProbability(entry.getValue(), node.getCount());
+            }
+        }
+    }
 
-	/**
-	 * A concurrent task for parsing a file into a Markov model.
-	 */
-	protected class ParseFileTask implements Callable<ParseResults> {
-		private Path			path;
-		private TreeMarkovModel	letterMarkovModel;
+    /**
+     * A concurrent task for parsing a file into a Markov model.
+     */
+    protected class ParseFileTask implements Callable<ParseResults> {
+        private Path path;
+        private TreeMarkovModel letterMarkovModel;
 
-		/**
-		 * @param path
-		 *            the Path to set
-		 * @param letterMarkovModel
-		 *            the TreeMarkovModel to use
-		 */
-		public ParseFileTask(Path path, TreeMarkovModel letterMarkovModel) {
-			this.path = path;
-			this.letterMarkovModel = letterMarkovModel;
-		}
+        /**
+         * @param path
+         *            the Path to set
+         * @param letterMarkovModel
+         *            the TreeMarkovModel to use
+         */
+        public ParseFileTask(Path path, TreeMarkovModel letterMarkovModel) {
+            this.path = path;
+            this.letterMarkovModel = letterMarkovModel;
+        }
 
-		@Override
-		public ParseResults call() {
-			log.debug("Importing file {}", this.path.toString());
+        @Override
+        public ParseResults call() {
+            log.debug("Importing file {}", this.path.toString());
 
-			int order = letterMarkovModel.getOrder();
-			long total = 0;
-			long unique = 0;
+            int order = letterMarkovModel.getOrder();
+            long total = 0;
+            long unique = 0;
 
-			try {
-				String content = new String(Files.readAllBytes(this.path));
-				String sentence;
+            try {
+                String content = new String(Files.readAllBytes(this.path));
+                String sentence;
 
-				String[] sentences = content.split("(\n|\r|\r\n)+");
+                String[] sentences = content.split("(\n|\r|\r\n)+");
 
-				for (int i = 0; i < sentences.length; i++) {
-					sentence = (" " + sentences[i].replaceAll(NON_ALPHA_OR_SPACE, "").replaceAll("\\s+", " ").trim()
-							+ " ").toLowerCase();
+                for (int i = 0; i < sentences.length; i++) {
+                    sentence = (" " + sentences[i].replaceAll(NON_ALPHA_OR_SPACE, "").replaceAll("\\s+", " ").trim()
+                            + " ").toLowerCase();
 
-					sentence = sentence.replaceAll(NON_ALPHA, "");
+                    sentence = sentence.replaceAll(NON_ALPHA, "");
 
-					if (sentence.trim().length() == 0) {
-						continue;
-					}
+                    if (sentence.trim().length() == 0) {
+                        continue;
+                    }
 
-					for (int j = 0; j < sentence.length() - order; j++) {
-						String nGramString = sentence.substring(j, j + order);
+                    for (int j = 0; j < sentence.length() - order; j++) {
+                        String nGramString = sentence.substring(j, j + order);
 
-						unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
+                        unique += (letterMarkovModel.addLetterTransition(nGramString) ? 1 : 0);
 
-						total++;
-					}
-				}
-			} catch (IOException ioe) {
-				log.error("Unable to parse file: " + this.path.toString(), ioe);
-			}
+                        total++;
+                    }
+                }
+            } catch (IOException ioe) {
+                log.error("Unable to parse file: " + this.path.toString(), ioe);
+            }
 
-			return new ParseResults(total, unique);
-		}
-	}
+            return new ParseResults(total, unique);
+        }
+    }
 
-	protected List<FutureTask<ParseResults>> parseFiles(Path path, TreeMarkovModel letterMarkovModel) {
-		List<FutureTask<ParseResults>> tasks = new ArrayList<>();
-		FutureTask<ParseResults> task;
-		String filename;
+    protected List<FutureTask<ParseResults>> parseFiles(Path path, TreeMarkovModel letterMarkovModel) {
+        List<FutureTask<ParseResults>> tasks = new ArrayList<>();
+        FutureTask<ParseResults> task;
+        String filename;
 
-		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-			for (Path entry : stream) {
-				if (Files.isDirectory(entry)) {
-					tasks.addAll(parseFiles(entry, letterMarkovModel));
-				} else {
-					filename = entry.toString();
-					String ext = filename.substring(filename.lastIndexOf('.'));
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+            for (Path entry : stream) {
+                if (Files.isDirectory(entry)) {
+                    tasks.addAll(parseFiles(entry, letterMarkovModel));
+                } else {
+                    filename = entry.toString();
+                    String ext = filename.substring(filename.lastIndexOf('.'));
 
-					if (!ext.equals(EXTENSION)) {
-						log.info("Skipping file with unexpected file extension: " + filename);
+                    if (!ext.equals(EXTENSION)) {
+                        log.info("Skipping file with unexpected file extension: " + filename);
 
-						continue;
-					}
+                        continue;
+                    }
 
-					task = new FutureTask<>(new ParseFileTask(entry, letterMarkovModel));
-					tasks.add(task);
-					this.taskExecutor.execute(task);
-				}
-			}
-		} catch (IOException ioe) {
-			log.error("Unable to parse files due to:" + ioe.getMessage(), ioe);
-		}
+                    task = new FutureTask<>(new ParseFileTask(entry, letterMarkovModel));
+                    tasks.add(task);
+                    this.taskExecutor.execute(task);
+                }
+            }
+        } catch (IOException ioe) {
+            log.error("Unable to parse files due to:" + ioe.getMessage(), ioe);
+        }
 
-		return tasks;
-	}
+        return tasks;
+    }
 }
