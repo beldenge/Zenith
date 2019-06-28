@@ -45,10 +45,21 @@ public class TranspositionCipherTransformer implements CipherTransformer {
     @Value("${decipherment.transposition.iterations:1}")
     protected int transpositionIterations;
 
+    public TranspositionCipherTransformer() {
+    }
+
+    public TranspositionCipherTransformer(String transpositionKeyString) {
+        this.transpositionKeyString = transpositionKeyString;
+    }
+
     @PostConstruct
     public void init() {
         if (transpositionKeyString != null && !transpositionKeyString.isEmpty()) {
             transpositionKey = getIndicesForTranspositionKey();
+        }
+
+        if (transpositionIterations <= 0) {
+            transpositionIterations = 1;
         }
 
         List<Integer> toCheck = new ArrayList<>(transpositionKey);

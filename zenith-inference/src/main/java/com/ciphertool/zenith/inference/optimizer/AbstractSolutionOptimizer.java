@@ -24,6 +24,7 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.known.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.model.ModelUnzipper;
 import com.ciphertool.zenith.inference.transformer.CipherTransformer;
+import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,18 +92,24 @@ public class AbstractSolutionOptimizer {
                     .collect(Collectors.toList());
 
             for (String transformerName : transformersToUse) {
-                if (!existentCipherTransformers.contains(transformerName)) {
-                    log.error("The CipherTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentCipherTransformers);
-                    throw new IllegalArgumentException("The CipherTransformer with name " + transformerName + " does not exist.");
+                String transformerNameBeforeParen = transformerName.contains("(") ? transformerName.substring(0, transformerName.indexOf('(')) : transformerName;
+
+                if (!existentCipherTransformers.contains(transformerNameBeforeParen)) {
+                    log.error("The CipherTransformer with name {} does not exist.  Please use a name from the following: {}", transformerNameBeforeParen, existentCipherTransformers);
+                    throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParen + " does not exist.");
                 }
 
                 for (CipherTransformer cipherTransformer : cipherTransformers) {
-                    if (cipherTransformer.getClass().getSimpleName().equals(transformerName)) {
-                        if (toUse.contains(cipherTransformer)) {
-                            log.warn("Transformer with name {} has already been declared.  This will result in the transformer being performed more than once.  Please double check that this is desired.", transformerName);
+                    if (cipherTransformer.getClass().getSimpleName().equals(transformerNameBeforeParen)) {
+                        if (cipherTransformer instanceof TranspositionCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
+                            String transpositionKeyString = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
+                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString);
+                            nextTransformer.init();
+                            toUse.add(nextTransformer);
+                        } else {
+                            toUse.add(cipherTransformer);
                         }
 
-                        toUse.add(cipherTransformer);
                         break;
                     }
                 }
