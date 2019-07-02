@@ -30,6 +30,6 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class LstmPrediction {
-    private List<LstmProbability> probabilities;
+public class RestServiceEvaluation {
+    private List<EvaluationProbability> probabilities;
 }

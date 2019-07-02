@@ -20,9 +20,9 @@
 package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.evaluator.model.LstmPrediction;
-import com.ciphertool.zenith.inference.evaluator.model.LstmPredictionRequest;
-import com.ciphertool.zenith.inference.evaluator.model.LstmProbability;
+import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
+import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
+import com.ciphertool.zenith.inference.evaluator.model.EvaluationProbability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,40 +37,40 @@ import java.net.URI;
 import java.util.Collections;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "LstmNetworkPlaintextEvaluator")
-public class LstmNetworkPlaintextEvaluator implements PlaintextEvaluator {
+@ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "RestServicePlaintextEvaluator")
+public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${lstm.service-url}")
-    private String lstmServiceUrl;
+    @Value("${evaluation.rest-service.url}")
+    private String evaluationRestServiceUrl;
 
-    private URI lstmServiceEndpoint;
+    private URI evaluationRestServiceEndpoint;
 
     @PostConstruct
     public void init() {
-        lstmServiceEndpoint = UriComponentsBuilder.fromHttpUrl(lstmServiceUrl).build().encode().toUri();
+        evaluationRestServiceEndpoint = UriComponentsBuilder.fromHttpUrl(evaluationRestServiceUrl).build().encode().toUri();
     }
 
     @Override
     public void evaluate(CipherSolution solution, String ciphertextKey) {
         String solutionString = solution.asSingleLineString();
 
-        long startLstmPrediction = System.currentTimeMillis();
+        long startEvaluation = System.currentTimeMillis();
 
-        LstmPredictionRequest request = new LstmPredictionRequest();
+        RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();
 
         request.setSequences(Collections.singletonList(solutionString));
 
-        LstmPrediction response = restTemplate.postForObject(lstmServiceEndpoint, request, LstmPrediction.class);
+        RestServiceEvaluation response = restTemplate.postForObject(evaluationRestServiceEndpoint, request, RestServiceEvaluation.class);
 
-        log.debug("LSTM prediction took {}ms.", (System.currentTimeMillis() - startLstmPrediction));
+        log.debug("Rest service evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
 
         solution.clearLogProbabilities();
 
-        for (LstmProbability probability : response.getProbabilities()) {
+        for (EvaluationProbability probability : response.getProbabilities()) {
             solution.addLogProbability(probability.getLogProbability());
         }
     }

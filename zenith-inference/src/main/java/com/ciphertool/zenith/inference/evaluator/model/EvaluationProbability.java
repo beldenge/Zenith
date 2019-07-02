@@ -24,12 +24,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @NoArgsConstructor
 @Getter
 @Setter
 @ToString
-public class LstmPredictionRequest {
-    List<String> sequences;
+public class EvaluationProbability {
+    private BigDecimal probability;
+    private Double logProbability;
 }
