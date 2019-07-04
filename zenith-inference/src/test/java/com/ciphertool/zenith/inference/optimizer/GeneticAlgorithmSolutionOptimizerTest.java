@@ -49,6 +49,10 @@ public class GeneticAlgorithmSolutionOptimizerTest {
         ReflectionUtils.makeAccessible(geneticAlgorithmField);
         ReflectionUtils.setField(geneticAlgorithmField, geneticAlgorithmSolutionOptimizer, standardGeneticAlgorithm);
 
+        Field epochsField = ReflectionUtils.findField(GeneticAlgorithmSolutionOptimizer.class, "epochs");
+        ReflectionUtils.makeAccessible(epochsField);
+        ReflectionUtils.setField(epochsField, geneticAlgorithmSolutionOptimizer, 1);
+
         geneticAlgorithmSolutionOptimizer.optimize();
 
         verify(standardGeneticAlgorithm, times(1)).evolve();
@@ -77,11 +81,15 @@ public class GeneticAlgorithmSolutionOptimizerTest {
         ReflectionUtils.makeAccessible(logField);
         ReflectionUtils.setField(logField, geneticAlgorithmSolutionOptimizer, mockLogger);
 
+        Field epochsField = ReflectionUtils.findField(GeneticAlgorithmSolutionOptimizer.class, "epochs");
+        ReflectionUtils.makeAccessible(epochsField);
+        ReflectionUtils.setField(epochsField, geneticAlgorithmSolutionOptimizer, 1);
+
         geneticAlgorithmSolutionOptimizer.optimize();
 
         doNothing().when(mockLogger).error(anyString(), any(Throwable.class));
 
-        verify(mockLogger, times(1)).error(anyString(), any(Throwable.class));
+        verify(mockLogger, times(1)).error(anyString(), eq(GeneticAlgorithmSolutionOptimizer.class.getSimpleName()), any(Throwable.class));
 
         verify(standardGeneticAlgorithm, times(1)).evolve();
     }

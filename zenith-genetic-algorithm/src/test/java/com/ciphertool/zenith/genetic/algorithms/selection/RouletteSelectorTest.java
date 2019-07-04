@@ -72,7 +72,7 @@ public class RouletteSelectorTest {
         Collections.sort(individuals);
         rouletteSelector.reIndex(individuals);
 
-        int selectedIndex = rouletteSelector.getNextIndex(individuals, (1.0));
+        int selectedIndex = rouletteSelector.getNextIndex(individuals);
 
         assertTrue(selectedIndex > -1);
     }

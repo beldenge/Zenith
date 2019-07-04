@@ -72,7 +72,7 @@ public class RandomSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = randomSelector.getNextIndex(individuals, 0d);
+        int selectedIndex = randomSelector.getNextIndex(individuals);
 
         assertTrue(selectedIndex > -1);
         verifyZeroInteractions(logMock);
@@ -80,7 +80,7 @@ public class RandomSelectorTest {
 
     @Test
     public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = randomSelector.getNextIndex(null, 6.0d);
+        int selectedIndex = randomSelector.getNextIndex(null);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -88,7 +88,7 @@ public class RandomSelectorTest {
 
     @Test
     public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = randomSelector.getNextIndex(new ArrayList<>(), 6.0d);
+        int selectedIndex = randomSelector.getNextIndex(new ArrayList<>());
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());

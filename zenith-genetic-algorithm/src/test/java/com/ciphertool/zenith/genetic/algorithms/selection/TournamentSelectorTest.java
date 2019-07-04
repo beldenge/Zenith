@@ -76,7 +76,7 @@ public class TournamentSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = tournamentSelector.getNextIndex(individuals, 6.0d);
+        int selectedIndex = tournamentSelector.getNextIndex(individuals);
 
         assertTrue(selectedIndex > -1);
         verifyZeroInteractions(logMock);
@@ -84,7 +84,7 @@ public class TournamentSelectorTest {
 
     @Test
     public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(null, 6.0d);
+        int selectedIndex = tournamentSelector.getNextIndex(null);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -92,7 +92,7 @@ public class TournamentSelectorTest {
 
     @Test
     public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>(), 6.0d);
+        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>());
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());

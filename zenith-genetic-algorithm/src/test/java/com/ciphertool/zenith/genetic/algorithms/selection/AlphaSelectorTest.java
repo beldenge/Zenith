@@ -71,7 +71,7 @@ public class AlphaSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = alphaSelector.getNextIndex(individuals, 0d);
+        int selectedIndex = alphaSelector.getNextIndex(individuals);
 
         assertEquals(1, selectedIndex);
         assertEquals(bestFitness, individuals.get(selectedIndex).getFitness());
@@ -80,7 +80,7 @@ public class AlphaSelectorTest {
 
     @Test
     public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = alphaSelector.getNextIndex(null, 6.0d);
+        int selectedIndex = alphaSelector.getNextIndex(null);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -88,7 +88,7 @@ public class AlphaSelectorTest {
 
     @Test
     public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = alphaSelector.getNextIndex(new ArrayList<>(), 6.0d);
+        int selectedIndex = alphaSelector.getNextIndex(new ArrayList<>());
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());

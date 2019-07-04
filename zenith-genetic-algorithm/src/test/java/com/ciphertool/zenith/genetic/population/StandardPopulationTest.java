@@ -205,7 +205,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testDoConcurrentFitnessEvaluations() throws InterruptedException {
+    public void testDoConcurrentFitnessEvaluations() {
         StandardPopulation population = new StandardPopulation();
 
         Field taskExecutorField = ReflectionUtils.findField(StandardPopulation.class, "taskExecutor");
@@ -250,7 +250,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testEvaluateFitness() throws InterruptedException {
+    public void testEvaluateFitness() {
         GenerationStatistics generationStatistics = new GenerationStatistics();
 
         StandardPopulation population = new StandardPopulation();
@@ -307,7 +307,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testEvaluateFitnessCompareToKnownSolution() throws InterruptedException {
+    public void testEvaluateFitnessCompareToKnownSolution() {
         GenerationStatistics generationStatistics = new GenerationStatistics();
 
         StandardPopulation population = new StandardPopulation();
@@ -377,11 +377,11 @@ public class StandardPopulationTest {
         int indexToReturn = 7;
 
         Selector selector = mock(Selector.class);
-        when(selector.getNextIndex(anyListOf(Chromosome.class), any(Double.class))).thenReturn(indexToReturn);
+        when(selector.getNextIndex(anyList())).thenReturn(indexToReturn);
         population.setSelector(selector);
 
         assertEquals(indexToReturn, population.selectIndex());
-        verify(selector, times(1)).getNextIndex(anyListOf(Chromosome.class), any(Double.class));
+        verify(selector, times(1)).getNextIndex(anyList());
     }
 
     @Test(expected = UnsupportedOperationException.class)

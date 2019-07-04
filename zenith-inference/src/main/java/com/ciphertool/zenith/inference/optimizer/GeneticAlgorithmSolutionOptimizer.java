@@ -44,6 +44,9 @@ import java.util.stream.Collectors;
 public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    @Value("${decipherment.epochs:1}")
+    private int epochs;
+
     @Value("${genetic-algorithm.population.size}")
     private int populationSize;
 
@@ -199,15 +202,19 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
         long start = System.currentTimeMillis();
 
-        try {
-            geneticAlgorithm.evolve();
-        } catch (Throwable t) {
-            log.error("Caught Throwable while running cipher solution service.  Cannot continue.  Performing tear-down tasks.", t);
-        } finally {
-            // Print out summary information
-            log.info("Total running time was {}ms.", (System.currentTimeMillis() - start));
+        for (int epoch = 0; epoch < epochs; epoch++) {
+            log.info("Epoch {} of {}.  Evolving for {} generations.", (epoch + 1), epochs, numberOfGenerations);
 
-            this.geneticAlgorithm.getPopulation().printAscending();
+            try {
+                geneticAlgorithm.evolve();
+            } catch (Throwable t) {
+                log.error("Caught Throwable while running {}.  Cannot continue.  Performing tear-down tasks.", getClass().getSimpleName(), t);
+            } finally {
+                // Print out summary information
+                log.info("Total running time was {}ms.", (System.currentTimeMillis() - start));
+
+                this.geneticAlgorithm.getPopulation().printAscending();
+            }
         }
     }
 }

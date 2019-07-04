@@ -54,7 +54,7 @@ public class TournamentSelector implements Selector {
     }
 
     @Override
-    public int getNextIndex(List<Chromosome> individuals, double totalFitness) {
+    public int getNextIndex(List<Chromosome> individuals) {
         if (individuals == null || individuals.isEmpty()) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 

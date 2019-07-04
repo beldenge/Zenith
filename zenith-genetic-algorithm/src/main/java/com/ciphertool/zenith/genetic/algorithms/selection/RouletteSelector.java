@@ -34,7 +34,7 @@ public class RouletteSelector implements Selector {
     }
 
     @Override
-    public int getNextIndex(List<Chromosome> individuals, double totalFitness) {
+    public int getNextIndex(List<Chromosome> individuals) {
         return rouletteSampler.getNextIndex();
     }
 }

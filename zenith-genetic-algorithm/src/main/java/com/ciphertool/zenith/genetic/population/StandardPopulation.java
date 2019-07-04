@@ -205,7 +205,7 @@ public class StandardPopulation implements Population {
      * of the Chromosome chosen.
      */
     public int selectIndex() {
-        return this.selector.getNextIndex(individuals, totalFitness);
+        return this.selector.getNextIndex(individuals);
     }
 
     /**
