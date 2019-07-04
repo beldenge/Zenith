@@ -35,6 +35,27 @@ decipherment.transposition.key-length.max | 17 | When the transposition key leng
 decipherment.transformers.list | RemoveLastRowCipherTransformer | A comma-separated list of names of transformers to use to mutate the cipher, in order
 evaluation.rest-service.url | http://localhost:5000/probabilities | The URL for the solution evaluator REST service, required only if decipherment.evaluator.plaintext is set to RestServicePlaintextEvaluator
 
+#### Genetic Algorithm Hyperparameters
+These are used by the GeneticAlgorithmSolutionOptimizer only.
+
+Property Key | Default Value | Description
+--- | --- | ---
+genetic-algorithm.population.size | 10000 | The population size.  It will be populated before the first generation and will remain constant throughout each subsequent generation.
+genetic-algorithm.number-of-generations | 50 | The number of generations to run per epoch.
+genetic-algorithm.elitism | 0 | The number of top individuals to carry over to the next generation, excluding from crossover and mutation.
+genetic-algorithm.breeder.implementation | ProbabilisticCipherKeyBreeder | The class name of the Breeder implementation to use.
+genetic-algorithm.crossover.implementation | EqualOpportunityGeneCrossoverAlgorithm | The class name of the CrossoverAlgorithm implementation to use.
+genetic-algorithm.crossover.max-attempts | 500 | The maximum number of crossover attempts if the crossover results in an identical Chromosome as one of its parents.
+genetic-algorithm.mutation.implementation | StandardMutationAlgorithm | The class name of the MutationAlgorithm implementation to use.
+genetic-algorithm.mutation.rate | 0.001 | The rate of mutation, calculated per individual.
+genetic-algorithm.mutation.max-per-individual | 5 | The maximum number of unique Genes to be mutated by MutationAlgorithms which can mutate more than one Gene per individual.
+genetic-algorithm.mutation.max-attempts | 500 | The maximum number of mutation attempts if the mutation results in an identical Gene as the one being replaced.
+genetic-algorithm.mutation.count.factor | 0.1 | Used by MutationAlgorithm implementations which can mutate more than one Gene per individual.  Used as a sort of backoff multiplier in determining the number of mutations to use. 
+genetic-algorithm.selection.implementation | RouletteSelector | The class name of the Selector implementation to use.
+genetic-algorithm.selection.tournament.accuracy | 0.9 | Used by the TournamentSelector only.
+genetic-algorithm.fitness.implementation | ${decipherment.evaluator.plaintext} | It should be an implementation of PlaintextEvaluator, and it gets injected into PlaintextEvaluatorWrappingFitnessEvaluator. 
+
+
 # Algorithm and Scoring
 
 The algorithm is standard hill climbing with random restarts and an annealing schedule to aid in convergence.  Many other more complex types of algorithms have been attempted, but they have been found to either be unsuccessful or too slow.  Furthermore, the simplest solution that works is most often the best solution. 

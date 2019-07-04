@@ -40,5 +40,5 @@ public interface Selector {
      * @param totalFitness the total fitness of the population of individuals
      * @return the indice of the chosen individual within the population
      */
-    int getNextIndex(List<Chromosome> individuals, Double totalFitness);
+    int getNextIndex(List<Chromosome> individuals, double totalFitness);
 }

@@ -1,4 +1,57 @@
 # Description
 This module is a dependency only, providing a framework for genetic algorithm capabilities.
 
-It is packaged as a separate module as it should be useful in its own right in implementing genetic algorithm solutions in Java.
+It is packaged as a separate module as it should be useful in its own right in implementing genetic algorithm solutions in Java.  It makes heavy use of Spring Framework and is intended for usage within Spring-base projects.
+
+This framework currently only supports individuals with a single Chromosome.  So for all intents and purposes, an individual is synonymous with a Chromosome.
+
+# Usage
+In order to build a genetic algorithm using this module, you'll need to create implementations of the following classes:
+1. Gene - an 'atomic' piece of genetic information that can be mutated, crossed over, etc.
+2. Chromosome - essentially a collection of Genes
+3. Breeder - produces new individuals, for example when initializing the population
+4. GeneDao - produces novel Genes for use in mutation algorithms
+5. FitnessEvaluator - Score the fitness of individuals in the population.  This is the most critical part to get right.
+
+Your GeneDao needs to be injectable by Spring (e.g. annotated as @Component and included in the component scan).  The others can be instantiated however you prefer as they will be manually set in the GeneticAlgorithmStrategy explained below.
+
+Once you have implementations of the above, you can run the algorithm with minimal code.  First instantiate an instance of StandardGeneticAlgorithm into your class.  The best way is to simply inject one:
+```java
+@Autowired
+private StandardGeneticAlgorithm geneticAlgorithm;
+```
+
+Then in the body of your class (e.g. main method), you'll need to set your hyperparameters in a new GeneticAlgorithmStrategy instance, which uses the builder pattern:
+```java
+GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
+        .crossoverAlgorithm(crossoverAlgorithm)
+        .mutationAlgorithm(mutationAlgorithm)
+        .selector(selector)
+        .fitnessEvaluator(fitnessEvaluator)
+        .breeder(breeder)
+        .populationSize(populationSize)
+        .maxGenerations(numberOfGenerations)
+        .mutationRate(mutationRate)
+        .maxMutationsPerIndividual(maxMutationsPerIndividual)
+        .elitism(elitism)
+        .compareToKnownSolution(useKnownEvaluator)
+        .knownSolutionFitnessEvaluator(knownSolutionFitnessEvaluator)
+        .build();
+
+geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);
+```
+
+And finally, call evolve() on the genetic algorithm to let it runs its course:
+```java
+geneticAlgorithm.evolve();
+```
+
+# Complete Example
+There is a complete example of using this framework in the zenith-inference module.
+
+Take a look at the implementations in the following package: ```com.ciphertool.zenith.inference.genetic```
+
+Also take a look at the class: ```com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer```
+
+# Disclaimer
+I realize this README may not provide an adequate guide for implementing genetic algorithm solutions using this framework.  If you have any questions please raise them as an issue in the repository. 

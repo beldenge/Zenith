@@ -21,108 +21,59 @@ package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.mocks.MockChromosome;
+import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.math.selection.BinaryRouletteNode;
 import com.ciphertool.zenith.math.selection.BinaryRouletteTree;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RouletteSelectorTest {
     private static RouletteSelector rouletteSelector;
-    private static Logger logMock;
 
     @BeforeClass
     public static void setUp() {
         rouletteSelector = new RouletteSelector();
-
-        logMock = mock(Logger.class);
-        Field logField = ReflectionUtils.findField(RouletteSelector.class, "log");
-        ReflectionUtils.makeAccessible(logField);
-        ReflectionUtils.setField(logField, rouletteSelector, logMock);
-    }
-
-    @Before
-    public void resetMocks() {
-        reset(logMock);
     }
 
     @Test
     public void testGetNextIndex() {
+        Population populationMock = mock(Population.class);
         BinaryRouletteTree binaryRouletteTree = new BinaryRouletteTree();
         binaryRouletteTree.insert(new BinaryRouletteNode(0, 7.0d));
 
-        Field rouletteWheelField = ReflectionUtils.findField(RouletteSelector.class, "rouletteWheel");
-        ReflectionUtils.makeAccessible(rouletteWheelField);
-        ReflectionUtils.setField(rouletteWheelField, rouletteSelector, binaryRouletteTree);
-
         List<Chromosome> individuals = new ArrayList<>();
 
         MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(2.0d);
+        chromosome1.setFitness(0.2d);
         individuals.add(chromosome1);
+        chromosome1.setPopulation(populationMock);
 
-        Double bestFitness = 3.0d;
+        Double bestFitness = 0.3d;
         MockChromosome chromosome2 = new MockChromosome();
         chromosome2.setFitness(bestFitness);
         individuals.add(chromosome2);
+        chromosome2.setPopulation(populationMock);
 
         MockChromosome chromosome3 = new MockChromosome();
-        chromosome3.setFitness(1.0d);
+        chromosome3.setFitness(0.5d);
         individuals.add(chromosome3);
+        chromosome3.setPopulation(populationMock);
 
-        int selectedIndex = rouletteSelector.getNextIndex(individuals, (6.0));
+        when(populationMock.getTotalFitness()).thenReturn(1d);
+
+        Collections.sort(individuals);
+        rouletteSelector.reIndex(individuals);
+
+        int selectedIndex = rouletteSelector.getNextIndex(individuals, (1.0));
 
         assertTrue(selectedIndex > -1);
-        verifyZeroInteractions(logMock);
-    }
-
-    @Test
-    public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = rouletteSelector.getNextIndex(null, 6.0d);
-
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
-    }
-
-    @Test
-    public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = rouletteSelector.getNextIndex(new ArrayList<>(), 6.0d);
-
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
-    }
-
-    @Test
-    public void testGetNextIndexWithNullTotalFitness() {
-        List<Chromosome> individuals = new ArrayList<>();
-
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(2.0d);
-        individuals.add(chromosome1);
-
-        Double bestFitness = 3.0d;
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(bestFitness);
-        individuals.add(chromosome2);
-
-        MockChromosome chromosome3 = new MockChromosome();
-        chromosome3.setFitness(1.0d);
-        individuals.add(chromosome3);
-
-        int selectedIndex = rouletteSelector.getNextIndex(individuals, null);
-
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
     }
 }

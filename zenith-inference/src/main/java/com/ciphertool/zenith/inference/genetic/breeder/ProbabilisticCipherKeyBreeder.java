@@ -25,7 +25,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
-import com.ciphertool.zenith.inference.selection.RouletteSampler;
+import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
@@ -53,7 +53,6 @@ public class ProbabilisticCipherKeyBreeder implements Breeder {
             "tridot", "u", "v", "vertstrike", "w", "x", "y", "z", "zodiac"};
 
     private RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
-    private Double totalProbability;
 
     @Autowired
     private Cipher cipher;
@@ -80,7 +79,7 @@ public class ProbabilisticCipherKeyBreeder implements Breeder {
         }
 
         Collections.sort(letterUnigramProbabilities);
-        totalProbability = rouletteSampler.reIndex(letterUnigramProbabilities);
+        rouletteSampler.reIndex(letterUnigramProbabilities);
     }
 
     @Override
@@ -89,7 +88,7 @@ public class ProbabilisticCipherKeyBreeder implements Breeder {
 
         for (String ciphertext : KEYS) {
             // Pick a plaintext at random according to the language model
-            String nextPlaintext = letterUnigramProbabilities.get(rouletteSampler.getNextIndex(letterUnigramProbabilities, totalProbability)).getValue().toString();
+            String nextPlaintext = letterUnigramProbabilities.get(rouletteSampler.getNextIndex()).getValue().toString();
 
             CipherKeyGene newGene = new CipherKeyGene(chromosome, nextPlaintext);
             chromosome.putGene(ciphertext, newGene);

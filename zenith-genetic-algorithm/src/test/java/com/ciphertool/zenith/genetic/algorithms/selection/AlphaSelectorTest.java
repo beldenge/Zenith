@@ -71,7 +71,7 @@ public class AlphaSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = alphaSelector.getNextIndex(individuals, null);
+        int selectedIndex = alphaSelector.getNextIndex(individuals, 0d);
 
         assertEquals(1, selectedIndex);
         assertEquals(bestFitness, individuals.get(selectedIndex).getFitness());

@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.inference.probability;
 
+import com.ciphertool.zenith.math.selection.Probability;
+
 public class LetterProbability implements Probability<Character>, Comparable<LetterProbability> {
     private Character letter;
     private Double probability;

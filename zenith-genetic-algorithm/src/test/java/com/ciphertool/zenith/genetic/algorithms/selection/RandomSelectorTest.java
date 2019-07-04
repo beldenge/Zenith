@@ -72,7 +72,7 @@ public class RandomSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
-        int selectedIndex = randomSelector.getNextIndex(individuals, null);
+        int selectedIndex = randomSelector.getNextIndex(individuals, 0d);
 
         assertTrue(selectedIndex > -1);
         verifyZeroInteractions(logMock);

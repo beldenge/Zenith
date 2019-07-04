@@ -1,4 +1,5 @@
-This module encompasses hill climbing algorithm(s) for detecting cipher mutations which are likely to have been performed during encipherment.
+# Description
+This module encompasses hill climbing algorithm(s) for detecting cipher mutations which are likely to have been performed during encipherment.  As of now it simply performs transpositions on the configured cipher to try to maximize bigram repeats.  It is not a mature application at this point.
 
 # Running
 1. Download and install Java 8 or later

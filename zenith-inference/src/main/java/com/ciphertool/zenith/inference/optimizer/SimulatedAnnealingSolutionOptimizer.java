@@ -23,7 +23,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
-import com.ciphertool.zenith.inference.selection.RouletteSampler;
+import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
@@ -106,7 +106,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 .distinct()
                 .forEach(ciphertext -> {
                     // Pick a plaintext at random according to the language model
-                    String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex(letterUnigramProbabilities, totalUnigramProbability)).getValue().toString();
+                    String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex()).getValue().toString();
 
                     solutionProposal.putMapping(ciphertext, new Plaintext(nextPlaintext));
                 });

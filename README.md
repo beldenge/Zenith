@@ -12,12 +12,16 @@ It takes roughly 20 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to c
 4. Issue the command `mvn clean install`
 
 # Modules
+### zenith-inference
+This module is both a dependency and a runnable application on its own.  It performs hill climbing using the precomputed language model to estimate the optimal solution for a given cipher.
 ### zenith-language-model
 This module is both a dependency and a runnable application on its own.  Its purpose is to build a language model by reading in a corpus of english texts, so that the language model can be used to score solution proposals.
-### zenith-inference
-This module is both a dependency and a runnable application on its own.  It performs hill climbing using the above language model to estimate the optimal solution for a given cipher.
+### zenith-genetic-algorithm
+This module is a framework for implementing genetic algorithms.  The zenith-inference module uses this for its GeneticAlgorithmSolutionOptimizer.
 ### zenith-mutation-search
 This module is a runnable application only.  It performs hill climbing using mutations of the original cipher to try to detect what sorts of mutations were used to create the cipher.
+### zenith-math
+This module is a dependency shared by multiple Zenith modules.  That is its only purpose.
 
 # Contributing
 Simply fork the repository and send pull requests.  The following are the areas that could be of most benefit going forward.

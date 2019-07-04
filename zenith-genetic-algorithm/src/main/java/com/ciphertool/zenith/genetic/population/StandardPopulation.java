@@ -277,12 +277,14 @@ public class StandardPopulation implements Population {
 
     @Override
     public void reIndexSelector() {
+        Collections.sort(this.individuals);
         this.selector.reIndex(this.individuals);
     }
 
     /**
      * @return the totalFitness
      */
+    @Override
     public Double getTotalFitness() {
         return totalFitness;
     }

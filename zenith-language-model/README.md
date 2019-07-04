@@ -1,7 +1,10 @@
 # Description
 This module reads data from several English text corpora to build a language model that can be used in scoring cipher solution proposals.
 
+This module is important primarily if you want to intentionally play around with different language models.  Otherwise, you do not need to run this application prior to running the optimizer in the zenith-inference module.  
+
 # Corpora Used
+These corpora are **not** supplied with this project.  At this time they would need to be downloaded manually and placed in the directory as specified by the ```corpus.text.input.directory``` property described below (implementing automatic download and unzip would be a great pull request if you are so inclined).  A pre-computed language model is provided as part of the zenith-inference module, and that model was built using the below corpora. 
 * [British National Corpus, XML Edition](http://ota.ox.ac.uk/desc/2554)
 * [Leipzig Corpora Collection (English 2005)](http://wortschatz.uni-leipzig.de/en/download/)
 * [American National Corpus (MASC)](http://www.anc.org/data/masc/downloads/data-download/)

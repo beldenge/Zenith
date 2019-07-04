@@ -97,27 +97,4 @@ public class TournamentSelectorTest {
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
     }
-
-    @Test
-    public void testGetNextIndexWithNullTotalFitness() {
-        List<Chromosome> individuals = new ArrayList<>();
-
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(2.0d);
-        individuals.add(chromosome1);
-
-        Double bestFitness = 3.0d;
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(bestFitness);
-        individuals.add(chromosome2);
-
-        MockChromosome chromosome3 = new MockChromosome();
-        chromosome3.setFitness(1.0d);
-        individuals.add(chromosome3);
-
-        int selectedIndex = tournamentSelector.getNextIndex(individuals, null);
-
-        assertTrue(selectedIndex > -1);
-        verifyZeroInteractions(logMock);
-    }
 }

@@ -20,10 +20,11 @@
 package com.ciphertool.zenith.genetic.entities;
 
 import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.math.selection.Probability;
 
 import java.util.Map;
 
-public interface Chromosome<T> extends Cloneable {
+public interface Chromosome<T> extends Cloneable, Comparable<Chromosome>, Probability {
     Double getFitness();
 
     /**

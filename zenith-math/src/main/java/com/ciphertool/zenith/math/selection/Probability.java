@@ -16,25 +16,17 @@
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ciphertool.zenith.genetic.algorithms.selection;
 
-import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.math.selection.RouletteSampler;
-import org.springframework.stereotype.Component;
+package com.ciphertool.zenith.math.selection;
 
-import java.util.List;
+public interface Probability<T> {
+    /**
+     * @return the value
+     */
+    T getValue();
 
-@Component
-public class RouletteSelector implements Selector {
-    private RouletteSampler<Chromosome> rouletteSampler = new RouletteSampler<>();
-
-    @Override
-    public synchronized void reIndex(List<Chromosome> individuals) {
-        rouletteSampler.reIndex(individuals);
-    }
-
-    @Override
-    public int getNextIndex(List<Chromosome> individuals, double totalFitness) {
-        return rouletteSampler.getNextIndex();
-    }
+    /**
+     * @return the probability
+     */
+    Double getProbability();
 }

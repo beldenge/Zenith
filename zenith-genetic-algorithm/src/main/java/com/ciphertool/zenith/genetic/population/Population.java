@@ -152,4 +152,6 @@ public interface Population {
     static double logBase(double num, int base) {
         return (Math.log(num) / Math.log(base));
     }
+
+    Double getTotalFitness();
 }

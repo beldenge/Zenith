@@ -295,4 +295,19 @@ public class CipherKeyChromosome implements Chromosome<String> {
     public void setPopulation(Population population) {
         this.population = population;
     }
+
+    @Override
+    public Chromosome<String> getValue() {
+        return this;
+    }
+
+    @Override
+    public Double getProbability() {
+        return this.fitness / this.population.getTotalFitness();
+    }
+
+    @Override
+    public int compareTo(Chromosome other) {
+        return getProbability().compareTo(other.getProbability());
+    }
 }
