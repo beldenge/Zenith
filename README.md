@@ -20,7 +20,7 @@ This module is both a dependency and a runnable application on its own.  Its pur
 This module is a framework for implementing genetic algorithms.  The zenith-inference module uses this for its GeneticAlgorithmSolutionOptimizer.
 ### zenith-mutation-search
 This module is a runnable application only.  It performs hill climbing using mutations of the original cipher to try to detect what sorts of mutations were used to create the cipher.
-### zenith-math
+### zenith-roulette
 This module is a dependency shared by multiple Zenith modules.  That is its only purpose.
 
 # Contributing
