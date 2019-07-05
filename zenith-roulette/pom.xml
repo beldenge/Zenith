@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License along with Zen
     <parent>
         <artifactId>zenith</artifactId>
         <groupId>com.ciphertool.zenith</groupId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>zenith-roulette</artifactId>
