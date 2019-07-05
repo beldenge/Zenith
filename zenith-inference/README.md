@@ -24,6 +24,9 @@ There are three major levels of customization:
      - You can implement an evaluator in any technology you want, as long as it conforms to the predefined REST interface.  Just point to that service using the property ```evaluation.rest-service.url```. 
 
 # Configuration
+The ciphers need to be configured as JSON in a file that is readable from the property ```cipher.repository-filename```.  Out of the box, the zodiac408 and zodiac340 ciphers are packaged within the application.
+Take a look at [ciphers.json](src/main/resources/ciphers.json) for an example.
+
 There are a number of configuration settings that can be set for the application.  They need to be put in an application.properties file in the same directory as where you are running the application from.
 
 Property Key | Default Value | Description
