@@ -8,6 +8,21 @@ This module encompasses the algorithm which performs inference on the language m
 
 Note: You must run the *-exec.jar and not the vanilla jar file, as this module is used both as a dependency and as a runnable application on its own.
 
+# Architecture
+
+There are three major levels of customization:
+1. Optimizer
+   - SimulatedAnnealingSolutionOptimizer
+     - This is the optimizer which currently is successful and is recommended (and is the default).
+   - GeneticAlgorithmSolutionOptimizer
+     - This is an experimental optimizer that does not yet produce successful solutions.
+2. Transformer (listed below in [Transformer Implementations](#transformer-implementations))
+3. PlaintextEvaluator
+   - MarkovModelPlaintextEvaluator
+     - This evaluator is explained below in [Algorithm and Scoring](#algorithm-and-scoring)
+   - RestServicePlaintextEvaluator
+     - You can implement an evaluator in any technology you want, as long as it conforms to the predefined REST interface.  Just point to that service using the ```property evaluation.rest-service.url```. 
+
 # Configuration
 There are a number of configuration settings that can be set for the application.  They need to be put in an application.properties file in the same directory as where you are running the application from.
 
@@ -23,10 +38,7 @@ markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size
 decipherment.evaluator.plaintext | MarkovModelPlaintextEvaluator | The PlaintextEvaluator implementation class name to use
 decipherment.evaluator.known-plaintext | Zodiac408KnownPlaintextEvaluator | The KnownPlaintextEvaluator implementation class name to use, ignored if decipherment.use-known-evaluator is set to false, and required if decipherment.use-known-evaluator is set to true
 decipherment.use-known-evaluator | false | If the cipher has a known solution, this controls whether to also evaluate it against the known solution (primarily for debugging purposes)
-decipherment.epochs | 10 | The number of times to run the hill climbing algorithm (essentially the number of random restarts) 
-decipherment.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
-decipherment.annealing.temperature.max | 0.1 | Annealing temperature at the beginning of each epoch
-decipherment.annealing.temperature.min | 0.001 | Annealing temperature at the end of each epoch
+decipherment.epochs | 10 | The number of times to run the optimizer to completion
 decipherment.transposition.column-key-string | N/A | A String representation of a column key used as a transposition key during encipherment (case-insensitive, ignored if decipherment.transposition.column-key is specified)
 decipherment.transposition.column-key | N/A | A comma-separated integer array representation of a column key used as a transposition key during encipherment
 decipherment.transposition.iterations | 1 | The number of times to perform transposition with the given key
@@ -34,6 +46,16 @@ decipherment.transposition.key-length.min | 17 | When the transposition key leng
 decipherment.transposition.key-length.max | 17 | When the transposition key length is not known, this is the key length to end hill climbing with (must be greater than or equal to decipherment.transposition.key-length.min)
 decipherment.transformers.list | RemoveLastRowCipherTransformer | A comma-separated list of names of transformers to use to mutate the cipher, in order
 evaluation.rest-service.url | http://localhost:5000/probabilities | The URL for the solution evaluator REST service, required only if decipherment.evaluator.plaintext is set to RestServicePlaintextEvaluator
+
+#### Simulated Annealing Hyperparameters
+These are used by the SimulatedAnnealingSolutionOptimizer only.
+
+Property Key | Default Value | Description
+--- | --- | ---
+simulated-annealing.temperature.max | 0.1 | Annealing temperature at the beginning of each epoch
+simulated-annealing.temperature.min | 0.001 | Annealing temperature at the end of each epoch
+simulated-annealing.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
+simulated-annealing.sampler.iterate-randomly | false | Whether to sample the keys at random.  Otherwise the keys will be sampled in the order that they appear in the cipher.
 
 #### Genetic Algorithm Hyperparameters
 These are used by the GeneticAlgorithmSolutionOptimizer only.
@@ -57,12 +79,13 @@ genetic-algorithm.fitness.implementation | ${decipherment.evaluator.plaintext} |
 
 
 # Algorithm and Scoring
+This applies to the SimulatedAnnealingSolutionOptimizer.
 
 The algorithm is standard hill climbing with random restarts and an annealing schedule to aid in convergence.  Many other more complex types of algorithms have been attempted, but they have been found to either be unsuccessful or too slow.  Furthermore, the simplest solution that works is most often the best solution. 
 
 The solution scoring works by using a language model to estimate the probability of the solution and then penalizing the solution with a compution of the index of coincidence.  The language model is a Markov model of order 5 whereby any n-grams of the same length can each be assigned probabilities.  For n-grams that occur in solutions and which we do not have a match in the language model, we assign an "unknown n-gram probability".  We convert all probabilties to log probabilities, and this is done both for performance reasons and for ease of penalizing them by the aforementioned index of coincidence.  The index of coincidence turns out to be a critical component, as without it the hill climbing algorithm gets very easily stuck at local optima.  We finally take the fifth root of the index of coincidence and then multiply that by the sum of log probabilities as determined by the language model to get our score for a given solution.
 
-# Transformers
+# Transformer Implementations
 For ciphers that are more complex than homophonic substitution ciphers read left-to-right as normal, it's assumed that some sort of mutation(s) have been performed to throw off various types of cryptanalysis.  When this is the case, it's anyone's guess as to what type(s) of mutation(s) may have been performed during encipherment.  Therefore Zenith comes with an extensible facility for specifying transformations to perform to "unwrap" the cipher before doing hill climbing.  
 
 The following transformers are provided out of the box.  More can be added by implementing the CipherTransformer interface.
@@ -84,7 +107,7 @@ Reverses the cipher
 Rotates the cipher clockwise (number of rows and columns are swapped)
 ### RotateCounterClockwiseCipherTransformer
 Rotates the cipher counter-clockwise (number of rows and columns are swapped)
-## InvertHorizontallyCipherTransformer
+### InvertHorizontallyCipherTransformer
 Inverts the cipher horizontally (as if looking in a mirror)
-## InvertVerticallyCipherTransformer
+### InvertVerticallyCipherTransformer
 Inverts the cipher vertically (as if looking in a mirror with your head sideways...?)

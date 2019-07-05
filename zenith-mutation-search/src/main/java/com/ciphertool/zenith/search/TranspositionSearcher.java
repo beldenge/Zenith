@@ -42,13 +42,13 @@ public class TranspositionSearcher {
     @Value("${cipher.name}")
     private String cipherName;
 
-    @Value("${decipherment.sampler.iterations}")
+    @Value("${simulated-annealing.sampler.iterations}")
     private int samplerIterations;
 
-    @Value("${decipherment.annealing.temperature.max}")
+    @Value("${simulated-annealing.temperature.max}")
     private double annealingTemperatureMax;
 
-    @Value("${decipherment.annealing.temperature.min}")
+    @Value("${simulated-annealing.temperature.min}")
     private double annealingTemperatureMin;
 
     @Value("${decipherment.epochs:1}")

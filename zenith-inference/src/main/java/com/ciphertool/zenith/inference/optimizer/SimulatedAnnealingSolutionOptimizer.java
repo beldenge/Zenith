@@ -45,16 +45,16 @@ import java.util.concurrent.ThreadLocalRandom;
 public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${decipherment.sampler.iterations}")
+    @Value("${simulated-annealing.sampler.iterations}")
     private int samplerIterations;
 
-    @Value("${decipherment.annealing.temperature.max}")
+    @Value("${simulated-annealing.temperature.max}")
     private double annealingTemperatureMax;
 
-    @Value("${decipherment.annealing.temperature.min}")
+    @Value("${simulated-annealing.temperature.min}")
     private double annealingTemperatureMin;
 
-    @Value("${decipherment.sampler.iterate-randomly}")
+    @Value("${simulated-annealing.sampler.iterate-randomly}")
     private Boolean iterateRandomly;
 
     @Value("${markov.letter.order}")
