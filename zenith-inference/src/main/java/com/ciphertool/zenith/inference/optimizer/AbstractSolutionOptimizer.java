@@ -22,7 +22,6 @@ package com.ciphertool.zenith.inference.optimizer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.known.KnownPlaintextEvaluator;
-import com.ciphertool.zenith.inference.model.ModelUnzipper;
 import com.ciphertool.zenith.inference.transformer.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
 import org.slf4j.Logger;
@@ -31,17 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AbstractSolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    @Value("${language-model.filename}")
-    private String modelFilename;
 
     @Value("${decipherment.transformers.list}")
     private List<String> transformersToUse;
@@ -59,9 +53,6 @@ public class AbstractSolutionOptimizer {
     protected Cipher cipher;
 
     @Autowired
-    private ModelUnzipper modelUnzipper;
-
-    @Autowired
     protected List<CipherTransformer> cipherTransformers;
 
     @Autowired
@@ -76,15 +67,6 @@ public class AbstractSolutionOptimizer {
 
     @PostConstruct
     public void init() {
-        if (!Files.exists(Paths.get(modelFilename))) {
-            long start = System.currentTimeMillis();
-            log.info("Language model file {} not found.  Unzipping from archive.", modelFilename);
-
-            modelUnzipper.unzip();
-
-            log.info("Finished unzipping language model archive in {}ms.", (System.currentTimeMillis() - start));
-        }
-
         if (cipherTransformers != null && !cipherTransformers.isEmpty()) {
             List<CipherTransformer> toUse = new ArrayList<>();
             List<String> existentCipherTransformers = cipherTransformers.stream()

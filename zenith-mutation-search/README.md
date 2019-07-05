@@ -3,7 +3,7 @@ This module encompasses hill climbing algorithm(s) for detecting cipher mutation
 
 # Running
 1. Download and install Java 8 or later
-2. On the command line, change zenith-mutation-search directory
+2. On the command line, change to the zenith-mutation-search directory
 3. Issue the command `java -jar target\zenith-mutation-search-1.0.1-SNAPSHOT.jar`
 
 # Configuration

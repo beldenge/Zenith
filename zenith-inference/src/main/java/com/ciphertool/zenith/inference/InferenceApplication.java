@@ -51,7 +51,8 @@ import java.util.stream.Collectors;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.inference",
-        "com.ciphertool.zenith.model.dao"
+        "com.ciphertool.zenith.model.dao",
+        "com.ciphertool.zenith.model.archive"
 })
 public class InferenceApplication implements CommandLineRunner {
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -85,9 +86,6 @@ public class InferenceApplication implements CommandLineRunner {
 
     @Value("${decipherment.optimizer}")
     private String optimizerName;
-
-    @Autowired
-    private LetterNGramDao letterNGramDao;
 
     @Autowired
     private List<SolutionOptimizer> optimizers;
@@ -125,7 +123,7 @@ public class InferenceApplication implements CommandLineRunner {
     }
 
     @Bean
-    public TreeMarkovModel letterMarkovModel() {
+    public TreeMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
         long startFindAll = System.currentTimeMillis();
         log.info("Beginning retrieval of all n-grams.");
 

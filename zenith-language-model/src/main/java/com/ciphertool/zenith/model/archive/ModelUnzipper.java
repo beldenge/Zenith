@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.model;
+package com.ciphertool.zenith.model.archive;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

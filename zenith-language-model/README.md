@@ -11,7 +11,7 @@ These corpora are **not** supplied with this project.  At this time they would n
 
 # Running
 1. Download and install Java 8 or later
-2. On the command line, change zenith-language-model directory
+2. On the command line, change to the zenith-language-model directory
 3. Issue the command `java -jar target\zenith-language-model-1.0.1-SNAPSHOT-exec.jar`
 
 Note: You must run the *-exec.jar and not the vanilla jar file, as this module is used both as a dependency and as a runnable application on its own.
@@ -26,6 +26,6 @@ task-executor.queue-capacity | 100000 | The number of tasks which can be queued 
 corpus.text.input.directory | ${user.home}/Desktop/corpus | Input directory for any plain text files to be imported
 corpus.xml.input.directory | ${user.home}/Desktop/2554/2554/download/Texts | Input directory for any XML files to be imported (currently only supports the British National Corpus)
 corpus.output.directory | ${user.home}/Desktop/zenith-transformed | Output directory for the post-processed corpus text data from which it is then used to build the language model
-language-model.filename | ${user.home}/Desktop/zenith-model.csv | Filename where the language model data will be stored (CSV only)
+language-model.filename | zenith-model.csv | Filename where the language model data will be stored (CSV only)
 markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
 ngram.persistence.batch-size | 1000 | The n-gram data is written to the language model in batches for performance reasons, and it can be tuned here

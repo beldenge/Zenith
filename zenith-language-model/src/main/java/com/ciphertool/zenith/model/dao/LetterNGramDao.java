@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.model.dao;
 
+import com.ciphertool.zenith.model.archive.ModelUnzipper;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
@@ -27,9 +28,11 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -45,6 +48,21 @@ public class LetterNGramDao {
 
     @Value("${language-model.filename}")
     private String modelFilename;
+
+    @Autowired
+    private ModelUnzipper modelUnzipper;
+
+    @PostConstruct
+    public void init() {
+        if (!Files.exists(Paths.get(modelFilename))) {
+            long start = System.currentTimeMillis();
+            log.info("Language model file {} not found.  Unzipping from archive.", modelFilename);
+
+            modelUnzipper.unzip();
+
+            log.info("Finished unzipping language model archive in {}ms.", (System.currentTimeMillis() - start));
+        }
+    }
 
     public List<TreeNGram> findAll() {
         long startCount = System.currentTimeMillis();
