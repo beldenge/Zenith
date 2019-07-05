@@ -20,11 +20,11 @@
 package com.ciphertool.zenith.genetic.algorithms.mutation.impl;
 
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.mutation.MutationHelper;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class MultipleMutationAlgorithm implements MutationAlgorithm<Chromosome<Object>> {
-    @Autowired
-    private MutationHelper mutationHelper;
+    @Value("${genetic-algorithm.mutation.max-per-individual}")
+    private int maxMutations;
 
     @Autowired
     private GeneDao geneDao;
@@ -49,7 +49,7 @@ public class MultipleMutationAlgorithm implements MutationAlgorithm<Chromosome<O
         /*
          * Choose a random number of mutations constrained by the configurable max and the total number of genes
          */
-        numMutations = mutationHelper.getNumMutations(chromosome.getGenes().size());
+        numMutations = ThreadLocalRandom.current().nextInt(Math.min(maxMutations, chromosome.getGenes().size())) + 1;
 
         List<Object> availableKeys = new ArrayList<>(chromosome.getGenes().keySet());
         Map<Object, Gene> originalGenes = new HashMap<>(numMutations);

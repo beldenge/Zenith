@@ -53,5 +53,32 @@ Take a look at the implementations in the following package: ```com.ciphertool.z
 
 Also take a look at the class: ```com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer```
 
-# Disclaimer
-I realize this README may not provide an adequate guide for implementing genetic algorithm solutions using this framework.  If you have any questions please raise them as an issue in the repository. 
+# Crossover Implementations
+The following crossover implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.crossover.impl```.
+
+1. EqualOpportunityGeneCrossoverAlgorithm
+   - Produces one child.  For each gene, there's an equal chance it will come from the first parent or second parent.
+2. EqualOpportunitySwapCrossoverAlgorithm
+   - Produces two children.  Identical to the EqualOpportunityGeneCrossoverAlgorithm except that the second child will contain all the genes not chosen for the first child. 
+3. RandomSinglePointCrossoverAlgorithm
+   - Produces one child.  Picks a random gene index and then assigns all the genes prior to and including that index from the second parent, and it assigns all the genes after that index from the first parent.
+
+# Mutation Implementations
+The following mutation implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.mutation.impl```.
+
+1. StandardMutationAlgorithm
+   - Gives each gene a chance of mutation (defined by the mutation rate).  Each new gene is chosen randomly.
+2. MultipleMutationAlgorithm
+   - Chooses a random number of mutations to perform, constrained by the configurable max, and then that number of genes are chosen at random to be mutated.  Each new gene is chosen randomly.
+
+# Selection Implementations
+The following selection implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.selection```.
+
+1. RouletteSelector
+   - Selects an individual based on the probability distribution of fitness values.  This should always be used unless there is a very good reason not to.
+2. TournamentSelector
+   - Selects an individual based on a tournament style approach.  Starting with the most fit individual, each one is given a configurable probability of being chosen, otherwise the selector moves on to the next gene.
+3. AlphaSelector
+   - Always selects the most fit individual.  Not particularly useful.
+4. RandomSelector
+   - Selects an individual at random, ignoring the fitness values.  Not particularly useful.

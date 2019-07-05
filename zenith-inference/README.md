@@ -21,7 +21,7 @@ There are three major levels of customization:
    - MarkovModelPlaintextEvaluator
      - This evaluator is explained below in [Algorithm and Scoring](#algorithm-and-scoring)
    - RestServicePlaintextEvaluator
-     - You can implement an evaluator in any technology you want, as long as it conforms to the predefined REST interface.  Just point to that service using the ```property evaluation.rest-service.url```. 
+     - You can implement an evaluator in any technology you want, as long as it conforms to the predefined REST interface.  Just point to that service using the property ```evaluation.rest-service.url```. 
 
 # Configuration
 There are a number of configuration settings that can be set for the application.  They need to be put in an application.properties file in the same directory as where you are running the application from.
@@ -67,12 +67,9 @@ genetic-algorithm.number-of-generations | 50 | The number of generations to run 
 genetic-algorithm.elitism | 0 | The number of top individuals to carry over to the next generation, excluding from crossover and mutation.
 genetic-algorithm.breeder.implementation | ProbabilisticCipherKeyBreeder | The class name of the Breeder implementation to use.
 genetic-algorithm.crossover.implementation | EqualOpportunityGeneCrossoverAlgorithm | The class name of the CrossoverAlgorithm implementation to use.
-genetic-algorithm.crossover.max-attempts | 500 | The maximum number of crossover attempts if the crossover results in an identical Chromosome as one of its parents.
 genetic-algorithm.mutation.implementation | StandardMutationAlgorithm | The class name of the MutationAlgorithm implementation to use.
 genetic-algorithm.mutation.rate | 0.001 | The rate of mutation, calculated per individual.
 genetic-algorithm.mutation.max-per-individual | 5 | The maximum number of unique Genes to be mutated by MutationAlgorithms which can mutate more than one Gene per individual.
-genetic-algorithm.mutation.max-attempts | 500 | The maximum number of mutation attempts if the mutation results in an identical Gene as the one being replaced.
-genetic-algorithm.mutation.count.factor | 0.1 | Used by MutationAlgorithm implementations which can mutate more than one Gene per individual.  Used as a sort of backoff multiplier in determining the number of mutations to use. 
 genetic-algorithm.selection.implementation | RouletteSelector | The class name of the Selector implementation to use.
 genetic-algorithm.selection.tournament.accuracy | 0.9 | Used by the TournamentSelector only.
 genetic-algorithm.fitness.implementation | ${decipherment.evaluator.plaintext} | It should be an implementation of PlaintextEvaluator, and it gets injected into PlaintextEvaluatorWrappingFitnessEvaluator. 
