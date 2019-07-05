@@ -89,7 +89,7 @@ The solution scoring works by using a language model to estimate the probability
 For ciphers that are more complex than homophonic substitution ciphers read left-to-right as normal, it's assumed that some sort of mutation(s) have been performed to throw off various types of cryptanalysis.  When this is the case, it's anyone's guess as to what type(s) of mutation(s) may have been performed during encipherment.  Therefore Zenith comes with an extensible facility for specifying transformations to perform to "unwrap" the cipher before doing hill climbing.  
 
 The following transformers are provided out of the box.  More can be added by implementing the CipherTransformer interface.
-### RemoveListRowCipherTransformer
+### RemoveLastRowCipherTransformer
 Removes the last row of the cipher.  This is useful for block ciphers where the last row contains mostly jibberish.
 ### TranspositionCipherTransformer
 Transposes the cipher using a configured column key.
