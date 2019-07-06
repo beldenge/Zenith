@@ -78,6 +78,8 @@ public class RotateClockwiseCipherTransformerTest {
         Cipher transformed = cipherTransformer.transform(cipher);
 
         assertEquals(42, cipher.length());
+        assertEquals(7, transformed.getColumns());
+        assertEquals(6, transformed.getRows());
 
         assertEquals("M", transformed.getCiphertextCharacters().get(0).getValue());
         assertEquals("A", transformed.getCiphertextCharacters().get(1).getValue());

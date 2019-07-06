@@ -1,18 +1,18 @@
 /**
  * Copyright 2017-2019 George Belden
- *
+ * <p>
  * This file is part of Zenith.
- *
+ * <p>
  * Zenith is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * Zenith is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,14 +23,31 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-public class InvertHorizontallyCipherTransformerTest {
+public class RemoveMiddleColumnCipherTransformerTest {
+    @Test
+    public void testTransform_EvenColumns() {
+        RemoveMiddleColumnCipherTransformer cipherTransformer = new RemoveMiddleColumnCipherTransformer();
+
+        Cipher cipher = new Cipher("tomato", 6, 6);
+
+        boolean caught = false;
+
+        try {
+            cipherTransformer.transform(cipher);
+        } catch(IllegalArgumentException iae) {
+            caught = true;
+        }
+
+        assertTrue(caught);
+    }
+
     @Test
     public void testTransform() {
-        InvertHorizontallyCipherTransformer cipherTransformer = new InvertHorizontallyCipherTransformer();
+        RemoveMiddleColumnCipherTransformer cipherTransformer = new RemoveMiddleColumnCipherTransformer();
 
-        Cipher cipher = new Cipher("tomato", 7, 6);
+        Cipher cipher = new Cipher("tomato", 6, 7);
 
         cipher.addCiphertextCharacter(new Ciphertext(0, "T"));
         cipher.addCiphertextCharacter(new Ciphertext(1, "H"));
@@ -77,52 +94,46 @@ public class InvertHorizontallyCipherTransformerTest {
 
         Cipher transformed = cipherTransformer.transform(cipher);
 
-        assertEquals(42, cipher.length());
+        assertEquals(36, transformed.length());
         assertEquals(6, transformed.getColumns());
-        assertEquals(7, transformed.getRows());
+        assertEquals(6, transformed.getRows());
 
-        assertEquals("M", transformed.getCiphertextCharacters().get(0).getValue());
-        assertEquals("O", transformed.getCiphertextCharacters().get(1).getValue());
-        assertEquals("T", transformed.getCiphertextCharacters().get(2).getValue());
-        assertEquals("E", transformed.getCiphertextCharacters().get(3).getValue());
-        assertEquals("H", transformed.getCiphertextCharacters().get(4).getValue());
-        assertEquals("T", transformed.getCiphertextCharacters().get(5).getValue());
-        assertEquals("A", transformed.getCiphertextCharacters().get(6).getValue());
-        assertEquals("S", transformed.getCiphertextCharacters().get(7).getValue());
+        assertEquals("T", transformed.getCiphertextCharacters().get(0).getValue());
+        assertEquals("H", transformed.getCiphertextCharacters().get(1).getValue());
+        assertEquals("E", transformed.getCiphertextCharacters().get(2).getValue());
+        assertEquals("O", transformed.getCiphertextCharacters().get(3).getValue());
+        assertEquals("M", transformed.getCiphertextCharacters().get(4).getValue());
+        assertEquals("A", transformed.getCiphertextCharacters().get(5).getValue());
+        assertEquals("T", transformed.getCiphertextCharacters().get(6).getValue());
+        assertEquals("O", transformed.getCiphertextCharacters().get(7).getValue());
         assertEquals("I", transformed.getCiphertextCharacters().get(8).getValue());
-        assertEquals("O", transformed.getCiphertextCharacters().get(9).getValue());
-        assertEquals("T", transformed.getCiphertextCharacters().get(10).getValue());
-        assertEquals("A", transformed.getCiphertextCharacters().get(11).getValue());
-        assertEquals("I", transformed.getCiphertextCharacters().get(12).getValue());
-        assertEquals("T", transformed.getCiphertextCharacters().get(13).getValue());
-        assertEquals("N", transformed.getCiphertextCharacters().get(14).getValue());
-        assertEquals("A", transformed.getCiphertextCharacters().get(15).getValue());
-        assertEquals("L", transformed.getCiphertextCharacters().get(16).getValue());
-        assertEquals("P", transformed.getCiphertextCharacters().get(17).getValue());
-        assertEquals("I", transformed.getCiphertextCharacters().get(18).getValue());
+        assertEquals("A", transformed.getCiphertextCharacters().get(9).getValue());
+        assertEquals("P", transformed.getCiphertextCharacters().get(10).getValue());
+        assertEquals("L", transformed.getCiphertextCharacters().get(11).getValue());
+        assertEquals("A", transformed.getCiphertextCharacters().get(12).getValue());
+        assertEquals("N", transformed.getCiphertextCharacters().get(13).getValue());
+        assertEquals("T", transformed.getCiphertextCharacters().get(14).getValue());
+        assertEquals("N", transformed.getCiphertextCharacters().get(15).getValue());
+        assertEquals("T", transformed.getCiphertextCharacters().get(16).getValue());
+        assertEquals("H", transformed.getCiphertextCharacters().get(17).getValue());
+        assertEquals("E", transformed.getCiphertextCharacters().get(18).getValue());
         assertEquals("N", transformed.getCiphertextCharacters().get(19).getValue());
-        assertEquals("E", transformed.getCiphertextCharacters().get(20).getValue());
+        assertEquals("I", transformed.getCiphertextCharacters().get(20).getValue());
         assertEquals("H", transformed.getCiphertextCharacters().get(21).getValue());
         assertEquals("T", transformed.getCiphertextCharacters().get(22).getValue());
-        assertEquals("N", transformed.getCiphertextCharacters().get(23).getValue());
-        assertEquals("A", transformed.getCiphertextCharacters().get(24).getValue());
-        assertEquals("H", transformed.getCiphertextCharacters().get(25).getValue());
-        assertEquals("S", transformed.getCiphertextCharacters().get(26).getValue());
-        assertEquals("T", transformed.getCiphertextCharacters().get(27).getValue());
-        assertEquals("H", transformed.getCiphertextCharacters().get(28).getValue());
-        assertEquals("G", transformed.getCiphertextCharacters().get(29).getValue());
+        assertEquals("S", transformed.getCiphertextCharacters().get(23).getValue());
+        assertEquals("H", transformed.getCiphertextCharacters().get(24).getValue());
+        assertEquals("A", transformed.getCiphertextCharacters().get(25).getValue());
+        assertEquals("D", transformed.getCiphertextCharacters().get(26).getValue());
+        assertEquals("F", transformed.getCiphertextCharacters().get(27).getValue());
+        assertEquals("A", transformed.getCiphertextCharacters().get(28).getValue());
+        assertEquals("M", transformed.getCiphertextCharacters().get(29).getValue());
         assertEquals("I", transformed.getCiphertextCharacters().get(30).getValue());
-        assertEquals("M", transformed.getCiphertextCharacters().get(31).getValue());
-        assertEquals("A", transformed.getCiphertextCharacters().get(32).getValue());
-        assertEquals("F", transformed.getCiphertextCharacters().get(33).getValue());
-        assertEquals("E", transformed.getCiphertextCharacters().get(34).getValue());
-        assertEquals("D", transformed.getCiphertextCharacters().get(35).getValue());
-        assertEquals("X", transformed.getCiphertextCharacters().get(36).getValue());
-        assertEquals("X", transformed.getCiphertextCharacters().get(37).getValue());
-        assertEquals("X", transformed.getCiphertextCharacters().get(38).getValue());
-        assertEquals("X", transformed.getCiphertextCharacters().get(39).getValue());
-        assertEquals("Y", transformed.getCiphertextCharacters().get(40).getValue());
-        assertEquals("L", transformed.getCiphertextCharacters().get(41).getValue());
+        assertEquals("L", transformed.getCiphertextCharacters().get(31).getValue());
+        assertEquals("Y", transformed.getCiphertextCharacters().get(32).getValue());
+        assertEquals("X", transformed.getCiphertextCharacters().get(33).getValue());
+        assertEquals("X", transformed.getCiphertextCharacters().get(34).getValue());
+        assertEquals("X", transformed.getCiphertextCharacters().get(35).getValue());
 
         System.out.println(transformed);
     }

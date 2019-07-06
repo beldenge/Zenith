@@ -78,6 +78,8 @@ public class RemoveLastRowCipherTransformerTest {
         Cipher transformed = cipherTransformer.transform(cipher);
 
         assertEquals(36, transformed.length());
+        assertEquals(6, transformed.getColumns());
+        assertEquals(6, transformed.getRows());
 
         assertEquals("T", transformed.getCiphertextCharacters().get(0).getValue());
         assertEquals("H", transformed.getCiphertextCharacters().get(1).getValue());

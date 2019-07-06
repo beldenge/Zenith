@@ -78,6 +78,8 @@ public class InvertVerticallyCipherTransformerTest {
         Cipher transformed = cipherTransformer.transform(cipher);
 
         assertEquals(42, cipher.length());
+        assertEquals(6, transformed.getColumns());
+        assertEquals(7, transformed.getRows());
 
         assertEquals("L", transformed.getCiphertextCharacters().get(0).getValue());
         assertEquals("Y", transformed.getCiphertextCharacters().get(1).getValue());
