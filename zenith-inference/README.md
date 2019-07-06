@@ -92,7 +92,7 @@ The following transformers are provided out of the box.  More can be added by im
 ### RemoveLastRowCipherTransformer
 Removes the last row of the cipher.  This is useful for block ciphers where the last row contains mostly jibberish.
 ### TranspositionCipherTransformer
-Transposes the cipher using a configured column key.
+Transposes the cipher using a configured column key.  The column key should be specified as lowercase alpha characters in parenthesis, e.g. ```TranspositionCipherTransformer(baconisgood)```
 ### UpperLeftQuadrantCipherTransformer
 Replaces the cipher with its upper left quadrant.
 ### UpperRightQuadrantCipherTransformer
