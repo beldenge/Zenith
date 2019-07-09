@@ -28,7 +28,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
@@ -67,9 +66,8 @@ public class RouletteSelectorTest {
         individuals.add(chromosome3);
         chromosome3.setPopulation(populationMock);
 
-        when(populationMock.getTotalFitness()).thenReturn(1d);
+        when(populationMock.getTotalFitness()).thenReturn(individuals.stream().mapToDouble(individual -> individual.getFitness()).sum());
 
-        Collections.sort(individuals);
         rouletteSelector.reIndex(individuals);
 
         int selectedIndex = rouletteSelector.getNextIndex(individuals);

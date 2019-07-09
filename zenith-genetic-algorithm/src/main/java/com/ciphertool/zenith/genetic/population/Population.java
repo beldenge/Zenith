@@ -80,6 +80,10 @@ public interface Population {
      */
     void setSelector(Selector selector);
 
+    boolean addIndividual(Chromosome individual);
+
+    void sortIndividuals();
+
     @SuppressWarnings({"unchecked"})
     default BigDecimal calculateEntropy() {
         if (!(this.getIndividuals().get(0) instanceof Chromosome)) {

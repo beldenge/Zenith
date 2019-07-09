@@ -19,8 +19,6 @@
 package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.fitness.DescendingFitnessComparator;
-import com.ciphertool.zenith.genetic.fitness.FitnessComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +36,6 @@ public class TournamentSelector implements Selector {
     @Value("${genetic-algorithm.selection.tournament.accuracy}")
     private Double selectionAccuracy;
 
-    private static FitnessComparator fitnessComparator = new DescendingFitnessComparator();
-
     @PostConstruct
     public void init() {
         if (selectionAccuracy < 0.0 || selectionAccuracy > 1.0) {
@@ -50,7 +46,7 @@ public class TournamentSelector implements Selector {
 
     @Override
     public synchronized void reIndex(List<Chromosome> individuals) {
-        // Nothing to do
+        Collections.sort(individuals);
     }
 
     @Override
@@ -61,9 +57,7 @@ public class TournamentSelector implements Selector {
             return -1;
         }
 
-        Collections.sort(individuals, fitnessComparator);
-
-        for (int i = 0; i < individuals.size(); i++) {
+        for (int i = individuals.size() - 1; i >= 0; i--) {
             if (ThreadLocalRandom.current().nextDouble() <= selectionAccuracy) {
                 return i;
             }

@@ -22,6 +22,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -30,6 +31,8 @@ public class RouletteSelector implements Selector {
 
     @Override
     public synchronized void reIndex(List<Chromosome> individuals) {
+        Collections.sort(individuals);
+
         rouletteSampler.reIndex(individuals);
     }
 

@@ -22,8 +22,6 @@ package com.ciphertool.zenith.genetic.population;
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.fitness.AscendingFitnessComparator;
-import com.ciphertool.zenith.genetic.fitness.FitnessComparator;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import org.slf4j.Logger;
@@ -45,7 +43,6 @@ public class StandardPopulation implements Population {
     private Breeder breeder;
     private List<Chromosome> individuals = new ArrayList<>();
     private FitnessEvaluator fitnessEvaluator;
-    private FitnessComparator fitnessComparator = new AscendingFitnessComparator();
     private Selector selector;
     private Double totalFitness = 0d;
     private FitnessEvaluator knownSolutionFitnessEvaluator;
@@ -239,9 +236,7 @@ public class StandardPopulation implements Population {
         this.totalFitness = 0d;
     }
 
-    /**
-     * @param individual
-     */
+    @Override
     public boolean addIndividual(Chromosome individual) {
         this.individuals.add(individual);
 
@@ -256,8 +251,9 @@ public class StandardPopulation implements Population {
         return this.individuals.size();
     }
 
+    @Override
     public void sortIndividuals() {
-        Collections.sort(individuals, this.fitnessComparator);
+        Collections.sort(individuals);
     }
 
     /**
@@ -277,7 +273,6 @@ public class StandardPopulation implements Population {
 
     @Override
     public void reIndexSelector() {
-        Collections.sort(this.individuals);
         this.selector.reIndex(this.individuals);
     }
 

@@ -194,6 +194,7 @@ public class StandardGeneticAlgorithm {
     }
 
     public void select(int initialPopulationSize, List<Chromosome> moms, List<Chromosome> dads) {
+        // TODO: There are cases where this doesn't produce the right number of individuals -- consider getting rid of multi-offspring crossover algorithms
         long pairsToCrossover = (initialPopulationSize - strategy.getElitism()) / strategy.getCrossoverAlgorithm().numberOfOffspring();
 
         List<FutureTask<SelectionResult>> futureTasks = new ArrayList<>();
@@ -224,8 +225,6 @@ public class StandardGeneticAlgorithm {
     }
 
     public int crossover(int pairsToCrossover, List<Chromosome> moms, List<Chromosome> dads) {
-        StandardPopulation standardPopulation = (StandardPopulation) this.population;
-
         if (this.population.size() < 2) {
             log.info("Unable to perform crossover because there is only 1 individual in the population. Returning.");
 
@@ -250,7 +249,7 @@ public class StandardGeneticAlgorithm {
         List<Chromosome> eliteIndividuals = new ArrayList<>();
 
         if (strategy.getElitism() > 0) {
-            standardPopulation.sortIndividuals();
+            this.population.sortIndividuals();
 
             for (int i = this.population.size() - 1; i >= this.population.size() - strategy.getElitism(); i--) {
                 eliteIndividuals.add(this.population.getIndividuals().get(i));
@@ -260,11 +259,11 @@ public class StandardGeneticAlgorithm {
         this.population.clearIndividuals();
 
         for (Chromosome elite : eliteIndividuals) {
-            standardPopulation.addIndividual(elite);
+            this.population.addIndividual(elite);
         }
 
         for (Chromosome child : childrenToAdd) {
-            standardPopulation.addIndividual(child);
+            this.population.addIndividual(child);
         }
 
         return childrenToAdd.size();

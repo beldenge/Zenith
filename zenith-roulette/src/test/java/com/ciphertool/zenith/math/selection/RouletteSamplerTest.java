@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class RouletteSamplerTest {
     public class DummyProbability implements Probability<Character>, Comparable<DummyProbability> {
@@ -53,40 +53,39 @@ public class RouletteSamplerTest {
 
     @Test
     public void testSampling() {
-        List<DummyProbability> letterUnigramProbabilities = new ArrayList<>();
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
 
-        letterUnigramProbabilities.add(new DummyProbability('a', 0.07916));
-        letterUnigramProbabilities.add(new DummyProbability('b', 0.01543));
-        letterUnigramProbabilities.add(new DummyProbability('c', 0.03037));
-        letterUnigramProbabilities.add(new DummyProbability('d', 0.03962));
-        letterUnigramProbabilities.add(new DummyProbability('e', 0.12454));
-        letterUnigramProbabilities.add(new DummyProbability('f', 0.02233));
-        letterUnigramProbabilities.add(new DummyProbability('g', 0.01981));
-        letterUnigramProbabilities.add(new DummyProbability('h', 0.05323));
-        letterUnigramProbabilities.add(new DummyProbability('i', 0.07300));
-        letterUnigramProbabilities.add(new DummyProbability('j', 0.00163));
-        letterUnigramProbabilities.add(new DummyProbability('k', 0.00701));
-        letterUnigramProbabilities.add(new DummyProbability('l', 0.04058));
-        letterUnigramProbabilities.add(new DummyProbability('m', 0.02403));
-        letterUnigramProbabilities.add(new DummyProbability('n', 0.07289));
-        letterUnigramProbabilities.add(new DummyProbability('o', 0.07603));
-        letterUnigramProbabilities.add(new DummyProbability('p', 0.02002));
-        letterUnigramProbabilities.add(new DummyProbability('q', 0.00104));
-        letterUnigramProbabilities.add(new DummyProbability('r', 0.06124));
-        letterUnigramProbabilities.add(new DummyProbability('s', 0.06438));
-        letterUnigramProbabilities.add(new DummyProbability('t', 0.09284));
-        letterUnigramProbabilities.add(new DummyProbability('u', 0.02905));
-        letterUnigramProbabilities.add(new DummyProbability('v', 0.01068));
-        letterUnigramProbabilities.add(new DummyProbability('w', 0.01930));
-        letterUnigramProbabilities.add(new DummyProbability('x', 0.00226));
-        letterUnigramProbabilities.add(new DummyProbability('y', 0.01888));
-        letterUnigramProbabilities.add(new DummyProbability('z', 0.00068));
+        dummyProbabilities.add(new DummyProbability('a', 0.07916));
+        dummyProbabilities.add(new DummyProbability('b', 0.01543));
+        dummyProbabilities.add(new DummyProbability('c', 0.03037));
+        dummyProbabilities.add(new DummyProbability('d', 0.03962));
+        dummyProbabilities.add(new DummyProbability('e', 0.12454));
+        dummyProbabilities.add(new DummyProbability('f', 0.02233));
+        dummyProbabilities.add(new DummyProbability('g', 0.01981));
+        dummyProbabilities.add(new DummyProbability('h', 0.05323));
+        dummyProbabilities.add(new DummyProbability('i', 0.07300));
+        dummyProbabilities.add(new DummyProbability('j', 0.00163));
+        dummyProbabilities.add(new DummyProbability('k', 0.00701));
+        dummyProbabilities.add(new DummyProbability('l', 0.04058));
+        dummyProbabilities.add(new DummyProbability('m', 0.02403));
+        dummyProbabilities.add(new DummyProbability('n', 0.07289));
+        dummyProbabilities.add(new DummyProbability('o', 0.07603));
+        dummyProbabilities.add(new DummyProbability('p', 0.02002));
+        dummyProbabilities.add(new DummyProbability('q', 0.00104));
+        dummyProbabilities.add(new DummyProbability('r', 0.06124));
+        dummyProbabilities.add(new DummyProbability('s', 0.06438));
+        dummyProbabilities.add(new DummyProbability('t', 0.09284));
+        dummyProbabilities.add(new DummyProbability('u', 0.02905));
+        dummyProbabilities.add(new DummyProbability('v', 0.01068));
+        dummyProbabilities.add(new DummyProbability('w', 0.01930));
+        dummyProbabilities.add(new DummyProbability('x', 0.00226));
+        dummyProbabilities.add(new DummyProbability('y', 0.01888));
+        dummyProbabilities.add(new DummyProbability('z', 0.00068));
 
         RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
 
-        Collections.sort(letterUnigramProbabilities);
-
-        rouletteSampler.reIndex(letterUnigramProbabilities);
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
 
         Map<Character, Integer> characterCounts = new HashMap<>();
         int nextIndex;
@@ -96,23 +95,192 @@ public class RouletteSamplerTest {
         for (; i < 1000000; i++) {
             nextIndex = rouletteSampler.getNextIndex();
 
-            if (characterCounts.get(letterUnigramProbabilities.get(nextIndex).getValue()) == null) {
-                characterCounts.put(letterUnigramProbabilities.get(nextIndex).getValue(), 1);
+            if (characterCounts.get(dummyProbabilities.get(nextIndex).getValue()) == null) {
+                characterCounts.put(dummyProbabilities.get(nextIndex).getValue(), 1);
             }
 
-            characterCounts.put(letterUnigramProbabilities.get(nextIndex).getValue(), characterCounts.get(letterUnigramProbabilities.get(nextIndex).getValue())
-                    + 1);
+            characterCounts.put(dummyProbabilities.get(nextIndex).getValue(), characterCounts.get(dummyProbabilities.get(nextIndex).getValue()) + 1);
         }
 
-        for (DummyProbability letterProbability : letterUnigramProbabilities) {
+        for (DummyProbability letterProbability : dummyProbabilities) {
             Double actual = letterProbability.getProbability();
             Double estimated = (double) characterCounts.get(letterProbability.getValue()) / (double) i;
             Double difference = Math.abs(actual - estimated);
 
-            System.out.printf(letterProbability.getValue() + ": actual=" + actual.toString() + ", estimated="
-                    + estimated.toString() + ", difference=" + difference.toString() + "\n");
+            System.out.printf(letterProbability.getValue() + ": actual=" + actual.toString() + ", estimated=" + estimated.toString() + ", difference=" + difference.toString() + "\n");
 
             assertTrue(difference < 0.001d);
         }
+    }
+
+    @Test
+    public void testGetNextIndex_SingleNode() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        dummyProbabilities.add(new DummyProbability('a', 1.0d));
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
+
+        assertEquals(0, rouletteSampler.getNextIndex(1.0d));
+        assertEquals(0, rouletteSampler.getNextIndex(0.1d));
+        assertEquals(0, rouletteSampler.getNextIndex(2.0d));
+    }
+
+    @Test
+    public void testReindex_Unsorted() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        DummyProbability a = new DummyProbability('a', 0.3d);
+        dummyProbabilities.add(a);
+        DummyProbability b = new DummyProbability('b', 0.2d);
+        dummyProbabilities.add(b);
+        DummyProbability c = new DummyProbability('c', 0.5d);
+        dummyProbabilities.add(c);
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        boolean caught = false;
+        try {
+            rouletteSampler.reIndex(dummyProbabilities);
+        } catch(IllegalStateException ise) {
+            caught = true;
+        }
+
+        assertTrue(caught);
+    }
+
+    @Test
+    public void testGetNextIndex_ThreeNodes_Equal() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        DummyProbability a = new DummyProbability('a', 0.3d);
+        dummyProbabilities.add(a);
+        DummyProbability b = new DummyProbability('b', 0.2d);
+        dummyProbabilities.add(b);
+        DummyProbability c = new DummyProbability('c', 0.5d);
+        dummyProbabilities.add(c);
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
+
+        int chosen = rouletteSampler.getNextIndex(0.2d);
+
+        assertEquals(0, chosen);
+        assertSame(b, dummyProbabilities.get(chosen));
+    }
+
+    @Test
+    public void testGetNextIndex_ThreeNodes_LessThan_Equal() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        DummyProbability a = new DummyProbability('a', 0.3d);
+        dummyProbabilities.add(a);
+        DummyProbability b = new DummyProbability('b', 0.2d);
+        dummyProbabilities.add(b);
+        DummyProbability c = new DummyProbability('c', 0.5d);
+        dummyProbabilities.add(c);
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
+
+        int chosen = rouletteSampler.getNextIndex(0.2d);
+
+        assertEquals(0, chosen);
+        assertSame(b, dummyProbabilities.get(chosen));
+    }
+
+    @Test
+    public void testGetNextIndex_ThreeNodes_LessThan_LessThan() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        DummyProbability a = new DummyProbability('a', 0.3d);
+        dummyProbabilities.add(a);
+        DummyProbability b = new DummyProbability('b', 0.2d);
+        dummyProbabilities.add(b);
+        DummyProbability c = new DummyProbability('c', 0.5d);
+        dummyProbabilities.add(c);
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
+
+        int chosen = rouletteSampler.getNextIndex(0.15d);
+
+        assertEquals(0, chosen);
+        assertSame(b, dummyProbabilities.get(chosen));
+    }
+
+    @Test
+    public void testGetNextIndex_ThreeNodes_LessThan_GreaterThan() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        DummyProbability a = new DummyProbability('a', 0.3d);
+        dummyProbabilities.add(a);
+        DummyProbability b = new DummyProbability('b', 0.2d);
+        dummyProbabilities.add(b);
+        DummyProbability c = new DummyProbability('c', 0.5d);
+        dummyProbabilities.add(c);
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
+
+        int chosen = rouletteSampler.getNextIndex(0.25d);
+
+        assertEquals(1, chosen);
+        assertSame(a, dummyProbabilities.get(chosen));
+    }
+
+    @Test
+    public void testGetNextIndex_ThreeNodes_GreaterThan_Equal() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        DummyProbability a = new DummyProbability('a', 0.3d);
+        dummyProbabilities.add(a);
+        DummyProbability b = new DummyProbability('b', 0.2d);
+        dummyProbabilities.add(b);
+        DummyProbability c = new DummyProbability('c', 0.5d);
+        dummyProbabilities.add(c);
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
+
+        int chosen = rouletteSampler.getNextIndex(1.0d);
+
+        assertEquals(2, chosen);
+        assertSame(c, dummyProbabilities.get(chosen));
+    }
+
+    @Test
+    public void testGetNextIndex_ThreeNodes_GreaterThan_LessThan() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+
+        DummyProbability a = new DummyProbability('a', 0.3d);
+        dummyProbabilities.add(a);
+        DummyProbability b = new DummyProbability('b', 0.2d);
+        dummyProbabilities.add(b);
+        DummyProbability c = new DummyProbability('c', 0.5d);
+        dummyProbabilities.add(c);
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        rouletteSampler.reIndex(dummyProbabilities);
+
+        int chosen = rouletteSampler.getNextIndex(0.6d);
+
+        assertEquals(2, chosen);
+        assertSame(c, dummyProbabilities.get(chosen));
     }
 }

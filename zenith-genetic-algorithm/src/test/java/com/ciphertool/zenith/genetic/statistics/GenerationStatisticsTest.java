@@ -87,22 +87,4 @@ public class GenerationStatisticsTest {
 
         assertEquals(numberOfCrossoversToSet, generationStatistics.getNumberOfCrossovers());
     }
-
-    @Test
-    public void testSetNumberRandomlyGenerated() {
-        int numberRandomlyGeneratedToSet = 15;
-        GenerationStatistics generationStatistics = new GenerationStatistics();
-        generationStatistics.setNumberRandomlyGenerated(numberRandomlyGeneratedToSet);
-
-        assertEquals(numberRandomlyGeneratedToSet, generationStatistics.getNumberRandomlyGenerated());
-    }
-
-    @Test
-    public void testSetNumberSelectedOut() {
-        int numberSelectedOutToSet = 20;
-        GenerationStatistics generationStatistics = new GenerationStatistics();
-        generationStatistics.setNumberSelectedOut(numberSelectedOutToSet);
-
-        assertEquals(numberSelectedOutToSet, generationStatistics.getNumberSelectedOut());
-    }
 }

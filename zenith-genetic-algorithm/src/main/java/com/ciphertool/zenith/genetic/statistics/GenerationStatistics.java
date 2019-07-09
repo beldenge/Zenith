@@ -37,8 +37,6 @@ public class GenerationStatistics {
     private int numberOfCrossovers;
     private int numberOfMutations;
     private int numberOfEvaluations;
-    private int numberRandomlyGenerated;
-    private int numberSelectedOut;
     private PerformanceStatistics performanceStatistics = new PerformanceStatistics();
 
     /**

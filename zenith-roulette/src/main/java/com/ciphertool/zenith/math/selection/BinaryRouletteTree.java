@@ -58,7 +58,7 @@ public class BinaryRouletteTree {
     }
 
     public BinaryRouletteNode find(Double value) {
-        return findNode(this.root, value, null);
+        return findNode(this.root, value, this.root);
     }
 
     protected BinaryRouletteNode findNode(BinaryRouletteNode current, Double value, BinaryRouletteNode closestSoFar) {

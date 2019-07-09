@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -32,7 +33,15 @@ public class RouletteSampler<T extends Probability> {
     private BinaryRouletteTree rouletteWheel;
 
     public synchronized double reIndex(List<T> probabilities) {
-        // TODO: check if list is sorted first, and throw an Exception if it is not
+        List sortedProbabilities = new ArrayList<>();
+        sortedProbabilities.addAll(probabilities);
+        Collections.sort(sortedProbabilities);
+
+        for (int i = 0; i < probabilities.size(); i ++) {
+            if (probabilities.get(i) != sortedProbabilities.get(i)) {
+                throw new IllegalStateException("The List of probabilities must be sorted before being indexed.");
+            }
+        }
 
         if (probabilities == null || probabilities.isEmpty()) {
             log.error("Attempted to index a null or empty probability distribution.  Unable to continue.");
@@ -94,8 +103,10 @@ public class RouletteSampler<T extends Probability> {
     }
 
     public int getNextIndex() {
-        BinaryRouletteNode winner = this.rouletteWheel.find(ThreadLocalRandom.current().nextDouble());
+        return getNextIndex(ThreadLocalRandom.current().nextDouble());
+    }
 
-        return winner.getIndex();
+    protected int getNextIndex(double magicNumber) {
+        return this.rouletteWheel.find(magicNumber).getIndex();
     }
 }
