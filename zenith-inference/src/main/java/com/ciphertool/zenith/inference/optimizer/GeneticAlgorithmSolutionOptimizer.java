@@ -25,7 +25,10 @@ import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
+import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
+import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
+import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.KnownPlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import org.slf4j.Logger;
@@ -37,6 +40,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -205,15 +209,23 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         for (int epoch = 0; epoch < epochs; epoch++) {
             log.info("Epoch {} of {}.  Evolving for {} generations.", (epoch + 1), epochs, numberOfGenerations);
 
-            try {
-                geneticAlgorithm.evolve();
-            } catch (Throwable t) {
-                log.error("Caught Throwable while running {}.  Cannot continue.  Performing tear-down tasks.", getClass().getSimpleName(), t);
-            } finally {
-                // Print out summary information
-                log.info("Total running time was {}ms.", (System.currentTimeMillis() - start));
+            geneticAlgorithm.evolve();
 
+            log.info("Total running time was {}ms.", (System.currentTimeMillis() - start));
+
+            this.geneticAlgorithm.getPopulation().sortIndividuals();
+
+            if (log.isDebugEnabled()) {
                 this.geneticAlgorithm.getPopulation().printAscending();
+            }
+
+            CipherKeyChromosome last = (CipherKeyChromosome) this.geneticAlgorithm.getPopulation().getIndividuals().get(this.geneticAlgorithm.getPopulation().getIndividuals().size() - 1);
+
+            log.info("Best probability solution: {}", last);
+            log.info("Mappings for best probability:");
+
+            for (Map.Entry<String, Gene> entry : last.getGenes().entrySet()) {
+                log.info("{}: {}", entry.getKey(), ((CipherKeyGene) entry.getValue()).getValue());
             }
         }
     }

@@ -28,8 +28,7 @@ import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class GeneticAlgorithmSolutionOptimizerTest {
@@ -85,11 +84,14 @@ public class GeneticAlgorithmSolutionOptimizerTest {
         ReflectionUtils.makeAccessible(epochsField);
         ReflectionUtils.setField(epochsField, geneticAlgorithmSolutionOptimizer, 1);
 
-        geneticAlgorithmSolutionOptimizer.optimize();
+        boolean caught = false;
+        try {
+            geneticAlgorithmSolutionOptimizer.optimize();
+        } catch (Exception e) {
+            caught = true;
+        }
 
-        doNothing().when(mockLogger).error(anyString(), any(Throwable.class));
-
-        verify(mockLogger, times(1)).error(anyString(), eq(GeneticAlgorithmSolutionOptimizer.class.getSimpleName()), any(Throwable.class));
+        assertTrue(caught);
 
         verify(standardGeneticAlgorithm, times(1)).evolve();
     }

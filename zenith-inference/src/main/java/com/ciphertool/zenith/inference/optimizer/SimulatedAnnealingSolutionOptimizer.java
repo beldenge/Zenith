@@ -130,8 +130,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         CipherSolution next = initialSolution;
         CipherSolution maxProbability = initialSolution;
         int maxProbabilityIteration = 0;
-        CipherSolution maxKnown = initialSolution;
-        int maxKnownIteration = 0;
         long start = System.currentTimeMillis();
         long startLetterSampling;
         long letterSamplingElapsed;
@@ -154,11 +152,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             if (useKnownEvaluator && knownPlaintextEvaluator != null) {
                 knownProximity = knownPlaintextEvaluator.evaluate(next);
                 next.setKnownSolutionProximity(knownProximity);
-
-                if (maxKnown.getKnownSolutionProximity() < knownProximity) {
-                    maxKnown = next;
-                    maxKnownIteration = i + 1;
-                }
             }
 
             if (maxProbability.getLogProbability() < next.getLogProbability()) {
@@ -173,15 +166,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         }
 
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
-
-        if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-            log.info("Best known found at iteration {}: {}", maxKnownIteration, maxKnown);
-            log.info("Mappings for best known:");
-
-            for (Map.Entry<String, Plaintext> entry : maxKnown.getMappings().entrySet()) {
-                log.info("{}: {}", entry.getKey(), entry.getValue().getValue());
-            }
-        }
 
         log.info("Best probability found at iteration {}: {}", maxProbabilityIteration, maxProbability);
         log.info("Mappings for best probability:");
