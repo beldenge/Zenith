@@ -35,6 +35,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -169,12 +170,15 @@ public class StandardGeneticAlgorithm {
         performanceStats.setSelectionMillis(System.currentTimeMillis() - startSelection);
 
         long startCrossover = System.currentTimeMillis();
-        generationStatistics.setNumberOfCrossovers(crossover(populationSizeBeforeGeneration, moms, dads));
+        List<Chromosome> children = crossover(populationSizeBeforeGeneration, moms, dads);
+        generationStatistics.setNumberOfCrossovers(children.size());
         performanceStats.setCrossoverMillis(System.currentTimeMillis() - startCrossover);
 
         long startMutation = System.currentTimeMillis();
-        generationStatistics.setNumberOfMutations(mutate());
+        generationStatistics.setNumberOfMutations(mutate(children));
         performanceStats.setMutationMillis(System.currentTimeMillis() - startMutation);
+
+        replacePopulation(children);
 
         long startEntropyCalculation = System.currentTimeMillis();
         BigDecimal entropy = this.population.calculateEntropy();
@@ -223,11 +227,11 @@ public class StandardGeneticAlgorithm {
         }
     }
 
-    public int crossover(int pairsToCrossover, List<Chromosome> moms, List<Chromosome> dads) {
+    public List<Chromosome> crossover(int pairsToCrossover, List<Chromosome> moms, List<Chromosome> dads) {
         if (this.population.size() < 2) {
             log.info("Unable to perform crossover because there is only 1 individual in the population. Returning.");
 
-            return 0;
+            return Collections.emptyList();
         }
 
         log.debug("Pairs to crossover: {}", pairsToCrossover);
@@ -240,32 +244,11 @@ public class StandardGeneticAlgorithm {
         }
 
         if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism()) < pairsToCrossover) {
-            log.error("{} children produced from concurrent crossover execution.  Expected {} children.", ((null == childrenToAdd) ? "No" : childrenToAdd.size()), pairsToCrossover);
-
-            return ((null == childrenToAdd) ? 0 : childrenToAdd.size());
+            throw new IllegalStateException(((null == childrenToAdd) ? "No" : childrenToAdd.size()) +
+                    " children produced from concurrent crossover execution.  Expected " + pairsToCrossover + " children.");
         }
 
-        List<Chromosome> eliteIndividuals = new ArrayList<>();
-
-        if (strategy.getElitism() > 0) {
-            this.population.sortIndividuals();
-
-            for (int i = this.population.size() - 1; i >= this.population.size() - strategy.getElitism(); i--) {
-                eliteIndividuals.add(this.population.getIndividuals().get(i));
-            }
-        }
-
-        this.population.clearIndividuals();
-
-        for (Chromosome elite : eliteIndividuals) {
-            this.population.addIndividual(elite);
-        }
-
-        for (Chromosome child : childrenToAdd) {
-            this.population.addIndividual(child);
-        }
-
-        return childrenToAdd.size();
+        return childrenToAdd;
     }
 
     protected List<Chromosome> doConcurrentCrossovers(List<Chromosome> moms, List<Chromosome> dads) {
@@ -314,7 +297,7 @@ public class StandardGeneticAlgorithm {
         return childrenToAdd;
     }
 
-    public int mutate() {
+    public int mutate(List<Chromosome> children) {
         StandardPopulation standardPopulation = (StandardPopulation) this.population;
 
         List<FutureTask<Void>> futureTasks = new ArrayList<>();
@@ -327,8 +310,8 @@ public class StandardGeneticAlgorithm {
         /*
          * Execute each mutation concurrently.
          */
-        for (int i = this.population.size() - strategy.getElitism() - 1; i >= 0; i--) {
-            futureTask = new FutureTask<>(new MutationTask(this.population.getIndividuals().get(i)));
+        for (Chromosome child : children) {
+            futureTask = new FutureTask<>(new MutationTask(child));
             futureTasks.add(futureTask);
             this.taskExecutor.execute(futureTask);
         }
@@ -344,6 +327,28 @@ public class StandardGeneticAlgorithm {
         }
 
         return mutations.get();
+    }
+
+    protected void replacePopulation(List<Chromosome> children) {
+        List<Chromosome> eliteIndividuals = new ArrayList<>();
+
+        if (strategy.getElitism() > 0) {
+            this.population.sortIndividuals();
+
+            for (int i = this.population.size() - 1; i >= this.population.size() - strategy.getElitism(); i--) {
+                eliteIndividuals.add(this.population.getIndividuals().get(i));
+            }
+        }
+
+        this.population.clearIndividuals();
+
+        for (Chromosome elite : eliteIndividuals) {
+            this.population.addIndividual(elite);
+        }
+
+        for (Chromosome child : children) {
+            this.population.addIndividual(child);
+        }
     }
 
     public void finish() {
