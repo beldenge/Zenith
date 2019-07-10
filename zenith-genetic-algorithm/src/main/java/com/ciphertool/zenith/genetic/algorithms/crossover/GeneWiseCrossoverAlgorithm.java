@@ -17,19 +17,21 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.crossover.impl;
+package com.ciphertool.zenith.genetic.algorithms.crossover;
 
-import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.Map;
 
 @Component
-public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
+public class GeneWiseCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
+    private Coin coin = new Coin();
+
     @Override
     public List<Chromosome<Object>> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
         List<Chromosome<Object>> children = new ArrayList<>(1);
@@ -46,31 +48,20 @@ public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<C
 
     @SuppressWarnings("unchecked")
     protected Chromosome<Object> performCrossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
-        Random generator = new Random();
-        Set<Object> availableKeys = parentA.getGenes().keySet();
-        Object[] keys = availableKeys.toArray();
-
-        // Get a random map key
-        int randomIndex = generator.nextInt(keys.length);
-
-        // Replace all the Genes from the map key to the end of the array
         Chromosome<Object> child = (Chromosome<Object>) parentA.clone();
-        for (int i = 0; i <= randomIndex; i++) {
-            Object nextKey = keys[i];
 
-            if (null == parentB.getGenes().get(nextKey)) {
-                throw new IllegalStateException("Expected second parent to have a Gene with key " + nextKey
-                        + ", but no such key was found.  Cannot continue.");
+        Object key;
+
+        for (Map.Entry<Object, Gene> entry : parentA.getGenes().entrySet()) {
+            key = entry.getKey();
+
+            if (coin.flip()) {
+                if (!child.getGenes().get(key).equals(parentB.getGenes().get(key))) {
+                    child.replaceGene(key, parentB.getGenes().get(key).clone());
+                }
             }
-
-            child.replaceGene(nextKey, parentB.getGenes().get(nextKey).clone());
         }
 
         return child;
-    }
-
-    @Override
-    public int numberOfOffspring() {
-        return 1;
     }
 }

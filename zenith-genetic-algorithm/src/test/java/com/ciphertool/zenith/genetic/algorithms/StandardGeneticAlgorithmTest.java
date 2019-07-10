@@ -218,7 +218,6 @@ public class StandardGeneticAlgorithmTest {
 
         MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
-        when(crossoverAlgorithmMock.numberOfOffspring()).thenReturn(1);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .populationSize(populationSize)
@@ -285,7 +284,6 @@ public class StandardGeneticAlgorithmTest {
         verifyNoMoreInteractions(mutationAlgorithmMock);
 
         verify(crossoverAlgorithmMock, times(100)).crossover(any(Chromosome.class), any(Chromosome.class));
-        verify(crossoverAlgorithmMock, times(1)).numberOfOffspring();
         verifyNoMoreInteractions(crossoverAlgorithmMock);
     }
 
@@ -393,7 +391,6 @@ public class StandardGeneticAlgorithmTest {
         ReflectionUtils.setField(taskExecutorField, standardGeneticAlgorithm, taskExecutorMock);
 
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
-        when(crossoverAlgorithmMock.numberOfOffspring()).thenReturn(1);
 
         Chromosome chromosomeToReturn = new MockChromosome();
         when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(Arrays.asList(chromosomeToReturn));

@@ -69,7 +69,7 @@ genetic-algorithm.population.size | 10000 | The population size.  It will be pop
 genetic-algorithm.number-of-generations | 50 | The number of generations to run per epoch.
 genetic-algorithm.elitism | 0 | The number of top individuals to carry over to the next generation, excluding from crossover and mutation.
 genetic-algorithm.breeder.implementation | ProbabilisticCipherKeyBreeder | The class name of the Breeder implementation to use.
-genetic-algorithm.crossover.implementation | EqualOpportunityGeneCrossoverAlgorithm | The class name of the CrossoverAlgorithm implementation to use.
+genetic-algorithm.crossover.implementation | GeneWiseCrossoverAlgorithm | The class name of the CrossoverAlgorithm implementation to use.
 genetic-algorithm.mutation.implementation | StandardMutationAlgorithm | The class name of the MutationAlgorithm implementation to use.
 genetic-algorithm.mutation.rate | 0.001 | The rate of mutation, calculated per individual.
 genetic-algorithm.mutation.max-per-individual | 5 | The maximum number of unique Genes to be mutated by MutationAlgorithms which can mutate more than one Gene per individual.

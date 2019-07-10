@@ -194,8 +194,7 @@ public class StandardGeneticAlgorithm {
     }
 
     public void select(int initialPopulationSize, List<Chromosome> moms, List<Chromosome> dads) {
-        // TODO: There are cases where this doesn't produce the right number of individuals -- consider getting rid of multi-offspring crossover algorithms
-        long pairsToCrossover = (initialPopulationSize - strategy.getElitism()) / strategy.getCrossoverAlgorithm().numberOfOffspring();
+        long pairsToCrossover = (initialPopulationSize - strategy.getElitism());
 
         List<FutureTask<SelectionResult>> futureTasks = new ArrayList<>();
         FutureTask<SelectionResult> futureTask;

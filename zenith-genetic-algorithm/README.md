@@ -56,12 +56,10 @@ Also take a look at the class: ```com.ciphertool.zenith.inference.optimizer.Gene
 # Crossover Implementations
 The following crossover implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.crossover.impl```.
 
-1. EqualOpportunityGeneCrossoverAlgorithm
-   - Produces one child.  For each gene, there's an equal chance it will come from the first parent or second parent.
-2. EqualOpportunitySwapCrossoverAlgorithm
-   - Produces two children.  Identical to the EqualOpportunityGeneCrossoverAlgorithm except that the second child will contain all the genes not chosen for the first child. 
-3. RandomSinglePointCrossoverAlgorithm
-   - Produces one child.  Picks a random gene index and then assigns all the genes prior to and including that index from the second parent, and it assigns all the genes after that index from the first parent.
+1. GeneWiseCrossoverAlgorithm
+   - For each gene, there's an equal chance it will come from the first parent or second parent.
+2. RandomSinglePointCrossoverAlgorithm
+   - Picks a random gene index and then assigns all the genes prior to and including that index from the second parent, and it assigns all the genes after that index from the first parent.
 
 # Mutation Implementations
 The following mutation implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.mutation.impl```.

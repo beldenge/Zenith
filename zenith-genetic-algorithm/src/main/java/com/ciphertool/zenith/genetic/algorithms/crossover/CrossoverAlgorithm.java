@@ -34,9 +34,4 @@ public interface CrossoverAlgorithm<T extends Chromosome> {
      * @return the List of children Chromosomes produced from the crossover
      */
     List<T> crossover(T parentA, T parentB);
-
-    /**
-     * @return the number of offspring this CrossoverAlgorithm will generate
-     */
-    int numberOfOffspring();
 }

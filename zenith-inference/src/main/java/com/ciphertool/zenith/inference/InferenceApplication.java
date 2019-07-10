@@ -59,8 +59,8 @@ public class InferenceApplication implements CommandLineRunner {
 
     @Configuration
     @ComponentScan({
-            "com.ciphertool.zenith.genetic.algorithms.crossover.impl",
-            "com.ciphertool.zenith.genetic.algorithms.mutation.impl",
+            "com.ciphertool.zenith.genetic.algorithms.crossover",
+            "com.ciphertool.zenith.genetic.algorithms.mutation",
             "com.ciphertool.zenith.genetic.algorithms",
             "com.ciphertool.zenith.genetic.algorithms.selection",
             "com.ciphertool.zenith.genetic.population"

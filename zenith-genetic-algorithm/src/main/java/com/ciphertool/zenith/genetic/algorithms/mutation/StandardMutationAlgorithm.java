@@ -17,9 +17,8 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.mutation.impl;
+package com.ciphertool.zenith.genetic.algorithms.mutation;
 
-import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.springframework.beans.factory.annotation.Autowired;
