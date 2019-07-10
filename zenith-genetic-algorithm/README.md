@@ -76,7 +76,5 @@ The following selection implementations are available out of the box.  They are 
    - Selects an individual based on the probability distribution of fitness values.  This should always be used unless there is a very good reason not to.
 2. TournamentSelector
    - Selects an individual based on a tournament style approach.  Starting with the most fit individual, each one is given a configurable probability of being chosen, otherwise the selector moves on to the next gene.
-3. AlphaSelector
-   - Always selects the most fit individual.  Not particularly useful.
-4. RandomSelector
+3. RandomSelector
    - Selects an individual at random, ignoring the fitness values.  Not particularly useful.
