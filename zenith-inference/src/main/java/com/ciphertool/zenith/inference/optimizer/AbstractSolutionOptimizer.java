@@ -70,19 +70,19 @@ public class AbstractSolutionOptimizer {
         if (cipherTransformers != null && !cipherTransformers.isEmpty()) {
             List<CipherTransformer> toUse = new ArrayList<>();
             List<String> existentCipherTransformers = cipherTransformers.stream()
-                    .map(transformer -> transformer.getClass().getSimpleName())
+                    .map(transformer -> transformer.getClass().getSimpleName().replace("CipherTransformer", ""))
                     .collect(Collectors.toList());
 
             for (String transformerName : transformersToUse) {
-                String transformerNameBeforeParen = transformerName.contains("(") ? transformerName.substring(0, transformerName.indexOf('(')) : transformerName;
+                String transformerNameBeforeParenthesis = transformerName.contains("(") ? transformerName.substring(0, transformerName.indexOf('(')) : transformerName;
 
-                if (!existentCipherTransformers.contains(transformerNameBeforeParen)) {
-                    log.error("The CipherTransformer with name {} does not exist.  Please use a name from the following: {}", transformerNameBeforeParen, existentCipherTransformers);
-                    throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParen + " does not exist.");
+                if (!existentCipherTransformers.contains(transformerNameBeforeParenthesis)) {
+                    log.error("The CipherTransformer with name {} does not exist.  Please use a name from the following: {}", transformerNameBeforeParenthesis, existentCipherTransformers);
+                    throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParenthesis + " does not exist.");
                 }
 
                 for (CipherTransformer cipherTransformer : cipherTransformers) {
-                    if (cipherTransformer.getClass().getSimpleName().equals(transformerNameBeforeParen)) {
+                    if (cipherTransformer.getClass().getSimpleName().replace("CipherTransformer", "").equals(transformerNameBeforeParenthesis)) {
                         if (cipherTransformer instanceof TranspositionCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
                             String transpositionKeyString = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
                             TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString);
