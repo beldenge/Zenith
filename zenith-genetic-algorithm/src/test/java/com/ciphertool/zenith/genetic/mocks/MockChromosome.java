@@ -188,6 +188,6 @@ public class MockChromosome implements Chromosome<Object> {
 
     @Override
     public int compareTo(Chromosome other) {
-        return getProbability().compareTo(other.getProbability());
+        return fitness.compareTo(other.getFitness());
     }
 }

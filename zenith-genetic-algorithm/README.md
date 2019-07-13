@@ -75,6 +75,6 @@ The following selection implementations are available out of the box.  They are 
 1. RouletteSelector
    - Selects an individual based on the probability distribution of fitness values.  This should always be used unless there is a very good reason not to.
 2. TournamentSelector
-   - Selects an individual based on a tournament style approach.  Starting with the most fit individual, each one is given a configurable probability of being chosen, otherwise the selector moves on to the next gene.
+   - Selects an individual based on a tournament style approach on a subset of randomly chosen individuals.  Starting with the most fit individual in the subset, each one is given a configurable probability of being chosen, otherwise the selector moves on to the next individual.
 3. RandomSelector
-   - Selects an individual at random, ignoring the fitness values.  Not particularly useful.
+   - Selects an individual at random, ignoring the fitness values.  Not particularly useful on its own, but it can be utilized by other selector methods.

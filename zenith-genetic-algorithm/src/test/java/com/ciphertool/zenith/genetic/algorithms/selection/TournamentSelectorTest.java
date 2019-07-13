@@ -39,6 +39,7 @@ import static org.mockito.Mockito.*;
 public class TournamentSelectorTest {
     private static TournamentSelector tournamentSelector;
     private static Logger logMock;
+    private static RandomSelector randomSelectorMock;
 
     @BeforeClass
     public static void setUp() {
@@ -48,15 +49,25 @@ public class TournamentSelectorTest {
         ReflectionUtils.makeAccessible(selectionAccuracyField);
         ReflectionUtils.setField(selectionAccuracyField, tournamentSelector, 0.9);
 
+        Field tournamentSizeField = ReflectionUtils.findField(TournamentSelector.class, "tournamentSize");
+        ReflectionUtils.makeAccessible(tournamentSizeField);
+        ReflectionUtils.setField(tournamentSizeField, tournamentSelector, 3);
+
         logMock = mock(Logger.class);
         Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
         ReflectionUtils.makeAccessible(logField);
         ReflectionUtils.setField(logField, tournamentSelector, logMock);
+
+        randomSelectorMock = mock(RandomSelector.class);
+        Field randomSelectorField = ReflectionUtils.findField(TournamentSelector.class, "randomSelector");
+        ReflectionUtils.makeAccessible(randomSelectorField);
+        ReflectionUtils.setField(randomSelectorField, tournamentSelector, randomSelectorMock);
     }
 
     @Before
     public void resetMocks() {
         reset(logMock);
+        reset(randomSelectorMock);
     }
 
     @Test
@@ -76,6 +87,7 @@ public class TournamentSelectorTest {
         chromosome3.setFitness(1.0d);
         individuals.add(chromosome3);
 
+        tournamentSelector.reIndex(individuals);
         int selectedIndex = tournamentSelector.getNextIndex(individuals);
 
         assertTrue(selectedIndex > -1);

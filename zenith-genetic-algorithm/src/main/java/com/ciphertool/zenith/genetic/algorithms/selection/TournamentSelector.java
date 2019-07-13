@@ -21,12 +21,12 @@ package com.ciphertool.zenith.genetic.algorithms.selection;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -35,6 +35,12 @@ public class TournamentSelector implements Selector {
 
     @Value("${genetic-algorithm.selection.tournament.accuracy}")
     private Double selectionAccuracy;
+
+    @Value("${genetic-algorithm.selection.tournament.size}")
+    private int tournamentSize;
+
+    @Autowired
+    private RandomSelector randomSelector;
 
     @PostConstruct
     public void init() {
@@ -47,6 +53,8 @@ public class TournamentSelector implements Selector {
     @Override
     public synchronized void reIndex(List<Chromosome> individuals) {
         Collections.sort(individuals);
+
+        randomSelector.reIndex(individuals);
     }
 
     @Override
@@ -57,13 +65,22 @@ public class TournamentSelector implements Selector {
             return -1;
         }
 
-        for (int i = individuals.size() - 1; i >= 0; i--) {
+        SortedMap<Integer, Chromosome> competitors = new TreeMap<>(Comparator.reverseOrder());
+
+        for (int i = 0; i < tournamentSize; i ++) {
+            int chosenIndex = randomSelector.getNextIndex(individuals);
+
+            // TODO: How to handle whether we've chosen the same individual more than once?
+            competitors.put(chosenIndex, individuals.get(chosenIndex));
+        }
+
+        for (Integer index : competitors.keySet()) {
             if (ThreadLocalRandom.current().nextDouble() <= selectionAccuracy) {
-                return i;
+                return index;
             }
         }
 
         // return the least fit individual since it won the tournament
-        return individuals.size() - 1;
+        return competitors.lastKey();
     }
 }

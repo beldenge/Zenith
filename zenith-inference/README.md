@@ -74,7 +74,8 @@ genetic-algorithm.mutation.implementation | StandardMutationAlgorithm | The clas
 genetic-algorithm.mutation.rate | 0.001 | The rate of mutation, calculated per individual.
 genetic-algorithm.mutation.max-per-individual | 5 | The maximum number of unique Genes to be mutated by MutationAlgorithms which can mutate more than one Gene per individual.
 genetic-algorithm.selection.implementation | RouletteSelector | The class name of the Selector implementation to use.
-genetic-algorithm.selection.tournament.accuracy | 0.9 | Used by the TournamentSelector only.
+genetic-algorithm.selection.tournament.accuracy | 0.9 | Used by the TournamentSelector only.  This is the probability that the most fit individual will be chosen.
+genetic-algorithm.selection.tournament.size | 5 | Used by the TournamentSelector only.  Determines the size of the randomly chosen subset.
 genetic-algorithm.fitness.implementation | ${decipherment.evaluator.plaintext} | It should be an implementation of PlaintextEvaluator, and it gets injected into PlaintextEvaluatorWrappingFitnessEvaluator. 
 
 

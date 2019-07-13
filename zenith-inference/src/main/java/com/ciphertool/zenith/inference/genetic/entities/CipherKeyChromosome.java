@@ -308,6 +308,6 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     @Override
     public int compareTo(Chromosome other) {
-        return getProbability().compareTo(other.getProbability());
+        return this.fitness.compareTo(other.getFitness());
     }
 }

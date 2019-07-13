@@ -33,7 +33,7 @@ public class CipherSolution {
 
     protected Cipher cipher;
 
-    private Double probability = null;
+    private Double probability = 0d;
     private Double logProbability = 0d;
     private Double knownSolutionProximity = null;
 
@@ -306,7 +306,7 @@ public class CipherSolution {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Solution [probability=" + probability + ", logProbability=" + logProbability
+        sb.append("Solution [probability=" + probability + ", logProbability=" + logProbability + ", score=" + getScore()
                 + (knownSolutionProximity != null ? ", proximity="
                 + String.format("%1$,.2f", knownSolutionProximity.doubleValue() * 100.0) + "%" : "") + "]\n");
 
