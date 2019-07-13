@@ -35,9 +35,8 @@ public class CipherSolution {
 
     private Double probability = 0d;
     private Double logProbability = 0d;
-    private Double knownSolutionProximity = null;
 
-    private Map<String, Plaintext> mappings = new HashMap<>();
+    private Map<String, String> mappings = new HashMap<>();
 
     private List<Double> logProbabilities = new ArrayList<>();
 
@@ -122,26 +121,11 @@ public class CipherSolution {
         return (double) numerator / (double) denominator;
     }
 
-    /**
-     * @return the knownSolutionProximity
-     */
-    public Double getKnownSolutionProximity() {
-        return knownSolutionProximity;
-    }
-
-    /**
-     * @param knownSolutionProximity
-     *            the knownSolutionProximity to set
-     */
-    public void setKnownSolutionProximity(Double knownSolutionProximity) {
-        this.knownSolutionProximity = knownSolutionProximity;
-    }
-
-    public Map<String, Plaintext> getMappings() {
+    public Map<String, String> getMappings() {
         return Collections.unmodifiableMap(mappings);
     }
 
-    public void putMapping(String key, Plaintext plaintext) {
+    public void putMapping(String key, String plaintext) {
         if (null == plaintext) {
             log.warn("Attempted to insert a null mapping to CipherSolution.  Returning. " + this);
 
@@ -159,7 +143,7 @@ public class CipherSolution {
         this.mappings.put(key, plaintext);
     }
 
-    public Plaintext removeMapping(Ciphertext key) {
+    public String removeMapping(Ciphertext key) {
         if (null == this.mappings || null == this.mappings.get(key)) {
             log.warn("Attempted to remove a mapping from CipherSolution with key " + key
                     + ", but this key does not exist.  Returning null.");
@@ -194,7 +178,7 @@ public class CipherSolution {
     /*
      * This does the same thing as putMapping(), and exists solely for semantic consistency.
      */
-    public void replaceMapping(String key, Plaintext newPlaintext) {
+    public void replaceMapping(String key, String newPlaintext) {
         if (null == newPlaintext) {
             log.warn("Attempted to replace a mapping from CipherSolution, but the supplied mapping was null.  Cannot continue. "
                     + this);
@@ -215,8 +199,8 @@ public class CipherSolution {
     public CipherSolution clone() {
         CipherSolution copySolution = new CipherSolution(this.cipher, this.mappings.size());
 
-        for (Map.Entry<String, Plaintext> entry : this.mappings.entrySet()) {
-            copySolution.putMapping(entry.getKey(), entry.getValue().clone());
+        for (Map.Entry<String, String> entry : this.mappings.entrySet()) {
+            copySolution.putMapping(entry.getKey(), entry.getValue());
         }
 
         copySolution.logProbability = 0d;
@@ -234,6 +218,34 @@ public class CipherSolution {
         // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
         // This has not been determined empirically but has worked well through experimentation
         return getLogProbability() * Math.pow(computeIndexOfCoincidence(), FIFTH_ROOT);
+    }
+
+    public Double evaluateKnownSolution() {
+        if (!cipher.hasKnownSolution()) {
+            throw new IllegalStateException("Cipher does not have a known solution.");
+        }
+
+        double total = 0.0;
+
+        if (cipher.getKnownSolutionKey().size() != mappings.size()) {
+            log.error("Current solution size of " + mappings.size()
+                    + " does not match the known solution size of " + cipher.getKnownSolutionKey().size()
+                    + ".  This will cause inaccurate fitness calculations.  Solution: " + this);
+        }
+
+        for (String key : cipher.getKnownSolutionKey().keySet()) {
+            if (cipher.getKnownSolutionKey().get(key).equals(mappings.get(key))) {
+                total++;
+            }
+        }
+
+        double proximityToKnownSolution = (total / (double) mappings.size());
+
+        if (log.isDebugEnabled()) {
+            log.debug("Solution has a confidence level of: " + proximityToKnownSolution);
+        }
+
+        return proximityToKnownSolution;
     }
 
     /**
@@ -294,7 +306,7 @@ public class CipherSolution {
         }
 
         for (Ciphertext ciphertext : this.getCipher().getCiphertextCharacters()) {
-            sb.append(this.mappings.get(ciphertext.getValue()).getValue());
+            sb.append(this.mappings.get(ciphertext.getValue()));
         }
 
         return sb.toString();
@@ -307,15 +319,15 @@ public class CipherSolution {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Solution [probability=" + probability + ", logProbability=" + logProbability + ", score=" + getScore()
-                + (knownSolutionProximity != null ? ", proximity="
-                + String.format("%1$,.2f", knownSolutionProximity.doubleValue() * 100.0) + "%" : "") + "]\n");
+                + (cipher.hasKnownSolution() ? ", proximity="
+                + String.format("%1$,.2f", evaluateKnownSolution() * 100.0) + "%" : "") + "]\n");
 
         if (this.cipher != null) {
             String nextPlaintext;
             int actualSize = this.cipher.getCiphertextCharacters().size();
             for (int i = 0; i < actualSize; i++) {
 
-                nextPlaintext = this.mappings.get(this.cipher.getCiphertextCharacters().get(i).getValue()).getValue();
+                nextPlaintext = this.mappings.get(this.cipher.getCiphertextCharacters().get(i).getValue());
 
                 sb.append(" ");
                 sb.append(nextPlaintext);

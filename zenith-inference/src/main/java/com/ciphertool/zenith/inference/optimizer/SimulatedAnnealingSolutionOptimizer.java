@@ -21,7 +21,6 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Plaintext;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.ModelConstants;
@@ -108,7 +107,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                     // Pick a plaintext at random according to the language model
                     String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex()).getValue().toString();
 
-                    solutionProposal.putMapping(ciphertext, new Plaintext(nextPlaintext));
+                    solutionProposal.putMapping(ciphertext, nextPlaintext);
                 });
 
         return solutionProposal;
@@ -116,10 +115,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
     private void performEpoch(CipherSolution initialSolution) {
         plaintextEvaluator.evaluate(initialSolution, null);
-
-        if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-            initialSolution.setKnownSolutionProximity(knownPlaintextEvaluator.evaluate(initialSolution));
-        }
 
         log.debug(initialSolution.toString());
 
@@ -133,7 +128,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         long start = System.currentTimeMillis();
         long startLetterSampling;
         long letterSamplingElapsed;
-        Double knownProximity;
 
         int i;
         for (i = 0; i < samplerIterations; i++) {
@@ -148,11 +142,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             startLetterSampling = System.currentTimeMillis();
             next = runLetterSampler(temperature, next);
             letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
-
-            if (useKnownEvaluator && knownPlaintextEvaluator != null) {
-                knownProximity = knownPlaintextEvaluator.evaluate(next);
-                next.setKnownSolutionProximity(knownProximity);
-            }
 
             if (maxProbability.getLogProbability() < next.getLogProbability()) {
                 maxProbability = next;
@@ -170,18 +159,18 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         log.info("Best probability found at iteration {}: {}", maxProbabilityIteration, maxProbability);
         log.info("Mappings for best probability:");
 
-        for (Map.Entry<String, Plaintext> entry : maxProbability.getMappings().entrySet()) {
-            log.info("{}: {}", entry.getKey(), entry.getValue().getValue());
+        for (Map.Entry<String, String> entry : maxProbability.getMappings().entrySet()) {
+            log.info("{}: {}", entry.getKey(), entry.getValue());
         }
     }
 
     private CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {
         CipherSolution proposal;
 
-        List<Map.Entry<String, Plaintext>> mappingList = new ArrayList<>();
+        List<Map.Entry<String, String>> mappingList = new ArrayList<>();
         mappingList.addAll(solution.getMappings().entrySet());
 
-        Map.Entry<String, Plaintext> nextEntry;
+        Map.Entry<String, String> nextEntry;
 
         // For each cipher symbol type, run the letter sampling
         for (int i = 0; i < solution.getMappings().size(); i++) {
@@ -191,7 +180,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
             String letter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size())).toString();
 
-            proposal.replaceMapping(nextEntry.getKey(), new Plaintext(letter));
+            proposal.replaceMapping(nextEntry.getKey(), letter);
 
             plaintextEvaluator.evaluate(proposal, nextEntry.getKey());
 

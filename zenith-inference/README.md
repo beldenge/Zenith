@@ -24,8 +24,8 @@ There are three major levels of customization:
      - You can implement an evaluator in any technology you want, as long as it conforms to the predefined REST interface.  Just point to that service using the property ```evaluation.rest-service.url```. 
 
 # Configuration
-The ciphers need to be configured as JSON in a file that is readable from the property ```cipher.repository-filename```.  Out of the box, the zodiac408 and zodiac340 ciphers are packaged within the application.
-Take a look at [ciphers.json](src/main/resources/ciphers.json) for an example.
+Ciphers need to be configured as JSON, each in a separate file that is readable from the property working directory in a subdirectory called "ciphers".  Out of the box, the zodiac408 and zodiac340 ciphers are packaged within the application.
+Take a look at [ciphers.json](src/main/resources/ciphers/zodiac408.json) for an example.
 
 There are a number of configuration settings that can be set for the application.  They need to be put in an application.properties file in the same directory as where you are running the application from.
 
@@ -33,14 +33,11 @@ Property Key | Default Value | Description
 --- | --- | ---
 task-executor.pool-size | Number of available cores on host | The number of threads to use for parallel tasks
 task-executor.queue-capacity | 100000 | The number of tasks which can be queued at any given time when performing multi-threaded operations
-cipher.repository-filename | ciphers.json | The file on the classpath which contains any number of ciphers specified as JSON objects
 cipher.name | zodiac408 | The name of a particular cipher within the ciphers.json file (zodiac408 and zodiac340 are provided)
 language-model.filename | zenith-model.csv | The language model file to use (CSV only) which should exist in the same directory where the application is run from
 language-model.archive-filename | zenith-model.zip | The language model zip file on the classpath which will be unzipped if language-model.filename does not exist
 markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
 decipherment.evaluator.plaintext | MarkovModelPlaintextEvaluator | The PlaintextEvaluator implementation class name to use
-decipherment.evaluator.known-plaintext | Zodiac408KnownPlaintextEvaluator | The KnownPlaintextEvaluator implementation class name to use, ignored if decipherment.use-known-evaluator is set to false, and required if decipherment.use-known-evaluator is set to true
-decipherment.use-known-evaluator | false | If the cipher has a known solution, this controls whether to also evaluate it against the known solution (primarily for debugging purposes)
 decipherment.epochs | 10 | The number of times to run the optimizer to completion
 decipherment.transposition.column-key-string | N/A | A String representation of a column key used as a transposition key during encipherment (case-insensitive, ignored if decipherment.transposition.column-key is specified)
 decipherment.transposition.column-key | N/A | A comma-separated integer array representation of a column key used as a transposition key during encipherment

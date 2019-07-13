@@ -26,8 +26,6 @@ public class FitnessEvaluatorTestBase {
     protected static Cipher zodiac408 = new Cipher("zodiac408", 24, 17);
 
     static {
-        zodiac408.setHasKnownSolution(true);
-
         zodiac408.addCiphertextCharacter(new Ciphertext(0, "tri"));
         zodiac408.addCiphertextCharacter(new Ciphertext(1, "lrbox"));
         zodiac408.addCiphertextCharacter(new Ciphertext(2, "p"));

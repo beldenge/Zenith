@@ -29,7 +29,6 @@ import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
-import com.ciphertool.zenith.inference.genetic.fitness.KnownPlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,7 +181,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         }
 
         fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator);
-        knownSolutionFitnessEvaluator = new KnownPlaintextEvaluatorWrappingFitnessEvaluator(knownPlaintextEvaluator);
     }
 
     @Override
@@ -198,8 +196,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .mutationRate(mutationRate)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
                 .elitism(elitism)
-                .compareToKnownSolution(useKnownEvaluator)
-                .knownSolutionFitnessEvaluator(knownSolutionFitnessEvaluator)
                 .build();
 
         geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);

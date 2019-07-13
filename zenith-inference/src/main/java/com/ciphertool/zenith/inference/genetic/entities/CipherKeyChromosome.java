@@ -23,6 +23,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.genetic.fitness.ChromosomeToCipherSolutionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -267,19 +268,6 @@ public class CipherKeyChromosome implements Chromosome<String> {
         return sb.toString();
     }
 
-    @Override
-    public double similarityTo(Chromosome other) {
-        int total = 0;
-
-        for (Map.Entry<String, Gene> entry : this.genes.entrySet()) {
-            if (((CipherKeyGene) entry.getValue()).getValue().equals(((CipherKeyGene) ((CipherKeyChromosome) other).genes.get(entry.getKey())).getValue())) {
-                total++;
-            }
-        }
-
-        return ((double) total) / ((double) this.genes.size());
-    }
-
     /**
      * @return the population
      */
@@ -309,5 +297,15 @@ public class CipherKeyChromosome implements Chromosome<String> {
     @Override
     public int compareTo(Chromosome other) {
         return this.fitness.compareTo(other.getFitness());
+    }
+
+    @Override
+    public boolean hasKnownSolution() {
+        return cipher.hasKnownSolution();
+    }
+
+    @Override
+    public Double knownSolutionProximity() {
+        return ChromosomeToCipherSolutionMapper.map(this).evaluateKnownSolution();
     }
 }

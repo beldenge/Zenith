@@ -21,7 +21,6 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.known.KnownPlaintextEvaluator;
 import com.ciphertool.zenith.inference.transformer.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
 import org.slf4j.Logger;
@@ -37,17 +36,13 @@ import java.util.stream.Collectors;
 public class AbstractSolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    private final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
+
     @Value("${decipherment.transformers.list}")
     private List<String> transformersToUse;
 
     @Value("${decipherment.evaluator.plaintext}")
     private String plaintextEvaluatorName;
-
-    @Value("${decipherment.evaluator.known-plaintext:#{null}}")
-    private String knownPlaintextEvaluatorName;
-
-    @Value("${decipherment.use-known-evaluator:false}")
-    protected boolean useKnownEvaluator;
 
     @Autowired
     protected Cipher cipher;
@@ -58,19 +53,14 @@ public class AbstractSolutionOptimizer {
     @Autowired
     private List<PlaintextEvaluator> plaintextEvaluators;
 
-    @Autowired
-    private List<KnownPlaintextEvaluator> knownPlaintextEvaluators;
-
     protected PlaintextEvaluator plaintextEvaluator;
-
-    protected KnownPlaintextEvaluator knownPlaintextEvaluator;
 
     @PostConstruct
     public void init() {
         if (cipherTransformers != null && !cipherTransformers.isEmpty()) {
             List<CipherTransformer> toUse = new ArrayList<>();
             List<String> existentCipherTransformers = cipherTransformers.stream()
-                    .map(transformer -> transformer.getClass().getSimpleName().replace("CipherTransformer", ""))
+                    .map(transformer -> transformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, ""))
                     .collect(Collectors.toList());
 
             for (String transformerName : transformersToUse) {
@@ -82,7 +72,7 @@ public class AbstractSolutionOptimizer {
                 }
 
                 for (CipherTransformer cipherTransformer : cipherTransformers) {
-                    if (cipherTransformer.getClass().getSimpleName().replace("CipherTransformer", "").equals(transformerNameBeforeParenthesis)) {
+                    if (cipherTransformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, "").equals(transformerNameBeforeParenthesis)) {
                         if (cipherTransformer instanceof TranspositionCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
                             String transpositionKeyString = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
                             TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString);
@@ -102,29 +92,6 @@ public class AbstractSolutionOptimizer {
         }
 
         cipher = transformCipher(cipher);
-
-        if (useKnownEvaluator && knownPlaintextEvaluators != null && !knownPlaintextEvaluators.isEmpty()) {
-            if (knownPlaintextEvaluatorName == null || knownPlaintextEvaluatorName.isEmpty()) {
-                log.error("The property decipherment.use-known-evaluator was set to true, but no KnownPlaintextEvaluator implementation was specified.  Please set decipherment.evaluator.known-plaintext to a valid KnownPlaintextEvaluator or set the former property to false.");
-                throw new IllegalArgumentException("The property decipherment.evaluator.known-plaintext cannot be null if decipherment.use-known-evaluator is set to true.");
-            }
-
-            List<String> existentKnownPlaintextEvaluators = knownPlaintextEvaluators.stream()
-                    .map(evaluator -> evaluator.getClass().getSimpleName())
-                    .collect(Collectors.toList());
-
-            for (KnownPlaintextEvaluator evaluator : knownPlaintextEvaluators) {
-                if (evaluator.getClass().getSimpleName().equals(knownPlaintextEvaluatorName)) {
-                    knownPlaintextEvaluator = evaluator;
-                    break;
-                }
-            }
-
-            if (knownPlaintextEvaluator == null) {
-                log.error("The KnownPlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", knownPlaintextEvaluatorName, existentKnownPlaintextEvaluators);
-                throw new IllegalArgumentException("The KnownPlaintextEvaluator with name " + knownPlaintextEvaluatorName + " does not exist.");
-            }
-        }
 
         List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
                 .map(evaluator -> evaluator.getClass().getSimpleName())

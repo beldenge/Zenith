@@ -19,10 +19,7 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class Cipher {
     private String name;
@@ -31,9 +28,9 @@ public class Cipher {
 
     private int rows;
 
-    private boolean hasKnownSolution;
-
     private List<Ciphertext> ciphertextCharacters = new ArrayList<>();
+
+    private Map<String, String> knownSolutionKey = new HashMap<>();
 
     public Cipher() {
     }
@@ -86,6 +83,14 @@ public class Cipher {
         ciphertext.setCiphertextId(index);
     }
 
+    public Map<String, String> getKnownSolutionKey() {
+        return Collections.unmodifiableMap(knownSolutionKey);
+    }
+
+    public void putKnownSolutionMapping(String key, String value) {
+        knownSolutionKey.put(key, value);
+    }
+
     public int length() {
         return rows * columns;
     }
@@ -94,23 +99,18 @@ public class Cipher {
      * @return the hasKnownSolution
      */
     public boolean hasKnownSolution() {
-        return hasKnownSolution;
-    }
-
-    /**
-     * @param hasKnownSolution
-     *            the hasKnownSolution to set
-     */
-    public void setHasKnownSolution(boolean hasKnownSolution) {
-        this.hasKnownSolution = hasKnownSolution;
+        return !knownSolutionKey.isEmpty();
     }
 
     public Cipher clone() {
         Cipher cloned = new Cipher(this.name, this.rows, this.columns);
-        cloned.setHasKnownSolution(this.hasKnownSolution);
 
         for (Ciphertext ciphertext : this.ciphertextCharacters) {
             cloned.addCiphertextCharacter(ciphertext.clone());
+        }
+
+        for (Map.Entry<String, String> entry : this.knownSolutionKey.entrySet()) {
+            cloned.putKnownSolutionMapping(entry.getKey(), entry.getValue());
         }
 
         return cloned;
@@ -122,7 +122,6 @@ public class Cipher {
         int result = 1;
         result = prime * result + ((ciphertextCharacters == null) ? 0 : ciphertextCharacters.hashCode());
         result = prime * result + columns;
-        result = prime * result + (hasKnownSolution ? 1231 : 1237);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + rows;
         return result;
@@ -150,9 +149,6 @@ public class Cipher {
         if (columns != other.columns) {
             return false;
         }
-        if (hasKnownSolution != other.hasKnownSolution) {
-            return false;
-        }
         if (name == null) {
             if (other.name != null) {
                 return false;
@@ -173,7 +169,7 @@ public class Cipher {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Cipher [name=" + name + ", columns=" + columns + ", rows=" + rows + ", hasKnownSolution="
-                + hasKnownSolution + ", ciphertextCharacters=" + ciphertextCharacters + "]\n");
+                + hasKnownSolution() + ", ciphertextCharacters=" + ciphertextCharacters + "]\n");
 
         int maxLength = this.ciphertextCharacters.stream()
                 .map(Ciphertext::getValue)

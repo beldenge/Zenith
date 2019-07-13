@@ -66,9 +66,9 @@ public class CipherTest {
     }
 
     @Test
-    public void testSetHasKnownSolution() {
+    public void testHasKnownSolution() {
         Cipher cipher = new Cipher();
-        cipher.setHasKnownSolution(true);
+        cipher.putKnownSolutionMapping("a", "b");
 
         assertTrue(cipher.hasKnownSolution());
     }
@@ -144,54 +144,40 @@ public class CipherTest {
         String baseName = "baseName";
         int baseRows = 10;
         int baseColumns = 5;
-        boolean baseHasKnownSolution = true;
         Ciphertext ciphertext1 = new Ciphertext(1, "a");
         Ciphertext ciphertext2 = new Ciphertext(2, "b");
         Ciphertext ciphertext3 = new Ciphertext(3, "c");
 
         Cipher base = new Cipher(baseName, baseRows, baseColumns);
-        base.setHasKnownSolution(baseHasKnownSolution);
         base.addCiphertextCharacter(ciphertext1);
         base.addCiphertextCharacter(ciphertext2);
         base.addCiphertextCharacter(ciphertext3);
 
         Cipher cipherEqualToBase = new Cipher(baseName, baseRows, baseColumns);
-        cipherEqualToBase.setHasKnownSolution(baseHasKnownSolution);
         cipherEqualToBase.addCiphertextCharacter(ciphertext1);
         cipherEqualToBase.addCiphertextCharacter(ciphertext2);
         cipherEqualToBase.addCiphertextCharacter(ciphertext3);
         assertEquals(base, cipherEqualToBase);
 
         Cipher cipherWithDifferentName = new Cipher("differentName", baseRows, baseColumns);
-        cipherWithDifferentName.setHasKnownSolution(baseHasKnownSolution);
         cipherWithDifferentName.addCiphertextCharacter(ciphertext1);
         cipherWithDifferentName.addCiphertextCharacter(ciphertext2);
         cipherWithDifferentName.addCiphertextCharacter(ciphertext3);
         assertFalse(base.equals(cipherWithDifferentName));
 
         Cipher cipherWithDifferentRows = new Cipher(baseName, 9, baseColumns);
-        cipherWithDifferentRows.setHasKnownSolution(baseHasKnownSolution);
         cipherWithDifferentRows.addCiphertextCharacter(ciphertext1);
         cipherWithDifferentRows.addCiphertextCharacter(ciphertext2);
         cipherWithDifferentRows.addCiphertextCharacter(ciphertext3);
         assertFalse(base.equals(cipherWithDifferentRows));
 
         Cipher cipherWithDifferentColumns = new Cipher(baseName, baseRows, 4);
-        cipherWithDifferentColumns.setHasKnownSolution(baseHasKnownSolution);
         cipherWithDifferentColumns.addCiphertextCharacter(ciphertext1);
         cipherWithDifferentColumns.addCiphertextCharacter(ciphertext2);
         cipherWithDifferentColumns.addCiphertextCharacter(ciphertext3);
         assertFalse(base.equals(cipherWithDifferentColumns));
 
-        Cipher cipherWithDifferentHasKnownSolution = new Cipher(baseName, baseRows, baseColumns);
-        cipherWithDifferentHasKnownSolution.setHasKnownSolution(false);
-        cipherWithDifferentHasKnownSolution.addCiphertextCharacter(ciphertext1);
-        cipherWithDifferentHasKnownSolution.addCiphertextCharacter(ciphertext2);
-        cipherWithDifferentHasKnownSolution.addCiphertextCharacter(ciphertext3);
-        assertFalse(base.equals(cipherWithDifferentHasKnownSolution));
-
         Cipher cipherWithDifferentCiphertextCharacters = new Cipher(baseName, baseRows, baseColumns);
-        cipherWithDifferentCiphertextCharacters.setHasKnownSolution(baseHasKnownSolution);
         cipherWithDifferentCiphertextCharacters.addCiphertextCharacter(ciphertext3);
         cipherWithDifferentCiphertextCharacters.addCiphertextCharacter(ciphertext2);
         cipherWithDifferentCiphertextCharacters.addCiphertextCharacter(ciphertext1);

@@ -57,20 +57,6 @@ public interface Population {
     void setFitnessEvaluator(FitnessEvaluator fitnessEvaluator);
 
     /**
-     * This is NOT required. We will not always know the solution. In fact, that should be the rare case.
-     *
-     * @param knownSolutionFitnessEvaluator the knownSolutionFitnessEvaluator to set
-     */
-    void setKnownSolutionFitnessEvaluator(FitnessEvaluator knownSolutionFitnessEvaluator);
-
-    /**
-     * This is NOT required.
-     *
-     * @param compareToKnownSolution the compareToKnownSolution to set
-     */
-    void setCompareToKnownSolution(Boolean compareToKnownSolution);
-
-    /**
      * @param targetSize the targetSize to set
      */
     void setTargetSize(int targetSize);

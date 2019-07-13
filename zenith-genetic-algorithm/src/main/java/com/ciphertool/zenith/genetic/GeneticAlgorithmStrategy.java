@@ -39,6 +39,4 @@ public class GeneticAlgorithmStrategy {
     private MutationAlgorithm mutationAlgorithm;
     private Breeder breeder;
     private Selector selector;
-    private FitnessEvaluator knownSolutionFitnessEvaluator;
-    private Boolean compareToKnownSolution;
 }

@@ -155,11 +155,6 @@ public class MockChromosome implements Chromosome<Object> {
                 + "]";
     }
 
-    @Override
-    public double similarityTo(Chromosome other) {
-        return 0;
-    }
-
     /**
      * @return the population
      */
@@ -189,5 +184,15 @@ public class MockChromosome implements Chromosome<Object> {
     @Override
     public int compareTo(Chromosome other) {
         return fitness.compareTo(other.getFitness());
+    }
+
+    @Override
+    public boolean hasKnownSolution() {
+        return true;
+    }
+
+    @Override
+    public Double knownSolutionProximity() {
+        return 1.0d;
     }
 }

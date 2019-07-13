@@ -53,7 +53,6 @@ public class StandardGeneticAlgorithmTest {
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
         MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        FitnessEvaluator knownSolutionFitnessEvaluatorMock = mock(FitnessEvaluator.class);
         Selector selectorMock = mock(Selector.class);
         Breeder breederMock = mock(Breeder.class);
         boolean compareToKnownSolution = true;
@@ -62,8 +61,6 @@ public class StandardGeneticAlgorithmTest {
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .fitnessEvaluator(fitnessEvaluatorMock)
-                .knownSolutionFitnessEvaluator(knownSolutionFitnessEvaluatorMock)
-                .compareToKnownSolution(compareToKnownSolution)
                 .crossoverAlgorithm(crossoverAlgorithmMock)
                 .mutationAlgorithm(mutationAlgorithmMock)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
@@ -86,8 +83,6 @@ public class StandardGeneticAlgorithmTest {
 
         assertSame(strategyToSet, strategyFromObject);
         verify(populationMock, times(1)).setFitnessEvaluator(same(fitnessEvaluatorMock));
-        verify(populationMock, times(1)).setKnownSolutionFitnessEvaluator(same(knownSolutionFitnessEvaluatorMock));
-        verify(populationMock, times(1)).setCompareToKnownSolution(eq(compareToKnownSolution));
         verify(populationMock, times(1)).setTargetSize(eq(populationSizeToSet));
         verify(populationMock, times(1)).setSelector(eq(selectorMock));
         verify(populationMock, times(1)).setBreeder(eq(breederMock));

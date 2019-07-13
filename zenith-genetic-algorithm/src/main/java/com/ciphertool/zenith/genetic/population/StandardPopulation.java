@@ -45,9 +45,6 @@ public class StandardPopulation implements Population {
     private FitnessEvaluator fitnessEvaluator;
     private Selector selector;
     private Double totalFitness = 0d;
-    private FitnessEvaluator knownSolutionFitnessEvaluator;
-    private static final boolean COMPARE_TO_KNOWN_SOLUTION_DEFAULT = false;
-    private Boolean compareToKnownSolution = COMPARE_TO_KNOWN_SOLUTION_DEFAULT;
     private int targetSize;
 
     @Autowired
@@ -184,13 +181,8 @@ public class StandardPopulation implements Population {
             generationStatistics.setAverageFitness(averageFitness);
             generationStatistics.setBestFitness(bestFitIndividual.getFitness());
 
-            if (this.compareToKnownSolution) {
-                /*
-                 * We have to clone the best fit individual since the knownSolutionFitnessEvaluator sets properties on
-                 * the Chromosome, and we want it to do that in all other cases.
-                 */
-                Chromosome bestFitClone = bestFitIndividual.clone();
-                generationStatistics.setKnownSolutionProximity(this.knownSolutionFitnessEvaluator.evaluate(bestFitClone) * 100.0d);
+            if (bestFitIndividual.hasKnownSolution()) {
+                generationStatistics.setKnownSolutionProximity(bestFitIndividual.knownSolutionProximity() * 100.0d);
             }
         }
 
@@ -300,16 +292,6 @@ public class StandardPopulation implements Population {
     @Override
     public void setSelector(Selector selector) {
         this.selector = selector;
-    }
-
-    @Override
-    public void setKnownSolutionFitnessEvaluator(FitnessEvaluator knownSolutionFitnessEvaluator) {
-        this.knownSolutionFitnessEvaluator = knownSolutionFitnessEvaluator;
-    }
-
-    @Override
-    public void setCompareToKnownSolution(Boolean compareToKnownSolution) {
-        this.compareToKnownSolution = compareToKnownSolution;
     }
 
     @Override

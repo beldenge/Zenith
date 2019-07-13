@@ -390,8 +390,6 @@ public class StandardGeneticAlgorithm {
 
     public void setStrategy(GeneticAlgorithmStrategy geneticAlgorithmStrategy) {
         this.population.setFitnessEvaluator(geneticAlgorithmStrategy.getFitnessEvaluator());
-        this.population.setKnownSolutionFitnessEvaluator(geneticAlgorithmStrategy.getKnownSolutionFitnessEvaluator());
-        this.population.setCompareToKnownSolution(geneticAlgorithmStrategy.getCompareToKnownSolution());
         this.population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
         this.population.setSelector(geneticAlgorithmStrategy.getSelector());
         this.population.setBreeder(geneticAlgorithmStrategy.getBreeder());

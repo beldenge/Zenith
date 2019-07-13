@@ -96,46 +96,6 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testSetKnownSolutionFitnessEvaluator() {
-        StandardPopulation population = new StandardPopulation();
-
-        FitnessEvaluator knownSolutionFitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(knownSolutionFitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
-        population.setKnownSolutionFitnessEvaluator(knownSolutionFitnessEvaluatorMock);
-
-        Field knownSolutionFitnessEvaluatorField = ReflectionUtils.findField(StandardPopulation.class, "knownSolutionFitnessEvaluator");
-        ReflectionUtils.makeAccessible(knownSolutionFitnessEvaluatorField);
-        FitnessEvaluator knownSolutionFitnessEvaluatorFromObject = (FitnessEvaluator) ReflectionUtils.getField(knownSolutionFitnessEvaluatorField, population);
-
-        assertSame(knownSolutionFitnessEvaluatorMock, knownSolutionFitnessEvaluatorFromObject);
-    }
-
-    @Test
-    public void testSetCompareToKnownSolution() {
-        StandardPopulation population = new StandardPopulation();
-
-        Boolean compareToKnownSolution = true;
-        population.setCompareToKnownSolution(compareToKnownSolution);
-
-        Field compareToKnownSolutionField = ReflectionUtils.findField(StandardPopulation.class, "compareToKnownSolution");
-        ReflectionUtils.makeAccessible(compareToKnownSolutionField);
-        Boolean compareToKnownSolutionFromObject = (Boolean) ReflectionUtils.getField(compareToKnownSolutionField, population);
-
-        assertSame(compareToKnownSolution, compareToKnownSolutionFromObject);
-    }
-
-    @Test
-    public void testSetCompareToKnownSolutionDefault() {
-        StandardPopulation population = new StandardPopulation();
-
-        Field compareToKnownSolutionField = ReflectionUtils.findField(StandardPopulation.class, "compareToKnownSolution");
-        ReflectionUtils.makeAccessible(compareToKnownSolutionField);
-        Boolean compareToKnownSolutionFromObject = (Boolean) ReflectionUtils.getField(compareToKnownSolutionField, population);
-
-        assertEquals(false, compareToKnownSolutionFromObject);
-    }
-
-    @Test
     public void testGeneratorTask() {
         StandardPopulation population = new StandardPopulation();
         StandardPopulation.GeneratorTask generatorTask = population.new GeneratorTask();
@@ -316,15 +276,9 @@ public class StandardPopulationTest {
         ReflectionUtils.makeAccessible(taskExecutorField);
         ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
 
-        population.setCompareToKnownSolution(true);
-
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
         when(fitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
         population.setFitnessEvaluator(fitnessEvaluatorMock);
-
-        FitnessEvaluator knownSolutionFitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(knownSolutionFitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
-        population.setKnownSolutionFitnessEvaluator(knownSolutionFitnessEvaluatorMock);
 
         MockChromosome chromosomeEvaluationNeeded1 = new MockChromosome();
         chromosomeEvaluationNeeded1.setFitness(5.0d);

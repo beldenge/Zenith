@@ -52,12 +52,6 @@ public interface Chromosome<T> extends Cloneable, Comparable<Chromosome>, Probab
     void setEvaluationNeeded(boolean evaluationNeeded);
 
     /**
-     * @param other the other Chromosome
-     * @return the percentage similarity between this Chromosome and other
-     */
-    double similarityTo(Chromosome other);
-
-    /**
      * @return this Chromosome's Population
      */
     Population getPopulation();
@@ -86,4 +80,8 @@ public interface Chromosome<T> extends Cloneable, Comparable<Chromosome>, Probab
      * Replaces a Gene at the specified key.
      */
     void replaceGene(T key, Gene newGene);
+
+    boolean hasKnownSolution();
+
+    Double knownSolutionProximity();
 }

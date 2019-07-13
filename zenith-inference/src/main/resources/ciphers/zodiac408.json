@@ -1,0 +1,1695 @@
+{
+  "name" : "zodiac408",
+  "rows" : 24,
+  "columns" : 17,
+  "ciphertextCharacters" : [
+    {
+      "ciphertextId" : 0,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 1,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 2,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 3,
+      "value" : "forslash"
+    },
+    {
+      "ciphertextId" : 4,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 5,
+      "value" : "forslash"
+    },
+    {
+      "ciphertextId" : 6,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 7,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 8,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 9,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 10,
+      "value" : "o"
+    },
+    {
+      "ciphertextId" : 11,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 12,
+      "value" : "pi"
+    },
+    {
+      "ciphertextId" : 13,
+      "value" : "backp"
+    },
+    {
+      "ciphertextId" : 14,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 15,
+      "value" : "pi"
+    },
+    {
+      "ciphertextId" : 16,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 17,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 18,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 19,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 20,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 21,
+      "value" : "g"
+    },
+    {
+      "ciphertextId" : 22,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 23,
+      "value" : "f"
+    },
+    {
+      "ciphertextId" : 24,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 25,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 26,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 27,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 28,
+      "value" : "boxdot"
+    },
+    {
+      "ciphertextId" : 29,
+      "value" : "k"
+    },
+    {
+      "ciphertextId" : 30,
+      "value" : "anchor"
+    },
+    {
+      "ciphertextId" : 31,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 32,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 33,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 34,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 35,
+      "value" : "j"
+    },
+    {
+      "ciphertextId" : 36,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 37,
+      "value" : "carrot"
+    },
+    {
+      "ciphertextId" : 38,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 39,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 40,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 41,
+      "value" : "tridot"
+    },
+    {
+      "ciphertextId" : 42,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 43,
+      "value" : "t"
+    },
+    {
+      "ciphertextId" : 44,
+      "value" : "flipt"
+    },
+    {
+      "ciphertextId" : 45,
+      "value" : "n"
+    },
+    {
+      "ciphertextId" : 46,
+      "value" : "q"
+    },
+    {
+      "ciphertextId" : 47,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 48,
+      "value" : "d"
+    },
+    {
+      "ciphertextId" : 49,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 50,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 51,
+      "value" : "s"
+    },
+    {
+      "ciphertextId" : 52,
+      "value" : "vertstrike"
+    },
+    {
+      "ciphertextId" : 53,
+      "value" : "forslash"
+    },
+    {
+      "ciphertextId" : 54,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 55,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 56,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 57,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 58,
+      "value" : "o"
+    },
+    {
+      "ciphertextId" : 59,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 60,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 61,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 62,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 63,
+      "value" : "backf"
+    },
+    {
+      "ciphertextId" : 64,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 65,
+      "value" : "backl"
+    },
+    {
+      "ciphertextId" : 66,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 67,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 68,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 69,
+      "value" : "carrot"
+    },
+    {
+      "ciphertextId" : 70,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 71,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 72,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 73,
+      "value" : "j"
+    },
+    {
+      "ciphertextId" : 74,
+      "value" : "backd"
+    },
+    {
+      "ciphertextId" : 75,
+      "value" : "backr"
+    },
+    {
+      "ciphertextId" : 76,
+      "value" : "backslash"
+    },
+    {
+      "ciphertextId" : 77,
+      "value" : "backp"
+    },
+    {
+      "ciphertextId" : 78,
+      "value" : "f"
+    },
+    {
+      "ciphertextId" : 79,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 80,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 81,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 82,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 83,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 84,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 85,
+      "value" : "boxdot"
+    },
+    {
+      "ciphertextId" : 86,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 87,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 88,
+      "value" : "g"
+    },
+    {
+      "ciphertextId" : 89,
+      "value" : "d"
+    },
+    {
+      "ciphertextId" : 90,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 91,
+      "value" : "k"
+    },
+    {
+      "ciphertextId" : 92,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 93,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 94,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 95,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 96,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 97,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 98,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 99,
+      "value" : "zodiac"
+    },
+    {
+      "ciphertextId" : 100,
+      "value" : "s"
+    },
+    {
+      "ciphertextId" : 101,
+      "value" : "vertstrike"
+    },
+    {
+      "ciphertextId" : 102,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 103,
+      "value" : "n"
+    },
+    {
+      "ciphertextId" : 104,
+      "value" : "flipt"
+    },
+    {
+      "ciphertextId" : 105,
+      "value" : "anchor"
+    },
+    {
+      "ciphertextId" : 106,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 107,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 108,
+      "value" : "backl"
+    },
+    {
+      "ciphertextId" : 109,
+      "value" : "o"
+    },
+    {
+      "ciphertextId" : 110,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 111,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 112,
+      "value" : "g"
+    },
+    {
+      "ciphertextId" : 113,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 114,
+      "value" : "t"
+    },
+    {
+      "ciphertextId" : 115,
+      "value" : "q"
+    },
+    {
+      "ciphertextId" : 116,
+      "value" : "s"
+    },
+    {
+      "ciphertextId" : 117,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 118,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 119,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 120,
+      "value" : "backd"
+    },
+    {
+      "ciphertextId" : 121,
+      "value" : "forslash"
+    },
+    {
+      "ciphertextId" : 122,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 123,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 124,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 125,
+      "value" : "boxdot"
+    },
+    {
+      "ciphertextId" : 126,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 127,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 128,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 129,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 130,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 131,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 132,
+      "value" : "carrot"
+    },
+    {
+      "ciphertextId" : 133,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 134,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 135,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 136,
+      "value" : "backc"
+    },
+    {
+      "ciphertextId" : 137,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 138,
+      "value" : "k"
+    },
+    {
+      "ciphertextId" : 139,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 140,
+      "value" : "backp"
+    },
+    {
+      "ciphertextId" : 141,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 142,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 143,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 144,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 145,
+      "value" : "anchor"
+    },
+    {
+      "ciphertextId" : 146,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 147,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 148,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 149,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 150,
+      "value" : "backr"
+    },
+    {
+      "ciphertextId" : 151,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 152,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 153,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 154,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 155,
+      "value" : "d"
+    },
+    {
+      "ciphertextId" : 156,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 157,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 158,
+      "value" : "backj"
+    },
+    {
+      "ciphertextId" : 159,
+      "value" : "pi"
+    },
+    {
+      "ciphertextId" : 160,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 161,
+      "value" : "backslash"
+    },
+    {
+      "ciphertextId" : 162,
+      "value" : "n"
+    },
+    {
+      "ciphertextId" : 163,
+      "value" : "vertstrike"
+    },
+    {
+      "ciphertextId" : 164,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 165,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 166,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 167,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 168,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 169,
+      "value" : "f"
+    },
+    {
+      "ciphertextId" : 170,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 171,
+      "value" : "backc"
+    },
+    {
+      "ciphertextId" : 172,
+      "value" : "backp"
+    },
+    {
+      "ciphertextId" : 173,
+      "value" : "o"
+    },
+    {
+      "ciphertextId" : 174,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 175,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 176,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 177,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 178,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 179,
+      "value" : "flipt"
+    },
+    {
+      "ciphertextId" : 180,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 181,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 182,
+      "value" : "backl"
+    },
+    {
+      "ciphertextId" : 183,
+      "value" : "carrot"
+    },
+    {
+      "ciphertextId" : 184,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 185,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 186,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 187,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 188,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 189,
+      "value" : "d"
+    },
+    {
+      "ciphertextId" : 190,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 191,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 192,
+      "value" : "t"
+    },
+    {
+      "ciphertextId" : 193,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 194,
+      "value" : "backr"
+    },
+    {
+      "ciphertextId" : 195,
+      "value" : "backslash"
+    },
+    {
+      "ciphertextId" : 196,
+      "value" : "backd"
+    },
+    {
+      "ciphertextId" : 197,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 198,
+      "value" : "forslash"
+    },
+    {
+      "ciphertextId" : 199,
+      "value" : "boxdot"
+    },
+    {
+      "ciphertextId" : 200,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 201,
+      "value" : "j"
+    },
+    {
+      "ciphertextId" : 202,
+      "value" : "q"
+    },
+    {
+      "ciphertextId" : 203,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 204,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 205,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 206,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 207,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 208,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 209,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 210,
+      "value" : "flipt"
+    },
+    {
+      "ciphertextId" : 211,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 212,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 213,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 214,
+      "value" : "n"
+    },
+    {
+      "ciphertextId" : 215,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 216,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 217,
+      "value" : "k"
+    },
+    {
+      "ciphertextId" : 218,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 219,
+      "value" : "pi"
+    },
+    {
+      "ciphertextId" : 220,
+      "value" : "g"
+    },
+    {
+      "ciphertextId" : 221,
+      "value" : "backr"
+    },
+    {
+      "ciphertextId" : 222,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 223,
+      "value" : "anchor"
+    },
+    {
+      "ciphertextId" : 224,
+      "value" : "j"
+    },
+    {
+      "ciphertextId" : 225,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 226,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 227,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 228,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 229,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 230,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 231,
+      "value" : "backl"
+    },
+    {
+      "ciphertextId" : 232,
+      "value" : "n"
+    },
+    {
+      "ciphertextId" : 233,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 234,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 235,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 236,
+      "value" : "vertstrike"
+    },
+    {
+      "ciphertextId" : 237,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 238,
+      "value" : "zodiac"
+    },
+    {
+      "ciphertextId" : 239,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 240,
+      "value" : "backp"
+    },
+    {
+      "ciphertextId" : 241,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 242,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 243,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 244,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 245,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 246,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 247,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 248,
+      "value" : "backslash"
+    },
+    {
+      "ciphertextId" : 249,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 250,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 251,
+      "value" : "t"
+    },
+    {
+      "ciphertextId" : 252,
+      "value" : "flipt"
+    },
+    {
+      "ciphertextId" : 253,
+      "value" : "o"
+    },
+    {
+      "ciphertextId" : 254,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 255,
+      "value" : "carrot"
+    },
+    {
+      "ciphertextId" : 256,
+      "value" : "pi"
+    },
+    {
+      "ciphertextId" : 257,
+      "value" : "s"
+    },
+    {
+      "ciphertextId" : 258,
+      "value" : "backr"
+    },
+    {
+      "ciphertextId" : 259,
+      "value" : "backl"
+    },
+    {
+      "ciphertextId" : 260,
+      "value" : "backf"
+    },
+    {
+      "ciphertextId" : 261,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 262,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 263,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 264,
+      "value" : "tridot"
+    },
+    {
+      "ciphertextId" : 265,
+      "value" : "d"
+    },
+    {
+      "ciphertextId" : 266,
+      "value" : "zodiac"
+    },
+    {
+      "ciphertextId" : 267,
+      "value" : "g"
+    },
+    {
+      "ciphertextId" : 268,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 269,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 270,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 271,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 272,
+      "value" : "n"
+    },
+    {
+      "ciphertextId" : 273,
+      "value" : "backk"
+    },
+    {
+      "ciphertextId" : 274,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 275,
+      "value" : "s"
+    },
+    {
+      "ciphertextId" : 276,
+      "value" : "backc"
+    },
+    {
+      "ciphertextId" : 277,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 278,
+      "value" : "forslash"
+    },
+    {
+      "ciphertextId" : 279,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 280,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 281,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 282,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 283,
+      "value" : "backf"
+    },
+    {
+      "ciphertextId" : 284,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 285,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 286,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 287,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 288,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 289,
+      "value" : "backp"
+    },
+    {
+      "ciphertextId" : 290,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 291,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 292,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 293,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 294,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 295,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 296,
+      "value" : "f"
+    },
+    {
+      "ciphertextId" : 297,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 298,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 299,
+      "value" : "backc"
+    },
+    {
+      "ciphertextId" : 300,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 301,
+      "value" : "boxdot"
+    },
+    {
+      "ciphertextId" : 302,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 303,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 304,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 305,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 306,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 307,
+      "value" : "o"
+    },
+    {
+      "ciphertextId" : 308,
+      "value" : "t"
+    },
+    {
+      "ciphertextId" : 309,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 310,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 311,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 312,
+      "value" : "backc"
+    },
+    {
+      "ciphertextId" : 313,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 314,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 315,
+      "value" : "backd"
+    },
+    {
+      "ciphertextId" : 316,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 317,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 318,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 319,
+      "value" : "carrot"
+    },
+    {
+      "ciphertextId" : 320,
+      "value" : "s"
+    },
+    {
+      "ciphertextId" : 321,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 322,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 323,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 324,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 325,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 326,
+      "value" : "g"
+    },
+    {
+      "ciphertextId" : 327,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 328,
+      "value" : "k"
+    },
+    {
+      "ciphertextId" : 329,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 330,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 331,
+      "value" : "t"
+    },
+    {
+      "ciphertextId" : 332,
+      "value" : "y"
+    },
+    {
+      "ciphertextId" : 333,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 334,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 335,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 336,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 337,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 338,
+      "value" : "flipt"
+    },
+    {
+      "ciphertextId" : 339,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 340,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 341,
+      "value" : "anchor"
+    },
+    {
+      "ciphertextId" : 342,
+      "value" : "f"
+    },
+    {
+      "ciphertextId" : 343,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 344,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 345,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 346,
+      "value" : "zodiac"
+    },
+    {
+      "ciphertextId" : 347,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 348,
+      "value" : "a"
+    },
+    {
+      "ciphertextId" : 349,
+      "value" : "d"
+    },
+    {
+      "ciphertextId" : 350,
+      "value" : "backd"
+    },
+    {
+      "ciphertextId" : 351,
+      "value" : "backslash"
+    },
+    {
+      "ciphertextId" : 352,
+      "value" : "tridot"
+    },
+    {
+      "ciphertextId" : 353,
+      "value" : "l"
+    },
+    {
+      "ciphertextId" : 354,
+      "value" : "anchor"
+    },
+    {
+      "ciphertextId" : 355,
+      "value" : "pi"
+    },
+    {
+      "ciphertextId" : 356,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 357,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 358,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 359,
+      "value" : "backd"
+    },
+    {
+      "ciphertextId" : 360,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 361,
+      "value" : "fullbox"
+    },
+    {
+      "ciphertextId" : 362,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 363,
+      "value" : "backe"
+    },
+    {
+      "ciphertextId" : 364,
+      "value" : "fullcircle"
+    },
+    {
+      "ciphertextId" : 365,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 366,
+      "value" : "o"
+    },
+    {
+      "ciphertextId" : 367,
+      "value" : "r"
+    },
+    {
+      "ciphertextId" : 368,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 369,
+      "value" : "q"
+    },
+    {
+      "ciphertextId" : 370,
+      "value" : "f"
+    },
+    {
+      "ciphertextId" : 371,
+      "value" : "lrbox"
+    },
+    {
+      "ciphertextId" : 372,
+      "value" : "g"
+    },
+    {
+      "ciphertextId" : 373,
+      "value" : "backc"
+    },
+    {
+      "ciphertextId" : 374,
+      "value" : "z"
+    },
+    {
+      "ciphertextId" : 375,
+      "value" : "boxdot"
+    },
+    {
+      "ciphertextId" : 376,
+      "value" : "j"
+    },
+    {
+      "ciphertextId" : 377,
+      "value" : "t"
+    },
+    {
+      "ciphertextId" : 378,
+      "value" : "flipt"
+    },
+    {
+      "ciphertextId" : 379,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 380,
+      "value" : "box"
+    },
+    {
+      "ciphertextId" : 381,
+      "value" : "fulltri"
+    },
+    {
+      "ciphertextId" : 382,
+      "value" : "j"
+    },
+    {
+      "ciphertextId" : 383,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 384,
+      "value" : "plus"
+    },
+    {
+      "ciphertextId" : 385,
+      "value" : "backr"
+    },
+    {
+      "ciphertextId" : 386,
+      "value" : "b"
+    },
+    {
+      "ciphertextId" : 387,
+      "value" : "p"
+    },
+    {
+      "ciphertextId" : 388,
+      "value" : "q"
+    },
+    {
+      "ciphertextId" : 389,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 390,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 391,
+      "value" : "v"
+    },
+    {
+      "ciphertextId" : 392,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 393,
+      "value" : "x"
+    },
+    {
+      "ciphertextId" : 394,
+      "value" : "backr"
+    },
+    {
+      "ciphertextId" : 395,
+      "value" : "tri"
+    },
+    {
+      "ciphertextId" : 396,
+      "value" : "w"
+    },
+    {
+      "ciphertextId" : 397,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 398,
+      "value" : "circledot"
+    },
+    {
+      "ciphertextId" : 399,
+      "value" : "backq"
+    },
+    {
+      "ciphertextId" : 400,
+      "value" : "e"
+    },
+    {
+      "ciphertextId" : 401,
+      "value" : "h"
+    },
+    {
+      "ciphertextId" : 402,
+      "value" : "m"
+    },
+    {
+      "ciphertextId" : 403,
+      "value" : "horstrike"
+    },
+    {
+      "ciphertextId" : 404,
+      "value" : "pi"
+    },
+    {
+      "ciphertextId" : 405,
+      "value" : "u"
+    },
+    {
+      "ciphertextId" : 406,
+      "value" : "i"
+    },
+    {
+      "ciphertextId" : 407,
+      "value" : "backk"
+    }
+  ],
+  "knownSolutionKey" : {
+    "tri" : "i",
+    "lrbox" : "l",
+    "p" : "i",
+    "forslash" : "k",
+    "z" : "e",
+    "u" : "i",
+    "b" : "l",
+    "backk" : "i",
+    "o" : "n",
+    "r" : "g",
+    "pi" : "p",
+    "backp" : "e",
+    "x" : "o",
+    "w" : "e",
+    "v" : "b",
+    "plus" : "e",
+    "backe" : "c",
+    "g" : "a",
+    "y" : "u",
+    "f" : "s",
+    "circledot" : "e",
+    "h" : "t",
+    "boxdot" : "s",
+    "k" : "s",
+    "anchor" : "o",
+    "backq" : "m",
+    "m" : "h",
+    "j" : "f",
+    "carrot" : "n",
+    "i" : "t",
+    "tridot" : "s",
+    "t" : "o",
+    "flipt" : "r",
+    "n" : "e",
+    "q" : "f",
+    "d" : "n",
+    "fullcircle" : "t",
+    "horstrike" : "h",
+    "s" : "a",
+    "vertstrike" : "n",
+    "fullbox" : "l",
+    "a" : "w",
+    "backf" : "d",
+    "backl" : "a",
+    "e" : "e",
+    "l" : "t",
+    "backd" : "o",
+    "backr" : "r",
+    "backslash" : "r",
+    "fulltri" : "a",
+    "zodiac" : "d",
+    "backc" : "v",
+    "backj" : "x",
+    "box" : "y"
+  }
+}
