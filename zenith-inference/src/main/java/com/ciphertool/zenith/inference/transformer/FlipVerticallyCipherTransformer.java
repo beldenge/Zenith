@@ -23,7 +23,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvertVerticallyCipherTransformer implements CipherTransformer {
+public class FlipVerticallyCipherTransformer implements CipherTransformer {
     @Override
     public Cipher transform(Cipher cipher) {
         Cipher transformed = cipher.clone();

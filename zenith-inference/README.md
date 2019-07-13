@@ -108,7 +108,7 @@ Reverses the cipher
 Rotates the cipher clockwise (number of rows and columns are swapped)
 ### RotateCounterClockwiseCipherTransformer
 Rotates the cipher counter-clockwise (number of rows and columns are swapped)
-### InvertHorizontallyCipherTransformer
+### FlipHorizontallyCipherTransformer
 Inverts the cipher horizontally (as if looking in a mirror)
-### InvertVerticallyCipherTransformer
+### FlipVerticallyCipherTransformer
 Inverts the cipher vertically (as if looking in a mirror with your head sideways...?)
