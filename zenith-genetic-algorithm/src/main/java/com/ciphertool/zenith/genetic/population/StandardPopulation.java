@@ -19,182 +19,49 @@
 
 package com.ciphertool.zenith.genetic.population;
 
-import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
-import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
+import com.ciphertool.zenith.genetic.entities.Parents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 @Component
-public class StandardPopulation implements Population {
+public class StandardPopulation extends AbstractPopulation {
     private Logger log = LoggerFactory.getLogger(getClass());
-    private Breeder breeder;
-    private List<Chromosome> individuals = new ArrayList<>();
-    private FitnessEvaluator fitnessEvaluator;
-    private Selector selector;
-    private Double totalFitness = 0d;
-    private int targetSize;
 
-    @Autowired
-    private TaskExecutor taskExecutor;
+    private List<Chromosome> individuals = new ArrayList<>();
+    private Selector selector;
 
     public StandardPopulation() {
     }
 
-    /**
-     * A concurrent task for adding a brand new Chromosome to the population.
-     */
-    protected class GeneratorTask implements Callable<Chromosome> {
-        public GeneratorTask() {
-        }
-
-        @Override
-        public Chromosome call() {
-            return breeder.breed();
-        }
-    }
-
-    public int breed() {
-        List<FutureTask<Chromosome>> futureTasks = new ArrayList<>();
-        FutureTask<Chromosome> futureTask;
-
-        int individualsAdded = 0;
-        for (int i = this.individuals.size(); i < targetSize; i++) {
-            futureTask = new FutureTask<>(new GeneratorTask());
-            futureTasks.add(futureTask);
-
-            this.taskExecutor.execute(futureTask);
-        }
-
-        for (FutureTask<Chromosome> future : futureTasks) {
-            try {
-                this.addIndividual(future.get());
-
-                individualsAdded++;
-            } catch (InterruptedException ie) {
-                log.error("Caught InterruptedException while waiting for GeneratorTask ", ie);
-            } catch (ExecutionException ee) {
-                log.error("Caught ExecutionException while waiting for GeneratorTask ", ee);
-            }
-        }
-
-        log.debug("Added {} individuals to the population.", individualsAdded);
-
-        return individualsAdded;
-    }
-
-    /**
-     * A concurrent task for evaluating the fitness of a Chromosome.
-     */
-    protected class EvaluationTask implements Callable<Void> {
-        private Chromosome chromosome;
-        private FitnessEvaluator fitnessEvaluator;
-
-        public EvaluationTask(Chromosome chromosome, FitnessEvaluator fitnessEvaluator) {
-            this.chromosome = chromosome;
-            this.fitnessEvaluator = fitnessEvaluator;
-        }
-
-        @Override
-        public Void call() {
-            this.chromosome.setFitness(this.fitnessEvaluator.evaluate(this.chromosome));
-
-            return null;
-        }
-    }
-
-    /**
-     * This method executes all the fitness evaluations concurrently.
-     *
-     * @throws InterruptedException if stop is requested
-     */
-    protected int doConcurrentFitnessEvaluations(FitnessEvaluator fitnessEvaluator) {
-        List<FutureTask<Void>> futureTasks = new ArrayList<>();
-        FutureTask<Void> futureTask;
-
-        int evaluationCount = 0;
-
-        Chromosome individual;
-
-        for (int i = this.individuals.size() - 1; i >= 0; i--) {
-            individual = this.individuals.get(i);
-
-            /*
-             * Only evaluate individuals that have changed since the last evaluation.
-             */
-            if (individual.isEvaluationNeeded()) {
-                evaluationCount++;
-                futureTask = new FutureTask<>(new EvaluationTask(individual, fitnessEvaluator));
-                futureTasks.add(futureTask);
-                this.taskExecutor.execute(futureTask);
-            }
-        }
-
-        for (FutureTask<Void> future : futureTasks) {
-            try {
-                future.get();
-            } catch (InterruptedException ie) {
-                log.error("Caught InterruptedException while waiting for EvaluationTask ", ie);
-            } catch (ExecutionException ee) {
-                log.error("Caught ExecutionException while waiting for EvaluationTask ", ee);
-            }
-        }
-
-        return evaluationCount;
-    }
-
     @Override
-    public Chromosome evaluateFitness(GenerationStatistics generationStatistics) {
-        generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.fitnessEvaluator));
-
-        return updateFitness(generationStatistics);
+    public Callable newSelectionTask(){
+        return new SelectionTask();
     }
 
-    protected Chromosome updateFitness(GenerationStatistics generationStatistics) {
-        this.totalFitness = 0d;
-
-        Chromosome bestFitIndividual = null;
-
-        for (Chromosome individual : individuals) {
-            this.totalFitness += individual.getFitness();
-
-            if (bestFitIndividual == null || individual.getFitness() > bestFitIndividual.getFitness()) {
-                bestFitIndividual = individual;
-            }
+    private class SelectionTask implements Callable<Parents> {
+        public SelectionTask() {
         }
 
-        Double averageFitness = this.totalFitness / individuals.size();
+        @Override
+        public Parents call() {
+            int momIndex = selector.getNextIndex(individuals);
+            Chromosome mom = getIndividuals().get(momIndex);
 
-        if (generationStatistics != null) {
-            generationStatistics.setAverageFitness(averageFitness);
-            generationStatistics.setBestFitness(bestFitIndividual.getFitness());
+            int dadIndex = selector.getNextIndex(individuals);
+            // Ensure that dadIndex is different from momIndex
+            dadIndex += (dadIndex == momIndex) ? ((dadIndex == 0) ? 1 : -1) : 0;
+            Chromosome dad = getIndividuals().get(dadIndex);
 
-            if (bestFitIndividual.hasKnownSolution()) {
-                generationStatistics.setKnownSolutionProximity(bestFitIndividual.knownSolutionProximity() * 100.0d);
-            }
+            return new Parents(mom, dad);
         }
-
-        return bestFitIndividual;
-    }
-
-    /*
-     * This method depends on the totalFitness and individuals' fitness being accurately maintained. Returns the index
-     * of the Chromosome chosen.
-     */
-    public int selectIndex() {
-        return this.selector.getNextIndex(individuals);
     }
 
     /**
@@ -209,7 +76,7 @@ public class StandardPopulation implements Population {
      * Removes an individual from the population based on its index. This is much more efficient than removing by
      * equality.
      */
-    public Chromosome removeIndividual(int indexToRemove) {
+    public synchronized Chromosome removeIndividual(int indexToRemove) {
         if (indexToRemove < 0 || indexToRemove > this.individuals.size() - 1) {
             log.error("Tried to remove individual by invalid index {} from population of size {}.  Returning.", indexToRemove, this.size());
 
@@ -229,7 +96,7 @@ public class StandardPopulation implements Population {
     }
 
     @Override
-    public boolean addIndividual(Chromosome individual) {
+    public synchronized boolean addIndividual(Chromosome individual) {
         this.individuals.add(individual);
 
         individual.setPopulation(this);
@@ -268,34 +135,8 @@ public class StandardPopulation implements Population {
         this.selector.reIndex(this.individuals);
     }
 
-    /**
-     * @return the totalFitness
-     */
-    @Override
-    public Double getTotalFitness() {
-        return totalFitness;
-    }
-
-    /**
-     * @param breeder the breeder to set
-     */
-    @Override
-    public void setBreeder(Breeder breeder) {
-        this.breeder = breeder;
-    }
-
-    @Override
-    public void setFitnessEvaluator(FitnessEvaluator fitnessEvaluator) {
-        this.fitnessEvaluator = fitnessEvaluator;
-    }
-
     @Override
     public void setSelector(Selector selector) {
         this.selector = selector;
-    }
-
-    @Override
-    public void setTargetSize(int targetSize) {
-        this.targetSize = targetSize;
     }
 }

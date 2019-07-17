@@ -324,20 +324,6 @@ public class StandardPopulationTest {
         assertEquals(Double.valueOf(100.0d), generationStatistics.getKnownSolutionProximity());
     }
 
-    @Test
-    public void testSelectIndex() {
-        StandardPopulation population = new StandardPopulation();
-
-        int indexToReturn = 7;
-
-        Selector selector = mock(Selector.class);
-        when(selector.getNextIndex(anyList())).thenReturn(indexToReturn);
-        population.setSelector(selector);
-
-        assertEquals(indexToReturn, population.selectIndex());
-        verify(selector, times(1)).getNextIndex(anyList());
-    }
-
     @Test(expected = UnsupportedOperationException.class)
     public void testIndividualsUnmodifiable() {
         StandardPopulation population = new StandardPopulation();

@@ -23,6 +23,7 @@ import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
+import com.ciphertool.zenith.genetic.population.Population;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -34,6 +35,7 @@ public class GeneticAlgorithmStrategy {
     private Integer maxMutationsPerIndividual;
     private Integer maxGenerations;
     private Integer elitism;
+    private Population population;
     private CrossoverAlgorithm crossoverAlgorithm;
     private FitnessEvaluator fitnessEvaluator;
     private MutationAlgorithm mutationAlgorithm;

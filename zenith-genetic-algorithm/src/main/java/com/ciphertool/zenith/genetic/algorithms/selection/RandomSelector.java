@@ -47,4 +47,10 @@ public class RandomSelector implements Selector {
 
         return randomIndex;
     }
+
+    @Override
+    public int getNextIndexThreadSafe(List<Chromosome> individuals) {
+        reIndex(individuals);
+        return getNextIndex(individuals);
+    }
 }

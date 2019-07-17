@@ -67,7 +67,7 @@ public class TournamentSelector implements Selector {
 
         SortedMap<Integer, Chromosome> competitors = new TreeMap<>(Comparator.reverseOrder());
 
-        for (int i = 0; i < tournamentSize; i ++) {
+        for (int i = 0; i < Math.min(tournamentSize, individuals.size()); i ++) {
             int chosenIndex = randomSelector.getNextIndex(individuals);
 
             // TODO: How to handle whether we've chosen the same individual more than once?
@@ -82,5 +82,11 @@ public class TournamentSelector implements Selector {
 
         // return the least fit individual since it won the tournament
         return competitors.lastKey();
+    }
+
+    @Override
+    public int getNextIndexThreadSafe(List<Chromosome> individuals) {
+        reIndex(individuals);
+        return getNextIndex(individuals);
     }
 }

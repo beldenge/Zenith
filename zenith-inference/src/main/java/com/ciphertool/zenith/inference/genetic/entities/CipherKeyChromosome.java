@@ -40,7 +40,7 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     protected boolean evaluationNeeded = true;
 
-    private Double fitness = 0d;
+    private Double fitness = Double.MIN_VALUE;
 
     private Map<String, Gene> genes;
 

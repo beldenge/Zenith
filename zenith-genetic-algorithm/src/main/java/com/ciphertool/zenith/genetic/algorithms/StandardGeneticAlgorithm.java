@@ -21,8 +21,8 @@ package com.ciphertool.zenith.genetic.algorithms;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.population.Population;
-import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import com.ciphertool.zenith.genetic.statistics.PerformanceStatistics;
@@ -49,10 +49,8 @@ public class StandardGeneticAlgorithm {
     @Autowired
     private TaskExecutor taskExecutor;
 
-    @Autowired
-    private Population population;
-
     private GeneticAlgorithmStrategy strategy;
+    private Population population;
     private Integer generationCount = 0;
     private ExecutionStatistics executionStatistics;
     private AtomicInteger mutations = new AtomicInteger(0);
@@ -161,16 +159,12 @@ public class StandardGeneticAlgorithm {
 
         PerformanceStatistics performanceStats = new PerformanceStatistics();
 
-        List<Chromosome> moms = new ArrayList<>();
-        List<Chromosome> dads = new ArrayList<>();
-
         long startSelection = System.currentTimeMillis();
-        this.population.reIndexSelector();
-        select(populationSizeBeforeGeneration, moms, dads);
+        List<Parents> allParents = this.population.select();
         performanceStats.setSelectionMillis(System.currentTimeMillis() - startSelection);
 
         long startCrossover = System.currentTimeMillis();
-        List<Chromosome> children = crossover(populationSizeBeforeGeneration, moms, dads);
+        List<Chromosome> children = crossover(populationSizeBeforeGeneration, allParents);
         generationStatistics.setNumberOfCrossovers(children.size());
         performanceStats.setCrossoverMillis(System.currentTimeMillis() - startCrossover);
 
@@ -197,37 +191,7 @@ public class StandardGeneticAlgorithm {
         this.executionStatistics.addGenerationStatistics(generationStatistics);
     }
 
-    public void select(int initialPopulationSize, List<Chromosome> moms, List<Chromosome> dads) {
-        long pairsToCrossover = (initialPopulationSize - strategy.getElitism());
-
-        List<FutureTask<SelectionResult>> futureTasks = new ArrayList<>();
-        FutureTask<SelectionResult> futureTask;
-
-        /*
-         * Execute each selection concurrently. Each should produce two children, but this is not necessarily always
-         * guaranteed.
-         */
-        for (int i = 0; i < Math.max(0, pairsToCrossover); i++) {
-            futureTask = new FutureTask<>(new SelectionTask());
-            futureTasks.add(futureTask);
-            this.taskExecutor.execute(futureTask);
-        }
-
-        // Add the result of each FutureTask to the Lists of Chromosomes selected for subsequent crossover
-        for (FutureTask<SelectionResult> future : futureTasks) {
-            try {
-                SelectionResult result = future.get();
-                moms.add(result.getMom());
-                dads.add(result.getDad());
-            } catch (InterruptedException ie) {
-                log.error("Caught InterruptedException while waiting for SelectionTask ", ie);
-            } catch (ExecutionException ee) {
-                log.error("Caught ExecutionException while waiting for SelectionTask ", ee);
-            }
-        }
-    }
-
-    public List<Chromosome> crossover(int pairsToCrossover, List<Chromosome> moms, List<Chromosome> dads) {
+    public List<Chromosome> crossover(int pairsToCrossover, List<Parents> allParents) {
         if (this.population.size() < 2) {
             log.info("Unable to perform crossover because there is only 1 individual in the population. Returning.");
 
@@ -236,7 +200,7 @@ public class StandardGeneticAlgorithm {
 
         log.debug("Pairs to crossover: {}", pairsToCrossover);
 
-        List<Chromosome> crossoverResults = doConcurrentCrossovers(moms, dads);
+        List<Chromosome> crossoverResults = doConcurrentCrossovers(allParents);
         List<Chromosome> childrenToAdd = new ArrayList<>();
 
         if (crossoverResults != null && !crossoverResults.isEmpty()) {
@@ -251,28 +215,16 @@ public class StandardGeneticAlgorithm {
         return childrenToAdd;
     }
 
-    protected List<Chromosome> doConcurrentCrossovers(List<Chromosome> moms, List<Chromosome> dads) {
-        if (moms.size() != dads.size()) {
-            throw new IllegalStateException(
-                    "Attempted to perform crossover on the population, but there are not an equal number of moms and dads.  Something is wrong.  Moms: "
-                            + moms.size() + ", Dads:  " + dads.size());
-        }
-
+    protected List<Chromosome> doConcurrentCrossovers(List<Parents> allParents) {
         List<FutureTask<List<Chromosome>>> futureTasks = new ArrayList<>();
         FutureTask<List<Chromosome>> futureTask;
-
-        Chromosome mom;
-        Chromosome dad;
 
         /*
          * Execute each crossover concurrently. Parents should produce two children, but this is not necessarily always
          * guaranteed.
          */
-        for (int i = 0; i < moms.size(); i++) {
-            mom = moms.get(i);
-            dad = dads.get(i);
-
-            futureTask = new FutureTask<>(new CrossoverTask(mom, dad));
+        for (Parents nextParents : allParents) {
+            futureTask = new FutureTask<>(new CrossoverTask(nextParents));
             futureTasks.add(futureTask);
             this.taskExecutor.execute(futureTask);
         }
@@ -298,14 +250,12 @@ public class StandardGeneticAlgorithm {
     }
 
     public int mutate(List<Chromosome> children) {
-        StandardPopulation standardPopulation = (StandardPopulation) this.population;
-
         List<FutureTask<Void>> futureTasks = new ArrayList<>();
         FutureTask<Void> futureTask;
 
         mutations.set(0);
 
-        standardPopulation.sortIndividuals();
+        this.population.sortIndividuals();
 
         /*
          * Execute each mutation concurrently.
@@ -389,6 +339,8 @@ public class StandardGeneticAlgorithm {
     }
 
     public void setStrategy(GeneticAlgorithmStrategy geneticAlgorithmStrategy) {
+        this.population = geneticAlgorithmStrategy.getPopulation();
+        this.population.setElitism(geneticAlgorithmStrategy.getElitism());
         this.population.setFitnessEvaluator(geneticAlgorithmStrategy.getFitnessEvaluator());
         this.population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
         this.population.setSelector(geneticAlgorithmStrategy.getSelector());
@@ -401,18 +353,16 @@ public class StandardGeneticAlgorithm {
      * A concurrent task for performing a crossover of two parent Chromosomes, producing one child Chromosome.
      */
     protected class CrossoverTask implements Callable<List<Chromosome>> {
-        private Chromosome mom;
-        private Chromosome dad;
+        private Parents parents;
 
-        public CrossoverTask(Chromosome mom, Chromosome dad) {
-            this.mom = mom;
-            this.dad = dad;
+        public CrossoverTask(Parents parents) {
+            this.parents = parents;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public List<Chromosome> call() {
-            return strategy.getCrossoverAlgorithm().crossover(mom, dad);
+            return strategy.getCrossoverAlgorithm().crossover(parents.getMom(), parents.getDad());
         }
     }
 
@@ -437,54 +387,6 @@ public class StandardGeneticAlgorithm {
             }
 
             return null;
-        }
-    }
-
-    protected class SelectionTask implements Callable<SelectionResult> {
-        public SelectionTask() {
-        }
-
-        @Override
-        public SelectionResult call() {
-            StandardPopulation standardPopulation = (StandardPopulation) population;
-
-            int momIndex = standardPopulation.selectIndex();
-            Chromosome mom = standardPopulation.getIndividuals().get(momIndex);
-
-            int dadIndex = standardPopulation.selectIndex();
-            // Ensure that dadIndex is different from momIndex
-            dadIndex += (dadIndex == momIndex) ? ((dadIndex == 0) ? 1 : -1) : 0;
-            Chromosome dad = standardPopulation.getIndividuals().get(dadIndex);
-
-            return new SelectionResult(mom, dad);
-        }
-    }
-
-    protected class SelectionResult {
-        private Chromosome mom;
-        private Chromosome dad;
-
-        /**
-         * @param mom the mom Chromosome to set
-         * @param dad the dad Chromosome to set
-         */
-        public SelectionResult(Chromosome mom, Chromosome dad) {
-            this.mom = mom;
-            this.dad = dad;
-        }
-
-        /**
-         * @return the mom Chromosome
-         */
-        public Chromosome getMom() {
-            return mom;
-        }
-
-        /**
-         * @return the dad Chromosome
-         */
-        public Chromosome getDad() {
-            return dad;
         }
     }
 }

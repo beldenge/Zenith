@@ -23,6 +23,7 @@ import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 
@@ -36,6 +37,8 @@ public interface Population {
 
     int breed();
 
+    List<Parents> select();
+
     void clearIndividuals();
 
     void printAscending();
@@ -43,8 +46,6 @@ public interface Population {
     int size();
 
     List<Chromosome> getIndividuals();
-
-    void reIndexSelector();
 
     /**
      * @param breeder the breeder to set
@@ -60,6 +61,8 @@ public interface Population {
      * @param targetSize the targetSize to set
      */
     void setTargetSize(int targetSize);
+
+    void setElitism(int elitism);
 
     /**
      * @param selector the Selector to set

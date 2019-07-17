@@ -40,4 +40,6 @@ public interface Selector {
      * @return the indice of the chosen individual within the population
      */
     int getNextIndex(List<Chromosome> individuals);
+
+    int getNextIndexThreadSafe(List<Chromosome> individuals);
 }

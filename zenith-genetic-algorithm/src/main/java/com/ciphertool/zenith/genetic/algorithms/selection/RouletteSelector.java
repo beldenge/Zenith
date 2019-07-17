@@ -40,4 +40,15 @@ public class RouletteSelector implements Selector {
     public int getNextIndex(List<Chromosome> individuals) {
         return rouletteSampler.getNextIndex();
     }
+
+    @Override
+    public int getNextIndexThreadSafe(List<Chromosome> individuals) {
+        RouletteSampler<Chromosome> localRouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(individuals);
+
+        localRouletteSampler.reIndex(individuals);
+
+        return localRouletteSampler.getNextIndex();
+    }
 }
