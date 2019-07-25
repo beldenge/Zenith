@@ -24,6 +24,7 @@ private StandardGeneticAlgorithm geneticAlgorithm;
 Then in the body of your class (e.g. main method), you'll need to set your hyperparameters in a new GeneticAlgorithmStrategy instance, which uses the builder pattern:
 ```java
 GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
+        .population(population)
         .crossoverAlgorithm(crossoverAlgorithm)
         .mutationAlgorithm(mutationAlgorithm)
         .selector(selector)
@@ -34,8 +35,6 @@ GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.bui
         .mutationRate(mutationRate)
         .maxMutationsPerIndividual(maxMutationsPerIndividual)
         .elitism(elitism)
-        .compareToKnownSolution(useKnownEvaluator)
-        .knownSolutionFitnessEvaluator(knownSolutionFitnessEvaluator)
         .build();
 
 geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);
@@ -53,8 +52,16 @@ Take a look at the implementations in the following package: ```com.ciphertool.z
 
 Also take a look at the class: ```com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer```
 
+# Population Implementations
+The following Population implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.population```.
+
+1. StandardPopulation
+   - The population topology is just a list of individuals.  Any individual can reproduce with any other individual. 
+2. LatticePopulation
+   - The population topology is a two-dimensional lattice.  In theory this increases diversity because individuals can only reproduce with other individuals which are close to it on the lattice.
+
 # Crossover Implementations
-The following crossover implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.crossover.impl```.
+The following crossover implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.crossover```.
 
 1. GeneWiseCrossoverAlgorithm
    - For each gene, there's an equal chance it will come from the first parent or second parent.
@@ -62,7 +69,7 @@ The following crossover implementations are available out of the box.  They are 
    - Picks a random gene index and then assigns all the genes prior to and including that index from the second parent, and it assigns all the genes after that index from the first parent.
 
 # Mutation Implementations
-The following mutation implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.mutation.impl```.
+The following mutation implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.mutation```.
 
 1. StandardMutationAlgorithm
    - Gives each gene a chance of mutation (defined by the mutation rate).  Each new gene is chosen randomly.

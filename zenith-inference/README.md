@@ -62,7 +62,12 @@ These are used by the GeneticAlgorithmSolutionOptimizer only.
 
 Property Key | Default Value | Description
 --- | --- | ---
+genetic-algorithm.population.type | LatticePopulation | The population type.  Can be either StandardPopulation or LatticePopulation.
 genetic-algorithm.population.size | 10000 | The population size.  It will be populated before the first generation and will remain constant throughout each subsequent generation.
+genetic-algorithm.population.lattice.rows | 100 | The number of rows used by LatticePopulation.  The product of lattice rows and columns must exactly match the population size.
+genetic-algorithm.population.lattice.columns | 100 | The number of columns used by LatticePopulation.  The product of lattice rows and columns must exactly match the population size.
+genetic-algorithm.population.lattice.wrap-around | true | Whether to wrap around during selection if the individual sits on or near the edge of the lattice.
+genetic-algorithm.population.lattice.selection-radius | 1 | The radius for selection used by LatticePopulation. 
 genetic-algorithm.number-of-generations | 50 | The number of generations to run per epoch.
 genetic-algorithm.elitism | 0 | The number of top individuals to carry over to the next generation, excluding from crossover and mutation.
 genetic-algorithm.breeder.implementation | ProbabilisticCipherKeyBreeder | The class name of the Breeder implementation to use.

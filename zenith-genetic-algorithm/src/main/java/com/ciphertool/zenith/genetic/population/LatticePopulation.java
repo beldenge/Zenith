@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,13 @@ public class LatticePopulation extends AbstractPopulation {
 
     @Value("${genetic-algorithm.population.lattice.columns}")
     private int latticeColumns;
+
+    @Value("${genetic-algorithm.population.lattice.wrap-around}")
+    private boolean wrapAround;
+
+    @Min(1)
+    @Value("${genetic-algorithm.population.lattice.selection-radius:1}")
+    private int selectionRadius;
 
     private int currentRow = 0;
     private int nextColumn = 0;
@@ -70,44 +78,74 @@ public class LatticePopulation extends AbstractPopulation {
             // center
             nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row][column], row, column));
 
-            // immediately above
-            if (row > 0) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row - 1][column], row - 1, column));
-            }
+            for (int i = 0; i < selectionRadius; i ++) {
+                // top edge
+                for (int j = 0 - selectionRadius; j < selectionRadius; j ++) {
+                    int rowIndex = row - selectionRadius;
+                    int columnIndex = column + j;
 
-            // top-right diagonal
-            if (row > 0 && column < individuals[row - 1].length - 1) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row - 1][column + 1], row - 1, column + 1));
-            }
+                    if (outOfBounds(rowIndex, columnIndex)) {
+                        if (!wrapAround) {
+                            continue;
+                        }
 
-            // immediate right
-            if (column < individuals[row].length - 1) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row][column + 1], row, column + 1));
-            }
+                        rowIndex = wrapRowIndex(rowIndex);
+                        columnIndex = wrapColumnIndex(columnIndex);
+                    }
 
-            // bottom-right diagonal
-            if (row < individuals.length - 1 && column < individuals[row + 1].length - 1) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row + 1][column + 1], row + 1, column + 1));
-            }
+                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                }
 
-            // immediately below
-            if (row < individuals.length - 1) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row + 1][column], row + 1, column));
-            }
+                // right edge
+                for (int j = 0 - selectionRadius; j < selectionRadius; j ++) {
+                    int rowIndex = row + j;
+                    int columnIndex = column + selectionRadius;
 
-            // bottom-left diagonal
-            if (row < individuals.length - 1 && column > 0) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row + 1][column - 1], row + 1, column - 1));
-            }
+                    if (outOfBounds(rowIndex, columnIndex)) {
+                        if (!wrapAround) {
+                            continue;
+                        }
 
-            // immediate left
-            if (column > 0) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row][column - 1], row, column - 1));
-            }
+                        rowIndex = wrapRowIndex(rowIndex);
+                        columnIndex = wrapColumnIndex(columnIndex);
+                    }
 
-            // top-left diagonal
-            if (row > 0 && column > 0) {
-                nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row - 1][column - 1], row - 1, column - 1));
+                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                }
+
+                // bottom edge
+                for (int j = selectionRadius; j > 0 - selectionRadius; j --) {
+                    int rowIndex = row + selectionRadius;
+                    int columnIndex = column + j;
+
+                    if (outOfBounds(rowIndex, columnIndex)) {
+                        if (!wrapAround) {
+                            continue;
+                        }
+
+                        rowIndex = wrapRowIndex(rowIndex);
+                        columnIndex = wrapColumnIndex(columnIndex);
+                    }
+
+                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                }
+
+                // left edge
+                for (int j = selectionRadius; j > 0 - selectionRadius; j --) {
+                    int rowIndex = row + j;
+                    int columnIndex = column - selectionRadius;
+
+                    if (outOfBounds(rowIndex, columnIndex)) {
+                        if (!wrapAround) {
+                            continue;
+                        }
+
+                        rowIndex = wrapRowIndex(rowIndex);
+                        columnIndex = wrapColumnIndex(columnIndex);
+                    }
+
+                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                }
             }
 
             Collections.sort(nearbyLatticeIndividuals);
@@ -135,6 +173,34 @@ public class LatticePopulation extends AbstractPopulation {
         }
     }
 
+    private boolean outOfBounds(int rowIndex, int columnIndex) {
+        return rowIndex < 0 || rowIndex > (latticeRows - 1) || columnIndex < 0 || columnIndex > (latticeColumns - 1);
+    }
+
+    private int wrapRowIndex(int rowIndex) {
+        if (rowIndex < 0) {
+            return latticeRows + rowIndex;
+        }
+
+        if (rowIndex > latticeRows - 1) {
+            return rowIndex - latticeRows;
+        }
+
+        return rowIndex;
+    }
+
+    private int wrapColumnIndex(int columnIndex) {
+        if (columnIndex < 0) {
+            return latticeColumns + columnIndex;
+        }
+
+        if (columnIndex > latticeColumns - 1) {
+            return columnIndex - latticeColumns;
+        }
+
+        return columnIndex;
+    }
+
     @AllArgsConstructor
     @Getter
     private class LatticeIndividual implements Comparable<LatticeIndividual> {
@@ -152,7 +218,7 @@ public class LatticePopulation extends AbstractPopulation {
     public int breed() {
         if ((latticeRows * latticeColumns) != targetSize) {
             throw new IllegalArgumentException("The target size " + targetSize + " for LatticePopulation must be " +
-                    "equal to the product its rows and columns.  Rows=" + latticeRows + ", Columns=" + latticeColumns + ".");
+                    "equal to the product of its rows and columns.  Rows=" + latticeRows + ", Columns=" + latticeColumns + ".");
         }
 
         return super.breed();
