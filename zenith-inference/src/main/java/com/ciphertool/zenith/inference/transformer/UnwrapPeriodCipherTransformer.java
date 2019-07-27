@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 public class UnwrapPeriodCipherTransformer implements CipherTransformer {
     private int period;
 
+    public UnwrapPeriodCipherTransformer() {}
+
     public UnwrapPeriodCipherTransformer(int period) {
         this.period = period;
     }

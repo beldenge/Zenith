@@ -96,6 +96,8 @@ The following transformers are provided out of the box.  More can be added by im
 Removes the last row of the cipher.  This is useful for block ciphers where the last row contains mostly jibberish.
 ### Transposition
 Transposes the cipher using a configured column key.  The column key should be specified as lowercase alpha characters in parenthesis, e.g. ```Transposition(baconisgood)```
+### UnwrapTransposition
+Unwraps the transposition on the cipher using a configured column key.  The column key should be specified as lowercase alpha characters in parenthesis, e.g. ```UnwrapTransposition(baconisgood)```
 ### UpperLeftQuadrant
 Replaces the cipher with its upper left quadrant.
 ### UpperRightQuadrant
@@ -114,3 +116,7 @@ Rotates the cipher counter-clockwise (number of rows and columns are swapped)
 Inverts the cipher horizontally (as if looking in a mirror)
 ### FlipVertically
 Inverts the cipher vertically (as if looking in a mirror with your head sideways...?)
+### Period
+Replaces the cipher with a period shift.  The period number should be specified as an integer in paranthesis, e.g. ```Period(19)```
+### UnwrapPeriod
+Unwraps the period shift on the cipher.  The period number should be specified as an integer in paranthesis, e.g. ```UnwrapPeriod(19)```

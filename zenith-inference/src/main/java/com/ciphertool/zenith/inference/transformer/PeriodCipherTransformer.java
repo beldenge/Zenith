@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 public class PeriodCipherTransformer implements CipherTransformer {
     private int period;
 
+    public PeriodCipherTransformer() {}
+
     public PeriodCipherTransformer(int period) {
         this.period = period;
     }

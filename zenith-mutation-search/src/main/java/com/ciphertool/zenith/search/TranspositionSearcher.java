@@ -22,7 +22,7 @@ package com.ciphertool.zenith.search;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
+import com.ciphertool.zenith.inference.transformer.UnwrapTranspositionCipherTransformer;
 import com.ciphertool.zenith.search.evaluator.CiphertextBigramEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class TranspositionSearcher {
     private CipherDao cipherDao;
 
     @Autowired
-    private TranspositionCipherTransformer transpositionCipherTransformer;
+    private UnwrapTranspositionCipherTransformer unwrapTranspositionCipherTransformer;
 
     private Cipher cipher;
 
@@ -123,7 +123,7 @@ public class TranspositionSearcher {
         Double temperature;
         CipherSolution next;
         CipherSolution maxProbability = initialCipher.clone();
-        maxProbability.setCipher(transpositionCipherTransformer.transform(initialCipher.getCipher().clone(), transpositionKeyIndices));
+        maxProbability.setCipher(unwrapTranspositionCipherTransformer.transform(initialCipher.getCipher().clone(), transpositionKeyIndices));
         List<Integer> maxIndices = new ArrayList<>(transpositionKeyIndices);
         int maxProbabilityIteration = 0;
         long start = System.currentTimeMillis();
@@ -178,7 +178,7 @@ public class TranspositionSearcher {
 
                 proposal = solution.clone();
 
-                proposal.setCipher(transpositionCipherTransformer.transform(solution.getCipher(), nextTranspositionKeyIndices));
+                proposal.setCipher(unwrapTranspositionCipherTransformer.transform(solution.getCipher(), nextTranspositionKeyIndices));
 
                 ciphertextEvaluator.evaluate(proposal);
 

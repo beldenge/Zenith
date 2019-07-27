@@ -21,8 +21,7 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.transformer.CipherTransformer;
-import com.ciphertool.zenith.inference.transformer.TranspositionCipherTransformer;
+import com.ciphertool.zenith.inference.transformer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +77,17 @@ public class AbstractSolutionOptimizer {
                             TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString);
                             nextTransformer.init();
                             toUse.add(nextTransformer);
+                        } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
+                            String transpositionKeyString = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
+                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString);
+                            nextTransformer.init();
+                            toUse.add(nextTransformer);
+                        } else if (cipherTransformer instanceof PeriodCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
+                            int period = Integer.parseInt(transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1));
+                            toUse.add(new PeriodCipherTransformer(period));
+                        } else if (cipherTransformer instanceof UnwrapPeriodCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
+                            int period = Integer.parseInt(transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1));
+                            toUse.add(new UnwrapPeriodCipherTransformer(period));
                         } else {
                             toUse.add(cipherTransformer);
                         }

@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Component
-public class TranspositionCipherTransformer implements CipherTransformer {
+public class UnwrapTranspositionCipherTransformer implements CipherTransformer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${decipherment.transposition.column-key:#{null}}")
@@ -45,10 +45,10 @@ public class TranspositionCipherTransformer implements CipherTransformer {
     @Value("${decipherment.transposition.iterations:1}")
     protected int transpositionIterations;
 
-    public TranspositionCipherTransformer() {
+    public UnwrapTranspositionCipherTransformer() {
     }
 
-    public TranspositionCipherTransformer(String transpositionKeyString) {
+    public UnwrapTranspositionCipherTransformer(String transpositionKeyString) {
         this.transpositionKeyString = transpositionKeyString;
     }
 
@@ -109,7 +109,7 @@ public class TranspositionCipherTransformer implements CipherTransformer {
 
             for (int i = 0; i < columnIndices.size(); i++) {
                 for (int j = 0; j < rows; j++) {
-                    transformed.replaceCiphertextCharacter(k, clone.getCiphertextCharacters().get((j * columnIndices.size()) + columnIndices.indexOf(i)).clone());
+                    transformed.replaceCiphertextCharacter((j * columnIndices.size()) + columnIndices.indexOf(i), clone.getCiphertextCharacters().get(k).clone());
                     k++;
                 }
             }
