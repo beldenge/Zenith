@@ -72,22 +72,28 @@ public class AbstractSolutionOptimizer {
 
                 for (CipherTransformer cipherTransformer : cipherTransformers) {
                     if (cipherTransformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, "").equals(transformerNameBeforeParenthesis)) {
-                        if (cipherTransformer instanceof TranspositionCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
-                            String transpositionKeyString = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
-                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString);
-                            nextTransformer.init();
-                            toUse.add(nextTransformer);
-                        } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
-                            String transpositionKeyString = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
-                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString);
-                            nextTransformer.init();
-                            toUse.add(nextTransformer);
-                        } else if (cipherTransformer instanceof PeriodCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
-                            int period = Integer.parseInt(transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1));
-                            toUse.add(new PeriodCipherTransformer(period));
-                        } else if (cipherTransformer instanceof UnwrapPeriodCipherTransformer && transformerName.contains("(") && transformerName.endsWith(")")) {
-                            int period = Integer.parseInt(transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1));
-                            toUse.add(new UnwrapPeriodCipherTransformer(period));
+                        if (transformerName.contains("(") && transformerName.endsWith(")")) {
+                            String parameter = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
+
+                            if (cipherTransformer instanceof TranspositionCipherTransformer) {
+                                String transpositionKeyString = parameter;
+                                TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString);
+                                nextTransformer.init();
+                                toUse.add(nextTransformer);
+                            } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer) {
+                                String transpositionKeyString = parameter;
+                                UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString);
+                                nextTransformer.init();
+                                toUse.add(nextTransformer);
+                            } else if (cipherTransformer instanceof PeriodCipherTransformer) {
+                                int period = Integer.parseInt(parameter);
+                                toUse.add(new PeriodCipherTransformer(period));
+                            } else if (cipherTransformer instanceof UnwrapPeriodCipherTransformer) {
+                                int period = Integer.parseInt(parameter);
+                                toUse.add(new UnwrapPeriodCipherTransformer(period));
+                            } else {
+                                throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParenthesis + " does not accept parameters.");
+                            }
                         } else {
                             toUse.add(cipherTransformer);
                         }
