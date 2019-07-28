@@ -21,12 +21,8 @@ package com.ciphertool.zenith.inference.genetic.entities;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CipherKeyGene implements Gene {
-    private static Logger log = LoggerFactory.getLogger(CipherKeyGene.class);
-
     private Chromosome chromosome;
 
     private String value;
@@ -42,9 +38,7 @@ public class CipherKeyGene implements Gene {
      */
     public CipherKeyGene(Chromosome chromosome, String value) {
         if (null == value || value.isEmpty()) {
-            log.error("Found null value in full-args constructor.  Unable to construct CipherKeyGene.");
-
-            return;
+            throw new IllegalArgumentException("Found null value in full-args constructor.  Unable to construct CipherKeyGene.");
         }
 
         this.chromosome = chromosome;

@@ -109,17 +109,12 @@ public class CipherKeyChromosome implements Chromosome<String> {
     @Override
     public void putGene(String key, Gene gene) {
         if (null == gene) {
-            log.warn("Attempted to insert a null Gene to CipherKeyChromosome.  Returning. " + this);
-
-            return;
+            throw new IllegalArgumentException("Attempted to insert a null Gene to CipherKeyChromosome.  Returning. " + this);
         }
 
         if (this.genes.get(key) != null) {
-            log.warn("Attempted to insert a Gene to CipherKeyChromosome with key " + key
-                    + ", but the key already exists.  If this was intentional, please use replaceGene() instead.  Returning. "
-                    + this);
-
-            return;
+            throw new IllegalArgumentException("Attempted to insert a Gene to CipherKeyChromosome with key " + key
+                    + ", but the key already exists.  If this was intentional, please use replaceGene() instead.  Returning. " + this);
         }
 
         gene.setChromosome(this);
@@ -131,10 +126,7 @@ public class CipherKeyChromosome implements Chromosome<String> {
     @Override
     public Gene removeGene(String key) {
         if (null == this.genes || null == this.genes.get(key)) {
-            log.warn("Attempted to remove a Gene from CipherKeyChromosome with key " + key
-                    + ", but this key does not exist.  Returning null.");
-
-            return null;
+            throw new IllegalArgumentException("Attempted to remove a Gene from CipherKeyChromosome with key " + key + ", but this key does not exist.  Returning null.");
         }
 
         this.evaluationNeeded = true;
@@ -147,23 +139,17 @@ public class CipherKeyChromosome implements Chromosome<String> {
     @Override
     public void replaceGene(String key, Gene newGene) {
         if (null == newGene) {
-            log.warn("Attempted to replace a Gene from CipherKeyChromosome, but the supplied Gene was null.  Cannot continue. "
-                    + this);
-
-            return;
+            throw new IllegalArgumentException("Attempted to replace a Gene from CipherKeyChromosome, but the supplied Gene was null.  Cannot continue. " + this);
         }
 
         if (null == this.genes || null == this.genes.get(key)) {
-            log.warn("Attempted to replace a Gene from CipherKeyChromosome with key " + key
-                    + ", but this key does not exist.  Cannot continue.");
-
-            return;
+            throw new IllegalArgumentException("Attempted to replace a Gene from CipherKeyChromosome with key " + key + ", but this key does not exist.  Cannot continue.");
         }
 
         newGene.setChromosome(this);
 
+        this.evaluationNeeded = !((CipherKeyGene) this.genes.get(key)).getValue().equals(((CipherKeyGene) newGene).getValue());
         this.genes.put(key, newGene);
-        this.evaluationNeeded = true;
     }
 
     @Override
@@ -232,10 +218,6 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     /*
      * Prints the properties of the solution and then outputs the entire plaintext list in block format.
-     *
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
