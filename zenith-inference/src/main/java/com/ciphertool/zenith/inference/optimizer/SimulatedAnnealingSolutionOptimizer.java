@@ -21,7 +21,9 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.ModelConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -29,6 +31,7 @@ import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -41,7 +44,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "SimulatedAnnealingSolutionOptimizer")
-public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimizer implements SolutionOptimizer {
+public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${simulated-annealing.sampler.iterations}")
@@ -63,7 +66,17 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     private int epochs;
 
     @Autowired
+    protected Cipher cipher;
+
+    @Autowired
     private TreeMarkovModel letterMarkovModel;
+
+    @Autowired
+    @Qualifier("activePlaintextTransformers")
+    protected List<PlaintextTransformer> plaintextTransformers;
+
+    @Autowired
+    protected PlaintextEvaluator plaintextEvaluator;
 
     @Override
     public void optimize() {
@@ -114,7 +127,12 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     }
 
     private void performEpoch(CipherSolution initialSolution) {
-        plaintextEvaluator.evaluate(initialSolution, null);
+        String solutionString = initialSolution.asSingleLineString();
+        for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+            solutionString = plaintextTransformer.transform(solutionString);
+        }
+
+        plaintextEvaluator.evaluate(initialSolution, solutionString, null);
 
         log.debug(initialSolution.toString());
 
@@ -182,7 +200,12 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
             proposal.replaceMapping(nextEntry.getKey(), letter);
 
-            plaintextEvaluator.evaluate(proposal, nextEntry.getKey());
+            String solutionString = proposal.asSingleLineString();
+            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+                solutionString = plaintextTransformer.transform(solutionString);
+            }
+
+            plaintextEvaluator.evaluate(proposal, solutionString, nextEntry.getKey());
 
             solution = selectNext(temperature, solution, proposal);
         }

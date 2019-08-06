@@ -40,21 +40,18 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private TreeMarkovModel letterMarkovModel;
 
     @Override
-    public void evaluate(CipherSolution solution, String ciphertextKey) {
+    public void evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
-        evaluateLetterNGrams(solution, ciphertextKey);
+        evaluateLetterNGrams(solution, solutionString, ciphertextKey);
 
         log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
     }
 
-    protected void evaluateLetterNGrams(CipherSolution solution, String ciphertextKey) {
+    protected void evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
         int order = letterMarkovModel.getOrder();
 
         Double logProbability;
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(solution.asSingleLineString());
 
         if (ciphertextKey != null) {
             List<Integer> ciphertextIndices = new ArrayList<>();
@@ -67,14 +64,14 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
             Integer lastIndex = null;
             for (Integer ciphertextIndex : ciphertextIndices) {
                 int start = Math.max(0, ciphertextIndex - (order - 1));
-                int end = Math.min(sb.length() - order, ciphertextIndex + 1);
+                int end = Math.min(solutionString.length() - order, ciphertextIndex + 1);
 
                 if (lastIndex != null) {
                     start = Math.max(start, lastIndex);
                 }
 
                 for (int i = start; i < end; i++) {
-                    logProbability = computeNGramLogProbability(sb.substring(i, i + order));
+                    logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
 
                     solution.replaceLogProbability(i, logProbability);
                 }
@@ -84,8 +81,8 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         } else {
             solution.clearLogProbabilities();
 
-            for (int i = 0; i < sb.length() - order; i++) {
-                logProbability = computeNGramLogProbability(sb.substring(i, i + order));
+            for (int i = 0; i < solutionString.length() - order; i++) {
+                logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
 
                 solution.addLogProbability(logProbability);
             }

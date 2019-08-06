@@ -28,12 +28,15 @@ import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -45,7 +48,7 @@ import java.util.stream.Collectors;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
-public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer implements SolutionOptimizer {
+public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${decipherment.epochs:1}")
@@ -102,6 +105,13 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     @Autowired
     private List<Selector> selectors;
 
+    @Autowired
+    @Qualifier("activePlaintextTransformers")
+    protected List<PlaintextTransformer> plaintextTransformers;
+
+    @Autowired
+    protected PlaintextEvaluator plaintextEvaluator;
+
     private Population population;
 
     private Breeder breeder;
@@ -114,11 +124,8 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     private FitnessEvaluator fitnessEvaluator;
 
-    @Override
     @PostConstruct
     public void init() {
-        super.init();
-
         // Set the proper Population
         List<String> existentPopulations = populations.stream()
                 .map(population -> population.getClass().getSimpleName())
@@ -204,7 +211,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
             throw new IllegalArgumentException("The Selector with name " + selectorName + " does not exist.");
         }
 
-        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator);
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers);
     }
 
     @Override

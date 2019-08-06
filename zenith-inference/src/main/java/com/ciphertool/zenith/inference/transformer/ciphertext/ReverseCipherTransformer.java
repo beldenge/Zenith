@@ -17,10 +17,23 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.evaluator;
+package com.ciphertool.zenith.inference.transformer.ciphertext;
 
-import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.Cipher;
+import org.springframework.stereotype.Component;
 
-public interface PlaintextEvaluator {
-    void evaluate(CipherSolution solution, String solutionString, String ciphertextKey);
+@Component
+public class ReverseCipherTransformer implements CipherTransformer {
+    @Override
+    public Cipher transform(Cipher cipher) {
+        Cipher transformed = cipher.clone();
+
+        // Remove the last row altogether
+        int j = cipher.length() - 1;
+        for (int i = 0; i < cipher.length(); i++) {
+            transformed.replaceCiphertextCharacter(i, cipher.getCiphertextCharacters().get(j--).clone());
+        }
+
+        return transformed;
+    }
 }

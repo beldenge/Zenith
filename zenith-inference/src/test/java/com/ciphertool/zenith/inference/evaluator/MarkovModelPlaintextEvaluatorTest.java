@@ -254,15 +254,15 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
 
     @Test
     public void testEvaluate() {
-        markovModelPlaintextEvaluator.evaluate(actualSolution, null);
+        markovModelPlaintextEvaluator.evaluate(actualSolution, actualSolution.asSingleLineString(), null);
         log.info("fitness1: " + actualSolution.getLogProbability());
         log.info("solution1: " + actualSolution);
 
-        markovModelPlaintextEvaluator.evaluate(solution2, null);
+        markovModelPlaintextEvaluator.evaluate(solution2, solution2.asSingleLineString(), null);
         log.info("fitness2: " + solution2.getLogProbability());
         log.info("solution2: " + solution2);
 
-        markovModelPlaintextEvaluator.evaluate(solution3, null);
+        markovModelPlaintextEvaluator.evaluate(solution3, solution3.asSingleLineString(), null);
         log.info("fitness3: " + solution3.getLogProbability());
         log.info("solution3: " + solution3);
     }
@@ -273,7 +273,7 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
         long evaluations = 10000;
 
         for (int i = 0; i < evaluations; i++) {
-            markovModelPlaintextEvaluator.evaluate(actualSolution, null);
+            markovModelPlaintextEvaluator.evaluate(actualSolution, actualSolution.asSingleLineString(), null);
         }
 
         log.info(evaluations + " evaluations took: " + (System.currentTimeMillis() - start) + "ms.");

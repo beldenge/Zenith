@@ -44,7 +44,8 @@ decipherment.transposition.column-key | N/A | A comma-separated integer array re
 decipherment.transposition.iterations | 1 | The number of times to perform transposition with the given key
 decipherment.transposition.key-length.min | 17 | When the transposition key length is not known, this is the key length to start hill climbing with (must be greater than 1 and less than or equal to decipherment.transposition.key-length.max)
 decipherment.transposition.key-length.max | 17 | When the transposition key length is not known, this is the key length to end hill climbing with (must be greater than or equal to decipherment.transposition.key-length.min)
-decipherment.transformers.list | RemoveLastRow | A comma-separated list of names of transformers to use to mutate the cipher, in order
+decipherment.transformers.ciphertext | RemoveLastRow | A comma-separated list of names of transformers to use to mutate the cipher, in order
+decipherment.transformers.plaintext | UnwrapFourSquare | A comma-separated list of names of transformers to use to mutate the plaintext, in order
 evaluation.rest-service.url | http://localhost:5000/probabilities | The URL for the solution evaluator REST service, required only if decipherment.evaluator.plaintext is set to RestServicePlaintextEvaluator
 
 #### Simulated Annealing Hyperparameters

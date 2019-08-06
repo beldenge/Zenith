@@ -22,7 +22,7 @@ package com.ciphertool.zenith.search;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.transformer.UnwrapTranspositionCipherTransformer;
+import com.ciphertool.zenith.inference.transformer.ciphertext.UnwrapTranspositionCipherTransformer;
 import com.ciphertool.zenith.search.evaluator.CiphertextBigramEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

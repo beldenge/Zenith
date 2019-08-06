@@ -17,10 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.evaluator;
+package com.ciphertool.zenith.inference.transformer.ciphertext;
 
-import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.Cipher;
 
-public interface PlaintextEvaluator {
-    void evaluate(CipherSolution solution, String solutionString, String ciphertextKey);
+public interface CipherTransformer {
+    Cipher transform(Cipher cipher);
 }

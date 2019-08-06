@@ -24,16 +24,12 @@ import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.fitness.ChromosomeToCipherSolutionMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CipherKeyChromosome implements Chromosome<String> {
-    private static Logger log = LoggerFactory.getLogger(CipherKeyChromosome.class);
-
     private static final int KEY_SIZE = 54;
 
     protected Cipher cipher;
@@ -148,7 +144,10 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
         newGene.setChromosome(this);
 
-        this.evaluationNeeded = !((CipherKeyGene) this.genes.get(key)).getValue().equals(((CipherKeyGene) newGene).getValue());
+        if (!this.evaluationNeeded) {
+            this.evaluationNeeded = !((CipherKeyGene) this.genes.get(key)).getValue().equals(((CipherKeyGene) newGene).getValue());
+        }
+
         this.genes.put(key, newGene);
     }
 

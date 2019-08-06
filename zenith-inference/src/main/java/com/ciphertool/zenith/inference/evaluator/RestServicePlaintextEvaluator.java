@@ -55,9 +55,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public void evaluate(CipherSolution solution, String ciphertextKey) {
-        String solutionString = solution.asSingleLineString();
-
+    public void evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startEvaluation = System.currentTimeMillis();
 
         RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();

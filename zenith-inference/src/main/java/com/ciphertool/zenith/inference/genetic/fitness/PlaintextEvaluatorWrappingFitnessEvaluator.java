@@ -23,24 +23,34 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+
+import java.util.List;
 
 public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
     private PlaintextEvaluator plaintextEvaluator;
+    private List<PlaintextTransformer> plaintextTransformers;
 
-    public PlaintextEvaluatorWrappingFitnessEvaluator(PlaintextEvaluator plaintextEvaluator) {
+    public PlaintextEvaluatorWrappingFitnessEvaluator(PlaintextEvaluator plaintextEvaluator, List<PlaintextTransformer> plaintextTransformers) {
         this.plaintextEvaluator = plaintextEvaluator;
+        this.plaintextTransformers = plaintextTransformers;
     }
 
     @Override
     public Double evaluate(Chromosome chromosome) {
-        CipherSolution cipherSolution = ChromosomeToCipherSolutionMapper.map(chromosome);
+        CipherSolution proposal = ChromosomeToCipherSolutionMapper.map(chromosome);
 
-        plaintextEvaluator.evaluate(cipherSolution, null);
+        String solutionString = proposal.asSingleLineString();
+        for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+            solutionString = plaintextTransformer.transform(solutionString);
+        }
+
+        plaintextEvaluator.evaluate(proposal, solutionString, null);
 
         // TODO: make the decision whether to do the conversion based on the selector method?
         // In other words, negative log probabilities work just fine with the TournamentSelector, but we must use
         // positive numbers for the RouletteSelector
-        return convertNegativeLogProbabilityToPositiveScore(cipherSolution.getScore());
+        return convertNegativeLogProbabilityToPositiveScore(proposal.getScore());
     }
 
     /*
