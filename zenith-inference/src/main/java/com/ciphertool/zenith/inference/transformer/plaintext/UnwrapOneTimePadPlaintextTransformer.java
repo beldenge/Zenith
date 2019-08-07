@@ -40,7 +40,7 @@ public class UnwrapOneTimePadPlaintextTransformer implements PlaintextTransforme
                 difference = difference + LetterUtils.NUMBER_OF_LETTERS;
             }
 
-            sb.append(LetterUtils.ordinalToChar(difference % LetterUtils.NUMBER_OF_LETTERS));
+            sb.append(LetterUtils.ordinalToChar(difference));
 
             if (keyIndex == key.length() - 1) {
                 keyIndex = 0;
