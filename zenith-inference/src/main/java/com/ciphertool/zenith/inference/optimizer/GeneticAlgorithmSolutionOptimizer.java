@@ -25,6 +25,7 @@ import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
+import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
@@ -32,6 +33,8 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
+import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
+import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,10 +110,13 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
     @Autowired
     @Qualifier("activePlaintextTransformers")
-    protected List<PlaintextTransformer> plaintextTransformers;
+    private List<PlaintextTransformer> plaintextTransformers;
 
     @Autowired
-    protected PlaintextEvaluator plaintextEvaluator;
+    private PlaintextEvaluator plaintextEvaluator;
+
+    @Autowired
+    private CipherSolutionPrinter cipherSolutionPrinter;
 
     private Population population;
 
@@ -244,12 +250,22 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
             this.geneticAlgorithm.getPopulation().sortIndividuals();
 
             if (log.isDebugEnabled()) {
-                this.geneticAlgorithm.getPopulation().printAscending();
+                this.geneticAlgorithm.getPopulation().sortIndividuals();
+
+                List<Chromosome> individuals = this.geneticAlgorithm.getPopulation().getIndividuals();
+                int size = individuals.size();
+
+                for (int i = 0; i < size; i++) {
+                    Chromosome next = individuals.get(i);
+                    log.info("Chromosome {}:", (i + 1), next);
+                    cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(next));
+                }
             }
 
             CipherKeyChromosome last = (CipherKeyChromosome) this.geneticAlgorithm.getPopulation().getIndividuals().get(this.geneticAlgorithm.getPopulation().getIndividuals().size() - 1);
 
-            log.info("Best probability solution: {}", last);
+            log.info("Best probability solution:");
+            cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(last));
             log.info("Mappings for best probability:");
 
             for (Map.Entry<String, Gene> entry : last.getGenes().entrySet()) {

@@ -22,6 +22,7 @@ package com.ciphertool.zenith.inference.optimizer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
@@ -73,10 +74,13 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
     @Autowired
     @Qualifier("activePlaintextTransformers")
-    protected List<PlaintextTransformer> plaintextTransformers;
+    private List<PlaintextTransformer> plaintextTransformers;
 
     @Autowired
-    protected PlaintextEvaluator plaintextEvaluator;
+    private PlaintextEvaluator plaintextEvaluator;
+
+    @Autowired
+    private CipherSolutionPrinter cipherSolutionPrinter;
 
     @Override
     public void optimize() {
@@ -174,7 +178,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
 
-        log.info("Best probability found at iteration {}: {}", maxProbabilityIteration, maxProbability);
+        log.info("Best probability found at iteration {}:", maxProbabilityIteration);
+        cipherSolutionPrinter.print(maxProbability);
         log.info("Mappings for best probability:");
 
         for (Map.Entry<String, String> entry : maxProbability.getMappings().entrySet()) {

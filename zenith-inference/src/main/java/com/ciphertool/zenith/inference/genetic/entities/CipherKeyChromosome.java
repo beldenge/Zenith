@@ -23,7 +23,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.genetic.fitness.ChromosomeToCipherSolutionMapper;
+import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -193,18 +193,22 @@ public class CipherKeyChromosome implements Chromosome<String> {
         if (this == obj) {
             return true;
         }
+
         if (obj == null) {
             return false;
         }
+
         if (!(obj instanceof CipherKeyChromosome)) {
             return false;
         }
+
         CipherKeyChromosome other = (CipherKeyChromosome) obj;
         if (cipher == null) {
             if (other.cipher != null) {
                 return false;
             }
         }
+
         if (genes == null) {
             if (other.genes != null) {
                 return false;
@@ -212,54 +216,15 @@ public class CipherKeyChromosome implements Chromosome<String> {
         } else if (!genes.equals(other.genes)) {
             return false;
         }
+
         return true;
     }
 
-    /*
-     * Prints the properties of the solution and then outputs the entire plaintext list in block format.
-     */
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Solution [fitness=" + fitness + ", evaluationNeeded=" + evaluationNeeded + "]\n");
-
-        if (this.cipher != null) {
-            CipherKeyGene nextPlaintext;
-            int actualSize = this.cipher.getCiphertextCharacters().size();
-            for (int i = 0; i < actualSize; i++) {
-
-                nextPlaintext = (CipherKeyGene) this.genes.get(this.cipher.getCiphertextCharacters().get(i).getValue());
-
-                sb.append(" ");
-                sb.append(nextPlaintext.getValue());
-                sb.append(" ");
-
-                /*
-                 * Print a newline if we are at the end of the row. Add 1 to the index so the modulus function doesn't
-                 * break.
-                 */
-                if (((i + 1) % this.cipher.getColumns()) == 0) {
-                    sb.append("\n");
-                } else {
-                    sb.append(" ");
-                }
-            }
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * @return the population
-     */
     @Override
     public Population getPopulation() {
         return population;
     }
 
-    /**
-     * @param population the population to set
-     */
     @Override
     public void setPopulation(Population population) {
         this.population = population;

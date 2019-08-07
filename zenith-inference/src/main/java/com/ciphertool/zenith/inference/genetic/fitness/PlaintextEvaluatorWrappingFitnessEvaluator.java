@@ -23,6 +23,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 
 import java.util.List;

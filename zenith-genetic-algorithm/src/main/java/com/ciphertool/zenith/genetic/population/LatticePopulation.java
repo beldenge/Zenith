@@ -232,17 +232,6 @@ public class LatticePopulation extends AbstractPopulation {
     }
 
     @Override
-    public void printAscending() {
-        List<Chromosome> sortedIndividuals = this.getIndividuals();
-
-        int size = sortedIndividuals.size();
-
-        for (int i = 0; i < size; i++) {
-            log.info("Chromosome {}: {}", (i + 1), sortedIndividuals.get(i));
-        }
-    }
-
-    @Override
     public int size() {
         return latticeRows * latticeColumns;
     }

@@ -41,8 +41,6 @@ public interface Population {
 
     void clearIndividuals();
 
-    void printAscending();
-
     int size();
 
     List<Chromosome> getIndividuals();

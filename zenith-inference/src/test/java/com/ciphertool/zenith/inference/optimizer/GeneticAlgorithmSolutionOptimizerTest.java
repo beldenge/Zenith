@@ -21,12 +21,15 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
+import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -40,6 +43,7 @@ public class GeneticAlgorithmSolutionOptimizerTest {
 
         StandardPopulation population = new StandardPopulation();
         CipherKeyChromosome solutionChromosome = new CipherKeyChromosome();
+        solutionChromosome.setCipher(new Cipher());
         solutionChromosome.setEvaluationNeeded(false);
         population.addIndividual(solutionChromosome);
         when(standardGeneticAlgorithm.getPopulation()).thenReturn(population);
@@ -51,6 +55,15 @@ public class GeneticAlgorithmSolutionOptimizerTest {
         Field epochsField = ReflectionUtils.findField(GeneticAlgorithmSolutionOptimizer.class, "epochs");
         ReflectionUtils.makeAccessible(epochsField);
         ReflectionUtils.setField(epochsField, geneticAlgorithmSolutionOptimizer, 1);
+
+        CipherSolutionPrinter cipherSolutionPrinter = new CipherSolutionPrinter();
+        Field plaintextTransformersField = ReflectionUtils.findField(CipherSolutionPrinter.class, "plaintextTransformers");
+        ReflectionUtils.makeAccessible(plaintextTransformersField);
+        ReflectionUtils.setField(plaintextTransformersField, cipherSolutionPrinter, Collections.EMPTY_LIST);
+
+        Field cipherSolutionPrinterField = ReflectionUtils.findField(GeneticAlgorithmSolutionOptimizer.class, "cipherSolutionPrinter");
+        ReflectionUtils.makeAccessible(cipherSolutionPrinterField);
+        ReflectionUtils.setField(cipherSolutionPrinterField, geneticAlgorithmSolutionOptimizer, cipherSolutionPrinter);
 
         geneticAlgorithmSolutionOptimizer.optimize();
 

@@ -97,9 +97,11 @@ public class CipherKeyGene implements Gene {
         if (this == obj) {
             return true;
         }
+
         if (obj == null) {
             return false;
         }
+
         if (!(obj instanceof CipherKeyGene)) {
             return false;
         }
@@ -114,10 +116,5 @@ public class CipherKeyGene implements Gene {
         }
 
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "CipherKeyGene [value=" + value + "]";
     }
 }

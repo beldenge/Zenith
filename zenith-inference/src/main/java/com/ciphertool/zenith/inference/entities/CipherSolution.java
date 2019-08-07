@@ -311,40 +311,4 @@ public class CipherSolution {
 
         return sb.toString();
     }
-
-    /*
-     * Prints the properties of the solution and then outputs the entire plaintext list in block format.
-     */
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Solution [probability=" + probability + ", logProbability=" + logProbability + ", score=" + getScore()
-                + (cipher.hasKnownSolution() ? ", proximity="
-                + String.format("%1$,.2f", evaluateKnownSolution() * 100.0) + "%" : "") + "]\n");
-
-        if (this.cipher != null) {
-            String nextPlaintext;
-            int actualSize = this.cipher.getCiphertextCharacters().size();
-            for (int i = 0; i < actualSize; i++) {
-
-                nextPlaintext = this.mappings.get(this.cipher.getCiphertextCharacters().get(i).getValue());
-
-                sb.append(" ");
-                sb.append(nextPlaintext);
-                sb.append(" ");
-
-                /*
-                 * Print a newline if we are at the end of the row. Add 1 to the index so the modulus function doesn't
-                 * break.
-                 */
-                if (((i + 1) % this.cipher.getColumns()) == 0) {
-                    sb.append("\n");
-                } else {
-                    sb.append(" ");
-                }
-            }
-        }
-
-        return sb.toString();
-    }
 }

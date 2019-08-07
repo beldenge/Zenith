@@ -115,21 +115,6 @@ public class StandardPopulation extends AbstractPopulation {
         Collections.sort(individuals);
     }
 
-    /**
-     * Prints every Chromosome in this population in ascending order by fitness. Note that a lower fitness value can be
-     * a better value depending on the strategy.
-     */
-    @Override
-    public void printAscending() {
-        this.sortIndividuals();
-
-        int size = this.individuals.size();
-
-        for (int i = 0; i < size; i++) {
-            log.info("Chromosome {}: {}", (i + 1), this.individuals.get(i));
-        }
-    }
-
     @Override
     public void reIndexSelector() {
         this.selector.reIndex(this.individuals);
