@@ -31,10 +31,10 @@ public class ZPatternCipherTransformer implements CipherTransformer {
     @Override
     public Cipher transform(Cipher cipher) {
         if (cipher.length() % 4 != 0 || cipher.getRows() % 2 != 0) {
-            log.error("Unable to perform four square transformation as the cipher length must be divisible by 4, and " +
+            log.error("Unable to perform z-pattern transformation as the cipher length must be divisible by 4, and " +
                     "the rows must be divisible by 2, but instead the length was {} and the rows were {}.  Returning " +
                     "original cipher.", cipher.length(), cipher.getRows());
-            throw new IllegalArgumentException("Unable to perform four square transformation as the cipher length " +
+            throw new IllegalArgumentException("Unable to perform z-pattern transformation as the cipher length " +
                     "must be divisible by 4, and the rows must be divisible by 2");
         }
 
