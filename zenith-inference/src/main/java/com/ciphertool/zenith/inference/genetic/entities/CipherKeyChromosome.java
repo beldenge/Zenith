@@ -23,6 +23,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 
 import java.util.Collections;
@@ -30,8 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CipherKeyChromosome implements Chromosome<String> {
-    private static final int KEY_SIZE = 54;
-
     protected Cipher cipher;
 
     protected boolean evaluationNeeded = true;
@@ -158,7 +157,10 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     @Override
     public Integer targetSize() {
-        return KEY_SIZE;
+        return (int) cipher.getCiphertextCharacters().stream()
+                .map(Ciphertext::getValue)
+                .distinct()
+                .count();
     }
 
     @Override

@@ -19,7 +19,7 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.LanguageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,11 +97,11 @@ public class CipherSolution {
 
         int totalLetters = solutionString.length();
 
-        List<Integer> counts = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+        List<Integer> counts = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS.size());
 
         int denominator = totalLetters * (totalLetters - 1);
 
-        for (Character c : ModelConstants.LOWERCASE_LETTERS) {
+        for (Character c : LanguageConstants.LOWERCASE_LETTERS) {
             int count = 0;
 
             for (int i = 0; i < totalLetters; i++) {

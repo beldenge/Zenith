@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-public class ModelConstants {
+public class LanguageConstants {
     public static final List<Character> LOWERCASE_VOWELS = Arrays.asList(new Character[]{'a', 'e', 'i', 'o', 'u'});
     public static final List<Character> LOWERCASE_CONSONANTS = Arrays.asList(new Character[]{'b', 'c', 'd', 'f',
             'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'});

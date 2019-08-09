@@ -1,7 +1,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.LanguageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,8 +75,8 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
         int next = 0;
         Integer[] columnIndices = new Integer[transpositionKeyString.length()];
 
-        for (int i = 0; i < ModelConstants.LOWERCASE_LETTERS.size(); i++) {
-            char letter = ModelConstants.LOWERCASE_LETTERS.get(i);
+        for (int i = 0; i < LanguageConstants.LOWERCASE_LETTERS.size(); i++) {
+            char letter = LanguageConstants.LOWERCASE_LETTERS.get(i);
 
             for (int j = 0; j < transpositionKeyString.length(); j++) {
                 if (transpositionKeyString.toLowerCase().charAt(j) == letter) {

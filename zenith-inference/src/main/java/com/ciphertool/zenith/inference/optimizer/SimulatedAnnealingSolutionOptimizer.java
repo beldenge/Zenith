@@ -26,7 +26,7 @@ import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
-import com.ciphertool.zenith.model.ModelConstants;
+import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.TreeMarkovModel;
 import org.slf4j.Logger;
@@ -88,7 +88,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
 
-        List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(ModelConstants.LOWERCASE_LETTERS.size());
+        List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS.size());
 
         Double probability;
         for (TreeNGram node : firstOrderNodes) {
@@ -190,27 +190,27 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {
         CipherSolution proposal;
 
-        List<Map.Entry<String, String>> mappingList = new ArrayList<>();
-        mappingList.addAll(solution.getMappings().entrySet());
+        List<String> mappingList = new ArrayList<>();
+        mappingList.addAll(solution.getMappings().keySet());
 
-        Map.Entry<String, String> nextEntry;
+        String nextKey;
 
         // For each cipher symbol type, run the letter sampling
         for (int i = 0; i < solution.getMappings().size(); i++) {
             proposal = solution.clone();
 
-            nextEntry = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
+            nextKey = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
 
-            String letter = ModelConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(ModelConstants.LOWERCASE_LETTERS.size())).toString();
+            String letter = LanguageConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(LanguageConstants.LOWERCASE_LETTERS.size())).toString();
 
-            proposal.replaceMapping(nextEntry.getKey(), letter);
+            proposal.replaceMapping(nextKey, letter);
 
             String solutionString = proposal.asSingleLineString();
             for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
                 solutionString = plaintextTransformer.transform(solutionString);
             }
 
-            plaintextEvaluator.evaluate(proposal, solutionString, nextEntry.getKey());
+            plaintextEvaluator.evaluate(proposal, solutionString, nextKey);
 
             solution = selectNext(temperature, solution, proposal);
         }

@@ -19,9 +19,7 @@
 
 package com.ciphertool.zenith.inference.genetic.breeder;
 
-import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
@@ -42,26 +40,20 @@ import java.util.Map;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
-public class ProbabilisticCipherKeyBreeder implements Breeder {
+public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static List<LetterProbability> letterUnigramProbabilities = new ArrayList<>();
-    private static final String[] KEYS = {"a", "anchor", "b", "backc", "backd",
-            "backe", "backf", "backj", "backk", "backl", "backp", "backq", "backr", "backslash", "box", "boxdot",
-            "carrot", "circledot", "d", "e", "f", "flipt", "forslash", "fullbox", "fullcircle", "fulltri", "g", "h",
-            "horstrike", "i", "j", "k", "l", "lrbox", "m", "n", "o", "p", "pi", "plus", "q", "r", "s", "t", "tri",
-            "tridot", "u", "v", "vertstrike", "w", "x", "y", "z", "zodiac"};
 
     private RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
-
-    @Autowired
-    private Cipher cipher;
 
     @Autowired
     private TreeMarkovModel letterMarkovModel;
 
     @PostConstruct
     public void init() {
+        super.init();
+
         Double total = 0d;
         for (Map.Entry<Character, TreeNGram> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
             if (!entry.getKey().equals(' ')) {
@@ -84,9 +76,9 @@ public class ProbabilisticCipherKeyBreeder implements Breeder {
 
     @Override
     public Chromosome breed() {
-        CipherKeyChromosome chromosome = new CipherKeyChromosome(cipher, KEYS.length);
+        CipherKeyChromosome chromosome = new CipherKeyChromosome(cipher, keys.length);
 
-        for (String ciphertext : KEYS) {
+        for (String ciphertext : keys) {
             // Pick a plaintext at random according to the language model
             String nextPlaintext = letterUnigramProbabilities.get(rouletteSampler.getNextIndex()).getValue().toString();
 

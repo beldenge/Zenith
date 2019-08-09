@@ -19,11 +19,9 @@
 
 package com.ciphertool.zenith.inference.genetic.breeder;
 
-import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,32 +31,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
-public class RandomCipherKeyBreeder implements Breeder {
+public class RandomCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    private static final String[] KEYS = {"a", "anchor", "b", "backc", "backd", "backe", "backf", "backj",
-            "backk", "backl", "backp", "backq", "backr", "backslash", "box", "boxdot", "carrot", "circledot", "d", "e",
-            "f", "flipt", "forslash", "fullbox", "fullcircle", "fulltri", "g", "h", "horstrike", "i", "j", "k", "l",
-            "lrbox", "m", "n", "o", "p", "pi", "plus", "q", "r", "s", "t", "tri", "tridot", "u", "v", "vertstrike", "w",
-            "x", "y", "z", "zodiac"};
-
-    @Autowired
-    private Cipher cipher;
 
     @Autowired
     private GeneDao geneDao;
 
-    /**
-     * Default no-args constructor
-     */
-    public RandomCipherKeyBreeder() {
-    }
-
     @Override
     public Chromosome breed() {
-        CipherKeyChromosome chromosome = new CipherKeyChromosome(cipher, KEYS.length);
+        CipherKeyChromosome chromosome = new CipherKeyChromosome(cipher, keys.length);
 
-        for (int i = 0; i < KEYS.length; i++) {
+        for (int i = 0; i < keys.length; i++) {
             // Should never happen, but we check just in case
             if (chromosome.actualSize() >= chromosome.targetSize()) {
                 throw new IllegalStateException(
@@ -68,7 +51,7 @@ public class RandomCipherKeyBreeder implements Breeder {
 
             Gene newGene = geneDao.findRandomGene(chromosome);
 
-            chromosome.putGene(KEYS[i], newGene);
+            chromosome.putGene(keys[i], newGene);
         }
 
         log.debug(chromosome.toString());
