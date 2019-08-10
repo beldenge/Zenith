@@ -48,17 +48,6 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
 
         plaintextEvaluator.evaluate(proposal, solutionString, null);
 
-        // TODO: make the decision whether to do the conversion based on the selector method?
-        // In other words, negative log probabilities work just fine with the TournamentSelector, but we must use
-        // positive numbers for the RouletteSelector
-        return convertNegativeLogProbabilityToPositiveScore(proposal.getScore());
-    }
-
-    /*
-     * We are applying the function: (x - 1000000) / (x / 100)
-     * Model it in a graphing calculator (i.e. paste it into Google) to see what the curve looks like
-     */
-    private static Double convertNegativeLogProbabilityToPositiveScore(Double negativeLogProbability) {
-        return negativeLogProbability; // (negativeLogProbability - 1000000d) / (negativeLogProbability / 100d);
+        return proposal.getScore();
     }
 }

@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import com.ciphertool.zenith.model.LanguageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,6 @@ import java.util.*;
 public class CipherSolution {
     private static Logger log = LoggerFactory.getLogger(CipherSolution.class);
 
-    // The fifth root seems to be the right scale
     private static final double FIFTH_ROOT = 1d / 5d;
 
     protected Cipher cipher;
@@ -39,6 +37,10 @@ public class CipherSolution {
     private Map<String, String> mappings = new HashMap<>();
 
     private List<Double> logProbabilities = new ArrayList<>();
+
+    private Double indexOfCoincidence = 1d;
+
+    private Double chiSquared = 1d;
 
     public CipherSolution() {
     }
@@ -79,6 +81,22 @@ public class CipherSolution {
         this.probability = score;
     }
 
+    public Double getIndexOfCoincidence() {
+        return indexOfCoincidence;
+    }
+
+    public void setIndexOfCoincidence(Double indexOfCoincidence) {
+        this.indexOfCoincidence = indexOfCoincidence;
+    }
+
+    public Double getChiSquared() {
+        return chiSquared;
+    }
+
+    public void setChiSquared(Double chiSquared) {
+        this.chiSquared = chiSquared;
+    }
+
     /**
      * @return the logProbability
      */
@@ -90,35 +108,6 @@ public class CipherSolution {
         logProbability = logProbabilities.stream().reduce(0d, (a, b) -> a + b);
 
         return logProbability;
-    }
-
-    protected Double computeIndexOfCoincidence() {
-        String solutionString = asSingleLineString();
-
-        int totalLetters = solutionString.length();
-
-        List<Integer> counts = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS.size());
-
-        int denominator = totalLetters * (totalLetters - 1);
-
-        for (Character c : LanguageConstants.LOWERCASE_LETTERS) {
-            int count = 0;
-
-            for (int i = 0; i < totalLetters; i++) {
-                if (c.equals(solutionString.charAt(i))) {
-                    count++;
-                }
-            }
-
-            counts.add(count);
-        }
-
-        int numerator = 0;
-        for (Integer count : counts) {
-            numerator += (count * (count - 1));
-        }
-
-        return (double) numerator / (double) denominator;
     }
 
     public Map<String, String> getMappings() {
@@ -217,7 +206,7 @@ public class CipherSolution {
     public Double getScore() {
         // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
         // This has not been determined empirically but has worked well through experimentation
-        return getLogProbability() * Math.pow(computeIndexOfCoincidence(), FIFTH_ROOT);
+        return getLogProbability() * Math.pow(indexOfCoincidence, FIFTH_ROOT);
     }
 
     public Double evaluateKnownSolution() {
