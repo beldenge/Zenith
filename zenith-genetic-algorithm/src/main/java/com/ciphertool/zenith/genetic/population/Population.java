@@ -35,9 +35,9 @@ import java.util.Map;
 public interface Population {
     Chromosome evaluateFitness(GenerationStatistics generationStatistics);
 
-    int breed();
+    List<Chromosome> breed(int numberToSpawn);
 
-    List<Parents> select();
+    List<Parents> select(int numberToSelect);
 
     void clearIndividuals();
 

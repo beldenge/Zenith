@@ -22,29 +22,13 @@ package com.ciphertool.zenith.genetic.algorithms.crossover;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 @Component
 public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
     @Override
-    public List<Chromosome<Object>> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
-        List<Chromosome<Object>> children = new ArrayList<>(1);
-
-        Chromosome<Object> child = performCrossover(parentA, parentB);
-
-        // The Chromosome could be null if it's identical to one of its parents
-        if (child != null) {
-            children.add(child);
-        }
-
-        return children;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Chromosome<Object> performCrossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
+    public Chromosome<Object> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
         Random generator = new Random();
         Set<Object> availableKeys = parentA.getGenes().keySet();
         Object[] keys = availableKeys.toArray();

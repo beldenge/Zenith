@@ -135,7 +135,13 @@ public class StandardPopulationTest {
         assertEquals(0, population.size());
         assertEquals(Double.valueOf(0d), population.getTotalFitness());
 
-        population.breed();
+        List<Chromosome> children = population.breed(expectedPopulationSize);
+
+        assertEquals(expectedPopulationSize, children.size());
+
+        for (Chromosome child : children) {
+            population.addIndividual(child);
+        }
 
         assertEquals(expectedPopulationSize, population.size());
         assertEquals(Double.valueOf(50.0d), population.getTotalFitness());

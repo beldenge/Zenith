@@ -48,12 +48,12 @@ public abstract class AbstractPopulation implements Population {
     protected int elitism = 0;
 
     @Override
-    public int breed() {
+    public List<Chromosome> breed(int numberToSpawn) {
+        List<Chromosome> children = new ArrayList<>();
         List<FutureTask<Chromosome>> futureTasks = new ArrayList<>();
         FutureTask<Chromosome> futureTask;
 
-        int individualsAdded = 0;
-        for (int i = 0; i < targetSize; i++) {
+        for (int i = 0; i < numberToSpawn; i++) {
             futureTask = new FutureTask<>(new GeneratorTask());
             futureTasks.add(futureTask);
 
@@ -62,9 +62,7 @@ public abstract class AbstractPopulation implements Population {
 
         for (FutureTask<Chromosome> future : futureTasks) {
             try {
-                this.addIndividual(future.get());
-
-                individualsAdded++;
+                children.add(future.get());
             } catch (InterruptedException ie) {
                 log.error("Caught InterruptedException while waiting for GeneratorTask ", ie);
             } catch (ExecutionException ee) {
@@ -72,9 +70,9 @@ public abstract class AbstractPopulation implements Population {
             }
         }
 
-        log.debug("Added {} individuals to the population.", individualsAdded);
+        log.debug("{} individuals to be added to the population.", children.size());
 
-        return individualsAdded;
+        return children;
     }
 
     /**
@@ -91,10 +89,10 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
-    public List<Parents> select() {
+    public List<Parents> select(int numberToSelect) {
         reIndexSelector();
 
-        int pairsToCrossover = (this.size() - this.elitism);
+        int pairsToCrossover = (numberToSelect - this.elitism);
 
         List<FutureTask<Parents>> futureTasks = new ArrayList<>(pairsToCrossover);
         FutureTask<Parents> futureTask;

@@ -38,7 +38,6 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 
@@ -111,6 +110,7 @@ public class StandardGeneticAlgorithmTest {
                 .mutationAlgorithm(mutationAlgorithmMock)
                 .maxMutationsPerIndividual(0)
                 .populationSize(populationSize)
+                .newSpawnsPerGeneration(0)
                 .selector(mock(Selector.class))
                 .mutationRate(mutationRate)
                 .maxGenerations(-1)
@@ -157,7 +157,7 @@ public class StandardGeneticAlgorithmTest {
         assertEquals(mutationAlgorithmMock.getClass().getSimpleName(), executionStatisticsFromObject.getMutationAlgorithm());
 
         verify(populationMock, times(1)).clearIndividuals();
-        verify(populationMock, times(1)).breed();
+        verify(populationMock, times(1)).breed(eq(populationSize));
         verify(populationMock, times(1)).evaluateFitness(any(GenerationStatistics.class));
         verify(populationMock, times(1)).size();
         verify(populationMock, times(1)).calculateEntropy();
@@ -209,7 +209,7 @@ public class StandardGeneticAlgorithmTest {
             allParents.add(new Parents(new MockChromosome(), new MockChromosome()));
         }
 
-        when(populationMock.select()).thenReturn(allParents);
+        when(populationMock.select(eq(initialPopulationSize))).thenReturn(allParents);
         when(populationMock.getIndividuals()).thenReturn(individuals);
         when(populationMock.removeIndividual(anyInt())).thenReturn(new MockChromosome());
         when(populationMock.size()).thenReturn(initialPopulationSize);
@@ -223,6 +223,7 @@ public class StandardGeneticAlgorithmTest {
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .populationSize(populationSize)
+                .newSpawnsPerGeneration(0)
                 .mutationRate(mutationRate)
                 .mutationAlgorithm(mutationAlgorithmMock)
                 .crossoverAlgorithm(crossoverAlgorithmMock)
@@ -249,7 +250,7 @@ public class StandardGeneticAlgorithmTest {
         ReflectionUtils.setField(generationCountField, standardGeneticAlgorithm, 0);
 
         Chromosome chromosomeToReturn = new MockChromosome();
-        when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(Arrays.asList(chromosomeToReturn));
+        when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
 
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         Field executionStatisticsField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "executionStatistics");
@@ -270,9 +271,9 @@ public class StandardGeneticAlgorithmTest {
         int generationCountFromObject = (int) ReflectionUtils.getField(generationCountField, standardGeneticAlgorithm);
         assertEquals(1, generationCountFromObject);
 
-        verify(populationMock, times(1)).select();
+        verify(populationMock, times(1)).select(eq(populationSize));
         verify(populationMock, times(3)).size();
-        verify(populationMock, never()).breed();
+        verify(populationMock, never()).breed(eq(populationSize));
         verify(populationMock, times(1)).evaluateFitness(any(GenerationStatistics.class));
         verify(populationMock, times(100)).addIndividual(any(Chromosome.class));
         verify(populationMock, times(1)).sortIndividuals();
@@ -317,6 +318,7 @@ public class StandardGeneticAlgorithmTest {
                 .mutationAlgorithm(null)
                 .maxMutationsPerIndividual(-1)
                 .populationSize(0)
+                .newSpawnsPerGeneration(0)
                 .selector(null)
                 .maxGenerations(0)
                 .build();
@@ -346,6 +348,7 @@ public class StandardGeneticAlgorithmTest {
             expectedMessage += "\n\t-Parameter 'fitnessEvaluator' cannot be null.";
             expectedMessage += "\n\t-Parameter 'mutationAlgorithm' cannot be null.";
             expectedMessage += "\n\t-Parameter 'selectorMethod' cannot be null.";
+            expectedMessage += "\n\t-New spawns per generation must be less than the population size.";
 
             assertEquals(expectedMessage, ise.getMessage());
 
@@ -389,7 +392,7 @@ public class StandardGeneticAlgorithmTest {
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
 
         Chromosome chromosomeToReturn = new MockChromosome();
-        when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(Arrays.asList(chromosomeToReturn));
+        when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .crossoverAlgorithm(crossoverAlgorithmMock)
@@ -406,7 +409,7 @@ public class StandardGeneticAlgorithmTest {
             allParents.add(new Parents(individuals.get(i), individuals.get(i)));
         }
 
-        List<Chromosome> children = standardGeneticAlgorithm.crossover(initialPopulationSize, allParents);
+        List<Chromosome> children = standardGeneticAlgorithm.crossover(allParents);
 
         assertEquals(50, children.size());
 
@@ -449,7 +452,7 @@ public class StandardGeneticAlgorithmTest {
             allParents.add(new Parents(new MockChromosome(), new MockChromosome()));
         }
 
-        List<Chromosome> children = standardGeneticAlgorithm.crossover(initialPopulationSize, allParents);
+        List<Chromosome> children = standardGeneticAlgorithm.crossover( allParents);
 
         assertEquals(1, population.size());
 
@@ -595,7 +598,7 @@ public class StandardGeneticAlgorithmTest {
         standardGeneticAlgorithm.spawnInitialPopulation();
 
         verify(populationMock, times(1)).clearIndividuals();
-        verify(populationMock, times(1)).breed();
+        verify(populationMock, times(1)).breed(eq(populationSize));
         verify(populationMock, times(1)).evaluateFitness(any(GenerationStatistics.class));
         verify(populationMock, times(1)).size();
         verify(populationMock, times(1)).calculateEntropy();

@@ -72,6 +72,9 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     @Value("${genetic-algorithm.mutation.max-per-individual}")
     private int maxMutationsPerIndividual;
 
+    @Value("${genetic-algorithm.new-spawns-per-generation:0}")
+    private int newSpawnsPerGeneration;
+
     @Value("${genetic-algorithm.population.type}")
     private String populationName;
 
@@ -233,6 +236,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
                 .maxGenerations(numberOfGenerations)
                 .mutationRate(mutationRate)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
+                .newSpawnsPerGeneration(newSpawnsPerGeneration)
                 .elitism(elitism)
                 .build();
 

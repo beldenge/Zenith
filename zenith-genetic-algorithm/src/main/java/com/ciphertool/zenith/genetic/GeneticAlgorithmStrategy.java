@@ -35,6 +35,7 @@ public class GeneticAlgorithmStrategy {
     private Integer maxMutationsPerIndividual;
     private Integer maxGenerations;
     private Integer elitism;
+    private Integer newSpawnsPerGeneration;
     private Population population;
     private CrossoverAlgorithm crossoverAlgorithm;
     private FitnessEvaluator fitnessEvaluator;
