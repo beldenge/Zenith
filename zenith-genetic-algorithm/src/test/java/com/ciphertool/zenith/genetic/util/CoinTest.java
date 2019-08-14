@@ -35,11 +35,11 @@ public class CoinTest {
         for (int i = 0; i < MAX_FLIPS; i++) {
             Boolean result = coin.flip();
 
-            if (Coin.HEADS.equals(result)) {
+            if (Boolean.TRUE.equals(result)) {
                 headsOccurred = true;
             }
 
-            if (Coin.TAILS.equals(result)) {
+            if (Boolean.FALSE.equals(result)) {
                 tailsOccurred = true;
             }
 

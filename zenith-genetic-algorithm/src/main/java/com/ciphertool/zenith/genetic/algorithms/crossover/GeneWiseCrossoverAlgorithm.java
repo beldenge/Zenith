@@ -24,8 +24,6 @@ import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -33,21 +31,7 @@ public class GeneWiseCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome
     private Coin coin = new Coin();
 
     @Override
-    public List<Chromosome<Object>> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
-        List<Chromosome<Object>> children = new ArrayList<>(1);
-
-        Chromosome<Object> child = performCrossover(parentA, parentB);
-
-        // The Chromosome could be null if it's identical to one of its parents
-        if (child != null) {
-            children.add(child);
-        }
-
-        return children;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Chromosome<Object> performCrossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
+    public Chromosome<Object> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
         Chromosome<Object> child = (Chromosome<Object>) parentA.clone();
 
         Object key;

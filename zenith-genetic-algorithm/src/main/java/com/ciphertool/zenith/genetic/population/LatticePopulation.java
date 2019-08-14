@@ -24,8 +24,6 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -39,8 +37,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class LatticePopulation extends AbstractPopulation {
-    private Logger log = LoggerFactory.getLogger(getClass());
-
     @Value("${genetic-algorithm.population.lattice.rows}")
     private int latticeRows;
 

@@ -21,8 +21,6 @@ package com.ciphertool.zenith.genetic.algorithms.crossover;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 
-import java.util.List;
-
 public interface CrossoverAlgorithm<T extends Chromosome> {
 
     /**
@@ -31,7 +29,7 @@ public interface CrossoverAlgorithm<T extends Chromosome> {
      *
      * @param parentA the first parent
      * @param parentB the second parent
-     * @return the List of children Chromosomes produced from the crossover
+     * @return the child Chromosome produced from the crossover
      */
-    List<T> crossover(T parentA, T parentB);
+    T crossover(T parentA, T parentB);
 }

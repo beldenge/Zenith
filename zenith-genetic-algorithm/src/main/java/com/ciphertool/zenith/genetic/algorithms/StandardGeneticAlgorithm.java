@@ -155,8 +155,6 @@ public class StandardGeneticAlgorithm {
 
         long generationStart = System.currentTimeMillis();
 
-        int populationSizeBeforeGeneration = this.population.size();
-
         PerformanceStatistics performanceStats = new PerformanceStatistics();
 
         long startSelection = System.currentTimeMillis();
@@ -164,7 +162,7 @@ public class StandardGeneticAlgorithm {
         performanceStats.setSelectionMillis(System.currentTimeMillis() - startSelection);
 
         long startCrossover = System.currentTimeMillis();
-        List<Chromosome> children = crossover(populationSizeBeforeGeneration, allParents);
+        List<Chromosome> children = crossover(allParents);
         generationStatistics.setNumberOfCrossovers(children.size());
         performanceStats.setCrossoverMillis(System.currentTimeMillis() - startCrossover);
 
@@ -191,14 +189,14 @@ public class StandardGeneticAlgorithm {
         this.executionStatistics.addGenerationStatistics(generationStatistics);
     }
 
-    public List<Chromosome> crossover(int pairsToCrossover, List<Parents> allParents) {
+    public List<Chromosome> crossover(List<Parents> allParents) {
         if (this.population.size() < 2) {
             log.info("Unable to perform crossover because there is only 1 individual in the population. Returning.");
 
             return Collections.emptyList();
         }
 
-        log.debug("Pairs to crossover: {}", pairsToCrossover);
+        log.debug("Pairs to crossover: {}", allParents.size());
 
         List<Chromosome> crossoverResults = doConcurrentCrossovers(allParents);
         List<Chromosome> childrenToAdd = new ArrayList<>();
@@ -207,17 +205,17 @@ public class StandardGeneticAlgorithm {
             childrenToAdd.addAll(crossoverResults);
         }
 
-        if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism()) < pairsToCrossover) {
+        if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism()) < strategy.getPopulationSize()) {
             throw new IllegalStateException(((null == childrenToAdd) ? "No" : childrenToAdd.size()) +
-                    " children produced from concurrent crossover execution.  Expected " + pairsToCrossover + " children.");
+                    " children produced from concurrent crossover execution.  Expected " + strategy.getPopulationSize() + " children.");
         }
 
         return childrenToAdd;
     }
 
     protected List<Chromosome> doConcurrentCrossovers(List<Parents> allParents) {
-        List<FutureTask<List<Chromosome>>> futureTasks = new ArrayList<>();
-        FutureTask<List<Chromosome>> futureTask;
+        List<FutureTask<Chromosome>> futureTasks = new ArrayList<>();
+        FutureTask<Chromosome> futureTask;
 
         /*
          * Execute each crossover concurrently. Parents should produce two children, but this is not necessarily always
@@ -232,13 +230,13 @@ public class StandardGeneticAlgorithm {
         List<Chromosome> childrenToAdd = new ArrayList<>();
 
         // Add the result of each FutureTask to the population since it represents a new child Chromosome.
-        for (FutureTask<List<Chromosome>> future : futureTasks) {
+        for (FutureTask<Chromosome> future : futureTasks) {
             try {
                 /*
                  * Add children after all crossover operations are completed so that children are not inadvertently
                  * breeding immediately after birth.
                  */
-                childrenToAdd.addAll(future.get());
+                childrenToAdd.add(future.get());
             } catch (InterruptedException ie) {
                 log.error("Caught InterruptedException while waiting for CrossoverTask ", ie);
             } catch (ExecutionException ee) {
@@ -352,7 +350,7 @@ public class StandardGeneticAlgorithm {
     /**
      * A concurrent task for performing a crossover of two parent Chromosomes, producing one child Chromosome.
      */
-    protected class CrossoverTask implements Callable<List<Chromosome>> {
+    protected class CrossoverTask implements Callable<Chromosome> {
         private Parents parents;
 
         public CrossoverTask(Parents parents) {
@@ -361,7 +359,7 @@ public class StandardGeneticAlgorithm {
 
         @SuppressWarnings("unchecked")
         @Override
-        public List<Chromosome> call() {
+        public Chromosome call() {
             return strategy.getCrossoverAlgorithm().crossover(parents.getMom(), parents.getDad());
         }
     }
