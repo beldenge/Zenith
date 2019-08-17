@@ -133,6 +133,8 @@ public class CiphertextCycleCountEvaluator {
             cyclePairs.add((CyclePair) cyclePair.clone());
         }
 
+        // TODO: This is a potential area for parallelization, although I don't like the idea of multithreading inside of an evaluator
+        int score = 0;
         for (CyclePair cyclePair : cyclePairs) {
             List<Integer> firstIndices = ciphertextIndices.get(cyclePair.getFirst());
             List<Integer> secondIndices = ciphertextIndices.get(cyclePair.getSecond());
@@ -155,15 +157,12 @@ public class CiphertextCycleCountEvaluator {
                     secondListIndex ++;
                 }
             }
-        }
 
-        int score = 0;
-        for (CyclePair cyclePair : cyclePairs) {
             int longestSequenceLength = cyclePair.getLongestSequenceLength();
 
             // Cycles of less than four in length are insignificant
             if (longestSequenceLength > 3) {
-                score += (int) Math.pow(cyclePair.getLongestSequenceLength(), 2);
+                score += (int) Math.pow(longestSequenceLength, 2);
             }
         }
 
