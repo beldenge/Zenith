@@ -40,6 +40,7 @@ You should have received a copy of the GNU General Public License along with Zen
         <module>zenith-mutation-search</module>
         <module>zenith-genetic-algorithm</module>
         <module>zenith-roulette</module>
+        <module>zenith-mutator</module>
     </modules>
 
 	<dependencies>

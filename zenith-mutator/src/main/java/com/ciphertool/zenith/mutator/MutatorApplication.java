@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.search;
+package com.ciphertool.zenith.mutator;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
@@ -29,24 +29,24 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication(scanBasePackages = {
-        "com.ciphertool.zenith.search",
+        "com.ciphertool.zenith.mutator",
         "com.ciphertool.zenith.inference.dao",
         "com.ciphertool.zenith.inference.transformer.ciphertext"
 })
-public class MutationSearchApplication implements CommandLineRunner {
+public class MutatorApplication implements CommandLineRunner {
     @Value("${cipher.name}")
     private String cipherName;
 
     @Autowired
-    private TranspositionSearcher searcher;
+    private Mutator mutator;
 
     public static void main(String[] args) {
-        SpringApplication.run(MutationSearchApplication.class, args).close();
+        SpringApplication.run(MutatorApplication.class, args).close();
     }
 
     @Override
     public void run(String... arg0) {
-        searcher.run();
+        mutator.mutate();
     }
 
     @Bean

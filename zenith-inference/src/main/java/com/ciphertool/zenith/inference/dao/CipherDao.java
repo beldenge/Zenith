@@ -32,6 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +44,7 @@ public class CipherDao {
     private static final String CIPHERS_DIRECTORY = "ciphers";
     private static final String JSON_EXTENSION = ".json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
     private List<Cipher> ciphers = new ArrayList<>();
 
@@ -116,6 +119,19 @@ public class CipherDao {
         }
 
         return ciphers;
+    }
+
+    public void writeToFile(Cipher cipher) {
+        String dateText = LocalDateTime.now().format(DATE_TIME_FORMATTER);
+
+        // Write the file to the current working directory
+        String outputFilename = "." + File.separator + cipher.getName() + "-" + dateText + JSON_EXTENSION;
+
+        try {
+            OBJECT_MAPPER.writeValue(new File(outputFilename), cipher);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to write Cipher with name=" + cipher.getName() + " to file=" + outputFilename + ".");
+        }
     }
 
     private boolean containsCipher(Cipher newCipher) {

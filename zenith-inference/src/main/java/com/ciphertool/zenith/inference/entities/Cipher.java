@@ -91,6 +91,10 @@ public class Cipher {
         knownSolutionKey.put(key, value);
     }
 
+    public void clearKnownSolutionKey() {
+        this.knownSolutionKey = new HashMap<>();
+    }
+
     public int length() {
         return rows * columns;
     }
