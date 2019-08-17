@@ -78,9 +78,10 @@ public class Cipher {
     }
 
     public void replaceCiphertextCharacter(int index, Ciphertext ciphertext) {
-        this.ciphertextCharacters.remove(index);
-        this.ciphertextCharacters.add(index, ciphertext);
-        ciphertext.setCiphertextId(index);
+        Ciphertext toReplace = this.ciphertextCharacters.get(index);
+
+        toReplace.setCiphertextId(index);
+        toReplace.setValue(ciphertext.getValue());
     }
 
     public Map<String, String> getKnownSolutionKey() {

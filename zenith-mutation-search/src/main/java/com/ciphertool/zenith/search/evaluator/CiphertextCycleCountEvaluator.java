@@ -137,6 +137,10 @@ public class CiphertextCycleCountEvaluator {
             List<Integer> firstIndices = ciphertextIndices.get(cyclePair.getFirst());
             List<Integer> secondIndices = ciphertextIndices.get(cyclePair.getSecond());
 
+            if (firstIndices == null || secondIndices == null) {
+                continue;
+            }
+
             int firstListIndex = 0;
             int secondListIndex = 0;
             for (int i = 0; i < firstIndices.size() + secondIndices.size(); i ++) {
@@ -220,6 +224,10 @@ public class CiphertextCycleCountEvaluator {
         }
 
         public int getLongestSequenceLength() {
+            if (occurenceSequence.size() == 0) {
+                return 0;
+            }
+
             List<Integer> alternatingSequenceLengths = new ArrayList<>(1);
 
             int alternatingSequenceLength = 0;

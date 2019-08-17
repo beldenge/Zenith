@@ -42,16 +42,20 @@ public class TranspositionCipherTransformer extends AbstractTranspositionCipherT
         Cipher transformed = cipher.clone();
         Cipher clone = cipher;
         for (int iter = 0; iter < transpositionIterations; iter++) {
+            if (iter > 0) {
+                clone = transformed.clone();
+            }
+
             int k = 0;
 
             for (int i = 0; i < columnIndices.size(); i++) {
+                int columnIndex = columnIndices.indexOf(i);
+
                 for (int j = 0; j < rows; j++) {
-                    transformed.replaceCiphertextCharacter(k, clone.getCiphertextCharacters().get((j * columnIndices.size()) + columnIndices.indexOf(i)).clone());
+                    transformed.replaceCiphertextCharacter(k, clone.getCiphertextCharacters().get((j * columnIndices.size()) + columnIndex).clone());
                     k++;
                 }
             }
-
-            clone = transformed.clone();
         }
 
         return transformed;
