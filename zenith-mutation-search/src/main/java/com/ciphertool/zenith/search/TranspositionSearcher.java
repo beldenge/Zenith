@@ -161,7 +161,7 @@ public class TranspositionSearcher {
         for (int i = 0; i < transpositionKeyIndices.size(); i++) {
             // Start at i + 1, as all previous swaps will have already been tried
             for (int j = i + 1; j < transpositionKeyIndices.size(); j++) {
-                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
+                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(bestTranspositionKeyIndices);
                 int firstValue = nextTranspositionKeyIndices.get(i);
                 int secondValue = nextTranspositionKeyIndices.get(j);
                 nextTranspositionKeyIndices.set(i, secondValue);

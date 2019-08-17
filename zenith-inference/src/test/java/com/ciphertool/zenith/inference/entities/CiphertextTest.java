@@ -26,21 +26,21 @@ import static org.junit.Assert.*;
 public class CiphertextTest {
     @Test
     public void testConstructor() {
-        Integer ciphertextIdToSet = new Integer(123);
+        int ciphertextIdToSet = new Integer(123);
         String valueToSet = "ciphertextValue";
         Ciphertext ciphertext = new Ciphertext(ciphertextIdToSet, valueToSet);
 
-        assertSame(ciphertextIdToSet, ciphertext.getCiphertextId());
+        assertEquals(ciphertextIdToSet, ciphertext.getCiphertextId());
         assertEquals(valueToSet, ciphertext.getValue());
     }
 
     @Test
     public void testSetCiphertextId() {
-        Integer ciphertextIdToSet = new Integer(123);
+        int ciphertextIdToSet = new Integer(123);
         Ciphertext ciphertext = new Ciphertext();
         ciphertext.setCiphertextId(ciphertextIdToSet);
 
-        assertSame(ciphertextIdToSet, ciphertext.getCiphertextId());
+        assertEquals(ciphertextIdToSet, ciphertext.getCiphertextId());
     }
 
     @Test
