@@ -175,14 +175,10 @@ public class CiphertextCycleCountEvaluator {
         return score;
     }
 
+    @Getter
     public class CyclePair implements Cloneable {
-        @Getter
         private String first;
-
-        @Getter
         private String second;
-
-        @Getter
         private List<String> occurenceSequence = new ArrayList<>();
 
         public CyclePair(String first, String second) {

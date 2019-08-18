@@ -23,6 +23,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.transformer.ciphertext.UnwrapTranspositionCipherTransformer;
 import com.ciphertool.zenith.search.evaluator.CiphertextCycleCountEvaluator;
+import com.ciphertool.zenith.search.model.EpochResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -81,8 +84,13 @@ public class TranspositionSearcher {
     }
 
     public void run() {
+        long start = System.currentTimeMillis();
+        Map<Integer, List<EpochResults>> bestSolutionsPerKeyLength = new HashMap<>(keyLengthMax - keyLengthMin);
+
         for (int keyLength = keyLengthMin; keyLength <= keyLengthMax; keyLength++) {
-            for (int epoch = 0; epoch < epochs; epoch++) {
+            bestSolutionsPerKeyLength.put(keyLength, new ArrayList<>(epochs));
+
+            for (int epoch = 1; epoch <= epochs; epoch++) {
                 CipherSolution cipherProposal = new CipherSolution();
 
                 List<Integer> transpositionKeyIndicesSource = new ArrayList<>(keyLength);
@@ -97,14 +105,18 @@ public class TranspositionSearcher {
 
                 cipherProposal.setCipher(cipher);
 
-                log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
+                log.info("Epoch {} of {}.  Running sampler for {} iterations.", epoch, epochs, samplerIterations);
 
-                performEpoch(cipherProposal, transpositionKeyIndices, keyLength);
+                EpochResults epochResults = performEpoch(epoch, cipherProposal, transpositionKeyIndices, keyLength);
+                bestSolutionsPerKeyLength.get(keyLength).add(epochResults);
             }
         }
+
+        log.info("Total time elapsed: {}ms.", (System.currentTimeMillis() - start));
+        printSummaryResults(bestSolutionsPerKeyLength);
     }
 
-    private void performEpoch(CipherSolution initialCipher, List<Integer> transpositionKeyIndices, int keyLength) {
+    private EpochResults performEpoch(int epoch, CipherSolution initialCipher, List<Integer> transpositionKeyIndices, int keyLength) {
         log.debug("{}", transpositionKeyIndices);
 
         Double maxTemp = annealingTemperatureMax;
@@ -141,16 +153,18 @@ public class TranspositionSearcher {
                 maxIndices = new ArrayList<>(transpositionKeyIndices);
             }
 
-            //if (log.isDebugEnabled()) {
-                log.info("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
-                log.info("Indices: {}, Score: {}, KeyLength: {}", transpositionKeyIndices, ciphertextEvaluator.evaluate(next), keyLength);
-            //}
+            if (log.isDebugEnabled()) {
+                log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
+                log.debug("Indices: {}, Score: {}, KeyLength: {}", transpositionKeyIndices, ciphertextEvaluator.evaluate(next), keyLength);
+            }
         }
 
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
         log.info("Best probability found at iteration {}", maxProbabilityIteration);
         log.info("Indices for best probability: {}, Score: {}, KeyLength: {}", maxIndices, ciphertextEvaluator.evaluate(maxProbability), keyLength);
         log.debug("Cipher: {}", maxProbability.getCipher());
+
+        return new EpochResults(epoch, maxProbabilityIteration, maxProbability, maxIndices);
     }
 
     private CipherSolution runSampler(Double temperature, CipherSolution solution, List<Integer> transpositionKeyIndices) {
@@ -213,5 +227,48 @@ public class TranspositionSearcher {
         }
 
         return solution;
+    }
+
+    private void printSummaryResults(Map<Integer, List<EpochResults>> bestSolutionsPerKeyLength) {
+        log.info("---------------------");
+        log.info("---RESULTS SUMMARY---");
+        log.info("---------------------");
+
+        CipherSolution cipherProposal = new CipherSolution();
+        cipherProposal.setCipher(cipher);
+        ciphertextEvaluator.evaluate(cipherProposal);
+        log.info("Original solution score: {}", cipherProposal.getScore());
+
+        int bestAverageKeyLength = -1;
+        double bestAverageScore = 0d;
+        int bestBestKeyLength = -1;
+        double bestBestScore = 0d;
+
+        for (Map.Entry<Integer, List<EpochResults>> entry : bestSolutionsPerKeyLength.entrySet()) {
+            double averageScore = entry.getValue().stream()
+                    .mapToDouble(epochResults -> epochResults.getBestSolution().getScore())
+                    .average()
+                    .orElse(0d);
+
+            double bestScore = entry.getValue().stream()
+                    .mapToDouble(epochResults -> epochResults.getBestSolution().getScore())
+                    .max()
+                    .orElse(0d);
+
+            if (averageScore > bestAverageScore) {
+                bestAverageScore = averageScore;
+                bestAverageKeyLength = entry.getKey();
+            }
+
+            if (bestScore > bestBestScore) {
+                bestBestScore = bestScore;
+                bestBestKeyLength = entry.getKey();
+            }
+
+            log.info("For key length {}, average score was {} and best score was {}.", entry.getKey(), averageScore, bestScore);
+        }
+
+        log.info("Best average score found for key length: {}", bestAverageKeyLength);
+        log.info("Best overall score found for key length: {}", bestBestKeyLength);
     }
 }
