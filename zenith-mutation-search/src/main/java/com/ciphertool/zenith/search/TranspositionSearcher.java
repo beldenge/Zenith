@@ -22,7 +22,9 @@ package com.ciphertool.zenith.search;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.transformer.ciphertext.UnwrapTranspositionCipherTransformer;
+import com.ciphertool.zenith.search.evaluator.CiphertextRepeatingBigramEvaluator;
 import com.ciphertool.zenith.search.evaluator.CiphertextCycleCountEvaluator;
+import com.ciphertool.zenith.search.evaluator.CiphertextRowLevelEntropyEvaluator;
 import com.ciphertool.zenith.search.model.EpochResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +62,13 @@ public class TranspositionSearcher {
     private int keyLengthMax;
 
     @Autowired
-    private CiphertextCycleCountEvaluator ciphertextEvaluator;
+    private CiphertextRepeatingBigramEvaluator repeatingBigramEvaluator;
+
+    @Autowired
+    private CiphertextCycleCountEvaluator cycleCountEvaluator;
+
+    @Autowired
+    private CiphertextRowLevelEntropyEvaluator rowLevelEntropyEvaluator;
 
     @Autowired
     private UnwrapTranspositionCipherTransformer unwrapTranspositionCipherTransformer;
@@ -126,7 +134,7 @@ public class TranspositionSearcher {
         CipherSolution next;
         CipherSolution maxProbability = initialCipher.clone();
         maxProbability.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, transpositionKeyIndices));
-        ciphertextEvaluator.evaluate(maxProbability);
+        evaluate(maxProbability);
         List<Integer> maxIndices = new ArrayList<>(transpositionKeyIndices);
         int maxProbabilityIteration = 0;
         long start = System.currentTimeMillis();
@@ -155,13 +163,13 @@ public class TranspositionSearcher {
 
             if (log.isDebugEnabled()) {
                 log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
-                log.debug("Indices: {}, Score: {}, KeyLength: {}", transpositionKeyIndices, ciphertextEvaluator.evaluate(next), keyLength);
+                log.debug("Indices: {}, Score: {}, KeyLength: {}", transpositionKeyIndices, evaluate(next), keyLength);
             }
         }
 
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
         log.info("Best probability found at iteration {}", maxProbabilityIteration);
-        log.info("Indices for best probability: {}, Score: {}, KeyLength: {}", maxIndices, ciphertextEvaluator.evaluate(maxProbability), keyLength);
+        log.info("Indices for best probability: {}, Score: {}, KeyLength: {}", maxIndices, evaluate(maxProbability), keyLength);
         log.debug("Cipher: {}", maxProbability.getCipher());
 
         return new EpochResults(epoch, maxProbabilityIteration, maxProbability, maxIndices);
@@ -185,7 +193,7 @@ public class TranspositionSearcher {
 
                 proposal.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, nextTranspositionKeyIndices));
 
-                ciphertextEvaluator.evaluate(proposal);
+                evaluate(proposal);
 
                 best = selectNext(temperature, best, proposal);
 
@@ -229,6 +237,19 @@ public class TranspositionSearcher {
         return solution;
     }
 
+    private double evaluate(CipherSolution cipherSolution) {
+        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
+        int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
+        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
+
+        double scaledScore = (repeatingBigramScore * 100) + ((double) cycleScore);
+
+        cipherSolution.clearLogProbabilities();
+        cipherSolution.addLogProbability(scaledScore);
+
+        return scaledScore;
+    }
+
     private void printSummaryResults(Map<Integer, List<EpochResults>> bestSolutionsPerKeyLength) {
         log.info("---------------------");
         log.info("---RESULTS SUMMARY---");
@@ -236,7 +257,7 @@ public class TranspositionSearcher {
 
         CipherSolution cipherProposal = new CipherSolution();
         cipherProposal.setCipher(cipher);
-        ciphertextEvaluator.evaluate(cipherProposal);
+        evaluate(cipherProposal);
         log.info("Original solution score: {}", cipherProposal.getScore());
 
         int bestAverageKeyLength = -1;

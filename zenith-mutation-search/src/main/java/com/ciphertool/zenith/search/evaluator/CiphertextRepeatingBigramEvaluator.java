@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class CiphertextBigramEvaluator {
+public class CiphertextRepeatingBigramEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${decipherment.remove-last-row:true}")
@@ -66,11 +66,6 @@ public class CiphertextBigramEvaluator {
         for (Integer count : repeatingBigramCounts.values()) {
             repeatingBigramCount += count - 1;
         }
-
-        double probability = (double) repeatingBigramCount / (double) (end - 1);
-        cipherProposal.setProbability(probability);
-        cipherProposal.clearLogProbabilities();
-        cipherProposal.addLogProbability(Math.log(probability));
 
         log.debug("Cipher evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
 

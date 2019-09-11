@@ -166,10 +166,6 @@ public class CiphertextCycleCountEvaluator {
             }
         }
 
-        solutionProposal.setProbability((double) score);
-        solutionProposal.clearLogProbabilities();
-        solutionProposal.addLogProbability((double) score);
-
         log.debug("Cipher evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
 
         return score;
