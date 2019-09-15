@@ -52,10 +52,13 @@ public class LanguageModelApplication implements CommandLineRunner {
     private String outputDirectory;
 
     @Autowired
-    private CorpusTransformer xmlCorpusTransformer;
+    private CorpusTransformer britishNationalCorpusTransformer;
 
     @Autowired
     private CorpusTransformer textCorpusTransformer;
+
+    @Autowired
+    private CorpusTransformer blogAuthorshipCorpusTransformer;
 
     @Autowired
     private NGramPersister nGramPersister;
@@ -68,13 +71,14 @@ public class LanguageModelApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... arg0) throws Exception {
+    public void run(String... arg0) {
         log.info("TaskExecutor core pool size: {}", taskExecutor.getCorePoolSize());
         log.info("TaskExecutor max pool size: {}", taskExecutor.getMaxPoolSize());
 
         if (!Files.exists(Paths.get(outputDirectory))) {
             textCorpusTransformer.transformCorpus();
-            xmlCorpusTransformer.transformCorpus();
+            britishNationalCorpusTransformer.transformCorpus();
+            blogAuthorshipCorpusTransformer.transformCorpus();
         }
 
         nGramPersister.persistNGrams();

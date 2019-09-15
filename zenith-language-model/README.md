@@ -8,6 +8,7 @@ These corpora are **not** supplied with this project.  At this time they would n
 * [British National Corpus, XML Edition](http://ota.ox.ac.uk/desc/2554)
 * [Leipzig Corpora Collection (English 2005)](http://wortschatz.uni-leipzig.de/en/download/)
 * [American National Corpus (MASC)](http://www.anc.org/data/masc/downloads/data-download/)
+* [Blog Authorship Corpus](https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm)
 
 # Running
 1. Download and install Java 8 or later

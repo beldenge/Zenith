@@ -22,6 +22,7 @@ package com.ciphertool.zenith.model.archive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +34,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 @Component
+@ConditionalOnExpression("'LanguageModelApplication' ne '${spring.application.name:#{null}}'")
 public class ModelUnzipper {
     private Logger log = LoggerFactory.getLogger(getClass());
 

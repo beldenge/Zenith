@@ -28,20 +28,16 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.regex.Pattern;
 
 @Component
-public class XmlCorpusTransformer extends CorpusTransformer {
+public class BritishNationalCorpusTransformer extends CorpusTransformer {
     private static final String INPUT_EXT = ".xml";
     private static final String OUTPUT_EXT = ".txt";
     private static final String HEAD_TAG = "head";
@@ -68,33 +64,17 @@ public class XmlCorpusTransformer extends CorpusTransformer {
     private static final String DOLLAR = "(\\$|£)[0-9]+";
     private static final Pattern DOLLAR_PATTERN = Pattern.compile(DOLLAR);
 
-    @Value("${corpus.xml.input.directory}")
-    private String corpusDirectory;
-
-    @Value("${corpus.output.directory}")
-    private String outputDirectory;
+    @Value("${corpus.bnc.input.directory}")
+    private String corpusInputDirectory;
 
     @Override
-    public void transformCorpus() throws ParserConfigurationException {
-        long start = System.currentTimeMillis();
+    protected String getInputFileExtension() {
+        return INPUT_EXT;
+    }
 
-        log.info("Starting corpus transformation...");
-
-        List<FutureTask<Long>> futures = parseFiles(INPUT_EXT, Paths.get(this.corpusDirectory));
-
-        long total = 0;
-
-        for (FutureTask<Long> future : futures) {
-            try {
-                total += future.get();
-            } catch (InterruptedException ie) {
-                log.error("Caught InterruptedException while waiting for TransformFileTask ", ie);
-            } catch (ExecutionException ee) {
-                log.error("Caught ExecutionException while waiting for TransformFileTask ", ee);
-            }
-        }
-
-        log.info("Transformed " + total + " words in " + (System.currentTimeMillis() - start) + "ms");
+    @Override
+    protected String getCorpusInputDirectory() {
+        return corpusInputDirectory;
     }
 
     @Override
@@ -108,10 +88,6 @@ public class XmlCorpusTransformer extends CorpusTransformer {
     protected class TransformFileTask implements Callable<Long> {
         private Path path;
 
-        /**
-         * @param path
-         *            the Path to set
-         */
         public TransformFileTask(Path path) {
             this.path = path;
         }
@@ -227,10 +203,10 @@ public class XmlCorpusTransformer extends CorpusTransformer {
                     }
                 }
             } catch (IOException ioe) {
-                log.error("Unable to parse file: " + this.path.toString(), ioe);
+                log.error("Unable to parse file: {}", this.path.toString(), ioe);
             }
 
-            String relativeFilename = this.path.subpath(Paths.get(corpusDirectory).getNameCount(), this.path.getNameCount()).toString();
+            String relativeFilename = this.path.subpath(Paths.get(corpusInputDirectory).getNameCount(), this.path.getNameCount()).toString();
 
             Path parentDir = Paths.get(outputDirectory + "/" + relativeFilename).getParent();
 

@@ -92,8 +92,7 @@ public class LetterNGramMarkovImporter {
             }
         }
 
-        log.info("Imported " + unique + " distinct letter N-Grams out of " + total + " total in "
-                + (System.currentTimeMillis() - start) + "ms");
+        log.info("Imported {} distinct letter N-Grams out of {} total in {}ms.", unique, total, (System.currentTimeMillis() - start));
 
         computeConditionalProbabilityAsync(letterMarkovModel);
 
@@ -185,12 +184,6 @@ public class LetterNGramMarkovImporter {
         private Path path;
         private TreeMarkovModel letterMarkovModel;
 
-        /**
-         * @param path
-         *            the Path to set
-         * @param letterMarkovModel
-         *            the TreeMarkovModel to use
-         */
         public ParseFileTask(Path path, TreeMarkovModel letterMarkovModel) {
             this.path = path;
             this.letterMarkovModel = letterMarkovModel;
@@ -229,7 +222,7 @@ public class LetterNGramMarkovImporter {
                     }
                 }
             } catch (IOException ioe) {
-                log.error("Unable to parse file: " + this.path.toString(), ioe);
+                log.error("Unable to parse file: {}", this.path.toString(), ioe);
             }
 
             return new ParseResults(total, unique);
@@ -250,7 +243,7 @@ public class LetterNGramMarkovImporter {
                     String ext = filename.substring(filename.lastIndexOf('.'));
 
                     if (!ext.equals(EXTENSION)) {
-                        log.info("Skipping file with unexpected file extension: " + filename);
+                        log.info("Skipping file with unexpected file extension: {}", filename);
 
                         continue;
                     }
@@ -261,7 +254,7 @@ public class LetterNGramMarkovImporter {
                 }
             }
         } catch (IOException ioe) {
-            log.error("Unable to parse files due to:" + ioe.getMessage(), ioe);
+            log.error("Unable to parse files due to: {}", ioe.getMessage(), ioe);
         }
 
         return tasks;
