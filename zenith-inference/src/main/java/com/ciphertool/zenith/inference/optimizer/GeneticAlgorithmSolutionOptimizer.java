@@ -29,6 +29,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
@@ -56,6 +57,9 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
     @Value("${decipherment.epochs:1}")
     private int epochs;
+
+    @Value("${decipherment.known-solution.correctness-threshold:0.9}")
+    private double knownSolutionCorrectnessThreshold;
 
     @Value("${genetic-algorithm.population.size}")
     private int populationSize;
@@ -238,6 +242,8 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
         geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);
 
+        CipherKeyChromosome last = null;
+        int correctSolutions = 0;
         long start = System.currentTimeMillis();
 
         for (int epoch = 0; epoch < epochs; epoch++) {
@@ -262,15 +268,24 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
                 }
             }
 
-            CipherKeyChromosome last = (CipherKeyChromosome) this.geneticAlgorithm.getPopulation().getIndividuals().get(this.geneticAlgorithm.getPopulation().getIndividuals().size() - 1);
+            last = (CipherKeyChromosome) this.geneticAlgorithm.getPopulation().getIndividuals().get(this.geneticAlgorithm.getPopulation().getIndividuals().size() - 1);
 
             log.info("Best probability solution:");
-            cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(last));
+            CipherSolution bestSolution = ChromosomeToCipherSolutionMapper.map(last);
+            cipherSolutionPrinter.print(bestSolution);
             log.info("Mappings for best probability:");
 
             for (Map.Entry<String, Gene> entry : last.getGenes().entrySet()) {
                 log.info("{}: {}", entry.getKey(), ((CipherKeyGene) entry.getValue()).getValue());
             }
+
+            if (last.getCipher().hasKnownSolution() && knownSolutionCorrectnessThreshold <= bestSolution.evaluateKnownSolution()) {
+                correctSolutions ++;
+            }
+        }
+
+        if (last != null && last.getCipher().hasKnownSolution()) {
+            log.info("{} out of {} epochs ({}%) produced the correct solution.", correctSolutions, epochs, String.format("%1$,.2f", (correctSolutions / (double) epochs) * 100.0));
         }
     }
 }

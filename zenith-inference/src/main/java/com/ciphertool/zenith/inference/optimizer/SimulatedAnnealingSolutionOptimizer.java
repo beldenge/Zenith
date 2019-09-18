@@ -66,6 +66,9 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     @Value("${decipherment.epochs:1}")
     private int epochs;
 
+    @Value("${decipherment.known-solution.correctness-threshold:0.9}")
+    private double knownSolutionCorrectnessThreshold;
+
     @Autowired
     protected Cipher cipher;
 
@@ -105,12 +108,22 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
         double totalUnigramProbability = unigramRouletteSampler.reIndex(letterUnigramProbabilities);
 
+        int correctSolutions = 0;
+
         for (int epoch = 0; epoch < epochs; epoch++) {
             CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities, totalUnigramProbability);
 
             log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
-            performEpoch(initialSolution);
+            CipherSolution best = performEpoch(initialSolution);
+
+            if (cipher.hasKnownSolution() && knownSolutionCorrectnessThreshold <= best.evaluateKnownSolution()) {
+                correctSolutions ++;
+            }
+        }
+
+        if (cipher.hasKnownSolution()) {
+            log.info("{} out of {} epochs ({}%) produced the correct solution.", correctSolutions, epochs, String.format("%1$,.2f", (correctSolutions / (double) epochs) * 100.0));
         }
     }
 
@@ -130,7 +143,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return solutionProposal;
     }
 
-    private void performEpoch(CipherSolution initialSolution) {
+    private CipherSolution performEpoch(CipherSolution initialSolution) {
         String solutionString = initialSolution.asSingleLineString();
         for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
             solutionString = plaintextTransformer.transform(solutionString);
@@ -185,6 +198,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         for (Map.Entry<String, String> entry : maxProbability.getMappings().entrySet()) {
             log.info("{}: {}", entry.getKey(), entry.getValue());
         }
+
+        return maxProbability;
     }
 
     private CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {

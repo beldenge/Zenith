@@ -1,7 +1,7 @@
 # Zenith
 The aim of this project is to provide a tool that is easy to use for somewhat technical people in solving homophonic substitution ciphers.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
 
-It currently is successful at deciphering the Zodiac 408 cipher at a rate of roughly 90% per epoch.
+It has been verified to successfully decipher the Zodiac 408 cipher in 878 out of 1000 epochs (87.80%).
 
 It takes roughly 20 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to complete one epoch.
 
