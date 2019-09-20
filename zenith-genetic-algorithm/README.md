@@ -75,6 +75,8 @@ The following mutation implementations are available out of the box.  They are i
    - Gives each gene a chance of mutation (defined by the mutation rate).  Each new gene is chosen randomly.
 2. MultipleMutationAlgorithm
    - Chooses a random number of mutations to perform, constrained by the configurable max, and then that number of genes are chosen at random to be mutated.  Each new gene is chosen randomly.
+3. MandatorySingleMutationAlgorithm
+   - Unconditionally mutates exactly one gene chosen at random.  The new gene is also chosen randomly.
 
 # Selection Implementations
 The following selection implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.selection```.
