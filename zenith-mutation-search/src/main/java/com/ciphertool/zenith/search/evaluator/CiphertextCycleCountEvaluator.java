@@ -25,7 +25,6 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -35,9 +34,6 @@ import java.util.stream.Collectors;
 @Component
 public class CiphertextCycleCountEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    @Value("${decipherment.remove-last-row:true}")
-    private boolean removeLastRow;
 
     @Autowired
     private Cipher cipher;
@@ -71,10 +67,6 @@ public class CiphertextCycleCountEvaluator {
         }
 
         int end = cipher.length();
-
-        if (removeLastRow) {
-            end = (cipher.getColumns() * (cipher.getRows() - 1));
-        }
 
         // Remove cycle pairs that are guaranteed to not produce useful scores, interpreted as occurence sequences which don't contain at least two of each ciphertext value
         // TODO: a simpler way to do this would be to simply remove all cycle pairs where one of the ciphertext values only occurs once in the cipher
@@ -112,10 +104,6 @@ public class CiphertextCycleCountEvaluator {
 
         Cipher cipherProposal = solutionProposal.getCipher();
         int end = cipherProposal.length();
-
-        if (removeLastRow) {
-            end = (cipherProposal.getColumns() * (cipherProposal.getRows() - 1));
-        }
 
         Map<String, List<Integer>> ciphertextIndices = new HashMap<>();
         for (int i = 0; i < end; i++) {

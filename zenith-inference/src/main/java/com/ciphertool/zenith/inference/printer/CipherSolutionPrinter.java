@@ -15,15 +15,16 @@ import java.util.List;
 public class CipherSolutionPrinter {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("activePlaintextTransformers")
     private List<PlaintextTransformer> plaintextTransformers;
 
     public void print(CipherSolution solution) {
         String plaintext = solution.asSingleLineString();
-
-        for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-            plaintext = plaintextTransformer.transform(plaintext);
+        if (plaintextTransformers != null) {
+            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+                plaintext = plaintextTransformer.transform(plaintext);
+            }
         }
 
         Cipher cipher = solution.getCipher();

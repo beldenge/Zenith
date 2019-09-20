@@ -24,7 +24,6 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -34,19 +33,12 @@ import java.util.Map;
 public class CiphertextRepeatingBigramEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${decipherment.remove-last-row:true}")
-    private boolean removeLastRow;
-
     public int evaluate(CipherSolution cipherProposal) {
         long startEvaluation = System.currentTimeMillis();
 
         Cipher cipher = cipherProposal.getCipher();
         int repeatingBigramCount = 0;
         int end = cipher.length();
-
-        if (removeLastRow) {
-            end = (cipher.getColumns() * (cipher.getRows() - 1));
-        }
 
         Map<String, Integer> repeatingBigramCounts = new HashMap<>();
 

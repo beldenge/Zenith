@@ -112,7 +112,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     @Autowired
     private List<Selector> selectors;
 
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("activePlaintextTransformers")
     private List<PlaintextTransformer> plaintextTransformers;
 
@@ -225,7 +225,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     }
 
     @Override
-    public void optimize() {
+    public CipherSolution optimize() {
         GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
                 .crossoverAlgorithm(crossoverAlgorithm)
                 .mutationAlgorithm(mutationAlgorithm)
@@ -242,6 +242,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
         geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);
 
+        CipherSolution overallBest = null;
         CipherKeyChromosome last = null;
         int correctSolutions = 0;
         long start = System.currentTimeMillis();
@@ -264,7 +265,9 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
                 for (int i = 0; i < size; i++) {
                     Chromosome next = individuals.get(i);
                     log.info("Chromosome {}:", (i + 1), next);
-                    cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(next));
+                    if (log.isInfoEnabled()) {
+                        cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(next));
+                    }
                 }
             }
 
@@ -272,7 +275,9 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
             log.info("Best probability solution:");
             CipherSolution bestSolution = ChromosomeToCipherSolutionMapper.map(last);
-            cipherSolutionPrinter.print(bestSolution);
+            if (log.isInfoEnabled()) {
+                cipherSolutionPrinter.print(bestSolution);
+            }
             log.info("Mappings for best probability:");
 
             for (Map.Entry<String, Gene> entry : last.getGenes().entrySet()) {
@@ -282,10 +287,14 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
             if (last.getCipher().hasKnownSolution() && knownSolutionCorrectnessThreshold <= bestSolution.evaluateKnownSolution()) {
                 correctSolutions ++;
             }
+
+            overallBest = (overallBest == null) ? bestSolution : (bestSolution.getScore() > overallBest.getScore() ? bestSolution : overallBest);
         }
 
         if (last != null && last.getCipher().hasKnownSolution()) {
             log.info("{} out of {} epochs ({}%) produced the correct solution.", correctSolutions, epochs, String.format("%1$,.2f", (correctSolutions / (double) epochs) * 100.0));
         }
+
+        return overallBest;
     }
 }

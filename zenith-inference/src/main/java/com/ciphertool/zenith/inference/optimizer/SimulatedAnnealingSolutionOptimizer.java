@@ -75,7 +75,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     @Autowired
     private TreeMarkovModel letterMarkovModel;
 
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("activePlaintextTransformers")
     private List<PlaintextTransformer> plaintextTransformers;
 
@@ -86,7 +86,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private CipherSolutionPrinter cipherSolutionPrinter;
 
     @Override
-    public void optimize() {
+    public CipherSolution optimize() {
         int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
         List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
@@ -109,6 +109,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         double totalUnigramProbability = unigramRouletteSampler.reIndex(letterUnigramProbabilities);
 
         int correctSolutions = 0;
+        CipherSolution overallBest = null;
 
         for (int epoch = 0; epoch < epochs; epoch++) {
             CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities, totalUnigramProbability);
@@ -120,11 +121,15 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             if (cipher.hasKnownSolution() && knownSolutionCorrectnessThreshold <= best.evaluateKnownSolution()) {
                 correctSolutions ++;
             }
+
+            overallBest = (overallBest == null) ? best : (best.getScore() > overallBest.getScore() ? best : overallBest);
         }
 
         if (cipher.hasKnownSolution()) {
             log.info("{} out of {} epochs ({}%) produced the correct solution.", correctSolutions, epochs, String.format("%1$,.2f", (correctSolutions / (double) epochs) * 100.0));
         }
+
+        return overallBest;
     }
 
     private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability> letterUnigramProbabilities, double totalUnigramProbability) {
@@ -145,8 +150,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
     private CipherSolution performEpoch(CipherSolution initialSolution) {
         String solutionString = initialSolution.asSingleLineString();
-        for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-            solutionString = plaintextTransformer.transform(solutionString);
+        if (plaintextTransformers != null) {
+            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+                solutionString = plaintextTransformer.transform(solutionString);
+            }
         }
 
         plaintextEvaluator.evaluate(initialSolution, solutionString, null);
@@ -192,7 +199,9 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
 
         log.info("Best probability found at iteration {}:", maxProbabilityIteration);
-        cipherSolutionPrinter.print(maxProbability);
+        if (log.isInfoEnabled()) {
+            cipherSolutionPrinter.print(maxProbability);
+        }
         log.info("Mappings for best probability:");
 
         for (Map.Entry<String, String> entry : maxProbability.getMappings().entrySet()) {
@@ -221,8 +230,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             proposal.replaceMapping(nextKey, letter);
 
             String solutionString = proposal.asSingleLineString();
-            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                solutionString = plaintextTransformer.transform(solutionString);
+            if (plaintextTransformers != null) {
+                for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+                    solutionString = plaintextTransformer.transform(solutionString);
+                }
             }
 
             plaintextEvaluator.evaluate(proposal, solutionString, nextKey);

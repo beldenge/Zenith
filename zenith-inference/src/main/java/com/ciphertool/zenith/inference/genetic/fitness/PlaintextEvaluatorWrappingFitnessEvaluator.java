@@ -42,8 +42,10 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
         CipherSolution proposal = ChromosomeToCipherSolutionMapper.map(chromosome);
 
         String solutionString = proposal.asSingleLineString();
-        for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-            solutionString = plaintextTransformer.transform(solutionString);
+        if (plaintextTransformers != null) {
+            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+                solutionString = plaintextTransformer.transform(solutionString);
+            }
         }
 
         plaintextEvaluator.evaluate(proposal, solutionString, null);

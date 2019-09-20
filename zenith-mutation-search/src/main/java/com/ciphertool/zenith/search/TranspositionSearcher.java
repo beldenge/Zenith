@@ -22,8 +22,9 @@ package com.ciphertool.zenith.search;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.transformer.ciphertext.UnwrapTranspositionCipherTransformer;
-import com.ciphertool.zenith.search.evaluator.CiphertextRepeatingBigramEvaluator;
 import com.ciphertool.zenith.search.evaluator.CiphertextCycleCountEvaluator;
+import com.ciphertool.zenith.search.evaluator.CiphertextLanguageModelEvaluator;
+import com.ciphertool.zenith.search.evaluator.CiphertextRepeatingBigramEvaluator;
 import com.ciphertool.zenith.search.evaluator.CiphertextRowLevelEntropyEvaluator;
 import com.ciphertool.zenith.search.model.EpochResults;
 import org.slf4j.Logger;
@@ -43,16 +44,16 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TranspositionSearcher {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${simulated-annealing.sampler.iterations}")
+    @Value("${mutation-search.simulated-annealing.sampler.iterations}")
     private int samplerIterations;
 
-    @Value("${simulated-annealing.temperature.max}")
+    @Value("${mutation-search.simulated-annealing.temperature.max}")
     private double annealingTemperatureMax;
 
-    @Value("${simulated-annealing.temperature.min}")
+    @Value("${mutation-search.simulated-annealing.temperature.min}")
     private double annealingTemperatureMin;
 
-    @Value("${decipherment.epochs:1}")
+    @Value("${mutation-search.decipherment.epochs:1}")
     private int epochs;
 
     @Value("${decipherment.transposition.key-length.min:2}")
@@ -69,6 +70,9 @@ public class TranspositionSearcher {
 
     @Autowired
     private CiphertextRowLevelEntropyEvaluator rowLevelEntropyEvaluator;
+
+    @Autowired
+    private CiphertextLanguageModelEvaluator languageModelEvaluator;
 
     @Autowired
     private UnwrapTranspositionCipherTransformer unwrapTranspositionCipherTransformer;
@@ -241,8 +245,9 @@ public class TranspositionSearcher {
         int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
         int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
         double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
+        double languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
 
-        double scaledScore = (repeatingBigramScore * 100) + ((double) cycleScore);
+        double scaledScore = languageModelScore;
 
         cipherSolution.clearLogProbabilities();
         cipherSolution.addLogProbability(scaledScore);

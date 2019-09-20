@@ -25,12 +25,6 @@ public class LetterProbability implements Probability<Character>, Comparable<Let
     private Character letter;
     private Double probability;
 
-    /**
-     * @param letter
-     *            the letter
-     * @param probability
-     *            the probability
-     */
     public LetterProbability(Character letter, Double probability) {
         this.letter = letter;
         this.probability = probability;

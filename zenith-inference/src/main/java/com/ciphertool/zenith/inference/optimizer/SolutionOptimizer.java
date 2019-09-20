@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.inference.optimizer;
 
+import com.ciphertool.zenith.inference.entities.CipherSolution;
+
 public interface SolutionOptimizer {
-    void optimize();
+    CipherSolution optimize();
 }

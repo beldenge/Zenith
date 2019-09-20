@@ -23,7 +23,6 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -33,15 +32,12 @@ import java.util.Map;
 public class CiphertextRowLevelEntropyEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${decipherment.remove-last-row:true}")
-    private boolean removeLastRow;
-
     public double evaluate(CipherSolution cipherProposal) {
         long startEvaluation = System.currentTimeMillis();
 
         Cipher cipher = cipherProposal.getCipher();
 
-        int lastRow = cipher.getRows() - (removeLastRow ? 1 : 0);
+        int lastRow = cipher.getRows();
 
         Double rowEntropyTotal = 0d;
 

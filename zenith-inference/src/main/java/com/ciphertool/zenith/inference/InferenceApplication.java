@@ -269,7 +269,7 @@ public class InferenceApplication implements CommandLineRunner {
                 .collect(Collectors.toList());
 
         log.error("The PlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
-        throw new IllegalArgumentException("The PlaintextEvaluatorr with name " + plaintextEvaluatorName + " does not exist.");
+        throw new IllegalArgumentException("The PlaintextEvaluator with name " + plaintextEvaluatorName + " does not exist.");
     }
 
     @Bean

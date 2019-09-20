@@ -21,6 +21,14 @@ package com.ciphertool.zenith.search;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.evaluator.MarkovModelPlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.transformer.ciphertext.RemoveLastRowCipherTransformer;
+import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -28,14 +36,30 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.search",
+        "com.ciphertool.zenith.model.dao",
+        "com.ciphertool.zenith.model.archive",
         "com.ciphertool.zenith.inference.dao",
-        "com.ciphertool.zenith.inference.transformer.ciphertext"
+        "com.ciphertool.zenith.inference.evaluator",
+        "com.ciphertool.zenith.inference.optimizer",
+        "com.ciphertool.zenith.inference.printer",
+        "com.ciphertool.zenith.inference.transformer"
 })
 public class MutationSearchApplication implements CommandLineRunner {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
     @Value("${cipher.name}")
     private String cipherName;
+
+    @Value("${markov.letter.order}")
+    private int markovOrder;
+
+    @Value("${decipherment.remove-last-row:true}")
+    private boolean removeLastRow;
 
     @Autowired
     private TranspositionSearcher searcher;
@@ -50,7 +74,54 @@ public class MutationSearchApplication implements CommandLineRunner {
     }
 
     @Bean
-    public Cipher cipher(CipherDao cipherDao) {
-        return cipherDao.findByCipherName(cipherName);
+    public Cipher cipher(RemoveLastRowCipherTransformer lastRowCipherTransformer, CipherDao cipherDao) {
+        Cipher cipher = cipherDao.findByCipherName(cipherName);
+
+        if (removeLastRow) {
+            cipher = lastRowCipherTransformer.transform(cipher);
+        }
+
+        return cipher;
+    }
+
+    @Bean
+    public TreeMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
+        long startFindAll = System.currentTimeMillis();
+        log.info("Beginning retrieval of all n-grams.");
+
+        /*
+         * Begin setting up letter n-gram model
+         */
+        List<TreeNGram> nGramNodes = letterNGramDao.findAll();
+
+        log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
+
+        TreeMarkovModel letterMarkovModel = new TreeMarkovModel(markovOrder);
+
+        long startAdding = System.currentTimeMillis();
+        log.info("Adding nodes to the model.");
+
+        nGramNodes.stream().forEach(letterMarkovModel::addNode);
+
+        log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
+
+        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+
+        long totalNumberOfNgrams = firstOrderNodes.stream()
+                .mapToLong(TreeNGram::getCount)
+                .sum();
+
+        letterMarkovModel.getRootNode().setCount(totalNumberOfNgrams);
+
+        Double unknownLetterNGramProbability = 1d / (double) totalNumberOfNgrams;
+        letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
+        letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
+
+        return letterMarkovModel;
+    }
+
+    @Bean
+    public PlaintextEvaluator plaintextEvaluator(MarkovModelPlaintextEvaluator markovModelPlaintextEvaluator) {
+        return markovModelPlaintextEvaluator;
     }
 }
