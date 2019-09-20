@@ -3,7 +3,7 @@ The aim of this project is to provide a tool that is easy to use for somewhat te
 
 It has been verified to successfully decipher the Zodiac 408 cipher in 878 out of 1000 epochs (87.80%).
 
-It takes roughly 20 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to complete one epoch.
+It takes roughly 13 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to complete one epoch.
 
 # Building
 1. Download and install Java 8 or later

@@ -27,7 +27,7 @@ import com.ciphertool.zenith.inference.transformer.ciphertext.*;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -40,7 +40,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
@@ -192,7 +195,7 @@ public class InferenceApplication implements CommandLineRunner {
     }
 
     @Bean
-    public TreeMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
+    public MapMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
         long startFindAll = System.currentTimeMillis();
         log.info("Beginning retrieval of all n-grams.");
 
@@ -203,7 +206,7 @@ public class InferenceApplication implements CommandLineRunner {
 
         log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
 
-        TreeMarkovModel letterMarkovModel = new TreeMarkovModel(markovOrder);
+        MapMarkovModel letterMarkovModel = new MapMarkovModel(markovOrder);
 
         long startAdding = System.currentTimeMillis();
         log.info("Adding nodes to the model.");
@@ -212,15 +215,7 @@ public class InferenceApplication implements CommandLineRunner {
 
         log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
 
-        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
-
-        long totalNumberOfNgrams = firstOrderNodes.stream()
-                .mapToLong(TreeNGram::getCount)
-                .sum();
-
-        letterMarkovModel.getRootNode().setCount(totalNumberOfNgrams);
-
-        Double unknownLetterNGramProbability = 1d / (double) totalNumberOfNgrams;
+        Double unknownLetterNGramProbability = 1d / (double) letterMarkovModel.getTotalNumberOfNgrams();
         letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
         letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
 

@@ -28,7 +28,7 @@ import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransforme
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +73,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     protected Cipher cipher;
 
     @Autowired
-    private TreeMarkovModel letterMarkovModel;
+    private MapMarkovModel letterMarkovModel;
 
     @Autowired(required = false)
     @Qualifier("activePlaintextTransformers")
@@ -89,13 +89,13 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     public CipherSolution optimize() {
         int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
 
-        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getFirstOrderNodes());
 
         List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS.size());
 
         Double probability;
         for (TreeNGram node : firstOrderNodes) {
-            probability = (double) node.getCount() / (double) letterMarkovModel.getRootNode().getCount();
+            probability = (double) node.getCount() / (double) letterMarkovModel.getTotalNumberOfNgrams();
 
             letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
 

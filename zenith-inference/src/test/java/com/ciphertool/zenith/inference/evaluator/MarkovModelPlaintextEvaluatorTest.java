@@ -21,8 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,16 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Ignore
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
     private static Logger log = LoggerFactory.getLogger(MarkovModelPlaintextEvaluatorTest.class);
 
-    private static TreeMarkovModel letterMarkovModel;
+    private static MapMarkovModel letterMarkovModel;
 
     private static CipherSolution actualSolution = new CipherSolution();
     private static CipherSolution solution2 = new CipherSolution();
@@ -241,13 +237,11 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
             return;
         }
 
-        letterMarkovModel = new TreeMarkovModel(6);
+        letterMarkovModel = new MapMarkovModel(6);
 
         letterNGramDao.findAll().stream().forEach(letterMarkovModel::addNode);
 
-        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
-        long rootNodeCount = firstOrderNodes.stream().mapToLong(TreeNGram::getCount).sum();
-        Double unknownLetterNGramProbability = 1d / (double) rootNodeCount;
+        Double unknownLetterNGramProbability = 1d / (double) letterMarkovModel.getTotalNumberOfNgrams();
         letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
         letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
     }

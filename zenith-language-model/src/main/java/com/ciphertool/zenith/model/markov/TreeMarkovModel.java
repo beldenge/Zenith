@@ -112,11 +112,6 @@ public class TreeMarkovModel {
         return findExactMatch(nextNode, nGramString.substring(1));
     }
 
-    /**
-     * @param nGram
-     *            the N-Gram String to search by
-     * @return the longest matching NGramIndexNode
-     */
     public TreeNGram findLongest(String nGram) {
         return findLongestMatch(rootNode, nGram, null);
     }
@@ -137,31 +132,18 @@ public class TreeMarkovModel {
         return findLongestMatch(nextNode, nGramString.substring(1), longestMatch);
     }
 
-    /**
-     * @return the rootNode
-     */
     public TreeNGram getRootNode() {
         return rootNode;
     }
 
-    /**
-     * @return the order
-     */
     public Integer getOrder() {
         return order;
     }
 
-    /**
-     * @return the unknownLetterNGramProbability
-     */
     public Double getUnknownLetterNGramProbability() {
         return unknownLetterNGramProbability;
     }
 
-    /**
-     * @param unknownLetterNGramProbability
-     *            the unknownLetterNGramProbability to set
-     */
     public void setUnknownLetterNGramProbability(Double unknownLetterNGramProbability) {
         this.unknownLetterNGramProbability = unknownLetterNGramProbability;
     }
@@ -236,14 +218,6 @@ public class TreeMarkovModel {
         private int order;
         private long total;
 
-        /**
-         * @param node
-         *            the NGramIndexNode to set
-         * @param order
-         *            the order to set
-         * @param total
-         *            the order to set
-         */
         public NormalizeTask(TreeNGram node, int order, long total) {
             this.node = node;
             this.order = order;

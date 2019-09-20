@@ -26,7 +26,7 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.transformer.ciphertext.RemoveLastRowCipherTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootApplication(scanBasePackages = {
@@ -85,7 +84,7 @@ public class MutationSearchApplication implements CommandLineRunner {
     }
 
     @Bean
-    public TreeMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
+    public MapMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
         long startFindAll = System.currentTimeMillis();
         log.info("Beginning retrieval of all n-grams.");
 
@@ -96,7 +95,7 @@ public class MutationSearchApplication implements CommandLineRunner {
 
         log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
 
-        TreeMarkovModel letterMarkovModel = new TreeMarkovModel(markovOrder);
+        MapMarkovModel letterMarkovModel = new MapMarkovModel(markovOrder);
 
         long startAdding = System.currentTimeMillis();
         log.info("Adding nodes to the model.");
@@ -105,15 +104,7 @@ public class MutationSearchApplication implements CommandLineRunner {
 
         log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
 
-        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
-
-        long totalNumberOfNgrams = firstOrderNodes.stream()
-                .mapToLong(TreeNGram::getCount)
-                .sum();
-
-        letterMarkovModel.getRootNode().setCount(totalNumberOfNgrams);
-
-        Double unknownLetterNGramProbability = 1d / (double) totalNumberOfNgrams;
+        Double unknownLetterNGramProbability = 1d / (double) letterMarkovModel.getTotalNumberOfNgrams();
         letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
         letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
 

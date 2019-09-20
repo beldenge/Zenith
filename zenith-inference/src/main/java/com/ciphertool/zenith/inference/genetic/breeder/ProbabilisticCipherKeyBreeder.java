@@ -25,7 +25,7 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,6 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
@@ -48,26 +47,17 @@ public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
 
     @Autowired
-    private TreeMarkovModel letterMarkovModel;
+    private MapMarkovModel letterMarkovModel;
 
     @PostConstruct
     public void init() {
         super.init();
 
-        Double total = 0d;
-        for (Map.Entry<Character, TreeNGram> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
-            if (!entry.getKey().equals(' ')) {
-                total += entry.getValue().getCount();
-            }
-        }
-
         Double probability;
-        for (Map.Entry<Character, TreeNGram> entry : letterMarkovModel.getRootNode().getTransitions().entrySet()) {
-            if (!entry.getKey().equals(' ')) {
-                probability = ((double) entry.getValue().getCount()) / total;
+        for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
+            probability = ((double) node.getCount()) / letterMarkovModel.getTotalNumberOfNgrams();
 
-                letterUnigramProbabilities.add(new LetterProbability(entry.getKey(), probability));
-            }
+            letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
         }
 
         Collections.sort(letterUnigramProbabilities);

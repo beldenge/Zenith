@@ -24,7 +24,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.util.LetterUtils;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.TreeMarkovModel;
+import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,14 +48,14 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private Cipher cipher;
 
     @Autowired
-    private TreeMarkovModel letterMarkovModel;
+    private MapMarkovModel letterMarkovModel;
 
     @PostConstruct
     public void init() {
-        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getRootNode().getTransitions().values());
+        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getFirstOrderNodes());
 
         for (TreeNGram node : firstOrderNodes) {
-            double letterProbability = (double) node.getCount() / (double) letterMarkovModel.getRootNode().getCount();
+            double letterProbability = (double) node.getCount() / (double) letterMarkovModel.getTotalNumberOfNgrams();
             englishLetterCounts.put(node.getCumulativeString(), Math.round(letterProbability * cipher.length()));
         }
     }
