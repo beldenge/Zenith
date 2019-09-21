@@ -37,16 +37,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "SimulatedAnnealingSolutionOptimizer")
 public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
+
+    private static SplittableRandom RANDOM = new SplittableRandom();
 
     @Value("${simulated-annealing.sampler.iterations}")
     private int samplerIterations;
@@ -91,7 +89,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getFirstOrderNodes());
 
-        List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS.size());
+        List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS_SIZE);
 
         Double probability;
         for (TreeNGram node : firstOrderNodes) {
@@ -196,7 +194,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             }
         }
 
-        log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
+        long totalElapsed = System.currentTimeMillis() - start;
+        log.info("Letter sampling completed in {}ms.  Average={}ms.", totalElapsed, ((double) totalElapsed / (double) i));
 
         log.info("Best probability found at iteration {}:", maxProbabilityIteration);
         if (log.isInfoEnabled()) {
@@ -212,8 +211,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     }
 
     private CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {
-        CipherSolution proposal;
-
         List<String> mappingList = new ArrayList<>();
         mappingList.addAll(solution.getMappings().keySet());
 
@@ -221,37 +218,48 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         // For each cipher symbol type, run the letter sampling
         for (int i = 0; i < solution.getMappings().size(); i++) {
-            proposal = solution.clone();
+            nextKey = iterateRandomly ? mappingList.remove(RANDOM.nextInt(mappingList.size())) : mappingList.get(i);
 
-            nextKey = iterateRandomly ? mappingList.remove(ThreadLocalRandom.current().nextInt(mappingList.size())) : mappingList.get(i);
+            String letter = LanguageConstants.LOWERCASE_LETTERS.get(RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)).toString();
 
-            String letter = LanguageConstants.LOWERCASE_LETTERS.get(ThreadLocalRandom.current().nextInt(LanguageConstants.LOWERCASE_LETTERS.size())).toString();
+            String originalMapping = solution.getMappings().get(nextKey);
 
-            proposal.replaceMapping(nextKey, letter);
+            if (letter == originalMapping) {
+                continue;
+            }
 
-            String solutionString = proposal.asSingleLineString();
+            Double originalScore = solution.getScore();
+            Double originalIndexOfCoincidence = solution.getIndexOfCoincidence();
+            solution.replaceMapping(nextKey, letter);
+
+            String solutionString = solution.asSingleLineString();
             if (plaintextTransformers != null) {
                 for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
                     solutionString = plaintextTransformer.transform(solutionString);
                 }
             }
 
-            plaintextEvaluator.evaluate(proposal, solutionString, nextKey);
+            Map<Integer, Double> logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, solutionString, nextKey);
 
-            solution = selectNext(temperature, solution, proposal);
+            if (!selectNext(temperature, originalScore, solution.getScore())) {
+                solution.setIndexOfCoincidence(originalIndexOfCoincidence);
+                solution.replaceMapping(nextKey, originalMapping);
+
+                for (Map.Entry<Integer, Double> entry : logProbabilitiesUpdated.entrySet()) {
+                    solution.replaceLogProbability(entry.getKey(), entry.getValue());
+                }
+            }
         }
 
         return solution;
     }
 
-    private CipherSolution selectNext(Double temperature, CipherSolution solution, CipherSolution proposal) {
+    private boolean selectNext(Double temperature, Double solutionScore, Double proposalScore) {
         Double acceptanceProbability;
-        Double solutionScore = solution.getScore();
-        Double proposalScore = proposal.getScore();
 
         if (proposalScore.compareTo(solutionScore) >= 0) {
             log.debug("Better solution found");
-            return proposal;
+            return true;
         } else {
             // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
             acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
@@ -262,11 +270,11 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
             }
 
-            if (acceptanceProbability > 1d || ThreadLocalRandom.current().nextDouble() < acceptanceProbability.doubleValue()) {
-                return proposal;
+            if (acceptanceProbability > 1d || RANDOM.nextDouble() < acceptanceProbability.doubleValue()) {
+                return true;
             }
         }
 
-        return solution;
+        return false;
     }
 }

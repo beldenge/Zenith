@@ -22,7 +22,6 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
-import com.ciphertool.zenith.inference.evaluator.model.EvaluationProbability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "RestServicePlaintextEvaluator")
@@ -55,7 +56,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public void evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public Map<Integer, Double> evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startEvaluation = System.currentTimeMillis();
 
         RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();
@@ -66,10 +67,18 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
 
         log.debug("Rest service evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
 
+        Map<Integer, Double> logProbabilitiesUpdated = new HashMap<>(response.getProbabilities().size());
+
+        for (int i = 0; i < solution.getLogProbabilities().size(); i ++) {
+            logProbabilitiesUpdated.put(i, solution.getLogProbabilities().get(i));
+        }
+
         solution.clearLogProbabilities();
 
-        for (EvaluationProbability probability : response.getProbabilities()) {
-            solution.addLogProbability(probability.getLogProbability());
+        for (int i = 0; i < response.getProbabilities().size(); i ++) {
+            solution.addLogProbability(response.getProbabilities().get(i).getLogProbability());
         }
+
+        return logProbabilitiesUpdated;
     }
 }

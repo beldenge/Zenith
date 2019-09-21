@@ -51,7 +51,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private MapMarkovModel letterMarkovModel;
 
     private double denominator;
-    private Map<Character, Integer> letterCounts = new HashMap<>(LanguageConstants.LOWERCASE_LETTERS.size());
+    private Map<Character, Integer> letterCounts = new HashMap<>(LanguageConstants.LOWERCASE_LETTERS_SIZE);
 
     @PostConstruct
     public void init() {
@@ -66,19 +66,22 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public void evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public Map<Integer, Double> evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
-        evaluateLetterNGrams(solution, solutionString, ciphertextKey);
+        Map<Integer, Double> logProbabilitiesUpdated = evaluateLetterNGrams(solution, solutionString, ciphertextKey);
 
         solution.setIndexOfCoincidence(computeIndexOfCoincidence(solutionString));
 
         log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
+
+        return logProbabilitiesUpdated;
     }
 
-    protected void evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
+    protected Map<Integer, Double> evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
         int order = letterMarkovModel.getOrder();
 
+        Map<Integer, Double> logProbabilitiesUpdated = new HashMap<>();
         Double logProbability;
 
         if (ciphertextKey != null) {
@@ -101,12 +104,17 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
                 for (int i = start; i < end; i++) {
                     logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
 
+                    logProbabilitiesUpdated.put(i, solution.getLogProbabilities().get(i));
                     solution.replaceLogProbability(i, logProbability);
                 }
 
                 lastIndex = end;
             }
         } else {
+            for (int i = 0; i < solution.getLogProbabilities().size(); i ++) {
+                logProbabilitiesUpdated.put(i, solution.getLogProbabilities().get(i));
+            }
+
             solution.clearLogProbabilities();
 
             for (int i = 0; i < solutionString.length() - order; i++) {
@@ -115,6 +123,8 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
                 solution.addLogProbability(logProbability);
             }
         }
+
+        return logProbabilitiesUpdated;
     }
 
     protected Double computeNGramLogProbability(String ngram) {

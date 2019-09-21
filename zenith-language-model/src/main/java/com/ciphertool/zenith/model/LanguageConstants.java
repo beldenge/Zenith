@@ -35,4 +35,6 @@ public class LanguageConstants {
         LOWERCASE_LETTERS.addAll(LOWERCASE_CONSONANTS);
         LOWERCASE_LETTERS.sort(Comparator.comparing(Character::charValue));
     }
+
+    public static final int LOWERCASE_LETTERS_SIZE = LOWERCASE_LETTERS.size();
 }

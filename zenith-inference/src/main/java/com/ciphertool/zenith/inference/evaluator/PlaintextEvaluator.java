@@ -21,6 +21,8 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 
+import java.util.Map;
+
 public interface PlaintextEvaluator {
-    void evaluate(CipherSolution solution, String solutionString, String ciphertextKey);
+    Map<Integer, Double> evaluate(CipherSolution solution, String solutionString, String ciphertextKey);
 }

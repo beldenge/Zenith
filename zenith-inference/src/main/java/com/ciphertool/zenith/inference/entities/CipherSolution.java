@@ -82,7 +82,9 @@ public class CipherSolution {
             return logProbability;
         }
 
-        logProbability = logProbabilities.stream().reduce(0d, (a, b) -> a + b);
+        logProbability = logProbabilities.stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
 
         return logProbability;
     }
@@ -126,17 +128,23 @@ public class CipherSolution {
 
     public void clearLogProbabilities() {
         this.logProbabilities.clear();
-        this.logProbability = 0d;
+        this.logProbability = null;
     }
 
     public void addLogProbability(Double logProbability) {
         this.logProbabilities.add(logProbability);
+
+        if(this.logProbability == null) {
+            this.logProbability = 0d;
+        }
+
         this.logProbability += logProbability;
     }
 
     public void replaceLogProbability(int i, Double newLogProbability) {
         Double oldLogProbability = this.logProbabilities.remove(i);
         this.logProbabilities.add(i, newLogProbability);
+
         this.logProbability -= oldLogProbability;
         this.logProbability += newLogProbability;
     }
@@ -173,6 +181,8 @@ public class CipherSolution {
         for (Double logProbability : this.logProbabilities) {
             copySolution.addLogProbability(logProbability.doubleValue());
         }
+
+        copySolution.setIndexOfCoincidence(this.indexOfCoincidence.doubleValue());
 
         // We need to set these values last to maintain whether evaluation is needed on the clone
         copySolution.setProbability(this.probability != null ? this.probability.doubleValue() : null);
