@@ -40,8 +40,6 @@ public class CipherSolution {
 
     private Double indexOfCoincidence = 1d;
 
-    private Double chiSquared = 1d;
-
     public CipherSolution() {
     }
 
@@ -55,24 +53,14 @@ public class CipherSolution {
         mappings = new HashMap<>(numCiphertext);
     }
 
-    /**
-     * @return the cipher
-     */
     public Cipher getCipher() {
         return this.cipher;
     }
 
-    /**
-     * @param cipher
-     *            the cipher to set
-     */
     public void setCipher(Cipher cipher) {
         this.cipher = cipher;
     }
 
-    /**
-     * @return the probability
-     */
     public Double getProbability() {
         return probability;
     }
@@ -89,17 +77,6 @@ public class CipherSolution {
         this.indexOfCoincidence = indexOfCoincidence;
     }
 
-    public Double getChiSquared() {
-        return chiSquared;
-    }
-
-    public void setChiSquared(Double chiSquared) {
-        this.chiSquared = chiSquared;
-    }
-
-    /**
-     * @return the logProbability
-     */
     public Double getLogProbability() {
         if (logProbability != null) {
             return logProbability;

@@ -3,6 +3,7 @@ package com.ciphertool.zenith.inference.printer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,9 @@ import java.util.List;
 @Component
 public class CipherSolutionPrinter {
     private Logger log = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private ChiSquaredEvaluator chiSquaredEvaluator;
 
     @Autowired(required = false)
     @Qualifier("activePlaintextTransformers")
@@ -30,7 +34,7 @@ public class CipherSolutionPrinter {
         Cipher cipher = solution.getCipher();
         StringBuilder sb = new StringBuilder();
         sb.append("Solution [probability=" + solution.getProbability() + ", logProbability=" + solution.getLogProbability() + ", score=" + solution.getScore()
-                + ", indexOfCoincidence=" + solution.getIndexOfCoincidence() + ", chiSquared=" + solution.getChiSquared() + (cipher.hasKnownSolution() ? ", proximity="
+                + ", indexOfCoincidence=" + solution.getIndexOfCoincidence() + ", chiSquared=" + chiSquaredEvaluator.evaluate(solution.asSingleLineString()) + (cipher.hasKnownSolution() ? ", proximity="
                 + String.format("%1$,.2f", solution.evaluateKnownSolution() * 100.0) + "%" : "") + "]\n");
 
         for (int i = 0; i < plaintext.length(); i++) {

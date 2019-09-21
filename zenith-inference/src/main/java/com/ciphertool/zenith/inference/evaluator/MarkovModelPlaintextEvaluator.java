@@ -50,6 +50,9 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     @Autowired
     private MapMarkovModel letterMarkovModel;
 
+    private double denominator;
+    private Map<Character, Integer> letterCounts = new HashMap<>(LanguageConstants.LOWERCASE_LETTERS.size());
+
     @PostConstruct
     public void init() {
         List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getFirstOrderNodes());
@@ -58,6 +61,8 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
             double letterProbability = (double) node.getCount() / (double) letterMarkovModel.getTotalNumberOfNgrams();
             englishLetterCounts.put(node.getCumulativeString(), Math.round(letterProbability * cipher.length()));
         }
+
+        denominator = cipher.length() * (cipher.length() - 1);
     }
 
     @Override
@@ -65,8 +70,6 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         long startLetter = System.currentTimeMillis();
 
         evaluateLetterNGrams(solution, solutionString, ciphertextKey);
-
-        solution.setChiSquared(computeChiSquared(solutionString));
 
         solution.setIndexOfCoincidence(computeIndexOfCoincidence(solutionString));
 
@@ -129,58 +132,23 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         return logProbability;
     }
 
-    protected double computeChiSquared(String solutionString) {
-        Map<String, Long> solutionLetterCounts = new HashMap<>(LetterUtils.NUMBER_OF_LETTERS);
-
-        for (Character c : LanguageConstants.LOWERCASE_LETTERS) {
-            solutionLetterCounts.put(String.valueOf(c), 0L);
-        }
-
-        for (int i = 0; i < solutionString.length(); i ++) {
-            String letter = String.valueOf(solutionString.charAt(i));
-
-            solutionLetterCounts.put(letter, solutionLetterCounts.get(letter) + 1L);
-        }
-
-        List<Double> chiSquaredPerLetter = new ArrayList<>(LetterUtils.NUMBER_OF_LETTERS);
-
-        for (String letter : englishLetterCounts.keySet()) {
-            long actualCount = solutionLetterCounts.get(letter);
-            long expectedCount = englishLetterCounts.get(letter);
-            double numerator = Math.pow((double) (actualCount - expectedCount), 2.0);
-            double denominator = Math.max(1d, expectedCount); // Prevent division by zero
-            chiSquaredPerLetter.add(numerator / denominator);
-        }
-
-        return chiSquaredPerLetter.stream()
-                .mapToDouble(perLetter -> perLetter.doubleValue())
-                .sum();
-    }
-
     protected Double computeIndexOfCoincidence(String solutionString) {
         int totalLetters = solutionString.length();
 
-        List<Integer> counts = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS.size());
+        for (Character letter : LanguageConstants.LOWERCASE_LETTERS) {
+            letterCounts.put(letter, 0);
+        }
 
-        int denominator = totalLetters * (totalLetters - 1);
-
-        for (Character c : LanguageConstants.LOWERCASE_LETTERS) {
-            int count = 0;
-
-            for (int i = 0; i < totalLetters; i++) {
-                if (c.equals(solutionString.charAt(i))) {
-                    count++;
-                }
-            }
-
-            counts.add(count);
+        for (int i = 0; i < totalLetters; i++) {
+            char nextLetter = solutionString.charAt(i);
+            letterCounts.put(nextLetter, letterCounts.get(nextLetter) + 1);
         }
 
         int numerator = 0;
-        for (Integer count : counts) {
+        for (Integer count : letterCounts.values()) {
             numerator += (count * (count - 1));
         }
 
-        return (double) numerator / (double) denominator;
+        return (double) numerator / denominator;
     }
 }

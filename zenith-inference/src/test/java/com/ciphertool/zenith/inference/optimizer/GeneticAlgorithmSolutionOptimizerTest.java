@@ -24,6 +24,7 @@ import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
+import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.springframework.util.ReflectionUtils;
@@ -60,6 +61,9 @@ public class GeneticAlgorithmSolutionOptimizerTest {
         Field plaintextTransformersField = ReflectionUtils.findField(CipherSolutionPrinter.class, "plaintextTransformers");
         ReflectionUtils.makeAccessible(plaintextTransformersField);
         ReflectionUtils.setField(plaintextTransformersField, cipherSolutionPrinter, Collections.EMPTY_LIST);
+        Field chiSquaredEvaluatorField = ReflectionUtils.findField(CipherSolutionPrinter.class, "chiSquaredEvaluator");
+        ReflectionUtils.makeAccessible(chiSquaredEvaluatorField);
+        ReflectionUtils.setField(chiSquaredEvaluatorField, cipherSolutionPrinter, mock(ChiSquaredEvaluator.class));
 
         Field cipherSolutionPrinterField = ReflectionUtils.findField(GeneticAlgorithmSolutionOptimizer.class, "cipherSolutionPrinter");
         ReflectionUtils.makeAccessible(cipherSolutionPrinterField);
