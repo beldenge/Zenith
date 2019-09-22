@@ -28,7 +28,7 @@ This module is a dependency shared by multiple Zenith modules.  That is its only
 # Contributing
 Simply fork the repository and send pull requests.  The following are the areas that could be of most benefit going forward.
 * Better optimization algorithms \
-   The currently hill-climbing approach is successful roughly 70% of the time, so it's currently recommended to run the optimizer for several epochs.  It would be desirable if it worked 100% of the time, so that we don't miss a potential winning solution from simply not running the optimizer for enough iterations.
+   The current hill-climbing approach is successful roughly 87% of the time, so it's currently recommended to run the optimizer for several epochs.  It would be desirable if it worked 100% of the time, so that we don't miss a potential winning solution from simply not running the optimizer for enough iterations.
 * Better language models and scoring algorithms \
    This also plays into the comment above regarding accuracy.
 * Performance improvements \
