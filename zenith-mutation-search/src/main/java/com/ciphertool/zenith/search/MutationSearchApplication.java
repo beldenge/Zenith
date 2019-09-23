@@ -46,7 +46,8 @@ import java.util.List;
         "com.ciphertool.zenith.inference.evaluator",
         "com.ciphertool.zenith.inference.optimizer",
         "com.ciphertool.zenith.inference.printer",
-        "com.ciphertool.zenith.inference.transformer"
+        "com.ciphertool.zenith.inference.transformer",
+        "com.ciphertool.zenith.inference.util"
 })
 public class MutationSearchApplication implements CommandLineRunner {
     private Logger log = LoggerFactory.getLogger(getClass());
