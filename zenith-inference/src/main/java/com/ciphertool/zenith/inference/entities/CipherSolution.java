@@ -35,14 +35,14 @@ public class CipherSolution {
 
     protected Cipher cipher;
 
-    private Double probability = 0d;
+    private double probability = 0d;
     private Double logProbability = 0d;
 
     private Map<String, String> mappings = new HashMap<>();
 
     private DoubleList logProbabilities = new DoubleArrayList();
 
-    private Double indexOfCoincidence = 1d;
+    private double indexOfCoincidence = 1d;
 
     public CipherSolution() {
     }
@@ -65,23 +65,23 @@ public class CipherSolution {
         this.cipher = cipher;
     }
 
-    public Double getProbability() {
+    public double getProbability() {
         return probability;
     }
 
-    public void setProbability(Double score) {
+    public void setProbability(double score) {
         this.probability = score;
     }
 
-    public Double getIndexOfCoincidence() {
+    public double getIndexOfCoincidence() {
         return indexOfCoincidence;
     }
 
-    public void setIndexOfCoincidence(Double indexOfCoincidence) {
+    public void setIndexOfCoincidence(double indexOfCoincidence) {
         this.indexOfCoincidence = indexOfCoincidence;
     }
 
-    public Double getLogProbability() {
+    public double getLogProbability() {
         if (logProbability != null) {
             return logProbability;
         }
@@ -186,21 +186,21 @@ public class CipherSolution {
             copySolution.addLogProbability(logProbability);
         }
 
-        copySolution.setIndexOfCoincidence(this.indexOfCoincidence.doubleValue());
+        copySolution.setIndexOfCoincidence(this.indexOfCoincidence);
 
         // We need to set these values last to maintain whether evaluation is needed on the clone
-        copySolution.setProbability(this.probability != null ? this.probability.doubleValue() : null);
+        copySolution.setProbability(this.probability);
 
         return copySolution;
     }
 
-    public Double getScore() {
+    public double getScore() {
         // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
         // This has not been determined empirically but has worked well through experimentation
         return getLogProbability() * Math.pow(indexOfCoincidence, SIXTH_ROOT);
     }
 
-    public Double evaluateKnownSolution() {
+    public double evaluateKnownSolution() {
         if (!cipher.hasKnownSolution()) {
             throw new IllegalStateException("Cipher does not have a known solution.");
         }

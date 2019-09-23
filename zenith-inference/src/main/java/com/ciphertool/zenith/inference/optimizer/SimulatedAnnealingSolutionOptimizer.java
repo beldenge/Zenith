@@ -93,26 +93,26 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS_SIZE);
 
-        Double probability;
+        double probability;
         for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
             probability = (double) node.getCount() / (double) letterMarkovModel.getTotalNumberOfNgrams();
 
             letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
 
-            log.info(node.getCumulativeString().charAt(0) + ": " + probability.toString());
+            log.info(node.getCumulativeString().charAt(0) + ": " + probability);
         }
 
         log.info("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
 
         Collections.sort(letterUnigramProbabilities);
         RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
-        double totalUnigramProbability = unigramRouletteSampler.reIndex(letterUnigramProbabilities);
+        unigramRouletteSampler.reIndex(letterUnigramProbabilities);
 
         int correctSolutions = 0;
         CipherSolution overallBest = null;
 
         for (int epoch = 0; epoch < epochs; epoch++) {
-            CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities, totalUnigramProbability);
+            CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities);
 
             log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
@@ -132,7 +132,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return overallBest;
     }
 
-    private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability> letterUnigramProbabilities, double totalUnigramProbability) {
+    private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability> letterUnigramProbabilities) {
         CipherSolution solutionProposal = new CipherSolution(cipher, cipherKeySize);
 
         cipher.getCiphertextCharacters().stream()
@@ -160,10 +160,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         log.debug(initialSolution.toString());
 
-        Double maxTemp = annealingTemperatureMax;
-        Double minTemp = annealingTemperatureMin;
-        Double iterations = (double) samplerIterations;
-        Double temperature;
+        double maxTemp = annealingTemperatureMax;
+        double minTemp = annealingTemperatureMin;
+        double iterations = samplerIterations;
+        double temperature;
         CipherSolution next = initialSolution;
         CipherSolution maxProbability = initialSolution;
         int maxProbabilityIteration = 0;
@@ -212,7 +212,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return maxProbability;
     }
 
-    private CipherSolution runLetterSampler(Double temperature, CipherSolution solution) {
+    private CipherSolution runLetterSampler(double temperature, CipherSolution solution) {
         List<String> mappingList = new ArrayList<>();
         mappingList.addAll(solution.getMappings().keySet());
 
@@ -230,8 +230,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 continue;
             }
 
-            Double originalScore = solution.getScore();
-            Double originalIndexOfCoincidence = solution.getIndexOfCoincidence();
+            double originalScore = solution.getScore();
+            double originalIndexOfCoincidence = solution.getIndexOfCoincidence();
             solution.replaceMapping(nextKey, letter);
 
             String solutionString = solution.asSingleLineString();
@@ -256,10 +256,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return solution;
     }
 
-    private boolean selectNext(Double temperature, Double solutionScore, Double proposalScore) {
-        Double acceptanceProbability;
+    private boolean selectNext(double temperature, double solutionScore, double proposalScore) {
+        double acceptanceProbability;
 
-        if (proposalScore.compareTo(solutionScore) >= 0) {
+        if (proposalScore >= solutionScore) {
             log.debug("Better solution found");
             return true;
         } else {
@@ -272,7 +272,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
             }
 
-            if (acceptanceProbability > 1d || RANDOM.nextDouble() < acceptanceProbability.doubleValue()) {
+            if (acceptanceProbability > 1d || RANDOM.nextDouble() < acceptanceProbability) {
                 return true;
             }
         }

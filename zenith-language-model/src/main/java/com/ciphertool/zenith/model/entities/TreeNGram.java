@@ -32,22 +32,22 @@ public class TreeNGram {
     protected String cumulativeString;
 
     @CsvBindByPosition(position = 1, required = true)
-    protected Integer order;
+    protected int order;
 
     @CsvBindByPosition(position = 2, required = true)
     protected long count = 0L;
 
     @CsvBindByPosition(position = 3)
-    protected Double probability;
+    protected double probability;
 
     @CsvBindByPosition(position = 4)
-    protected Double logProbability;
+    protected double logProbability;
 
     @CsvBindByPosition(position = 5, required = true)
-    protected Double conditionalProbability;
+    protected double conditionalProbability;
 
     @CsvBindByPosition(position = 6, required = true)
-    protected Double logConditionalProbability;
+    protected double logConditionalProbability;
 
     private Map<Character, TreeNGram> transitions = new HashMap<>(1);
 
@@ -65,113 +65,80 @@ public class TreeNGram {
         this.count += 1L;
     }
 
-    /**
-     * @return the count
-     */
     public long getCount() {
         return this.count;
     }
 
-    /**
-     * @param count
-     *            the count to set
-     */
     public void setCount(long count) {
         this.count = count;
     }
 
-    /**
-     * @return the probability
-     */
-    public Double getProbability() {
+    public double getProbability() {
         return this.probability;
     }
 
     /**
      * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
      * defensive measure in case future usage changes are not thread-safe.
-     *
-     * @param probability
-     *            the probability to set
      */
-    public synchronized void setProbability(Double probability) {
+    public synchronized void setProbability(double probability) {
         this.probability = probability;
     }
 
-    /**
-     * @return the conditionalProbability
-     */
-    public Double getConditionalProbability() {
+    public double getConditionalProbability() {
         return conditionalProbability;
     }
 
-    public Double getLogProbability() {
+    public double getLogProbability() {
         return logProbability;
     }
 
-    public void setLogProbability(Double logProbability) {
+    public void setLogProbability(double logProbability) {
         this.logProbability = logProbability;
     }
 
-    public Double getLogConditionalProbability() {
+    public double getLogConditionalProbability() {
         return logConditionalProbability;
     }
 
-    public void setLogConditionalProbability(Double logConditionalProbability) {
+    public void setLogConditionalProbability(double logConditionalProbability) {
         this.logConditionalProbability = logConditionalProbability;
     }
 
     /**
      * All current usages of this method are thread-safe, but since it's used in a multi-threaded way, this is a
      * defensive measure in case future usage changes are not thread-safe.
-     *
-     * @param conditionalProbability
-     *            the conditionalProbability to set
      */
-    public synchronized void setConditionalProbability(Double conditionalProbability) {
+    public synchronized void setConditionalProbability(double conditionalProbability) {
         this.conditionalProbability = conditionalProbability;
     }
 
-    /**
-     * @return the order
-     */
-    public Integer getOrder() {
+    public int getOrder() {
         return order;
     }
 
-    /**
-     * @param order
-     *            the order to set
-     */
-    public void setOrder(Integer order) {
+    public void setOrder(int order) {
         this.order = order;
     }
 
-    /**
-     * @return the cumulativeString
-     */
     public String getCumulativeString() {
         return cumulativeString;
     }
 
-    /**
-     * @param cumulativeString
-     *            the cumulativeString to set
-     */
     public void setCumulativeString(String cumulativeString) {
         this.cumulativeString = cumulativeString;
     }
 
-    public boolean containsChild(Character c) {
+    public boolean containsChild(char c) {
         return this.getTransitions().containsKey(c);
     }
 
-    public TreeNGram getChild(Character c) {
+    public TreeNGram getChild(char c) {
         return this.getTransitions().get(c);
     }
 
     public synchronized boolean addOrIncrementChildAsync(String nGramString, int order) {
-        Character firstLetter = nGramString.charAt(order - 1);
+        char firstLetter = nGramString.charAt(order - 1);
 
         TreeNGram child = this.getChild(firstLetter);
 
@@ -191,7 +158,7 @@ public class TreeNGram {
     }
 
     public synchronized TreeNGram addExistingNodeAsync(TreeNGram nodeToAdd, int order) {
-        Character firstLetter = nodeToAdd.cumulativeString.charAt(order - 1);
+        char firstLetter = nodeToAdd.cumulativeString.charAt(order - 1);
 
         TreeNGram child = this.getChild(firstLetter);
 
@@ -214,8 +181,8 @@ public class TreeNGram {
         return this.getChild(firstLetter);
     }
 
-    public TreeNGram putChild(Character c, TreeNGram child) {
-        if (!LOWERCASE_LETTERS_AND_SPACE.matcher(c.toString()).matches()) {
+    public TreeNGram putChild(char c, TreeNGram child) {
+        if (!LOWERCASE_LETTERS_AND_SPACE.matcher(String.valueOf(c)).matches()) {
             throw new IllegalArgumentException(
                     "Attempted to add a character to the Markov Model which is outside the range of "
                             + LOWERCASE_LETTERS_AND_SPACE);
@@ -224,9 +191,6 @@ public class TreeNGram {
         return this.getTransitions().put(c, child);
     }
 
-    /**
-     * @return the transitions array
-     */
     public Map<Character, TreeNGram> getTransitions() {
         return this.transitions;
     }

@@ -5,9 +5,9 @@ import com.ciphertool.zenith.model.entities.TreeNGram;
 import java.util.*;
 
 public class MapMarkovModel {
-    private Integer order;
-    private Double unknownLetterNGramProbability;
-    private Double unknownLetterNGramLogProbability;
+    private int order;
+    private double unknownLetterNGramProbability;
+    private double unknownLetterNGramLogProbability;
     private Map<String, TreeNGram> nGramMap = new HashMap<>();
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
 
@@ -37,23 +37,23 @@ public class MapMarkovModel {
         return nGramMap.get(nGram);
     }
 
-    public Integer getOrder() {
+    public int getOrder() {
         return order;
     }
 
-    public Double getUnknownLetterNGramProbability() {
+    public double getUnknownLetterNGramProbability() {
         return unknownLetterNGramProbability;
     }
 
-    public void setUnknownLetterNGramProbability(Double unknownLetterNGramProbability) {
+    public void setUnknownLetterNGramProbability(double unknownLetterNGramProbability) {
         this.unknownLetterNGramProbability = unknownLetterNGramProbability;
     }
 
-    public Double getUnknownLetterNGramLogProbability() {
+    public double getUnknownLetterNGramLogProbability() {
         return unknownLetterNGramLogProbability;
     }
 
-    public void setUnknownLetterNGramLogProbability(Double unknownLetterNGramLogProbability) {
+    public void setUnknownLetterNGramLogProbability(double unknownLetterNGramLogProbability) {
         this.unknownLetterNGramLogProbability = unknownLetterNGramLogProbability;
     }
 }
