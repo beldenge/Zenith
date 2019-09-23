@@ -22,6 +22,9 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +37,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "RestServicePlaintextEvaluator")
@@ -56,7 +57,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public Map<Integer, Double> evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public Int2DoubleMap evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startEvaluation = System.currentTimeMillis();
 
         RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();
@@ -67,10 +68,11 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
 
         log.debug("Rest service evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
 
-        Map<Integer, Double> logProbabilitiesUpdated = new HashMap<>(response.getProbabilities().size());
+        Int2DoubleMap logProbabilitiesUpdated = new Int2DoubleOpenHashMap(response.getProbabilities().size());
 
-        for (int i = 0; i < solution.getLogProbabilities().size(); i ++) {
-            logProbabilitiesUpdated.put(i, solution.getLogProbabilities().get(i));
+        DoubleList logProbabilities = solution.getLogProbabilities();
+        for (int i = 0; i < logProbabilities.size(); i ++) {
+            logProbabilitiesUpdated.put(i, logProbabilities.getDouble(i));
         }
 
         solution.clearLogProbabilities();

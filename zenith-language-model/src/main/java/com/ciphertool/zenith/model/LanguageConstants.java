@@ -19,16 +19,16 @@
 
 package com.ciphertool.zenith.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import it.unimi.dsi.fastutil.chars.CharArrayList;
+import it.unimi.dsi.fastutil.chars.CharList;
+
 import java.util.Comparator;
-import java.util.List;
 
 public class LanguageConstants {
-    public static final List<Character> LOWERCASE_VOWELS = Arrays.asList(new Character[]{'a', 'e', 'i', 'o', 'u'});
-    public static final List<Character> LOWERCASE_CONSONANTS = Arrays.asList(new Character[]{'b', 'c', 'd', 'f',
+    public static final CharList LOWERCASE_VOWELS = new CharArrayList(new char[]{'a', 'e', 'i', 'o', 'u'});
+    public static final CharList LOWERCASE_CONSONANTS = new CharArrayList(new char[]{'b', 'c', 'd', 'f',
             'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'});
-    public static final List<Character> LOWERCASE_LETTERS = new ArrayList<>();
+    public static final CharList LOWERCASE_LETTERS = new CharArrayList();
 
     static {
         LOWERCASE_LETTERS.addAll(LOWERCASE_VOWELS);

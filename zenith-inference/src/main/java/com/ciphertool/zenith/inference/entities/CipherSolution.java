@@ -19,10 +19,14 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CipherSolution {
     private static Logger log = LoggerFactory.getLogger(CipherSolution.class);
@@ -36,7 +40,7 @@ public class CipherSolution {
 
     private Map<String, String> mappings = new HashMap<>();
 
-    private List<Double> logProbabilities = new ArrayList<>();
+    private DoubleList logProbabilities = new DoubleArrayList();
 
     private Double indexOfCoincidence = 1d;
 
@@ -122,8 +126,8 @@ public class CipherSolution {
         return this.mappings.remove(key);
     }
 
-    public List<Double> getLogProbabilities() {
-        return Collections.unmodifiableList(logProbabilities);
+    public DoubleList getLogProbabilities() {
+        return logProbabilities;
     }
 
     public void clearLogProbabilities() {
@@ -131,7 +135,7 @@ public class CipherSolution {
         this.logProbability = null;
     }
 
-    public void addLogProbability(Double logProbability) {
+    public void addLogProbability(double logProbability) {
         this.logProbabilities.add(logProbability);
 
         if(this.logProbability == null) {
@@ -141,8 +145,8 @@ public class CipherSolution {
         this.logProbability += logProbability;
     }
 
-    public void replaceLogProbability(int i, Double newLogProbability) {
-        Double oldLogProbability = this.logProbabilities.remove(i);
+    public void replaceLogProbability(int i, double newLogProbability) {
+        double oldLogProbability = this.logProbabilities.removeDouble(i);
         this.logProbabilities.add(i, newLogProbability);
 
         this.logProbability -= oldLogProbability;
@@ -178,8 +182,8 @@ public class CipherSolution {
         }
 
         copySolution.logProbability = 0d;
-        for (Double logProbability : this.logProbabilities) {
-            copySolution.addLogProbability(logProbability.doubleValue());
+        for (double logProbability : this.logProbabilities) {
+            copySolution.addLogProbability(logProbability);
         }
 
         copySolution.setIndexOfCoincidence(this.indexOfCoincidence.doubleValue());

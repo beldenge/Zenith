@@ -20,9 +20,8 @@
 package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-
-import java.util.Map;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 
 public interface PlaintextEvaluator {
-    Map<Integer, Double> evaluate(CipherSolution solution, String solutionString, String ciphertextKey);
+   Int2DoubleMap evaluate(CipherSolution solution, String solutionString, String ciphertextKey);
 }

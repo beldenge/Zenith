@@ -76,7 +76,7 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
         Integer[] columnIndices = new Integer[transpositionKeyString.length()];
 
         for (int i = 0; i < LanguageConstants.LOWERCASE_LETTERS_SIZE; i++) {
-            char letter = LanguageConstants.LOWERCASE_LETTERS.get(i);
+            char letter = LanguageConstants.LOWERCASE_LETTERS.getChar(i);
 
             for (int j = 0; j < transpositionKeyString.length(); j++) {
                 if (transpositionKeyString.toLowerCase().charAt(j) == letter) {

@@ -29,6 +29,7 @@ import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.MapMarkovModel;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -220,7 +221,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         for (int i = 0; i < solution.getMappings().size(); i++) {
             nextKey = iterateRandomly ? mappingList.remove(RANDOM.nextInt(mappingList.size())) : mappingList.get(i);
 
-            String letter = LanguageConstants.LOWERCASE_LETTERS.get(RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)).toString();
+            String letter = String.valueOf(LanguageConstants.LOWERCASE_LETTERS.getChar(RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)));
 
             String originalMapping = solution.getMappings().get(nextKey);
 
@@ -239,14 +240,14 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 }
             }
 
-            Map<Integer, Double> logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, solutionString, nextKey);
+            Int2DoubleMap logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, solutionString, nextKey);
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {
                 solution.setIndexOfCoincidence(originalIndexOfCoincidence);
                 solution.replaceMapping(nextKey, originalMapping);
 
-                for (Map.Entry<Integer, Double> entry : logProbabilitiesUpdated.entrySet()) {
-                    solution.replaceLogProbability(entry.getKey(), entry.getValue());
+                for (Int2DoubleMap.Entry entry : logProbabilitiesUpdated.int2DoubleEntrySet()) {
+                    solution.replaceLogProbability(entry.getIntKey(), entry.getDoubleValue());
                 }
             }
         }
