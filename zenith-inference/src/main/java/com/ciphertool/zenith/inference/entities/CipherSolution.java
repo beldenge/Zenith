@@ -228,9 +228,6 @@ public class CipherSolution {
         return proximityToKnownSolution;
     }
 
-    /**
-     * This is currently just used by unit tests.
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -240,9 +237,6 @@ public class CipherSolution {
         return result;
     }
 
-    /**
-     * This is currently just used by unit tests.
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

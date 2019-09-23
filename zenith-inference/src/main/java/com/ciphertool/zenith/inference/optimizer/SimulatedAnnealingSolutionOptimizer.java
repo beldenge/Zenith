@@ -86,14 +86,15 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
     @Override
     public CipherSolution optimize() {
-        int cipherKeySize = (int) cipher.getCiphertextCharacters().stream().map(c -> c.getValue()).distinct().count();
-
-        List<TreeNGram> firstOrderNodes = new ArrayList<>(letterMarkovModel.getFirstOrderNodes());
+        int cipherKeySize = (int) cipher.getCiphertextCharacters().stream()
+                .map(c -> c.getValue())
+                .distinct()
+                .count();
 
         List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS_SIZE);
 
         Double probability;
-        for (TreeNGram node : firstOrderNodes) {
+        for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
             probability = (double) node.getCount() / (double) letterMarkovModel.getTotalNumberOfNgrams();
 
             letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
