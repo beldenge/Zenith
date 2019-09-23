@@ -190,7 +190,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
             if (log.isDebugEnabled()) {
                 log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
-                log.debug(next.toString());
+                cipherSolutionPrinter.print(next);
             }
         }
 

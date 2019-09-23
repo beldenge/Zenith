@@ -80,6 +80,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 
     protected Map<Integer, Double> evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
         int order = letterMarkovModel.getOrder();
+        int stepSize = order / 2;
 
         Map<Integer, Double> logProbabilitiesUpdated = new HashMap<>();
         Double logProbability;
@@ -94,18 +95,23 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 
             Integer lastIndex = null;
             for (Integer ciphertextIndex : ciphertextIndices) {
-                int start = Math.max(0, ciphertextIndex - (order - 1));
-                int end = Math.min(solutionString.length() - order, ciphertextIndex + 1);
-
-                if (lastIndex != null) {
-                    start = Math.max(start, lastIndex);
+                int wayBack = ciphertextIndex - (ciphertextIndex % stepSize) - (stepSize * 2);
+                if (wayBack + order <= ciphertextIndex) {
+                    wayBack += stepSize;
                 }
 
-                for (int i = start; i < end; i++) {
+                int start = Math.max(0, wayBack);
+                int end = Math.min(solutionString.length() - order, ciphertextIndex + 1);
+
+                if (lastIndex != null && start < lastIndex) {
+                    continue;
+                }
+
+                for (int i = start; i < end; i += stepSize) {
                     logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
 
-                    logProbabilitiesUpdated.put(i, solution.getLogProbabilities().get(i));
-                    solution.replaceLogProbability(i, logProbability);
+                    logProbabilitiesUpdated.put(i / stepSize, solution.getLogProbabilities().get(i / stepSize));
+                    solution.replaceLogProbability(i / stepSize, logProbability);
                 }
 
                 lastIndex = end;
@@ -117,7 +123,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 
             solution.clearLogProbabilities();
 
-            for (int i = 0; i < solutionString.length() - order; i++) {
+            for (int i = 0; i < solutionString.length() - order; i += stepSize) {
                 logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
 
                 solution.addLogProbability(logProbability);

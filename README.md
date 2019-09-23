@@ -1,9 +1,9 @@
 # Zenith
 The aim of this project is to provide a tool that is easy to use for somewhat technical people in solving homophonic substitution ciphers.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
 
-It has been verified to successfully decipher the Zodiac 408 cipher in 878 out of 1000 epochs (87.80%).
+It has been verified to successfully decipher the Zodiac 408 cipher in 799 out of 1000 epochs (79.90%).
 
-It takes roughly 10 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to complete one epoch.
+It takes roughly 7 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to complete one epoch.
 
 # Building
 1. Download and install Java 8 or later
@@ -28,7 +28,7 @@ This module is a dependency shared by multiple Zenith modules.  That is its only
 # Contributing
 Simply fork the repository and send pull requests.  The following are the areas that could be of most benefit going forward.
 * Better optimization algorithms \
-   The current hill-climbing approach is successful roughly 87% of the time, so it's currently recommended to run the optimizer for several epochs.  It would be desirable if it worked 100% of the time, so that we don't miss a potential winning solution from simply not running the optimizer for enough iterations.
+   The current hill-climbing approach is successful roughly 80% of the time, so it's currently recommended to run the optimizer for several epochs.  It would be desirable if it worked 100% of the time, so that we don't miss a potential winning solution from simply not running the optimizer for enough iterations.
 * Better language models and scoring algorithms \
    This also plays into the comment above regarding accuracy.
 * Performance improvements \
