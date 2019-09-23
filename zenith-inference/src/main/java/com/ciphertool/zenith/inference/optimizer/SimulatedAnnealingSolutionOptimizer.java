@@ -213,7 +213,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     }
 
     private CipherSolution runLetterSampler(double temperature, CipherSolution solution) {
-        List<String> mappingList = new ArrayList<>();
+        List<String> mappingList = new ArrayList<>(solution.getMappings().size());
         mappingList.addAll(solution.getMappings().keySet());
 
         String nextKey;
