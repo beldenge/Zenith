@@ -22,11 +22,8 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
-import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.MapMarkovModel;
-import it.unimi.dsi.fastutil.chars.Char2IntMap;
-import it.unimi.dsi.fastutil.chars.Char2IntOpenHashMap;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
@@ -52,8 +49,8 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     @Autowired
     private MapMarkovModel letterMarkovModel;
 
+    private int[] letterCountsArray = new int[256];
     private double denominator;
-    private Char2IntMap letterCounts = new Char2IntOpenHashMap(LanguageConstants.LOWERCASE_LETTERS_SIZE);
 
     @PostConstruct
     public void init() {
@@ -146,22 +143,75 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     protected double computeIndexOfCoincidence(String solutionString) {
-        int totalLetters = solutionString.length();
+        resetLetterCounts();
 
-        for (char letter : LanguageConstants.LOWERCASE_LETTERS) {
-            letterCounts.put(letter, 0);
+        for (int i = 0; i < solutionString.length(); i++) {
+            letterCountsArray[solutionString.charAt(i)] ++;
         }
 
-        for (int i = 0; i < totalLetters; i++) {
-            char nextLetter = solutionString.charAt(i);
-            letterCounts.put(nextLetter, letterCounts.get(nextLetter) + 1);
-        }
-
-        int numerator = 0;
-        for (Integer count : letterCounts.values()) {
-            numerator += (count * (count - 1));
-        }
+        int numerator = buildNumerator();
 
         return (double) numerator / denominator;
+    }
+
+    private void resetLetterCounts() {
+        letterCountsArray['a'] = 0;
+        letterCountsArray['b'] = 0;
+        letterCountsArray['c'] = 0;
+        letterCountsArray['d'] = 0;
+        letterCountsArray['e'] = 0;
+        letterCountsArray['f'] = 0;
+        letterCountsArray['g'] = 0;
+        letterCountsArray['h'] = 0;
+        letterCountsArray['i'] = 0;
+        letterCountsArray['j'] = 0;
+        letterCountsArray['k'] = 0;
+        letterCountsArray['l'] = 0;
+        letterCountsArray['m'] = 0;
+        letterCountsArray['n'] = 0;
+        letterCountsArray['o'] = 0;
+        letterCountsArray['p'] = 0;
+        letterCountsArray['q'] = 0;
+        letterCountsArray['r'] = 0;
+        letterCountsArray['s'] = 0;
+        letterCountsArray['t'] = 0;
+        letterCountsArray['u'] = 0;
+        letterCountsArray['v'] = 0;
+        letterCountsArray['w'] = 0;
+        letterCountsArray['x'] = 0;
+        letterCountsArray['y'] = 0;
+        letterCountsArray['z'] = 0;
+    }
+
+    private int buildNumerator() {
+        int numerator = 0;
+        numerator += (letterCountsArray['a'] * (letterCountsArray['a'] - 1));
+        numerator += (letterCountsArray['b'] * (letterCountsArray['b'] - 1));
+        numerator += (letterCountsArray['c'] * (letterCountsArray['c'] - 1));
+        numerator += (letterCountsArray['d'] * (letterCountsArray['d'] - 1));
+        numerator += (letterCountsArray['e'] * (letterCountsArray['e'] - 1));
+        numerator += (letterCountsArray['f'] * (letterCountsArray['f'] - 1));
+        numerator += (letterCountsArray['g'] * (letterCountsArray['g'] - 1));
+        numerator += (letterCountsArray['h'] * (letterCountsArray['h'] - 1));
+        numerator += (letterCountsArray['i'] * (letterCountsArray['i'] - 1));
+        numerator += (letterCountsArray['j'] * (letterCountsArray['j'] - 1));
+        numerator += (letterCountsArray['k'] * (letterCountsArray['k'] - 1));
+        numerator += (letterCountsArray['l'] * (letterCountsArray['l'] - 1));
+        numerator += (letterCountsArray['m'] * (letterCountsArray['m'] - 1));
+        numerator += (letterCountsArray['n'] * (letterCountsArray['n'] - 1));
+        numerator += (letterCountsArray['o'] * (letterCountsArray['o'] - 1));
+        numerator += (letterCountsArray['p'] * (letterCountsArray['p'] - 1));
+        numerator += (letterCountsArray['q'] * (letterCountsArray['q'] - 1));
+        numerator += (letterCountsArray['r'] * (letterCountsArray['r'] - 1));
+        numerator += (letterCountsArray['s'] * (letterCountsArray['s'] - 1));
+        numerator += (letterCountsArray['t'] * (letterCountsArray['t'] - 1));
+        numerator += (letterCountsArray['u'] * (letterCountsArray['u'] - 1));
+        numerator += (letterCountsArray['v'] * (letterCountsArray['v'] - 1));
+        numerator += (letterCountsArray['w'] * (letterCountsArray['w'] - 1));
+        numerator += (letterCountsArray['x'] * (letterCountsArray['x'] - 1));
+        numerator += (letterCountsArray['y'] * (letterCountsArray['y'] - 1));
+        numerator += (letterCountsArray['z'] * (letterCountsArray['z'] - 1));
+
+        return numerator;
     }
 }
