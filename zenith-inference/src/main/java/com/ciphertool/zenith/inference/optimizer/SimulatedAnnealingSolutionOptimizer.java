@@ -149,6 +149,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     }
 
     private CipherSolution performEpoch(CipherSolution initialSolution) {
+        long start = System.currentTimeMillis();
+
         String solutionString = initialSolution.asSingleLineString();
         if (plaintextTransformers != null) {
             for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
@@ -164,7 +166,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         double temperature;
         CipherSolution next = initialSolution;
-        long start = System.currentTimeMillis();
         long startLetterSampling;
 
         int i;
@@ -210,7 +211,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         String nextKey;
 
         // For each cipher symbol type, run the letter sampling
-        for (int i = 0; i < solution.getMappings().size(); i++) {
+        for (int i = 0; i < mappingList.size(); i++) {
             nextKey = iterateRandomly ? mappingList.remove(RANDOM.nextInt(mappingList.size())) : mappingList.get(i);
 
             String letter = String.valueOf(LanguageConstants.LOWERCASE_LETTERS.getChar(RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)));

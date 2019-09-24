@@ -276,7 +276,7 @@ public class CipherSolution {
 
         if (null == this.getCipher()) {
             throw new IllegalStateException(
-                    "Called getSolutionAsString(), but found a null Cipher.  Cannot create valid solution string unless the Cipher is properly set.");
+                    "Called asSingleLineString(), but found a null Cipher.  Cannot create valid solution string unless the Cipher is properly set.");
         }
 
         for (Ciphertext ciphertext : this.getCipher().getCiphertextCharacters()) {
