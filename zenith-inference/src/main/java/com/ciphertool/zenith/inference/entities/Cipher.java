@@ -19,6 +19,10 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+
 import java.util.*;
 
 public class Cipher {
@@ -32,6 +36,9 @@ public class Cipher {
 
     private Map<String, String> knownSolutionKey = new HashMap<>();
 
+    @JsonIgnore
+    private Map<String, IntList> cipherSymbolIndicesMap = new HashMap<>();
+
     public Cipher() {
     }
 
@@ -41,8 +48,33 @@ public class Cipher {
         this.columns = columns;
     }
 
+    public int length() {
+        return rows * columns;
+    }
+
+    public boolean hasKnownSolution() {
+        return !knownSolutionKey.isEmpty();
+    }
+
     public String getName() {
         return name;
+    }
+
+    public Map<String, IntList> getCipherSymbolIndicesMap() {
+        if (!cipherSymbolIndicesMap.isEmpty()) {
+            return cipherSymbolIndicesMap;
+        }
+
+        for (Ciphertext ciphertextCharacter : ciphertextCharacters) {
+            String symbol = ciphertextCharacter.getValue();
+            if (!cipherSymbolIndicesMap.containsKey(ciphertextCharacter.getValue())) {
+                cipherSymbolIndicesMap.put(symbol, new IntArrayList());
+            }
+
+            cipherSymbolIndicesMap.get(symbol).add(ciphertextCharacter.getCiphertextId());
+        }
+
+        return cipherSymbolIndicesMap;
     }
 
     public void setName(String name) {
@@ -71,10 +103,12 @@ public class Cipher {
 
     public void addCiphertextCharacter(Ciphertext ciphertext) {
         this.ciphertextCharacters.add(ciphertext);
+        this.cipherSymbolIndicesMap.clear();
     }
 
     public void removeCiphertextCharacter(Ciphertext ciphertext) {
         this.ciphertextCharacters.remove(ciphertext);
+        this.cipherSymbolIndicesMap.clear();
     }
 
     public void replaceCiphertextCharacter(int index, Ciphertext ciphertext) {
@@ -82,6 +116,7 @@ public class Cipher {
 
         toReplace.setCiphertextId(index);
         toReplace.setValue(ciphertext.getValue());
+        this.cipherSymbolIndicesMap.clear();
     }
 
     public Map<String, String> getKnownSolutionKey() {
@@ -96,17 +131,6 @@ public class Cipher {
         this.knownSolutionKey = new HashMap<>();
     }
 
-    public int length() {
-        return rows * columns;
-    }
-
-    /**
-     * @return the hasKnownSolution
-     */
-    public boolean hasKnownSolution() {
-        return !knownSolutionKey.isEmpty();
-    }
-
     public Cipher clone() {
         Cipher cloned = new Cipher(this.name, this.rows, this.columns);
 
@@ -117,6 +141,8 @@ public class Cipher {
         for (Map.Entry<String, String> entry : this.knownSolutionKey.entrySet()) {
             cloned.putKnownSolutionMapping(entry.getKey(), entry.getValue());
         }
+
+        cloned.cipherSymbolIndicesMap = new HashMap<>();
 
         return cloned;
     }
@@ -137,12 +163,15 @@ public class Cipher {
         if (this == obj) {
             return true;
         }
+
         if (obj == null) {
             return false;
         }
+
         if (getClass() != obj.getClass()) {
             return false;
         }
+
         Cipher other = (Cipher) obj;
         if (ciphertextCharacters == null) {
             if (other.ciphertextCharacters != null) {
@@ -151,9 +180,11 @@ public class Cipher {
         } else if (!ciphertextCharacters.equals(other.ciphertextCharacters)) {
             return false;
         }
+
         if (columns != other.columns) {
             return false;
         }
+
         if (name == null) {
             if (other.name != null) {
                 return false;
@@ -161,9 +192,11 @@ public class Cipher {
         } else if (!name.equals(other.name)) {
             return false;
         }
+
         if (rows != other.rows) {
             return false;
         }
+
         return true;
     }
 

@@ -21,7 +21,6 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -34,7 +33,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 @Component
 @ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "MarkovModelPlaintextEvaluator")
@@ -94,31 +92,28 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         Integer lastIndex = null;
 
         if (ciphertextKey != null) {
-            List<Ciphertext> ciphertextCharacters = solution.getCipher().getCiphertextCharacters();
-            for (int i = 0; i < ciphertextCharacters.size(); i++) {
-                if (ciphertextKey.equals(ciphertextCharacters.get(i).getValue())) {
-                    int wayBack = i - (i % stepSize) - doubleStepSize;
-                    if (wayBack + order <= i) {
-                        wayBack += stepSize;
-                    }
-
-                    int start = Math.max(0, wayBack);
-                    int end = Math.min(stringLengthMinusOrder, i + 1);
-
-                    if (lastIndex != null && start < lastIndex) {
-                        continue;
-                    }
-
-                    for (int j = start; j < end; j += stepSize) {
-                        logProbability = computeNGramLogProbability(solutionString.substring(j, j + order));
-
-                        int index = j / stepSize;
-                        logProbabilitiesUpdated.put(index, solution.getLogProbabilities().getDouble(index));
-                        solution.replaceLogProbability(index, logProbability);
-                    }
-
-                    lastIndex = end;
+            for (int ciphertextIndex : cipher.getCipherSymbolIndicesMap().get(ciphertextKey)) {
+                int wayBack = ciphertextIndex - (ciphertextIndex % stepSize) - doubleStepSize;
+                if (wayBack + order <= ciphertextIndex) {
+                    wayBack += stepSize;
                 }
+
+                int start = Math.max(0, wayBack);
+                int end = Math.min(stringLengthMinusOrder, ciphertextIndex + 1);
+
+                if (lastIndex != null && start < lastIndex) {
+                    continue;
+                }
+
+                for (int j = start; j < end; j += stepSize) {
+                    logProbability = computeNGramLogProbability(solutionString.substring(j, j + order));
+
+                    int index = j / stepSize;
+                    logProbabilitiesUpdated.put(index, solution.getLogProbabilities().getDouble(index));
+                    solution.replaceLogProbability(index, logProbability);
+                }
+
+                lastIndex = end;
             }
         } else {
             DoubleList logProbabilities = solution.getLogProbabilities();

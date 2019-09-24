@@ -28,7 +28,6 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class Ciphertext {
-
     private int ciphertextId;
 
     private String value;
