@@ -21,6 +21,10 @@ public class MapMarkovModel {
                 .sum();
     }
 
+    public int getMapSize() {
+        return nGramMap.size();
+    }
+
     public List<TreeNGram> getFirstOrderNodes() {
         return Collections.unmodifiableList(firstOrderNodes);
     }

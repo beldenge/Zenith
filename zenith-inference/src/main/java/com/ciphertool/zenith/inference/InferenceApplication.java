@@ -48,6 +48,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -87,6 +88,10 @@ public class InferenceApplication implements CommandLineRunner {
 
     @Value("${markov.letter.order}")
     private int markovOrder;
+
+    @Min(1)
+    @Value("${language-model.ngram.minimum-count:1}")
+    private int minimumCount;
 
     @Value("${cipher.name}")
     private String cipherName;
@@ -211,9 +216,11 @@ public class InferenceApplication implements CommandLineRunner {
         long startAdding = System.currentTimeMillis();
         log.info("Adding nodes to the model.");
 
-        nGramNodes.stream().forEach(letterMarkovModel::addNode);
+        nGramNodes.stream()
+                .filter(node -> node.getCount() >= minimumCount)
+                .forEach(letterMarkovModel::addNode);
 
-        log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
+        log.info("Finished adding {} nodes to the letter n-gram model in {}ms.", letterMarkovModel.getMapSize(), (System.currentTimeMillis() - startAdding));
 
         Double unknownLetterNGramProbability = 1d / (double) letterMarkovModel.getTotalNumberOfNgrams();
         letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);

@@ -158,18 +158,14 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         plaintextEvaluator.evaluate(initialSolution, solutionString, null);
 
-        log.debug(initialSolution.toString());
+        if (log.isDebugEnabled()) {
+            cipherSolutionPrinter.print(initialSolution);
+        }
 
-        double maxTemp = annealingTemperatureMax;
-        double minTemp = annealingTemperatureMin;
-        double iterations = samplerIterations;
         double temperature;
         CipherSolution next = initialSolution;
-        CipherSolution maxProbability = initialSolution;
-        int maxProbabilityIteration = 0;
         long start = System.currentTimeMillis();
         long startLetterSampling;
-        long letterSamplingElapsed;
 
         int i;
         for (i = 0; i < samplerIterations; i++) {
@@ -179,19 +175,14 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
              * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
              * temperature so as not to go below it
              */
-            temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
+            temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (double) i) / samplerIterations)) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
             next = runLetterSampler(temperature, next);
-            letterSamplingElapsed = (System.currentTimeMillis() - startLetterSampling);
-
-            if (maxProbability.getLogProbability() < next.getLogProbability()) {
-                maxProbability = next;
-                maxProbabilityIteration = i + 1;
-            }
 
             if (log.isDebugEnabled()) {
-                log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
+                long now = System.currentTimeMillis();
+                log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (now - iterationStart), (now - startLetterSampling), String.format("%1$,.4f", temperature));
                 cipherSolutionPrinter.print(next);
             }
         }
@@ -199,17 +190,17 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         long totalElapsed = System.currentTimeMillis() - start;
         log.info("Letter sampling completed in {}ms.  Average={}ms.", totalElapsed, ((double) totalElapsed / (double) i));
 
-        log.info("Best probability found at iteration {}:", maxProbabilityIteration);
         if (log.isInfoEnabled()) {
-            cipherSolutionPrinter.print(maxProbability);
+            cipherSolutionPrinter.print(next);
         }
+
         log.info("Mappings for best probability:");
 
-        for (Map.Entry<String, String> entry : maxProbability.getMappings().entrySet()) {
+        for (Map.Entry<String, String> entry : next.getMappings().entrySet()) {
             log.info("{}: {}", entry.getKey(), entry.getValue());
         }
 
-        return maxProbability;
+        return next;
     }
 
     private CipherSolution runLetterSampler(double temperature, CipherSolution solution) {
@@ -226,7 +217,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
             String originalMapping = solution.getMappings().get(nextKey);
 
-            if (letter == originalMapping) {
+            if (letter.equals(originalMapping)) {
                 continue;
             }
 
@@ -257,24 +248,21 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     }
 
     private boolean selectNext(double temperature, double solutionScore, double proposalScore) {
-        double acceptanceProbability;
-
         if (proposalScore >= solutionScore) {
-            log.debug("Better solution found");
             return true;
-        } else {
-            // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
-            acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
+        }
 
-            log.debug("Acceptance probability: {}", acceptanceProbability);
+        // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
+        double acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
 
-            if (acceptanceProbability < 0d) {
-                throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
-            }
+        log.debug("Acceptance probability: {}", acceptanceProbability);
 
-            if (acceptanceProbability > 1d || RANDOM.nextDouble() < acceptanceProbability) {
-                return true;
-            }
+        if (acceptanceProbability < 0d) {
+            throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
+        }
+
+        if (acceptanceProbability > 1d || RANDOM.nextDouble() < acceptanceProbability) {
+            return true;
         }
 
         return false;

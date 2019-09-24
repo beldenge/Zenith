@@ -27,8 +27,6 @@ import com.ciphertool.zenith.model.markov.MapMarkovModel;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,18 +41,36 @@ import java.util.List;
 public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    // In theory this speeds up memory allocation, and in practice it does appear to have some benefit
+    private static final int ARBITRARY_LIST_INITIAL_SIZE = 20;
+
     @Autowired
     private Cipher cipher;
 
     @Autowired
     private MapMarkovModel letterMarkovModel;
 
-    private int[] letterCountsArray = new int[256];
+    // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+    private int[] letterCounts = new int[256];
+    private int[] precomputedNominatorValues;
     private double denominator;
+
+    private int order;
+    private int stepSize;
+    private int doubleStepSize;
 
     @PostConstruct
     public void init() {
         denominator = cipher.length() * (cipher.length() - 1);
+        precomputedNominatorValues = new int[cipher.length()];
+
+        for (int i = 0; i < cipher.length(); i ++) {
+            precomputedNominatorValues[i] = i * (i - 1);
+        }
+
+        order = letterMarkovModel.getOrder();
+        stepSize = order / 2;
+        doubleStepSize = stepSize * 2;
     }
 
     @Override
@@ -71,43 +87,38 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     protected Int2DoubleMap evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
-        int order = letterMarkovModel.getOrder();
-        int stepSize = order / 2;
+        int stringLengthMinusOrder = solutionString.length() - order;
 
-        Int2DoubleMap logProbabilitiesUpdated = new Int2DoubleOpenHashMap();
+        Int2DoubleMap logProbabilitiesUpdated = new Int2DoubleOpenHashMap(ARBITRARY_LIST_INITIAL_SIZE);
         double logProbability;
+        Integer lastIndex = null;
 
         if (ciphertextKey != null) {
-            IntList ciphertextIndices = new IntArrayList();
             List<Ciphertext> ciphertextCharacters = solution.getCipher().getCiphertextCharacters();
             for (int i = 0; i < ciphertextCharacters.size(); i++) {
                 if (ciphertextKey.equals(ciphertextCharacters.get(i).getValue())) {
-                    ciphertextIndices.add(i);
+                    int wayBack = i - (i % stepSize) - doubleStepSize;
+                    if (wayBack + order <= i) {
+                        wayBack += stepSize;
+                    }
+
+                    int start = Math.max(0, wayBack);
+                    int end = Math.min(stringLengthMinusOrder, i + 1);
+
+                    if (lastIndex != null && start < lastIndex) {
+                        continue;
+                    }
+
+                    for (int j = start; j < end; j += stepSize) {
+                        logProbability = computeNGramLogProbability(solutionString.substring(j, j + order));
+
+                        int index = j / stepSize;
+                        logProbabilitiesUpdated.put(index, solution.getLogProbabilities().getDouble(index));
+                        solution.replaceLogProbability(index, logProbability);
+                    }
+
+                    lastIndex = end;
                 }
-            }
-
-            Integer lastIndex = null;
-            for (int ciphertextIndex : ciphertextIndices) {
-                int wayBack = ciphertextIndex - (ciphertextIndex % stepSize) - (stepSize * 2);
-                if (wayBack + order <= ciphertextIndex) {
-                    wayBack += stepSize;
-                }
-
-                int start = Math.max(0, wayBack);
-                int end = Math.min(solutionString.length() - order, ciphertextIndex + 1);
-
-                if (lastIndex != null && start < lastIndex) {
-                    continue;
-                }
-
-                for (int i = start; i < end; i += stepSize) {
-                    logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
-
-                    logProbabilitiesUpdated.put(i / stepSize, solution.getLogProbabilities().getDouble(i / stepSize));
-                    solution.replaceLogProbability(i / stepSize, logProbability);
-                }
-
-                lastIndex = end;
             }
         } else {
             DoubleList logProbabilities = solution.getLogProbabilities();
@@ -128,25 +139,22 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     protected double computeNGramLogProbability(String ngram) {
-        double logProbability;
         TreeNGram match = letterMarkovModel.findExact(ngram);
 
         if (match != null) {
-            logProbability = match.getLogProbability();
-            log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), logProbability);
-        } else {
-            logProbability = letterMarkovModel.getUnknownLetterNGramLogProbability();
-            log.debug("No Letter N-Gram Match");
+            log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), match.getLogProbability());
+            return match.getLogProbability();
         }
 
-        return logProbability;
+        log.debug("No Letter N-Gram Match");
+        return letterMarkovModel.getUnknownLetterNGramLogProbability();
     }
 
     protected double computeIndexOfCoincidence(String solutionString) {
         resetLetterCounts();
 
         for (int i = 0; i < solutionString.length(); i++) {
-            letterCountsArray[solutionString.charAt(i)] ++;
+            letterCounts[solutionString.charAt(i)] ++;
         }
 
         int numerator = buildNumerator();
@@ -155,62 +163,62 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     private void resetLetterCounts() {
-        letterCountsArray['a'] = 0;
-        letterCountsArray['b'] = 0;
-        letterCountsArray['c'] = 0;
-        letterCountsArray['d'] = 0;
-        letterCountsArray['e'] = 0;
-        letterCountsArray['f'] = 0;
-        letterCountsArray['g'] = 0;
-        letterCountsArray['h'] = 0;
-        letterCountsArray['i'] = 0;
-        letterCountsArray['j'] = 0;
-        letterCountsArray['k'] = 0;
-        letterCountsArray['l'] = 0;
-        letterCountsArray['m'] = 0;
-        letterCountsArray['n'] = 0;
-        letterCountsArray['o'] = 0;
-        letterCountsArray['p'] = 0;
-        letterCountsArray['q'] = 0;
-        letterCountsArray['r'] = 0;
-        letterCountsArray['s'] = 0;
-        letterCountsArray['t'] = 0;
-        letterCountsArray['u'] = 0;
-        letterCountsArray['v'] = 0;
-        letterCountsArray['w'] = 0;
-        letterCountsArray['x'] = 0;
-        letterCountsArray['y'] = 0;
-        letterCountsArray['z'] = 0;
+        letterCounts['a'] = 0;
+        letterCounts['b'] = 0;
+        letterCounts['c'] = 0;
+        letterCounts['d'] = 0;
+        letterCounts['e'] = 0;
+        letterCounts['f'] = 0;
+        letterCounts['g'] = 0;
+        letterCounts['h'] = 0;
+        letterCounts['i'] = 0;
+        letterCounts['j'] = 0;
+        letterCounts['k'] = 0;
+        letterCounts['l'] = 0;
+        letterCounts['m'] = 0;
+        letterCounts['n'] = 0;
+        letterCounts['o'] = 0;
+        letterCounts['p'] = 0;
+        letterCounts['q'] = 0;
+        letterCounts['r'] = 0;
+        letterCounts['s'] = 0;
+        letterCounts['t'] = 0;
+        letterCounts['u'] = 0;
+        letterCounts['v'] = 0;
+        letterCounts['w'] = 0;
+        letterCounts['x'] = 0;
+        letterCounts['y'] = 0;
+        letterCounts['z'] = 0;
     }
 
     private int buildNumerator() {
         int numerator = 0;
-        numerator += (letterCountsArray['a'] * (letterCountsArray['a'] - 1));
-        numerator += (letterCountsArray['b'] * (letterCountsArray['b'] - 1));
-        numerator += (letterCountsArray['c'] * (letterCountsArray['c'] - 1));
-        numerator += (letterCountsArray['d'] * (letterCountsArray['d'] - 1));
-        numerator += (letterCountsArray['e'] * (letterCountsArray['e'] - 1));
-        numerator += (letterCountsArray['f'] * (letterCountsArray['f'] - 1));
-        numerator += (letterCountsArray['g'] * (letterCountsArray['g'] - 1));
-        numerator += (letterCountsArray['h'] * (letterCountsArray['h'] - 1));
-        numerator += (letterCountsArray['i'] * (letterCountsArray['i'] - 1));
-        numerator += (letterCountsArray['j'] * (letterCountsArray['j'] - 1));
-        numerator += (letterCountsArray['k'] * (letterCountsArray['k'] - 1));
-        numerator += (letterCountsArray['l'] * (letterCountsArray['l'] - 1));
-        numerator += (letterCountsArray['m'] * (letterCountsArray['m'] - 1));
-        numerator += (letterCountsArray['n'] * (letterCountsArray['n'] - 1));
-        numerator += (letterCountsArray['o'] * (letterCountsArray['o'] - 1));
-        numerator += (letterCountsArray['p'] * (letterCountsArray['p'] - 1));
-        numerator += (letterCountsArray['q'] * (letterCountsArray['q'] - 1));
-        numerator += (letterCountsArray['r'] * (letterCountsArray['r'] - 1));
-        numerator += (letterCountsArray['s'] * (letterCountsArray['s'] - 1));
-        numerator += (letterCountsArray['t'] * (letterCountsArray['t'] - 1));
-        numerator += (letterCountsArray['u'] * (letterCountsArray['u'] - 1));
-        numerator += (letterCountsArray['v'] * (letterCountsArray['v'] - 1));
-        numerator += (letterCountsArray['w'] * (letterCountsArray['w'] - 1));
-        numerator += (letterCountsArray['x'] * (letterCountsArray['x'] - 1));
-        numerator += (letterCountsArray['y'] * (letterCountsArray['y'] - 1));
-        numerator += (letterCountsArray['z'] * (letterCountsArray['z'] - 1));
+        numerator += precomputedNominatorValues[letterCounts['a']];
+        numerator += precomputedNominatorValues[letterCounts['b']];
+        numerator += precomputedNominatorValues[letterCounts['c']];
+        numerator += precomputedNominatorValues[letterCounts['d']];
+        numerator += precomputedNominatorValues[letterCounts['e']];
+        numerator += precomputedNominatorValues[letterCounts['f']];
+        numerator += precomputedNominatorValues[letterCounts['g']];
+        numerator += precomputedNominatorValues[letterCounts['h']];
+        numerator += precomputedNominatorValues[letterCounts['i']];
+        numerator += precomputedNominatorValues[letterCounts['j']];
+        numerator += precomputedNominatorValues[letterCounts['k']];
+        numerator += precomputedNominatorValues[letterCounts['l']];
+        numerator += precomputedNominatorValues[letterCounts['m']];
+        numerator += precomputedNominatorValues[letterCounts['n']];
+        numerator += precomputedNominatorValues[letterCounts['o']];
+        numerator += precomputedNominatorValues[letterCounts['p']];
+        numerator += precomputedNominatorValues[letterCounts['q']];
+        numerator += precomputedNominatorValues[letterCounts['r']];
+        numerator += precomputedNominatorValues[letterCounts['s']];
+        numerator += precomputedNominatorValues[letterCounts['t']];
+        numerator += precomputedNominatorValues[letterCounts['u']];
+        numerator += precomputedNominatorValues[letterCounts['v']];
+        numerator += precomputedNominatorValues[letterCounts['w']];
+        numerator += precomputedNominatorValues[letterCounts['x']];
+        numerator += precomputedNominatorValues[letterCounts['y']];
+        numerator += precomputedNominatorValues[letterCounts['z']];
 
         return numerator;
     }
