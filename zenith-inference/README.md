@@ -54,8 +54,8 @@ These are used by the SimulatedAnnealingSolutionOptimizer only.
 
 Property Key | Default Value | Description
 --- | --- | ---
-simulated-annealing.temperature.max | 0.1 | Annealing temperature at the beginning of each epoch
-simulated-annealing.temperature.min | 0.001 | Annealing temperature at the end of each epoch
+simulated-annealing.temperature.max | 5 | Annealing temperature at the beginning of each epoch
+simulated-annealing.temperature.min | 3 | Annealing temperature at the end of each epoch
 simulated-annealing.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
 simulated-annealing.sampler.iterate-randomly | false | Whether to sample the keys at random.  Otherwise the keys will be sampled in the order that they appear in the cipher.
 

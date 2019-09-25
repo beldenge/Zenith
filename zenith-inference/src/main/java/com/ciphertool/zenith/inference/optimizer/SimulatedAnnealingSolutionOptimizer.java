@@ -208,6 +208,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         List<String> mappingList = new ArrayList<>(solution.getMappings().size());
         mappingList.addAll(solution.getMappings().keySet());
 
+        String solutionString = solution.asSingleLineString();
         String nextKey;
 
         // For each cipher symbol type, run the letter sampling
@@ -226,14 +227,19 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             double originalIndexOfCoincidence = solution.getIndexOfCoincidence();
             solution.replaceMapping(nextKey, letter);
 
-            String solutionString = solution.asSingleLineString();
+            char[] proposalChars = solutionString.toCharArray();
+            for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
+                proposalChars[index] = letter.charAt(0);
+            }
+            String proposalString = new String(proposalChars);
+
             if (plaintextTransformers != null) {
                 for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                    solutionString = plaintextTransformer.transform(solutionString);
+                    proposalString = plaintextTransformer.transform(proposalString);
                 }
             }
 
-            Int2DoubleMap logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, solutionString, nextKey);
+            Int2DoubleMap logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, proposalString, nextKey);
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {
                 solution.setIndexOfCoincidence(originalIndexOfCoincidence);
@@ -242,6 +248,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 for (Int2DoubleMap.Entry entry : logProbabilitiesUpdated.int2DoubleEntrySet()) {
                     solution.replaceLogProbability(entry.getIntKey(), entry.getDoubleValue());
                 }
+            } else {
+                solutionString = proposalString;
             }
         }
 
