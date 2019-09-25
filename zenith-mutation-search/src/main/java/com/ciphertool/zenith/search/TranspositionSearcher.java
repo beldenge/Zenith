@@ -266,9 +266,9 @@ public class TranspositionSearcher {
         log.info("Original solution score: {}", cipherProposal.getScore());
 
         int bestAverageKeyLength = -1;
-        double bestAverageScore = 0d;
+        double bestAverageScore = Integer.MIN_VALUE;
         int bestBestKeyLength = -1;
-        double bestBestScore = 0d;
+        double bestBestScore = Integer.MIN_VALUE;
 
         for (Map.Entry<Integer, List<EpochResults>> entry : bestSolutionsPerKeyLength.entrySet()) {
             double averageScore = entry.getValue().stream()

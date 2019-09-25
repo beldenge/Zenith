@@ -36,6 +36,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @SpringBootApplication(scanBasePackages = {
@@ -57,6 +58,10 @@ public class MutationSearchApplication implements CommandLineRunner {
 
     @Value("${markov.letter.order}")
     private int markovOrder;
+
+    @Min(1)
+    @Value("${language-model.ngram.minimum-count:1}")
+    private int minimumCount;
 
     @Value("${decipherment.remove-last-row:true}")
     private boolean removeLastRow;
@@ -101,9 +106,11 @@ public class MutationSearchApplication implements CommandLineRunner {
         long startAdding = System.currentTimeMillis();
         log.info("Adding nodes to the model.");
 
-        nGramNodes.stream().forEach(letterMarkovModel::addNode);
+        nGramNodes.stream()
+                .filter(node -> node.getCount() >= minimumCount)
+                .forEach(letterMarkovModel::addNode);
 
-        log.info("Finished adding nodes to the letter n-gram model in {}ms.", (System.currentTimeMillis() - startAdding));
+        log.info("Finished adding {} nodes to the letter n-gram model in {}ms.", letterMarkovModel.getMapSize(), (System.currentTimeMillis() - startAdding));
 
         Double unknownLetterNGramProbability = 1d / (double) letterMarkovModel.getTotalNumberOfNgrams();
         letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
