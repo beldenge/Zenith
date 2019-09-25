@@ -3,7 +3,7 @@ The aim of this project is to provide a tool that is easy to use for somewhat te
 
 When using the simulated annealing optimizer, it successfully solves the Zodiac 408 cipher with varying probability and speed depending on the hyperparameters chosen.  It is especially sensitive to the annealing temperatures and number of sampler iterations.
  - when choosing 2500 sampler iterations, each epoch takes 1 second, and 617 out of 1000 epochs (61.70%) produced the correct solution.
- - when choosing 5000 sampler iterations, each epoch takes 2 seconds, and 841 out of 1000 epochs (84.10%) produced the correct solution.
+ - when choosing 5000 sampler iterations, each epoch takes 2 seconds, and 873 out of 1000 epochs (87.30%) produced the correct solution.
  - when choosing 10000 sampler iterations, each epoch takes 4 seconds, and 929 out of 1000 epochs (92.90%) produced the correct solution.
  
 The results show that with more sampler iterations, it takes more time to complete each epoch, but each epoch has a greater probability of finding the correct solution.  The default is 5000 sampler iterations, which is a good balance between accuracy and speed.
