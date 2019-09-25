@@ -167,6 +167,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         double temperature;
         CipherSolution next = initialSolution;
         long startLetterSampling;
+        char[] solutionCharArray = next.asSingleLineString().toCharArray();
 
         int i;
         for (i = 0; i < samplerIterations; i++) {
@@ -179,7 +180,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (double) i) / samplerIterations)) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
-            next = runLetterSampler(temperature, next);
+            next = runLetterSampler(temperature, next, solutionCharArray);
 
             if (log.isDebugEnabled()) {
                 long now = System.currentTimeMillis();
@@ -204,11 +205,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return next;
     }
 
-    private CipherSolution runLetterSampler(double temperature, CipherSolution solution) {
+    private CipherSolution runLetterSampler(double temperature, CipherSolution solution, char[] solutionCharArray) {
         List<String> mappingList = new ArrayList<>(solution.getMappings().size());
         mappingList.addAll(solution.getMappings().keySet());
 
-        String solutionString = solution.asSingleLineString();
         String nextKey;
 
         // For each cipher symbol type, run the letter sampling
@@ -227,11 +227,11 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             double originalIndexOfCoincidence = solution.getIndexOfCoincidence();
             solution.replaceMapping(nextKey, letter);
 
-            char[] proposalChars = solutionString.toCharArray();
             for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
-                proposalChars[index] = letter.charAt(0);
+                solutionCharArray[index] = letter.charAt(0);
             }
-            String proposalString = new String(proposalChars);
+
+            String proposalString = new String(solutionCharArray);
 
             if (plaintextTransformers != null) {
                 for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
@@ -248,8 +248,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 for (Int2DoubleMap.Entry entry : logProbabilitiesUpdated.int2DoubleEntrySet()) {
                     solution.replaceLogProbability(entry.getIntKey(), entry.getDoubleValue());
                 }
-            } else {
-                solutionString = proposalString;
+
+                for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
+                    solutionCharArray[index] = originalMapping.charAt(0);
+                }
             }
         }
 
