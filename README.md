@@ -8,7 +8,7 @@ When using the simulated annealing optimizer, it successfully solves the Zodiac 
  
 The results show that with more sampler iterations, it takes more time to complete each epoch, but each epoch has a greater probability of finding the correct solution.  The default is 5000 sampler iterations, which is a good balance between accuracy and speed.
 
-It takes roughly 2 seconds on an i7-7700HQ CPU @ 2.80GHz with 16 GB memory to complete one epoch at 5000 sampler iterations.
+The benchmarks were carried out on a Windows 10 laptop with an i7-7700HQ CPU @ 2.80GHz using 2GB of available memory.
 
 # Building
 1. Download and install Java 8 or later
