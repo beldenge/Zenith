@@ -93,6 +93,9 @@ public class InferenceApplication implements CommandLineRunner {
     @Value("${language-model.ngram.minimum-count:1}")
     private int minimumCount;
 
+    @Value("${decipherment.transposition.iterations:1}")
+    protected int transpositionIterations;
+
     @Value("${cipher.name}")
     private String cipherName;
 
@@ -166,12 +169,12 @@ public class InferenceApplication implements CommandLineRunner {
 
                         if (cipherTransformer instanceof TranspositionCipherTransformer) {
                             String transpositionKeyString = parameter;
-                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString);
+                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
                             nextTransformer.init();
                             toUse.add(nextTransformer);
                         } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer) {
                             String transpositionKeyString = parameter;
-                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString);
+                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
                             nextTransformer.init();
                             toUse.add(nextTransformer);
                         } else if (cipherTransformer instanceof PeriodCipherTransformer) {

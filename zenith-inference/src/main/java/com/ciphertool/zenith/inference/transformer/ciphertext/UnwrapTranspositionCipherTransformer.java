@@ -29,8 +29,9 @@ public class UnwrapTranspositionCipherTransformer extends AbstractTranspositionC
     public UnwrapTranspositionCipherTransformer() {
     }
 
-    public UnwrapTranspositionCipherTransformer(String transpositionKeyString) {
+    public UnwrapTranspositionCipherTransformer(String transpositionKeyString, int transpositionIterations) {
         this.transpositionKeyString = transpositionKeyString;
+        this.transpositionIterations = transpositionIterations;
     }
 
     @Override

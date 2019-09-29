@@ -42,11 +42,11 @@ public class CiphertextLanguageModelEvaluator {
          * across all places where it was initially injected.
          */
         Cipher backupOfOriginalCipher = originalCipher.clone();
-        overwriteCipher(originalCipher, mutatedCipher);
+        overwriteCipher(mutatedCipher, originalCipher);
 
         CipherSolution cipherSolution = optimizer.optimize();
 
-        overwriteCipher(originalCipher, backupOfOriginalCipher);
+        overwriteCipher(backupOfOriginalCipher, originalCipher);
 
         return cipherSolution.getScore();
     }

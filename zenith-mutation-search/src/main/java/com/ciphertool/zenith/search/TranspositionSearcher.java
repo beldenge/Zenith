@@ -34,10 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -135,10 +132,10 @@ public class TranspositionSearcher {
         Double minTemp = annealingTemperatureMin;
         Double iterations = (double) samplerIterations;
         Double temperature;
-        CipherSolution next;
-        CipherSolution maxProbability = initialCipher.clone();
-        maxProbability.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, transpositionKeyIndices));
-        evaluate(maxProbability);
+        CipherSolution next = initialCipher.clone();
+        next.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, transpositionKeyIndices));
+        evaluate(next);
+        CipherSolution maxProbability = next;
         List<Integer> maxIndices = new ArrayList<>(transpositionKeyIndices);
         int maxProbabilityIteration = 0;
         long start = System.currentTimeMillis();
@@ -156,7 +153,7 @@ public class TranspositionSearcher {
             temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
 
             startSampling = System.currentTimeMillis();
-            next = runSampler(temperature, initialCipher, transpositionKeyIndices);
+            next = runSampler(temperature, next, transpositionKeyIndices);
             letterSamplingElapsed = (System.currentTimeMillis() - startSampling);
 
             if (maxProbability.getLogProbability() < next.getLogProbability()) {
@@ -167,13 +164,13 @@ public class TranspositionSearcher {
 
             if (log.isDebugEnabled()) {
                 log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (System.currentTimeMillis() - iterationStart), letterSamplingElapsed, String.format("%1$,.4f", temperature));
-                log.debug("Indices: {}, Score: {}, KeyLength: {}", transpositionKeyIndices, evaluate(next), keyLength);
+                log.debug("Indices: {}, Score: {}, KeyLength: {}", transpositionKeyIndices, next.getLogProbability(), keyLength);
             }
         }
 
         log.info("Letter sampling completed in {}ms.  Average={}ms.", (System.currentTimeMillis() - start), ((double) (System.currentTimeMillis() - start) / (double) i));
         log.info("Best probability found at iteration {}", maxProbabilityIteration);
-        log.info("Indices for best probability: {}, Score: {}, KeyLength: {}", maxIndices, evaluate(maxProbability), keyLength);
+        log.info("Indices for best probability: {}, Score: {}, KeyLength: {}", maxIndices, maxProbability.getLogProbability(), keyLength);
         log.debug("Cipher: {}", maxProbability.getCipher());
 
         return new EpochResults(epoch, maxProbabilityIteration, maxProbability, maxIndices);
@@ -182,12 +179,11 @@ public class TranspositionSearcher {
     private CipherSolution runSampler(Double temperature, CipherSolution solution, List<Integer> transpositionKeyIndices) {
         CipherSolution proposal;
         CipherSolution best = solution;
-        List<Integer> bestTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
 
         for (int i = 0; i < transpositionKeyIndices.size(); i++) {
             // Start at i + 1, as all previous swaps will have already been tried
             for (int j = i + 1; j < transpositionKeyIndices.size(); j++) {
-                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(bestTranspositionKeyIndices);
+                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
                 int firstValue = nextTranspositionKeyIndices.get(i);
                 int secondValue = nextTranspositionKeyIndices.get(j);
                 nextTranspositionKeyIndices.set(i, secondValue);
@@ -202,14 +198,11 @@ public class TranspositionSearcher {
                 best = selectNext(temperature, best, proposal);
 
                 if (best == proposal) {
-                    bestTranspositionKeyIndices.clear();
-                    bestTranspositionKeyIndices.addAll(nextTranspositionKeyIndices);
+                    transpositionKeyIndices.clear();
+                    transpositionKeyIndices.addAll(nextTranspositionKeyIndices);
                 }
             }
         }
-
-        transpositionKeyIndices.clear();
-        transpositionKeyIndices.addAll(bestTranspositionKeyIndices);
 
         return best;
     }
@@ -242,9 +235,9 @@ public class TranspositionSearcher {
     }
 
     private double evaluate(CipherSolution cipherSolution) {
-        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
-        int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
-        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
+//        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
+//        int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
+//        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
         double languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
 
         double scaledScore = languageModelScore;
@@ -263,7 +256,7 @@ public class TranspositionSearcher {
         CipherSolution cipherProposal = new CipherSolution();
         cipherProposal.setCipher(cipher);
         evaluate(cipherProposal);
-        log.info("Original solution score: {}", cipherProposal.getScore());
+        log.info("Original solution score: {}", cipherProposal.getLogProbability());
 
         int bestAverageKeyLength = -1;
         double bestAverageScore = Integer.MIN_VALUE;
@@ -272,12 +265,12 @@ public class TranspositionSearcher {
 
         for (Map.Entry<Integer, List<EpochResults>> entry : bestSolutionsPerKeyLength.entrySet()) {
             double averageScore = entry.getValue().stream()
-                    .mapToDouble(epochResults -> epochResults.getBestSolution().getScore())
+                    .mapToDouble(epochResults -> epochResults.getBestSolution().getLogProbability())
                     .average()
                     .orElse(0d);
 
             double bestScore = entry.getValue().stream()
-                    .mapToDouble(epochResults -> epochResults.getBestSolution().getScore())
+                    .mapToDouble(epochResults -> epochResults.getBestSolution().getLogProbability())
                     .max()
                     .orElse(0d);
 

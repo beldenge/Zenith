@@ -29,8 +29,9 @@ public class TranspositionCipherTransformer extends AbstractTranspositionCipherT
     public TranspositionCipherTransformer() {
     }
 
-    public TranspositionCipherTransformer(String transpositionKeyString) {
+    public TranspositionCipherTransformer(String transpositionKeyString, int transpositionIterations) {
         this.transpositionKeyString = transpositionKeyString;
+        this.transpositionIterations = transpositionIterations;
     }
 
     @Override
