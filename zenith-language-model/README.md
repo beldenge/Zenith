@@ -11,7 +11,7 @@ These corpora are **not** supplied with this project.  At this time they would n
 * [Blog Authorship Corpus](https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm)
 
 # Running
-1. Download and install Java 8 or later
+1. Download and install Java 8 (JDK 11 has been tested successfully but found to perform more poorly)
 2. On the command line, change to the zenith-language-model directory
 3. Issue the command `java -jar target\zenith-language-model-1.1.0-SNAPSHOT-exec.jar`
 

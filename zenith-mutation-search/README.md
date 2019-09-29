@@ -2,9 +2,9 @@
 This module encompasses hill climbing algorithm(s) for detecting cipher mutations which are likely to have been performed during encipherment.  As of now it simply performs transpositions on the configured cipher to try to maximize bigram repeats.  It is not a mature application at this point.
 
 # Running
-1. Download and install Java 8 or later
+1. Download and install Java 8 (JDK 11 has been tested successfully but found to perform more poorly)
 2. On the command line, change to the zenith-mutation-search directory
-3. Issue the command `java -jar target\zenith-mutation-search-1.1.0-SNAPSHOT.jar`
+3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms6G -Xmx6G -jar target\zenith-mutation-search-1.1.0-SNAPSHOT.jar`
 
 # Configuration
 There are a number of configuration settings that can be set for the application.  They need to be put in an application.properties file in the same directory as where you are running the application from.

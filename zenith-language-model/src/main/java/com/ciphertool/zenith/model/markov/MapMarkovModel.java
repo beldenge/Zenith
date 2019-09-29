@@ -11,8 +11,10 @@ public class MapMarkovModel {
     private Map<String, TreeNGram> nGramMap = new HashMap<>();
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
 
-    public MapMarkovModel(int order) {
+    public MapMarkovModel(int order, int capacity) {
         this.order = order;
+        // A lower load factor seems to result in slightly faster lookups at a greater memory cost
+        this.nGramMap = new HashMap<>(capacity, 0.1f);
     }
 
     public long getTotalNumberOfNgrams() {
