@@ -146,8 +146,8 @@ public class CipherSolution {
     }
 
     public void replaceLogProbability(int i, double newLogProbability) {
-        double oldLogProbability = this.logProbabilities.removeDouble(i);
-        this.logProbabilities.add(i, newLogProbability);
+        double oldLogProbability = this.logProbabilities.getDouble(i);
+        this.logProbabilities.set(i, newLogProbability);
 
         this.logProbability -= oldLogProbability;
         this.logProbability += newLogProbability;

@@ -8,7 +8,7 @@ public class MapMarkovModel {
     private int order;
     private double unknownLetterNGramProbability;
     private double unknownLetterNGramLogProbability;
-    private Map<String, TreeNGram> nGramMap = new HashMap<>();
+    private Map<String, TreeNGram> nGramMap;
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
 
     public MapMarkovModel(int order, int capacity) {
@@ -17,7 +17,7 @@ public class MapMarkovModel {
         this.nGramMap = new HashMap<>(capacity, 0.1f);
     }
 
-    public long getTotalNumberOfNgrams() {
+    public long getTotalNGramCount() {
         return firstOrderNodes.stream()
                 .mapToLong(TreeNGram::getCount)
                 .sum();
@@ -32,10 +32,10 @@ public class MapMarkovModel {
     }
 
     public void addNode(TreeNGram nodeToAdd) {
-        nGramMap.put(nodeToAdd.getCumulativeString(), nodeToAdd);
-
         if (nodeToAdd.getCumulativeString().length() == 1) {
             firstOrderNodes.add(nodeToAdd);
+        } else {
+            nGramMap.put(nodeToAdd.getCumulativeString(), nodeToAdd);
         }
     }
 

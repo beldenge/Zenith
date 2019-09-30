@@ -55,7 +55,7 @@ public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
 
         Double probability;
         for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
-            probability = ((double) node.getCount()) / letterMarkovModel.getTotalNumberOfNgrams();
+            probability = ((double) node.getCount()) / letterMarkovModel.getTotalNGramCount();
 
             letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
         }

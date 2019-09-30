@@ -79,7 +79,9 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 
         solution.setIndexOfCoincidence(computeIndexOfCoincidence(solutionString));
 
-        log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
+        if (log.isDebugEnabled()) {
+            log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
+        }
 
         return logProbabilitiesUpdated;
     }
@@ -89,7 +91,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 
         Int2DoubleMap logProbabilitiesUpdated = new Int2DoubleOpenHashMap(ARBITRARY_LIST_INITIAL_SIZE);
         double logProbability;
-        Integer lastIndex = null;
+        int lastIndex = -1;
 
         if (ciphertextKey != null) {
             for (int ciphertextIndex : cipher.getCipherSymbolIndicesMap().get(ciphertextKey)) {
@@ -101,7 +103,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
                 int start = Math.max(0, wayBack);
                 int end = Math.min(stringLengthMinusOrder, ciphertextIndex + 1);
 
-                if (lastIndex != null && start < lastIndex) {
+                if (lastIndex >= 0 && start < lastIndex) {
                     continue;
                 }
 
@@ -141,7 +143,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
             return match.getLogProbability();
         }
 
-        log.debug("No Letter N-Gram Match");
+        log.debug("No Letter N-Gram Match for ngram={}", ngram);
         return letterMarkovModel.getUnknownLetterNGramLogProbability();
     }
 

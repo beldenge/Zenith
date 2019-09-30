@@ -26,7 +26,7 @@ public class ChiSquaredEvaluator {
     @PostConstruct
     public void init() {
         for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
-            double letterProbability = (double) node.getCount() / (double) letterMarkovModel.getTotalNumberOfNgrams();
+            double letterProbability = (double) node.getCount() / (double) letterMarkovModel.getTotalNGramCount();
             englishLetterCounts.put(node.getCumulativeString(), Math.round(letterProbability * cipher.length()));
         }
     }
