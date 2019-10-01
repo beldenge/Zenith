@@ -31,10 +31,20 @@ public class NDArrayModel {
     private double unknownLetterNGramProbability;
     private double unknownLetterNGramLogProbability;
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
-    private double[][][][][] nGramLogProbabilities = new double[26][][][][];
+    private double[][][][][] nGramLogProbabilities = new double[26][26][26][26][26];
 
     public NDArrayModel(int order) {
         this.order = order;
+
+        for (int i = 0; i < nGramLogProbabilities.length; i ++) {
+            for (int j = 0; j < nGramLogProbabilities[i].length; j ++) {
+                for (int k = 0; k < nGramLogProbabilities[j].length; k ++) {
+                    for (int l = 0; l < nGramLogProbabilities[k].length; l ++) {
+                        Arrays.fill(nGramLogProbabilities[i][j][k][l], -1d);
+                    }
+                }
+            }
+        }
     }
 
     public long getTotalNGramCount() {
@@ -62,71 +72,22 @@ public class NDArrayModel {
     private void addToNDArray(TreeNGram treeNGram) {
         String ngramString = treeNGram.getCumulativeString();
 
-        int nextIndex = ngramString.charAt(0) - ASCII_OFFSET;
-        if(nGramLogProbabilities[nextIndex] == null) {
-            nGramLogProbabilities[nextIndex] = new double[26][][][];
-        }
+        int i = ngramString.charAt(0) - ASCII_OFFSET;
+        int j = ngramString.charAt(1) - ASCII_OFFSET;
+        int k = ngramString.charAt(2) - ASCII_OFFSET;
+        int l = ngramString.charAt(3) - ASCII_OFFSET;
+        int m = ngramString.charAt(4) - ASCII_OFFSET;
 
-        double[][][][] secondLetter = nGramLogProbabilities[nextIndex];
-
-        nextIndex = ngramString.charAt(1) - ASCII_OFFSET;
-        if(secondLetter[nextIndex] == null) {
-            secondLetter[nextIndex] = new double[26][][];
-        }
-
-        double[][][] thirdLetter = secondLetter[nextIndex];
-
-        nextIndex = ngramString.charAt(2) - ASCII_OFFSET;
-        if(thirdLetter[nextIndex] == null) {
-            thirdLetter[nextIndex] = new double[26][];
-        }
-
-        double[][] fourthLetter = thirdLetter[nextIndex];
-
-        nextIndex = ngramString.charAt(3) - ASCII_OFFSET;
-        if(fourthLetter[nextIndex] == null) {
-            fourthLetter[nextIndex] = new double[26];
-            Arrays.fill(fourthLetter[nextIndex], -1d);
-        }
-
-        double[] fifthLetter = fourthLetter[nextIndex];
-
-        nextIndex = ngramString.charAt(4) - ASCII_OFFSET;
-        if(fifthLetter[nextIndex] != -1d) {
+        if(nGramLogProbabilities[i][j][k][l][m] != -1d) {
             throw new IllegalStateException("Unable to add the same ngram twice='" + ngramString + "'.");
         }
 
         totalNodes.incrementAndGet();
-        fifthLetter[ngramString.charAt(4) - ASCII_OFFSET] = treeNGram.getLogProbability();
+        nGramLogProbabilities[i][j][k][l][m] = treeNGram.getLogProbability();
     }
 
-    public Double findExact(String nGram) {
-        int firstIndex = nGram.charAt(0) - ASCII_OFFSET;
-        if(nGramLogProbabilities[firstIndex] == null) {
-            return null;
-        }
-
-        int secondIndex = nGram.charAt(1) - ASCII_OFFSET;
-        if(nGramLogProbabilities[firstIndex][secondIndex] == null) {
-            return null;
-        }
-
-        int thirdIndex = nGram.charAt(2) - ASCII_OFFSET;
-        if(nGramLogProbabilities[firstIndex][secondIndex][thirdIndex] == null) {
-            return null;
-        }
-
-        int fourthIndex = nGram.charAt(3) - ASCII_OFFSET;
-        if(nGramLogProbabilities[firstIndex][secondIndex][thirdIndex][fourthIndex] == null) {
-            return null;
-        }
-
-        int fifthIndex = nGram.charAt(4) - ASCII_OFFSET;
-        if(nGramLogProbabilities[firstIndex][secondIndex][thirdIndex][fourthIndex][fifthIndex] == -1d) {
-            return null;
-        }
-
-        return nGramLogProbabilities[firstIndex][secondIndex][thirdIndex][fourthIndex][fifthIndex];
+    public double findExact(String nGram) {
+        return nGramLogProbabilities[nGram.charAt(0) - ASCII_OFFSET][nGram.charAt(1) - ASCII_OFFSET][nGram.charAt(2) - ASCII_OFFSET][nGram.charAt(3) - ASCII_OFFSET][nGram.charAt(4) - ASCII_OFFSET];
     }
 
     public int getOrder() {

@@ -135,9 +135,9 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     protected double computeNGramLogProbability(String ngram) {
-        Double match = letterMarkovModel.findExact(ngram);
+        double match = letterMarkovModel.findExact(ngram);
 
-        if (match != null) {
+        if (match != -1d) {
             log.debug("Letter N-Gram Match={}, Probability={}", ngram, match);
             return match;
         }
