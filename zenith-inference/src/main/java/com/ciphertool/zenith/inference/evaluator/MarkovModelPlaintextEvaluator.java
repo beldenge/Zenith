@@ -21,8 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.MapMarkovModel;
+import com.ciphertool.zenith.model.markov.NDArrayModel;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
@@ -46,7 +45,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private Cipher cipher;
 
     @Autowired
-    private MapMarkovModel letterMarkovModel;
+    private NDArrayModel letterMarkovModel;
 
     // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
     private int[] letterCounts = new int[256];
@@ -136,11 +135,11 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     protected double computeNGramLogProbability(String ngram) {
-        TreeNGram match = letterMarkovModel.findExact(ngram);
+        Double match = letterMarkovModel.findExact(ngram);
 
         if (match != null) {
-            log.debug("Letter N-Gram Match={}, Probability={}", match.getCumulativeString(), match.getLogProbability());
-            return match.getLogProbability();
+            log.debug("Letter N-Gram Match={}, Probability={}", ngram, match);
+            return match;
         }
 
         log.debug("No Letter N-Gram Match for ngram={}", ngram);

@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.markov.MapMarkovModel;
+import com.ciphertool.zenith.model.markov.NDArrayModel;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
     private static Logger log = LoggerFactory.getLogger(MarkovModelPlaintextEvaluatorTest.class);
 
-    private static MapMarkovModel letterMarkovModel;
+    private static NDArrayModel letterMarkovModel;
 
     private static CipherSolution actualSolution = new CipherSolution();
     private static CipherSolution solution2 = new CipherSolution();
@@ -237,7 +237,7 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
             return;
         }
 
-        letterMarkovModel = new MapMarkovModel(6, 1);
+        letterMarkovModel = new NDArrayModel(6, 1);
 
         letterNGramDao.findAll().stream().forEach(letterMarkovModel::addNode);
 
