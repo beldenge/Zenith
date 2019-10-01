@@ -237,7 +237,7 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
             return;
         }
 
-        letterMarkovModel = new NDArrayModel(6, 1);
+        letterMarkovModel = new NDArrayModel(6);
 
         letterNGramDao.findAll().stream().forEach(letterMarkovModel::addNode);
 

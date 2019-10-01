@@ -102,7 +102,7 @@ public class MutationSearchApplication implements CommandLineRunner {
 
         log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
 
-        NDArrayModel letterMarkovModel = new NDArrayModel(markovOrder, nGramNodes.size());
+        NDArrayModel letterMarkovModel = new NDArrayModel(markovOrder);
 
         long startAdding = System.currentTimeMillis();
         log.info("Adding nodes to the model.");
