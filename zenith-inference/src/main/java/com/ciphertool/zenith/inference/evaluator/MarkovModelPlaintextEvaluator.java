@@ -23,8 +23,6 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.markov.NDArrayModel;
 import it.unimi.dsi.fastutil.floats.FloatList;
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,10 +69,10 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public Int2FloatMap evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public float[][] evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
-        Int2FloatMap logProbabilitiesUpdated = evaluateLetterNGrams(solution, solutionString, ciphertextKey);
+        float[][] logProbabilitiesUpdated = evaluateLetterNGrams(solution, solutionString, ciphertextKey);
 
         solution.setIndexOfCoincidence(computeIndexOfCoincidence(solutionString));
 
@@ -85,14 +83,17 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         return logProbabilitiesUpdated;
     }
 
-    protected Int2FloatMap evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
+    protected float[][] evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
         int stringLengthMinusOrder = solutionString.length() - order;
 
-        Int2FloatMap logProbabilitiesUpdated = new Int2FloatOpenHashMap(ARBITRARY_LIST_INITIAL_SIZE);
+        float[][] logProbabilitiesUpdated;
         float logProbability;
         int lastIndex = -1;
 
         if (ciphertextKey != null) {
+            float[][] logProbabilitiesUpdatedOversized = new float[2][cipher.getCipherSymbolIndicesMap().get(ciphertextKey).size() * (stepSize + 1)];
+
+            int k = 0;
             for (int ciphertextIndex : cipher.getCipherSymbolIndicesMap().get(ciphertextKey)) {
                 int wayBack = ciphertextIndex - (ciphertextIndex % stepSize) - doubleStepSize;
                 if (wayBack + order <= ciphertextIndex) {
@@ -110,16 +111,27 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
                     logProbability = computeNGramLogProbability(solutionString.substring(j, j + order));
 
                     int index = j / stepSize;
-                    logProbabilitiesUpdated.put(index, solution.getLogProbabilities().getFloat(index));
+                    logProbabilitiesUpdatedOversized[0][k] = index;
+                    logProbabilitiesUpdatedOversized[1][k] = solution.getLogProbabilities().getFloat(index);
+
                     solution.replaceLogProbability(index, logProbability);
+                    k++;
                 }
 
                 lastIndex = end;
             }
+
+            logProbabilitiesUpdated = new float[2][k];
+            java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[0], 0, logProbabilitiesUpdated[0], 0, k);
+            java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[1], 0, logProbabilitiesUpdated[1], 0, k);
         } else {
             FloatList logProbabilities = solution.getLogProbabilities();
+
+            logProbabilitiesUpdated = new float[2][logProbabilities.size()];
+
             for (int i = 0; i < logProbabilities.size(); i ++) {
-                logProbabilitiesUpdated.put(i, logProbabilities.getFloat(i));
+                logProbabilitiesUpdated[0][i] = i;
+                logProbabilitiesUpdated[1][i] = logProbabilities.getFloat(i);
             }
 
             solution.clearLogProbabilities();

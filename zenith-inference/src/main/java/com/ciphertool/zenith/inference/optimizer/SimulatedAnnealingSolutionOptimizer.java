@@ -29,7 +29,6 @@ import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.NDArrayModel;
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,14 +238,14 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 }
             }
 
-            Int2FloatMap logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, proposalString, nextKey);
+            float[][] logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, proposalString, nextKey);
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {
                 solution.setIndexOfCoincidence(originalIndexOfCoincidence);
                 solution.replaceMapping(nextKey, originalMapping);
 
-                for (Int2FloatMap.Entry entry : logProbabilitiesUpdated.int2FloatEntrySet()) {
-                    solution.replaceLogProbability(entry.getIntKey(), entry.getFloatValue());
+                for (int j = 0; j < logProbabilitiesUpdated[0].length; j ++) {
+                    solution.replaceLogProbability((int) logProbabilitiesUpdated[0][j], logProbabilitiesUpdated[1][j]);
                 }
 
                 for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
