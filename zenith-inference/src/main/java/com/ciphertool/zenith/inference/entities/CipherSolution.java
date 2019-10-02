@@ -19,11 +19,10 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,25 +35,24 @@ public class CipherSolution {
     protected Cipher cipher;
 
     private float probability = 0f;
-    private Float logProbability = 0f;
+    private float logProbability = 0f;
 
-    private Map<String, String> mappings = new HashMap<>();
+    private Map<String, String> mappings;
 
-    private FloatList logProbabilities = new FloatArrayList();
+    private float[] logProbabilities;
 
     private float indexOfCoincidence = 1f;
 
-    public CipherSolution() {
-    }
-
-    public CipherSolution(Cipher cipher, int numCiphertext) {
+    public CipherSolution(Cipher cipher, int numCiphertextKeys) {
         if (cipher == null) {
             throw new IllegalArgumentException("Cannot construct CipherSolution with null cipher.");
         }
 
         this.cipher = cipher;
 
-        mappings = new HashMap<>(numCiphertext);
+        mappings = new HashMap<>(numCiphertextKeys);
+        logProbabilities = new float[cipher.getCiphertextCharacters().size()];
+        Arrays.fill(this.logProbabilities, 0f);
     }
 
     public Cipher getCipher() {
@@ -82,8 +80,10 @@ public class CipherSolution {
     }
 
     public float getLogProbability() {
-        if (logProbability == null) {
-            logProbability = logProbabilities.stream().reduce(0f, (a, b) -> a + b);
+        if (logProbability == 0f) {
+            for (int i = 0; i < logProbabilities.length; i ++) {
+                logProbability += logProbabilities[i];
+            }
         }
 
         return logProbability;
@@ -111,39 +111,23 @@ public class CipherSolution {
         this.mappings.put(key, plaintext);
     }
 
-    public String removeMapping(Ciphertext key) {
-        if (null == this.mappings || null == this.mappings.get(key)) {
-            log.warn("Attempted to remove a mapping from CipherSolution with key " + key
-                    + ", but this key does not exist.  Returning null.");
-
-            return null;
-        }
-
-        return this.mappings.remove(key);
-    }
-
-    public FloatList getLogProbabilities() {
+    public float[] getLogProbabilities() {
         return logProbabilities;
     }
 
     public void clearLogProbabilities() {
-        this.logProbabilities.clear();
-        this.logProbability = null;
+        Arrays.fill(this.logProbabilities, 0f);
+        this.logProbability = 0f;
     }
 
-    public void addLogProbability(float logProbability) {
-        this.logProbabilities.add(logProbability);
-
-        if(this.logProbability == null) {
-            this.logProbability = 0f;
-        }
-
+    public void addLogProbability(int i, float logProbability) {
+        this.logProbabilities[i] = logProbability;
         this.logProbability += logProbability;
     }
 
     public void replaceLogProbability(int i, float newLogProbability) {
-        float oldLogProbability = this.logProbabilities.getFloat(i);
-        this.logProbabilities.set(i, newLogProbability);
+        float oldLogProbability = this.logProbabilities[i];
+        this.logProbabilities[i] = newLogProbability;
 
         this.logProbability -= oldLogProbability;
         this.logProbability += newLogProbability;
@@ -178,8 +162,8 @@ public class CipherSolution {
         }
 
         copySolution.logProbability = 0f;
-        for (float logProbability : this.logProbabilities) {
-            copySolution.addLogProbability(logProbability);
+        for (int i = 0; i < this.logProbabilities.length; i ++) {
+            copySolution.addLogProbability(i, this.logProbabilities[i]);
         }
 
         copySolution.setIndexOfCoincidence(this.indexOfCoincidence);
@@ -222,49 +206,6 @@ public class CipherSolution {
         }
 
         return proximityToKnownSolution;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((cipher == null) ? 0 : cipher.hashCode());
-        result = prime * result + ((logProbability == null) ? 0 : logProbability.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj == null) {
-            return false;
-        }
-
-        if (!(obj instanceof CipherSolution)) {
-            return false;
-        }
-
-        CipherSolution other = (CipherSolution) obj;
-        if (cipher == null) {
-            if (other.cipher != null) {
-                return false;
-            }
-        } else if (!cipher.equals(other.cipher)) {
-            return false;
-        }
-
-        if (mappings == null) {
-            if (other.mappings != null) {
-                return false;
-            }
-        } else if (!mappings.equals(other.mappings)) {
-            return false;
-        }
-
-        return true;
     }
 
     public String asSingleLineString() {

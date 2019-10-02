@@ -38,11 +38,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
     private static Logger log = LoggerFactory.getLogger(MarkovModelPlaintextEvaluatorTest.class);
 
+    private static final int ARBITRARY_INITIAL_LIST_SIZE = 20;
+
     private static NDArrayModel letterMarkovModel;
 
-    private static CipherSolution actualSolution = new CipherSolution();
-    private static CipherSolution solution2 = new CipherSolution();
-    private static CipherSolution solution3 = new CipherSolution();
+    private static CipherSolution actualSolution = new CipherSolution(zodiac408, ARBITRARY_INITIAL_LIST_SIZE);
+    private static CipherSolution solution2 = new CipherSolution(zodiac408, ARBITRARY_INITIAL_LIST_SIZE);
+    private static CipherSolution solution3 = new CipherSolution(zodiac408, ARBITRARY_INITIAL_LIST_SIZE);
 
     @Autowired
     private LetterNGramDao letterNGramDao;

@@ -22,7 +22,6 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.markov.NDArrayModel;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +111,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 
                     int index = j / stepSize;
                     logProbabilitiesUpdatedOversized[0][k] = index;
-                    logProbabilitiesUpdatedOversized[1][k] = solution.getLogProbabilities().getFloat(index);
+                    logProbabilitiesUpdatedOversized[1][k] = solution.getLogProbabilities()[index];
 
                     solution.replaceLogProbability(index, logProbability);
                     k++;
@@ -125,21 +124,23 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
             java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[0], 0, logProbabilitiesUpdated[0], 0, k);
             java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[1], 0, logProbabilitiesUpdated[1], 0, k);
         } else {
-            FloatList logProbabilities = solution.getLogProbabilities();
+            float[] logProbabilities = solution.getLogProbabilities();
 
-            logProbabilitiesUpdated = new float[2][logProbabilities.size()];
+            logProbabilitiesUpdated = new float[2][logProbabilities.length];
 
-            for (int i = 0; i < logProbabilities.size(); i ++) {
+            for (int i = 0; i < logProbabilities.length; i ++) {
                 logProbabilitiesUpdated[0][i] = i;
-                logProbabilitiesUpdated[1][i] = logProbabilities.getFloat(i);
+                logProbabilitiesUpdated[1][i] = logProbabilities[i];
             }
 
             solution.clearLogProbabilities();
 
+            int k = 0;
             for (int i = 0; i < solutionString.length() - order; i += stepSize) {
                 logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
 
-                solution.addLogProbability(logProbability);
+                solution.addLogProbability(k, logProbability);
+                k ++;
             }
         }
 

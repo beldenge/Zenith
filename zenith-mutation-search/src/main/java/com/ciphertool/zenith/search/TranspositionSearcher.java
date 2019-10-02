@@ -41,6 +41,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TranspositionSearcher {
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    private static final int ARBITRARY_INITIAL_LIST_SIZE = 20;
+
     @Value("${mutation-search.simulated-annealing.sampler.iterations}")
     private int samplerIterations;
 
@@ -100,7 +102,7 @@ public class TranspositionSearcher {
             bestSolutionsPerKeyLength.put(keyLength, new ArrayList<>(epochs));
 
             for (int epoch = 1; epoch <= epochs; epoch++) {
-                CipherSolution cipherProposal = new CipherSolution();
+                CipherSolution cipherProposal = new CipherSolution(cipher, ARBITRARY_INITIAL_LIST_SIZE);
 
                 List<Integer> transpositionKeyIndicesSource = new ArrayList<>(keyLength);
                 for (int i = 0; i < keyLength; i++) {
@@ -243,7 +245,7 @@ public class TranspositionSearcher {
         float scaledScore = languageModelScore;
 
         cipherSolution.clearLogProbabilities();
-        cipherSolution.addLogProbability(scaledScore);
+        cipherSolution.addLogProbability(0, scaledScore);
 
         return scaledScore;
     }
@@ -253,7 +255,7 @@ public class TranspositionSearcher {
         log.info("---RESULTS SUMMARY---");
         log.info("---------------------");
 
-        CipherSolution cipherProposal = new CipherSolution();
+        CipherSolution cipherProposal = new CipherSolution(cipher, ARBITRARY_INITIAL_LIST_SIZE);
         cipherProposal.setCipher(cipher);
         evaluate(cipherProposal);
         log.info("Original solution score: {}", cipherProposal.getLogProbability());

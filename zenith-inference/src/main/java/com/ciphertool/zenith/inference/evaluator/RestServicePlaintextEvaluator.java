@@ -22,7 +22,6 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,19 +65,19 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
 
         log.debug("Rest service evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
 
-        FloatList logProbabilities = solution.getLogProbabilities();
+        float[] logProbabilities = solution.getLogProbabilities();
 
-        float[][] logProbabilitiesUpdated = new float[2][logProbabilities.size()];
+        float[][] logProbabilitiesUpdated = new float[2][logProbabilities.length];
 
-        for (int i = 0; i < logProbabilities.size(); i ++) {
+        for (int i = 0; i < logProbabilities.length; i ++) {
             logProbabilitiesUpdated[0][i] = i;
-            logProbabilitiesUpdated[1][i] = logProbabilities.getFloat(i);
+            logProbabilitiesUpdated[1][i] = logProbabilities[i];
         }
 
         solution.clearLogProbabilities();
 
         for (int i = 0; i < response.getProbabilities().size(); i ++) {
-            solution.addLogProbability(response.getProbabilities().get(i).getLogProbability());
+            solution.addLogProbability(i, response.getProbabilities().get(i).getLogProbability());
         }
 
         return logProbabilitiesUpdated;
