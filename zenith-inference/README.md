@@ -4,7 +4,7 @@ This module encompasses the algorithm which performs inference on the language m
 # Running
 1. Download and install Java 8 (JDK 11 has been tested successfully but found to perform more poorly)
 2. On the command line, change to the zenith-inference directory
-3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms6G -Xmx6G -jar zenith-inference\target\zenith-inference-1.1.0-SNAPSHOT-exec.jar`
+3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms3G -Xmx3G -jar zenith-inference\target\zenith-inference-1.1.0-SNAPSHOT-exec.jar`
 
 Note: You must run the *-exec.jar and not the vanilla jar file, as this module is used both as a dependency and as a runnable application on its own.
 
