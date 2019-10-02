@@ -32,5 +32,5 @@ import java.math.BigDecimal;
 @ToString
 public class EvaluationProbability {
     private BigDecimal probability;
-    private Double logProbability;
+    private Float logProbability;
 }

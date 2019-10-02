@@ -254,6 +254,6 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     @Override
     public Double knownSolutionProximity() {
-        return ChromosomeToCipherSolutionMapper.map(this).evaluateKnownSolution();
+        return Double.valueOf(ChromosomeToCipherSolutionMapper.map(this).evaluateKnownSolution());
     }
 }

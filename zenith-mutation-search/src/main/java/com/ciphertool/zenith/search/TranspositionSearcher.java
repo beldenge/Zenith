@@ -210,25 +210,25 @@ public class TranspositionSearcher {
     private CipherSolution selectNext(Double temperature, CipherSolution solution, CipherSolution proposal) {
         Double acceptanceProbability;
 
-        Double solutionScore = solution.getLogProbability();
-        Double proposalScore = proposal.getLogProbability();
+        float solutionScore = solution.getLogProbability();
+        float proposalScore = proposal.getLogProbability();
 
-        if (proposalScore.compareTo(solutionScore) >= 0) {
+        if (proposalScore >= solutionScore) {
             log.debug("Better solution found");
             return proposal;
-        } else {
-            // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
-            acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
+        }
 
-            log.debug("Acceptance probability: {}", acceptanceProbability);
+        // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
+        acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
 
-            if (acceptanceProbability < 0d) {
-                throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
-            }
+        log.debug("Acceptance probability: {}", acceptanceProbability);
 
-            if (acceptanceProbability > 1d || ThreadLocalRandom.current().nextDouble() < acceptanceProbability.doubleValue()) {
-                return proposal;
-            }
+        if (acceptanceProbability < 0d) {
+            throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
+        }
+
+        if (acceptanceProbability > 1d || ThreadLocalRandom.current().nextDouble() < acceptanceProbability.doubleValue()) {
+            return proposal;
         }
 
         return solution;
@@ -238,9 +238,9 @@ public class TranspositionSearcher {
 //        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
 //        int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
 //        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
-        double languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
+        float languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
 
-        double scaledScore = languageModelScore;
+        float scaledScore = languageModelScore;
 
         cipherSolution.clearLogProbabilities();
         cipherSolution.addLogProbability(scaledScore);

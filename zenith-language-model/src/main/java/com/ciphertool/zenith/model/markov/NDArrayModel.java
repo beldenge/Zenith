@@ -28,10 +28,10 @@ public class NDArrayModel {
     private static final int ASCII_OFFSET = 97;
     private AtomicInteger totalNodes = new AtomicInteger(0);
     private int order;
-    private double unknownLetterNGramProbability;
-    private double unknownLetterNGramLogProbability;
+    private float unknownLetterNGramProbability;
+    private float unknownLetterNGramLogProbability;
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
-    private double[][][][][] nGramLogProbabilities = new double[26][26][26][26][26];
+    private float[][][][][] nGramLogProbabilities = new float[26][26][26][26][26];
 
     public NDArrayModel(int order) {
         this.order = order;
@@ -40,7 +40,7 @@ public class NDArrayModel {
             for (int j = 0; j < nGramLogProbabilities[i].length; j ++) {
                 for (int k = 0; k < nGramLogProbabilities[j].length; k ++) {
                     for (int l = 0; l < nGramLogProbabilities[k].length; l ++) {
-                        Arrays.fill(nGramLogProbabilities[i][j][k][l], -1d);
+                        Arrays.fill(nGramLogProbabilities[i][j][k][l], -1f);
                     }
                 }
             }
@@ -78,15 +78,15 @@ public class NDArrayModel {
         int l = ngramString.charAt(3) - ASCII_OFFSET;
         int m = ngramString.charAt(4) - ASCII_OFFSET;
 
-        if(nGramLogProbabilities[i][j][k][l][m] != -1d) {
+        if(nGramLogProbabilities[i][j][k][l][m] != -1f) {
             throw new IllegalStateException("Unable to add the same ngram twice='" + ngramString + "'.");
         }
 
         totalNodes.incrementAndGet();
-        nGramLogProbabilities[i][j][k][l][m] = treeNGram.getLogProbability();
+        nGramLogProbabilities[i][j][k][l][m] = (float) treeNGram.getLogProbability();
     }
 
-    public double findExact(String nGram) {
+    public float findExact(String nGram) {
         return nGramLogProbabilities[nGram.charAt(0) - ASCII_OFFSET][nGram.charAt(1) - ASCII_OFFSET][nGram.charAt(2) - ASCII_OFFSET][nGram.charAt(3) - ASCII_OFFSET][nGram.charAt(4) - ASCII_OFFSET];
     }
 
@@ -94,19 +94,19 @@ public class NDArrayModel {
         return order;
     }
 
-    public double getUnknownLetterNGramProbability() {
+    public float getUnknownLetterNGramProbability() {
         return unknownLetterNGramProbability;
     }
 
-    public void setUnknownLetterNGramProbability(double unknownLetterNGramProbability) {
+    public void setUnknownLetterNGramProbability(float unknownLetterNGramProbability) {
         this.unknownLetterNGramProbability = unknownLetterNGramProbability;
     }
 
-    public double getUnknownLetterNGramLogProbability() {
+    public float getUnknownLetterNGramLogProbability() {
         return unknownLetterNGramLogProbability;
     }
 
-    public void setUnknownLetterNGramLogProbability(double unknownLetterNGramLogProbability) {
+    public void setUnknownLetterNGramLogProbability(float unknownLetterNGramLogProbability) {
         this.unknownLetterNGramLogProbability = unknownLetterNGramLogProbability;
     }
 }

@@ -29,7 +29,7 @@ import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.NDArrayModel;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,10 +51,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private int samplerIterations;
 
     @Value("${simulated-annealing.temperature.max}")
-    private double annealingTemperatureMax;
+    private float annealingTemperatureMax;
 
     @Value("${simulated-annealing.temperature.min}")
-    private double annealingTemperatureMin;
+    private float annealingTemperatureMin;
 
     @Value("${simulated-annealing.sampler.iterate-randomly}")
     private Boolean iterateRandomly;
@@ -66,7 +66,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private int epochs;
 
     @Value("${decipherment.known-solution.correctness-threshold:0.9}")
-    private double knownSolutionCorrectnessThreshold;
+    private float knownSolutionCorrectnessThreshold;
 
     @Autowired
     protected Cipher cipher;
@@ -164,7 +164,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             cipherSolutionPrinter.print(initialSolution);
         }
 
-        double temperature;
+        float temperature;
         CipherSolution next = initialSolution;
         long startLetterSampling;
         char[] solutionCharArray = next.asSingleLineString().toCharArray();
@@ -177,7 +177,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
              * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
              * temperature so as not to go below it
              */
-            temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (double) i) / samplerIterations)) + annealingTemperatureMin;
+            temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (float) i) / samplerIterations)) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
             next = runLetterSampler(temperature, next, solutionCharArray);
@@ -205,7 +205,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return next;
     }
 
-    private CipherSolution runLetterSampler(double temperature, CipherSolution solution, char[] solutionCharArray) {
+    private CipherSolution runLetterSampler(float temperature, CipherSolution solution, char[] solutionCharArray) {
         List<String> mappingList = new ArrayList<>(solution.getMappings().size());
         mappingList.addAll(solution.getMappings().keySet());
 
@@ -223,8 +223,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 continue;
             }
 
-            double originalScore = solution.getScore();
-            double originalIndexOfCoincidence = solution.getIndexOfCoincidence();
+            float originalScore = solution.getScore();
+            float originalIndexOfCoincidence = solution.getIndexOfCoincidence();
             solution.replaceMapping(nextKey, letter);
 
             for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
@@ -239,14 +239,14 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 }
             }
 
-            Int2DoubleMap logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, proposalString, nextKey);
+            Int2FloatMap logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, proposalString, nextKey);
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {
                 solution.setIndexOfCoincidence(originalIndexOfCoincidence);
                 solution.replaceMapping(nextKey, originalMapping);
 
-                for (Int2DoubleMap.Entry entry : logProbabilitiesUpdated.int2DoubleEntrySet()) {
-                    solution.replaceLogProbability(entry.getIntKey(), entry.getDoubleValue());
+                for (Int2FloatMap.Entry entry : logProbabilitiesUpdated.int2FloatEntrySet()) {
+                    solution.replaceLogProbability(entry.getIntKey(), entry.getFloatValue());
                 }
 
                 for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
@@ -258,13 +258,13 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return solution;
     }
 
-    private boolean selectNext(double temperature, double solutionScore, double proposalScore) {
+    private boolean selectNext(float temperature, float solutionScore, float proposalScore) {
         if (proposalScore >= solutionScore) {
             return true;
         }
 
         // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
-        double acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
+        double acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1f);
 
         log.debug("Acceptance probability: {}", acceptanceProbability);
 

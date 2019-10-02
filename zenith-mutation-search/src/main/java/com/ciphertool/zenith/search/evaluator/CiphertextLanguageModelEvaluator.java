@@ -36,7 +36,7 @@ public class CiphertextLanguageModelEvaluator {
     @Autowired
     private SimulatedAnnealingSolutionOptimizer optimizer;
 
-    public double evaluate(Cipher mutatedCipher) {
+    public float evaluate(Cipher mutatedCipher) {
         /*
          * Backup the originalCipher and then overwrite it from the mutatedCipher so that it's transformed in memory
          * across all places where it was initially injected.

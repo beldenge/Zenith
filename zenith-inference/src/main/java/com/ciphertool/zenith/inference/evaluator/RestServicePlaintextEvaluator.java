@@ -22,9 +22,9 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
+import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public Int2DoubleMap evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public Int2FloatMap evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startEvaluation = System.currentTimeMillis();
 
         RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();
@@ -68,11 +68,11 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
 
         log.debug("Rest service evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
 
-        Int2DoubleMap logProbabilitiesUpdated = new Int2DoubleOpenHashMap(response.getProbabilities().size());
+        Int2FloatMap logProbabilitiesUpdated = new Int2FloatOpenHashMap(response.getProbabilities().size());
 
-        DoubleList logProbabilities = solution.getLogProbabilities();
+        FloatList logProbabilities = solution.getLogProbabilities();
         for (int i = 0; i < logProbabilities.size(); i ++) {
-            logProbabilitiesUpdated.put(i, logProbabilities.getDouble(i));
+            logProbabilitiesUpdated.put(i, logProbabilities.getFloat(i));
         }
 
         solution.clearLogProbabilities();

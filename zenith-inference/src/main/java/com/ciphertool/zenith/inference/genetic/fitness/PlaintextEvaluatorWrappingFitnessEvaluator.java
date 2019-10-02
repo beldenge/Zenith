@@ -50,6 +50,6 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
 
         plaintextEvaluator.evaluate(proposal, solutionString, null);
 
-        return proposal.getScore();
+        return Double.valueOf(proposal.getScore());
     }
 }

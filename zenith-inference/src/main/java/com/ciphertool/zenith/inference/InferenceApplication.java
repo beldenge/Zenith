@@ -232,9 +232,9 @@ public class InferenceApplication implements CommandLineRunner {
 
         log.info("Finished adding {} nodes to the letter n-gram model in {}ms.", letterMarkovModel.getMapSize(), (System.currentTimeMillis() - startAdding));
 
-        double unknownLetterNGramProbability = 1d / (double) letterMarkovModel.getTotalNGramCount();
+        float unknownLetterNGramProbability = 1f / (float) letterMarkovModel.getTotalNGramCount();
         letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-        letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
+        letterMarkovModel.setUnknownLetterNGramLogProbability((float) Math.log(unknownLetterNGramProbability));
 
         return letterMarkovModel;
     }

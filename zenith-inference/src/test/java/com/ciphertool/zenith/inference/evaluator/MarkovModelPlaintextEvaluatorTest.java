@@ -241,9 +241,9 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
 
         letterNGramDao.findAll().stream().forEach(letterMarkovModel::addNode);
 
-        Double unknownLetterNGramProbability = 1d / (double) letterMarkovModel.getTotalNGramCount();
+        Float unknownLetterNGramProbability = 1f / (float) letterMarkovModel.getTotalNGramCount();
         letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-        letterMarkovModel.setUnknownLetterNGramLogProbability(Math.log(unknownLetterNGramProbability));
+        letterMarkovModel.setUnknownLetterNGramLogProbability((float) Math.log(unknownLetterNGramProbability));
     }
 
     @Test

@@ -19,8 +19,8 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,18 +31,18 @@ import java.util.Map;
 public class CipherSolution {
     private static Logger log = LoggerFactory.getLogger(CipherSolution.class);
 
-    private static final double SIXTH_ROOT = 1d / 6d;
+    private static final float SIXTH_ROOT = 1f / 6f;
 
     protected Cipher cipher;
 
-    private double probability = 0d;
-    private Double logProbability = 0d;
+    private float probability = 0f;
+    private Float logProbability = 0f;
 
     private Map<String, String> mappings = new HashMap<>();
 
-    private DoubleList logProbabilities = new DoubleArrayList();
+    private FloatList logProbabilities = new FloatArrayList();
 
-    private double indexOfCoincidence = 1d;
+    private float indexOfCoincidence = 1f;
 
     public CipherSolution() {
     }
@@ -65,30 +65,26 @@ public class CipherSolution {
         this.cipher = cipher;
     }
 
-    public double getProbability() {
+    public float getProbability() {
         return probability;
     }
 
-    public void setProbability(double score) {
+    public void setProbability(float score) {
         this.probability = score;
     }
 
-    public double getIndexOfCoincidence() {
+    public float getIndexOfCoincidence() {
         return indexOfCoincidence;
     }
 
-    public void setIndexOfCoincidence(double indexOfCoincidence) {
+    public void setIndexOfCoincidence(float indexOfCoincidence) {
         this.indexOfCoincidence = indexOfCoincidence;
     }
 
-    public double getLogProbability() {
-        if (logProbability != null) {
-            return logProbability;
+    public float getLogProbability() {
+        if (logProbability == null) {
+            logProbability = logProbabilities.stream().reduce(0f, (a, b) -> a + b);
         }
-
-        logProbability = logProbabilities.stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
 
         return logProbability;
     }
@@ -126,7 +122,7 @@ public class CipherSolution {
         return this.mappings.remove(key);
     }
 
-    public DoubleList getLogProbabilities() {
+    public FloatList getLogProbabilities() {
         return logProbabilities;
     }
 
@@ -135,18 +131,18 @@ public class CipherSolution {
         this.logProbability = null;
     }
 
-    public void addLogProbability(double logProbability) {
+    public void addLogProbability(float logProbability) {
         this.logProbabilities.add(logProbability);
 
         if(this.logProbability == null) {
-            this.logProbability = 0d;
+            this.logProbability = 0f;
         }
 
         this.logProbability += logProbability;
     }
 
-    public void replaceLogProbability(int i, double newLogProbability) {
-        double oldLogProbability = this.logProbabilities.getDouble(i);
+    public void replaceLogProbability(int i, float newLogProbability) {
+        float oldLogProbability = this.logProbabilities.getFloat(i);
         this.logProbabilities.set(i, newLogProbability);
 
         this.logProbability -= oldLogProbability;
@@ -181,8 +177,8 @@ public class CipherSolution {
             copySolution.putMapping(entry.getKey(), entry.getValue());
         }
 
-        copySolution.logProbability = 0d;
-        for (double logProbability : this.logProbabilities) {
+        copySolution.logProbability = 0f;
+        for (float logProbability : this.logProbabilities) {
             copySolution.addLogProbability(logProbability);
         }
 
@@ -194,18 +190,18 @@ public class CipherSolution {
         return copySolution;
     }
 
-    public double getScore() {
+    public float getScore() {
         // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
         // This has not been determined empirically but has worked well through experimentation
-        return getLogProbability() * Math.pow(indexOfCoincidence, SIXTH_ROOT);
+        return getLogProbability() * (float) Math.pow(indexOfCoincidence, SIXTH_ROOT);
     }
 
-    public double evaluateKnownSolution() {
+    public float evaluateKnownSolution() {
         if (!cipher.hasKnownSolution()) {
             throw new IllegalStateException("Cipher does not have a known solution.");
         }
 
-        double total = 0.0;
+        float total = 0f;
 
         if (cipher.getKnownSolutionKey().size() != mappings.size()) {
             log.error("Current solution size of " + mappings.size()
@@ -219,7 +215,7 @@ public class CipherSolution {
             }
         }
 
-        double proximityToKnownSolution = (total / (double) mappings.size());
+        float proximityToKnownSolution = (total / (float) mappings.size());
 
         if (log.isDebugEnabled()) {
             log.debug("Solution has a confidence level of: " + proximityToKnownSolution);

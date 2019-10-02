@@ -22,9 +22,9 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.markov.NDArrayModel;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
+import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
     private int[] letterCounts = new int[256];
     private int[] precomputedNominatorValues;
-    private double denominator;
+    private float denominator;
 
     private int order;
     private int stepSize;
@@ -71,10 +71,10 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public Int2DoubleMap evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public Int2FloatMap evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
-        Int2DoubleMap logProbabilitiesUpdated = evaluateLetterNGrams(solution, solutionString, ciphertextKey);
+        Int2FloatMap logProbabilitiesUpdated = evaluateLetterNGrams(solution, solutionString, ciphertextKey);
 
         solution.setIndexOfCoincidence(computeIndexOfCoincidence(solutionString));
 
@@ -85,11 +85,11 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         return logProbabilitiesUpdated;
     }
 
-    protected Int2DoubleMap evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
+    protected Int2FloatMap evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
         int stringLengthMinusOrder = solutionString.length() - order;
 
-        Int2DoubleMap logProbabilitiesUpdated = new Int2DoubleOpenHashMap(ARBITRARY_LIST_INITIAL_SIZE);
-        double logProbability;
+        Int2FloatMap logProbabilitiesUpdated = new Int2FloatOpenHashMap(ARBITRARY_LIST_INITIAL_SIZE);
+        float logProbability;
         int lastIndex = -1;
 
         if (ciphertextKey != null) {
@@ -110,16 +110,16 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
                     logProbability = computeNGramLogProbability(solutionString.substring(j, j + order));
 
                     int index = j / stepSize;
-                    logProbabilitiesUpdated.put(index, solution.getLogProbabilities().getDouble(index));
+                    logProbabilitiesUpdated.put(index, solution.getLogProbabilities().getFloat(index));
                     solution.replaceLogProbability(index, logProbability);
                 }
 
                 lastIndex = end;
             }
         } else {
-            DoubleList logProbabilities = solution.getLogProbabilities();
+            FloatList logProbabilities = solution.getLogProbabilities();
             for (int i = 0; i < logProbabilities.size(); i ++) {
-                logProbabilitiesUpdated.put(i, logProbabilities.getDouble(i));
+                logProbabilitiesUpdated.put(i, logProbabilities.getFloat(i));
             }
 
             solution.clearLogProbabilities();
@@ -134,10 +134,10 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         return logProbabilitiesUpdated;
     }
 
-    protected double computeNGramLogProbability(String ngram) {
-        double match = letterMarkovModel.findExact(ngram);
+    protected float computeNGramLogProbability(String ngram) {
+        float match = letterMarkovModel.findExact(ngram);
 
-        if (match != -1d) {
+        if (match != -1f) {
             log.debug("Letter N-Gram Match={}, Probability={}", ngram, match);
             return match;
         }
@@ -146,7 +146,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         return letterMarkovModel.getUnknownLetterNGramLogProbability();
     }
 
-    protected double computeIndexOfCoincidence(String solutionString) {
+    protected float computeIndexOfCoincidence(String solutionString) {
         resetLetterCounts();
 
         for (int i = 0; i < solutionString.length(); i++) {
@@ -155,7 +155,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
 
         int numerator = buildNumerator();
 
-        return (double) numerator / denominator;
+        return (float) numerator / denominator;
     }
 
     private void resetLetterCounts() {
