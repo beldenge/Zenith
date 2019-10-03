@@ -37,7 +37,7 @@ public class CipherSolution {
     private float probability = 0f;
     private float logProbability = 0f;
 
-    private Map<String, String> mappings;
+    private Map<String, Character> mappings;
 
     private float[] logProbabilities;
 
@@ -89,11 +89,11 @@ public class CipherSolution {
         return logProbability;
     }
 
-    public Map<String, String> getMappings() {
+    public Map<String, Character> getMappings() {
         return Collections.unmodifiableMap(mappings);
     }
 
-    public void putMapping(String key, String plaintext) {
+    public void putMapping(String key, Character plaintext) {
         if (null == plaintext) {
             log.warn("Attempted to insert a null mapping to CipherSolution.  Returning. " + this);
 
@@ -136,7 +136,7 @@ public class CipherSolution {
     /*
      * This does the same thing as putMapping(), and exists solely for semantic consistency.
      */
-    public void replaceMapping(String key, String newPlaintext) {
+    public void replaceMapping(String key, Character newPlaintext) {
         if (null == newPlaintext) {
             log.warn("Attempted to replace a mapping from CipherSolution, but the supplied mapping was null.  Cannot continue. "
                     + this);
@@ -157,7 +157,7 @@ public class CipherSolution {
     public CipherSolution clone() {
         CipherSolution copySolution = new CipherSolution(this.cipher, this.mappings.size());
 
-        for (Map.Entry<String, String> entry : this.mappings.entrySet()) {
+        for (Map.Entry<String, Character> entry : this.mappings.entrySet()) {
             copySolution.putMapping(entry.getKey(), entry.getValue());
         }
 
@@ -194,7 +194,7 @@ public class CipherSolution {
         }
 
         for (String key : cipher.getKnownSolutionKey().keySet()) {
-            if (cipher.getKnownSolutionKey().get(key).equals(mappings.get(key))) {
+            if (cipher.getKnownSolutionKey().get(key).equals(String.valueOf(mappings.get(key)))) {
                 total++;
             }
         }

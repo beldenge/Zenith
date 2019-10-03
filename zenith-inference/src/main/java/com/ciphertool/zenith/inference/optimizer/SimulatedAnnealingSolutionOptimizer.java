@@ -55,9 +55,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     @Value("${simulated-annealing.temperature.min}")
     private float annealingTemperatureMin;
 
-    @Value("${simulated-annealing.sampler.iterate-randomly}")
-    private Boolean iterateRandomly;
-
     @Value("${markov.letter.order}")
     private int markovOrder;
 
@@ -115,7 +112,15 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
             log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
-            CipherSolution best = performEpoch(initialSolution);
+            String[] mappingKeys = new String[initialSolution.getMappings().size()];
+
+            int mappingListIndex = 0;
+            for (String key : initialSolution.getMappings().keySet()) {
+                mappingKeys[mappingListIndex] = key;
+                mappingListIndex ++;
+            }
+
+            CipherSolution best = performEpoch(initialSolution, mappingKeys);
 
             if (cipher.hasKnownSolution() && knownSolutionCorrectnessThreshold <= best.evaluateKnownSolution()) {
                 correctSolutions ++;
@@ -139,7 +144,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 .distinct()
                 .forEach(ciphertext -> {
                     // Pick a plaintext at random according to the language model
-                    String nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex()).getValue().toString();
+                    char nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex()).getValue();
 
                     solutionProposal.putMapping(ciphertext, nextPlaintext);
                 });
@@ -147,7 +152,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return solutionProposal;
     }
 
-    private CipherSolution performEpoch(CipherSolution initialSolution) {
+    private CipherSolution performEpoch(CipherSolution initialSolution, String[] mappingKeys) {
         long start = System.currentTimeMillis();
 
         String solutionString = initialSolution.asSingleLineString();
@@ -179,7 +184,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (float) i) / samplerIterations)) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
-            next = runLetterSampler(temperature, next, solutionCharArray);
+            next = runLetterSampler(temperature, next, solutionCharArray, mappingKeys);
 
             if (log.isDebugEnabled()) {
                 long now = System.currentTimeMillis();
@@ -197,29 +202,25 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
         log.info("Mappings for best probability:");
 
-        for (Map.Entry<String, String> entry : next.getMappings().entrySet()) {
+        for (Map.Entry<String, Character> entry : next.getMappings().entrySet()) {
             log.info("{}: {}", entry.getKey(), entry.getValue());
         }
 
         return next;
     }
 
-    private CipherSolution runLetterSampler(float temperature, CipherSolution solution, char[] solutionCharArray) {
-        // TODO: convert to array of Strings
-        List<String> mappingList = new ArrayList<>(solution.getMappings().size());
-        mappingList.addAll(solution.getMappings().keySet());
-
+    private CipherSolution runLetterSampler(float temperature, CipherSolution solution, char[] solutionCharArray, String[] mappingKeys) {
         String nextKey;
 
         // For each cipher symbol type, run the letter sampling
-        for (int i = 0; i < mappingList.size(); i++) {
-            nextKey = iterateRandomly ? mappingList.remove(RANDOM.nextInt(mappingList.size())) : mappingList.get(i);
+        for (int i = 0; i < mappingKeys.length; i++) {
+            nextKey = mappingKeys[i];
 
-            String letter = String.valueOf(LanguageConstants.LOWERCASE_LETTERS[RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)]);
+            char letter = LanguageConstants.LOWERCASE_LETTERS[RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)];
 
-            String originalMapping = solution.getMappings().get(nextKey);
+            char originalMapping = solution.getMappings().get(nextKey);
 
-            if (letter.equals(originalMapping)) {
+            if (letter == originalMapping) {
                 continue;
             }
 
@@ -229,7 +230,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
             int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(nextKey);
             for (int j = 0; j < cipherSymbolIndices.length; j ++) {
-                solutionCharArray[cipherSymbolIndices[j]] = letter.charAt(0);
+                solutionCharArray[cipherSymbolIndices[j]] = letter;
             }
 
             String proposalString = new String(solutionCharArray);
@@ -251,7 +252,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 }
 
                 for (int j = 0; j < cipherSymbolIndices.length; j ++) {
-                    solutionCharArray[cipherSymbolIndices[j]] = originalMapping.charAt(0);
+                    solutionCharArray[cipherSymbolIndices[j]] = originalMapping;
                 }
             }
         }

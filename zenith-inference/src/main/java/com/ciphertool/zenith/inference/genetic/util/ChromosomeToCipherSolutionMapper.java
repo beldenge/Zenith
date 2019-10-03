@@ -35,7 +35,7 @@ public class ChromosomeToCipherSolutionMapper {
 
         for (Map.Entry<String, Gene> entry : cipherKeyChromosome.getGenes().entrySet()) {
             CipherKeyGene cipherKeyGene = (CipherKeyGene) entry.getValue();
-            cipherSolution.putMapping(entry.getKey(), cipherKeyGene.getValue());
+            cipherSolution.putMapping(entry.getKey(), cipherKeyGene.getValue().charAt(0));
         }
 
         return cipherSolution;
