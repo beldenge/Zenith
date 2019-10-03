@@ -25,26 +25,21 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class NDArrayModel {
+    private static final int FOURTH_POWER = 26 * 26 * 26 * 26;
+    private static final int THIRD_POWER = 26 * 26 * 26;
+    private static final int SECOND_POWER = 26 * 26;
     private static final int ASCII_OFFSET = 97;
     private AtomicInteger totalNodes = new AtomicInteger(0);
     private int order;
     private float unknownLetterNGramProbability;
     private float unknownLetterNGramLogProbability;
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
-    private float[][][][][] nGramLogProbabilities = new float[26][26][26][26][26];
+    private float[] nGramLogProbabilities = new float[26 * 26 * 26 * 26 * 26];
 
     public NDArrayModel(int order) {
         this.order = order;
 
-        for (int i = 0; i < nGramLogProbabilities.length; i ++) {
-            for (int j = 0; j < nGramLogProbabilities[i].length; j ++) {
-                for (int k = 0; k < nGramLogProbabilities[j].length; k ++) {
-                    for (int l = 0; l < nGramLogProbabilities[k].length; l ++) {
-                        Arrays.fill(nGramLogProbabilities[i][j][k][l], -1f);
-                    }
-                }
-            }
-        }
+        Arrays.fill(nGramLogProbabilities, -1f);
     }
 
     public long getTotalNGramCount() {
@@ -70,24 +65,30 @@ public class NDArrayModel {
     }
 
     private void addToNDArray(TreeNGram treeNGram) {
-        String ngramString = treeNGram.getCumulativeString();
+        String ngram = treeNGram.getCumulativeString();
 
-        int i = ngramString.charAt(0) - ASCII_OFFSET;
-        int j = ngramString.charAt(1) - ASCII_OFFSET;
-        int k = ngramString.charAt(2) - ASCII_OFFSET;
-        int l = ngramString.charAt(3) - ASCII_OFFSET;
-        int m = ngramString.charAt(4) - ASCII_OFFSET;
+        int arrayIndex = computeArrayIndex(ngram);
 
-        if(nGramLogProbabilities[i][j][k][l][m] != -1f) {
-            throw new IllegalStateException("Unable to add the same ngram twice='" + ngramString + "'.");
+        if(nGramLogProbabilities[arrayIndex] != -1f) {
+            throw new IllegalStateException("Unable to add the same ngram twice='" + ngram + "'.");
         }
 
         totalNodes.incrementAndGet();
-        nGramLogProbabilities[i][j][k][l][m] = (float) treeNGram.getLogProbability();
+        nGramLogProbabilities[arrayIndex] = (float) treeNGram.getLogProbability();
     }
 
-    public float findExact(String nGram) {
-        return nGramLogProbabilities[nGram.charAt(0) - ASCII_OFFSET][nGram.charAt(1) - ASCII_OFFSET][nGram.charAt(2) - ASCII_OFFSET][nGram.charAt(3) - ASCII_OFFSET][nGram.charAt(4) - ASCII_OFFSET];
+    public float findExact(String ngram) {
+        return nGramLogProbabilities[computeArrayIndex(ngram)];
+    }
+
+    public int computeArrayIndex(String ngram) {
+        int i = ((ngram.charAt(0) - ASCII_OFFSET) * FOURTH_POWER);
+        int j = ((ngram.charAt(1) - ASCII_OFFSET) * THIRD_POWER);
+        int k = ((ngram.charAt(2) - ASCII_OFFSET) * SECOND_POWER);
+        int l = ((ngram.charAt(3) - ASCII_OFFSET) * 26);
+        int m = (ngram.charAt(4) - ASCII_OFFSET);
+
+        return i + j + k + l + m;
     }
 
     public int getOrder() {
