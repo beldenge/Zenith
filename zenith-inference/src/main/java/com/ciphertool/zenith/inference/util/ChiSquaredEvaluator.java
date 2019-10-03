@@ -3,7 +3,7 @@ package com.ciphertool.zenith.inference.util;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.NDArrayModel;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ public class ChiSquaredEvaluator {
     private Cipher cipher;
 
     @Autowired
-    private NDArrayModel letterMarkovModel;
+    private ArrayMarkovModel letterMarkovModel;
 
     @PostConstruct
     public void init() {

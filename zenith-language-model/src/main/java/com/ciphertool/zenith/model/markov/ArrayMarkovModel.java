@@ -24,7 +24,7 @@ import com.ciphertool.zenith.model.entities.TreeNGram;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class NDArrayModel {
+public class ArrayMarkovModel {
     private static final int FOURTH_POWER = 26 * 26 * 26 * 26;
     private static final int THIRD_POWER = 26 * 26 * 26;
     private static final int SECOND_POWER = 26 * 26;
@@ -36,7 +36,7 @@ public class NDArrayModel {
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
     private float[] nGramLogProbabilities = new float[26 * 26 * 26 * 26 * 26];
 
-    public NDArrayModel(int order) {
+    public ArrayMarkovModel(int order) {
         this.order = order;
 
         Arrays.fill(nGramLogProbabilities, -1f);

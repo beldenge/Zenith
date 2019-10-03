@@ -28,7 +28,7 @@ import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransforme
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.NDArrayModel;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +68,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     protected Cipher cipher;
 
     @Autowired
-    private NDArrayModel letterMarkovModel;
+    private ArrayMarkovModel letterMarkovModel;
 
     @Autowired(required = false)
     @Qualifier("activePlaintextTransformers")

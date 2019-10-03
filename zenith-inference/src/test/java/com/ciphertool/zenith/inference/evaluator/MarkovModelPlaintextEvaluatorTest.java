@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.markov.NDArrayModel;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
 
     private static final int ARBITRARY_INITIAL_LIST_SIZE = 20;
 
-    private static NDArrayModel letterMarkovModel;
+    private static ArrayMarkovModel letterMarkovModel;
 
     private static CipherSolution actualSolution = new CipherSolution(zodiac408, ARBITRARY_INITIAL_LIST_SIZE);
     private static CipherSolution solution2 = new CipherSolution(zodiac408, ARBITRARY_INITIAL_LIST_SIZE);
@@ -239,7 +239,7 @@ public class MarkovModelPlaintextEvaluatorTest extends FitnessEvaluatorTestBase 
             return;
         }
 
-        letterMarkovModel = new NDArrayModel(6);
+        letterMarkovModel = new ArrayMarkovModel(6);
 
         letterNGramDao.findAll().stream().forEach(letterMarkovModel::addNode);
 

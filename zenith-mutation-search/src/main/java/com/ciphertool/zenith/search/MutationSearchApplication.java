@@ -26,7 +26,7 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.transformer.ciphertext.RemoveLastRowCipherTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.NDArrayModel;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +91,7 @@ public class MutationSearchApplication implements CommandLineRunner {
     }
 
     @Bean
-    public NDArrayModel letterMarkovModel(LetterNGramDao letterNGramDao) {
+    public ArrayMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
         long startFindAll = System.currentTimeMillis();
         log.info("Beginning retrieval of all n-grams.");
 
@@ -102,7 +102,7 @@ public class MutationSearchApplication implements CommandLineRunner {
 
         log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
 
-        NDArrayModel letterMarkovModel = new NDArrayModel(markovOrder);
+        ArrayMarkovModel letterMarkovModel = new ArrayMarkovModel(markovOrder);
 
         long startAdding = System.currentTimeMillis();
         log.info("Adding nodes to the model.");

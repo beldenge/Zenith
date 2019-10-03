@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.model.markov.NDArrayModel;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private Cipher cipher;
 
     @Autowired
-    private NDArrayModel letterMarkovModel;
+    private ArrayMarkovModel letterMarkovModel;
 
     // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
     private int[] letterCounts = new int[256];

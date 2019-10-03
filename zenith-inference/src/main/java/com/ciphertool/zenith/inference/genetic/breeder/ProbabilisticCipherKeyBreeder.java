@@ -25,7 +25,7 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.NDArrayModel;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
 
     @Autowired
-    private NDArrayModel letterMarkovModel;
+    private ArrayMarkovModel letterMarkovModel;
 
     @PostConstruct
     public void init() {
