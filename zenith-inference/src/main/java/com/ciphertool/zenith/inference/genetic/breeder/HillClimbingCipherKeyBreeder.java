@@ -108,7 +108,7 @@ public class HillClimbingCipherKeyBreeder extends AbstractCipherKeyBreeder {
 
             nextKey = mappingList.get(i);
 
-            String letter = String.valueOf(LanguageConstants.LOWERCASE_LETTERS.getChar(ThreadLocalRandom.current().nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)));
+            String letter = String.valueOf(LanguageConstants.LOWERCASE_LETTERS[ThreadLocalRandom.current().nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)]);
 
             proposal.replaceGene(nextKey, new CipherKeyGene(proposal, letter));
 

@@ -19,22 +19,7 @@
 
 package com.ciphertool.zenith.model;
 
-import it.unimi.dsi.fastutil.chars.CharArrayList;
-import it.unimi.dsi.fastutil.chars.CharList;
-
-import java.util.Comparator;
-
 public class LanguageConstants {
-    public static final CharList LOWERCASE_VOWELS = new CharArrayList(new char[]{'a', 'e', 'i', 'o', 'u'});
-    public static final CharList LOWERCASE_CONSONANTS = new CharArrayList(new char[]{'b', 'c', 'd', 'f',
-            'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'});
-    public static final CharList LOWERCASE_LETTERS = new CharArrayList();
-
-    static {
-        LOWERCASE_LETTERS.addAll(LOWERCASE_VOWELS);
-        LOWERCASE_LETTERS.addAll(LOWERCASE_CONSONANTS);
-        LOWERCASE_LETTERS.sort(Comparator.comparing(Character::charValue));
-    }
-
-    public static final int LOWERCASE_LETTERS_SIZE = LOWERCASE_LETTERS.size();
+    public static final char[] LOWERCASE_LETTERS = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+    public static final int LOWERCASE_LETTERS_SIZE = LOWERCASE_LETTERS.length;
 }

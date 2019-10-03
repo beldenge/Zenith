@@ -20,8 +20,6 @@
 package com.ciphertool.zenith.inference.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 
 import java.util.*;
 
@@ -37,7 +35,7 @@ public class Cipher {
     private Map<String, String> knownSolutionKey = new HashMap<>();
 
     @JsonIgnore
-    private Map<String, IntList> cipherSymbolIndicesMap = new HashMap<>();
+    private Map<String, int[]> cipherSymbolIndicesMap = new HashMap<>();
 
     public Cipher() {
     }
@@ -60,18 +58,32 @@ public class Cipher {
         return name;
     }
 
-    public Map<String, IntList> getCipherSymbolIndicesMap() {
+    public Map<String, int[]> getCipherSymbolIndicesMap() {
         if (!cipherSymbolIndicesMap.isEmpty()) {
             return cipherSymbolIndicesMap;
         }
 
         for (Ciphertext ciphertextCharacter : ciphertextCharacters) {
-            String symbol = ciphertextCharacter.getValue();
-            if (!cipherSymbolIndicesMap.containsKey(ciphertextCharacter.getValue())) {
-                cipherSymbolIndicesMap.put(symbol, new IntArrayList());
+            if (cipherSymbolIndicesMap.containsKey(ciphertextCharacter.getValue())) {
+                continue;
             }
 
-            cipherSymbolIndicesMap.get(symbol).add(ciphertextCharacter.getCiphertextId());
+            String symbol = ciphertextCharacter.getValue();
+
+            int count = (int) ciphertextCharacters.stream()
+                    .map(Ciphertext::getValue)
+                    .filter(value -> value.equals(symbol))
+                    .count();
+
+            cipherSymbolIndicesMap.put(symbol, new int[count]);
+
+            int i = 0;
+            for (Ciphertext ciphertextMatch : ciphertextCharacters) {
+                if (ciphertextMatch.getValue().equals(symbol)) {
+                    cipherSymbolIndicesMap.get(symbol)[i] = ciphertextMatch.getCiphertextId();
+                    i++;
+                }
+            }
         }
 
         return cipherSymbolIndicesMap;

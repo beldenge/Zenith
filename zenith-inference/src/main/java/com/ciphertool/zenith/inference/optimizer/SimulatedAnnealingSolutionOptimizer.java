@@ -205,6 +205,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     }
 
     private CipherSolution runLetterSampler(float temperature, CipherSolution solution, char[] solutionCharArray) {
+        // TODO: convert to array of Strings
         List<String> mappingList = new ArrayList<>(solution.getMappings().size());
         mappingList.addAll(solution.getMappings().keySet());
 
@@ -214,7 +215,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         for (int i = 0; i < mappingList.size(); i++) {
             nextKey = iterateRandomly ? mappingList.remove(RANDOM.nextInt(mappingList.size())) : mappingList.get(i);
 
-            String letter = String.valueOf(LanguageConstants.LOWERCASE_LETTERS.getChar(RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)));
+            String letter = String.valueOf(LanguageConstants.LOWERCASE_LETTERS[RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)]);
 
             String originalMapping = solution.getMappings().get(nextKey);
 
@@ -226,8 +227,9 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             float originalIndexOfCoincidence = solution.getIndexOfCoincidence();
             solution.replaceMapping(nextKey, letter);
 
-            for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
-                solutionCharArray[index] = letter.charAt(0);
+            int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(nextKey);
+            for (int j = 0; j < cipherSymbolIndices.length; j ++) {
+                solutionCharArray[cipherSymbolIndices[j]] = letter.charAt(0);
             }
 
             String proposalString = new String(solutionCharArray);
@@ -248,8 +250,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                     solution.replaceLogProbability((int) logProbabilitiesUpdated[0][j], logProbabilitiesUpdated[1][j]);
                 }
 
-                for (int index : cipher.getCipherSymbolIndicesMap().get(nextKey)) {
-                    solutionCharArray[index] = originalMapping.charAt(0);
+                for (int j = 0; j < cipherSymbolIndices.length; j ++) {
+                    solutionCharArray[cipherSymbolIndices[j]] = originalMapping.charAt(0);
                 }
             }
         }
@@ -263,15 +265,15 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         }
 
         // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
-        double acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1f);
+        float acceptanceProbability = (float) Math.exp(((solutionScore - proposalScore) / temperature) * -1f);
 
         log.debug("Acceptance probability: {}", acceptanceProbability);
 
-        if (acceptanceProbability < 0d) {
+        if (acceptanceProbability < 0f) {
             throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
         }
 
-        if (acceptanceProbability > 1d || RANDOM.nextDouble() < acceptanceProbability) {
+        if (acceptanceProbability > 1f || (float) RANDOM.nextDouble() < acceptanceProbability) {
             return true;
         }
 

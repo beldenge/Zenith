@@ -90,10 +90,13 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         int lastIndex = -1;
 
         if (ciphertextKey != null) {
-            float[][] logProbabilitiesUpdatedOversized = new float[2][cipher.getCipherSymbolIndicesMap().get(ciphertextKey).size() * (stepSize + 1)];
+            int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(ciphertextKey);
+            float[][] logProbabilitiesUpdatedOversized = new float[2][cipherSymbolIndices.length * (stepSize + 1)];
 
             int k = 0;
-            for (int ciphertextIndex : cipher.getCipherSymbolIndicesMap().get(ciphertextKey)) {
+            for (int i = 0; i < cipherSymbolIndices.length; i ++) {
+                int ciphertextIndex = cipherSymbolIndices[i];
+
                 int wayBack = ciphertextIndex - (ciphertextIndex % stepSize) - doubleStepSize;
                 if (wayBack + order <= ciphertextIndex) {
                     wayBack += stepSize;

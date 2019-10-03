@@ -34,8 +34,8 @@ public class ChiSquaredEvaluator {
     public double evaluate(String solutionString) {
         Map<String, Long> solutionLetterCounts = new HashMap<>(LetterUtils.NUMBER_OF_LETTERS);
 
-        for (char c : LanguageConstants.LOWERCASE_LETTERS) {
-            solutionLetterCounts.put(String.valueOf(c), 0L);
+        for (int i = 0; i < LanguageConstants.LOWERCASE_LETTERS.length; i ++) {
+            solutionLetterCounts.put(String.valueOf(LanguageConstants.LOWERCASE_LETTERS[i]), 0L);
         }
 
         for (int i = 0; i < solutionString.length(); i ++) {
