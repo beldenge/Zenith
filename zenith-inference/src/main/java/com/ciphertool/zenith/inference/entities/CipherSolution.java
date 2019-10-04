@@ -30,9 +30,7 @@ import java.util.Map;
 public class CipherSolution {
     private static Logger log = LoggerFactory.getLogger(CipherSolution.class);
 
-    private static final float SIXTH_ROOT = 1f / 6f;
-
-    protected Cipher cipher;
+    private Cipher cipher;
 
     private float probability = 0f;
     private float logProbability = 0f;
@@ -42,6 +40,8 @@ public class CipherSolution {
     private float[] logProbabilities;
 
     private float indexOfCoincidence = 1f;
+
+    private float score;
 
     public CipherSolution(Cipher cipher, int numCiphertextKeys) {
         if (cipher == null) {
@@ -171,13 +171,17 @@ public class CipherSolution {
         // We need to set these values last to maintain whether evaluation is needed on the clone
         copySolution.setProbability(this.probability);
 
+        copySolution.setScore(this.score);
+
         return copySolution;
     }
 
     public float getScore() {
-        // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
-        // This has not been determined empirically but has worked well through experimentation
-        return getLogProbability() * (float) Math.pow(indexOfCoincidence, SIXTH_ROOT);
+        return score;
+    }
+
+    public void setScore(float score) {
+        this.score = score;
     }
 
     public float evaluateKnownSolution() {

@@ -22,9 +22,11 @@ package com.ciphertool.zenith.inference.optimizer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
 import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -66,6 +68,12 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
     @Autowired
     protected Cipher cipher;
+
+    @Autowired
+    private SolutionScorer solutionScorer;
+
+    @Autowired
+    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
 
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
@@ -163,6 +171,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         }
 
         plaintextEvaluator.evaluate(initialSolution, solutionString, null);
+        initialSolution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(solutionString));
+        initialSolution.setScore(solutionScorer.score(initialSolution));
 
         if (log.isDebugEnabled()) {
             cipherSolutionPrinter.print(initialSolution);
@@ -242,8 +252,11 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             }
 
             float[][] logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, proposalString, nextKey);
+            solution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(proposalString));
+            solution.setScore(solutionScorer.score(solution));
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {
+                solution.setScore(originalScore);
                 solution.setIndexOfCoincidence(originalIndexOfCoincidence);
                 solution.replaceMapping(nextKey, originalMapping);
 
