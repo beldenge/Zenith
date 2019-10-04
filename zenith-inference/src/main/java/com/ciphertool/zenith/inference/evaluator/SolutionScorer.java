@@ -21,17 +21,13 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.util.MathUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SolutionScorer {
-    @Autowired
-    private MathUtils mathUtils;
-
     public float score(CipherSolution cipherSolution) {
         // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
         // This has not been determined empirically but has worked well through experimentation
-        return cipherSolution.getLogProbability() * mathUtils.powSixthRoot(cipherSolution.getIndexOfCoincidence());
+        return cipherSolution.getLogProbability() * MathUtils.powSixthRoot(cipherSolution.getIndexOfCoincidence());
     }
 }

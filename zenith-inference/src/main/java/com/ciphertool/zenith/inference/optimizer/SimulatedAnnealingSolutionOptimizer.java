@@ -67,7 +67,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private float knownSolutionCorrectnessThreshold;
 
     @Autowired
-    protected Cipher cipher;
+    private Cipher cipher;
 
     @Autowired
     private SolutionScorer solutionScorer;

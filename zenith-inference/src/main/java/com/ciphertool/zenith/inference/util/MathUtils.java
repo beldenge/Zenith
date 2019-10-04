@@ -19,13 +19,23 @@
 
 package com.ciphertool.zenith.inference.util;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class MathUtils {
     private static final float SIXTH_ROOT = 1f / 6f;
 
-    public float powSixthRoot(float number) {
-        return (float) Math.pow(number, SIXTH_ROOT);
+    public static float powSixthRoot(float x) {
+        return (float) Math.pow(x, SIXTH_ROOT);
+    }
+
+    public static float fastExp(float x) {
+        final long tmp = (long) (1512775 * x + 1072632447);
+        return (float) Double.longBitsToDouble(tmp << 32);
+    }
+
+    public static float fastLog(float x) {
+        return 6 * (x - 1) / (x + 1 + 4 * (float) Math.sqrt(x));
+    }
+
+    public static float fastPow(float a, float b) {
+        return fastExp(b * fastLog(a));
     }
 }
