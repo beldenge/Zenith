@@ -245,14 +245,19 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
         CipherSolution overallBest = null;
         CipherKeyChromosome last = null;
         int correctSolutions = 0;
-        long start = System.currentTimeMillis();
+        long totalElapsed = 0;
 
-        for (int epoch = 0; epoch < epochs; epoch++) {
+        int epoch = 0;
+        for (; epoch < epochs; epoch++) {
             log.info("Epoch {} of {}.  Evolving for {} generations.", (epoch + 1), epochs, numberOfGenerations);
+
+            long start = System.currentTimeMillis();
 
             geneticAlgorithm.evolve();
 
-            log.info("Total running time was {}ms.", (System.currentTimeMillis() - start));
+            long elapsed = System.currentTimeMillis() - start;
+            totalElapsed += elapsed;
+            log.info("Epoch completed in {}ms.", elapsed);
 
             this.geneticAlgorithm.getPopulation().sortIndividuals();
 
@@ -294,6 +299,8 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
         if (last != null && last.getCipher().hasKnownSolution()) {
             log.info("{} out of {} epochs ({}%) produced the correct solution.", correctSolutions, epochs, String.format("%1$,.2f", (correctSolutions / (double) epochs) * 100.0));
         }
+
+        log.info("Average epoch time={}ms", ((float) totalElapsed / (float) epoch));
 
         return overallBest;
     }

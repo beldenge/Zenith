@@ -112,10 +112,12 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
         unigramRouletteSampler.reIndex(letterUnigramProbabilities);
 
+        long totalElapsed = 0;
         int correctSolutions = 0;
         CipherSolution overallBest = null;
 
-        for (int epoch = 0; epoch < epochs; epoch++) {
+        int epoch = 0;
+        for (; epoch < epochs; epoch++) {
             CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities);
 
             log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
@@ -128,7 +130,23 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 mappingListIndex ++;
             }
 
+            long start = System.currentTimeMillis();
+
             CipherSolution best = performEpoch(initialSolution, mappingKeys);
+
+            long elapsed = System.currentTimeMillis() - start;
+            totalElapsed += elapsed;
+            log.info("Epoch completed in {}ms.", elapsed);
+
+            if (log.isInfoEnabled()) {
+                cipherSolutionPrinter.print(best);
+            }
+
+            log.info("Mappings for best probability:");
+
+            for (Map.Entry<String, Character> entry : best.getMappings().entrySet()) {
+                log.info("{}: {}", entry.getKey(), entry.getValue());
+            }
 
             if (cipher.hasKnownSolution() && knownSolutionCorrectnessThreshold <= best.evaluateKnownSolution()) {
                 correctSolutions ++;
@@ -140,6 +158,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         if (cipher.hasKnownSolution()) {
             log.info("{} out of {} epochs ({}%) produced the correct solution.", correctSolutions, epochs, String.format("%1$,.2f", (correctSolutions / (double) epochs) * 100.0));
         }
+
+        log.info("Average epoch time={}ms", ((float) totalElapsed / (float) epoch));
 
         return overallBest;
     }
@@ -161,8 +181,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     }
 
     private CipherSolution performEpoch(CipherSolution initialSolution, String[] mappingKeys) {
-        long start = System.currentTimeMillis();
-
         String solutionString = initialSolution.asSingleLineString();
         if (plaintextTransformers != null) {
             for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
@@ -201,19 +219,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (now - iterationStart), (now - startLetterSampling), String.format("%1$,.4f", temperature));
                 cipherSolutionPrinter.print(next);
             }
-        }
-
-        long totalElapsed = System.currentTimeMillis() - start;
-        log.info("Letter sampling completed in {}ms.  Average={}ms.", totalElapsed, ((double) totalElapsed / (double) i));
-
-        if (log.isInfoEnabled()) {
-            cipherSolutionPrinter.print(next);
-        }
-
-        log.info("Mappings for best probability:");
-
-        for (Map.Entry<String, Character> entry : next.getMappings().entrySet()) {
-            log.info("{}: {}", entry.getKey(), entry.getValue());
         }
 
         return next;
