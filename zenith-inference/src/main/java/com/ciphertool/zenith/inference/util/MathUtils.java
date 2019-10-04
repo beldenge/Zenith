@@ -26,15 +26,18 @@ public class MathUtils {
         return (float) Math.pow(x, SIXTH_ROOT);
     }
 
+    // https://martin.ankerl.com/2007/02/11/optimized-exponential-functions-for-java/
     public static float fastExp(float x) {
         final long tmp = (long) (1512775 * x + 1072632447);
         return (float) Double.longBitsToDouble(tmp << 32);
     }
 
+    // https://martin.ankerl.com/2007/02/11/optimized-exponential-functions-for-java/
     public static float fastLog(float x) {
         return 6 * (x - 1) / (x + 1 + 4 * (float) Math.sqrt(x));
     }
 
+    // https://martin.ankerl.com/2007/02/11/optimized-exponential-functions-for-java/
     public static float fastPow(float a, float b) {
         return fastExp(b * fastLog(a));
     }
