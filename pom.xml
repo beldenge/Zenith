@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along with Zen
 	<groupId>com.ciphertool.zenith</groupId>
 	<artifactId>zenith</artifactId>
 	<packaging>pom</packaging>
-	<version>1.1.0</version>
+	<version>1.1.1-SNAPSHOT</version>
 	<name>zenith</name>
 	<url>http://www.ciphertool.com</url>
 
