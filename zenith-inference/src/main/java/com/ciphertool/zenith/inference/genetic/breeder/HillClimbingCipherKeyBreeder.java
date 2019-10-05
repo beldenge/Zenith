@@ -23,10 +23,12 @@ import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.model.LanguageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,13 +61,19 @@ public class HillClimbingCipherKeyBreeder extends AbstractCipherKeyBreeder {
     @Qualifier("activePlaintextTransformers")
     private List<PlaintextTransformer> plaintextTransformers;
 
+    @Autowired
+    private SolutionScorer solutionScorer;
+
+    @Autowired
+    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
+
     private PlaintextEvaluatorWrappingFitnessEvaluator fitnessEvaluator;
 
     @PostConstruct
     public void init() {
         super.init();
 
-        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers);
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers, indexOfCoincidenceEvaluator, solutionScorer);
     }
 
     @Override

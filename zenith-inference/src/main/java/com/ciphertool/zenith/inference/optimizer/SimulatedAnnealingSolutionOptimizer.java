@@ -142,12 +142,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 cipherSolutionPrinter.print(best);
             }
 
-            log.info("Mappings for best probability:");
-
-            for (Map.Entry<String, Character> entry : best.getMappings().entrySet()) {
-                log.info("{}: {}", entry.getKey(), entry.getValue());
-            }
-
             if (cipher.hasKnownSolution() && knownSolutionCorrectnessThreshold <= best.evaluateKnownSolution()) {
                 correctSolutions ++;
             }

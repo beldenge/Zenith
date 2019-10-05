@@ -31,12 +31,14 @@ import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,6 +120,12 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
     @Autowired
     private PlaintextEvaluator plaintextEvaluator;
+
+    @Autowired
+    private SolutionScorer solutionScorer;
+
+    @Autowired
+    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
 
     @Autowired
     private CipherSolutionPrinter cipherSolutionPrinter;
@@ -221,7 +229,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
             throw new IllegalArgumentException("The Selector with name " + selectorName + " does not exist.");
         }
 
-        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers);
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers, indexOfCoincidenceEvaluator, solutionScorer);
     }
 
     @Override

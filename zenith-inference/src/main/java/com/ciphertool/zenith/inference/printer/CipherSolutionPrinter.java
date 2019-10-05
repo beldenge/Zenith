@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CipherSolutionPrinter {
@@ -53,6 +54,14 @@ public class CipherSolutionPrinter {
             }
         }
 
-       log.info(sb.toString());
+        sb.append("\nMappings for best probability:\n");
+        sb.append("------------------------------\n");
+        sb.append("|  ciphertext  |  plaintext  |\n");
+        sb.append("|--------------+-------------|\n");
+        for (Map.Entry<String, Character> entry : solution.getMappings().entrySet()) {
+            sb.append("|  " + String.format("%-10s", entry.getKey()) + "  |  " + entry.getValue() + "          |\n");
+        }
+
+        log.info(sb.toString());
     }
 }
