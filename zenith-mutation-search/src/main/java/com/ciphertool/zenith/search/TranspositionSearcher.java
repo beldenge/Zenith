@@ -181,29 +181,30 @@ public class TranspositionSearcher {
     private CipherSolution runSampler(Double temperature, CipherSolution solution, List<Integer> transpositionKeyIndices) {
         CipherSolution proposal;
         CipherSolution best = solution;
+        int first = ThreadLocalRandom.current().nextInt(transpositionKeyIndices.size());
+        int second = ThreadLocalRandom.current().nextInt(transpositionKeyIndices.size());
 
-        for (int i = 0; i < transpositionKeyIndices.size(); i++) {
-            // Start at i + 1, as all previous swaps will have already been tried
-            for (int j = i + 1; j < transpositionKeyIndices.size(); j++) {
-                List<Integer> nextTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
-                int firstValue = nextTranspositionKeyIndices.get(i);
-                int secondValue = nextTranspositionKeyIndices.get(j);
-                nextTranspositionKeyIndices.set(i, secondValue);
-                nextTranspositionKeyIndices.set(j, firstValue);
+        if (first == second) {
+            return best;
+        }
 
-                proposal = solution.clone();
+        List<Integer> nextTranspositionKeyIndices = new ArrayList<>(transpositionKeyIndices);
+        int firstValue = nextTranspositionKeyIndices.get(first);
+        int secondValue = nextTranspositionKeyIndices.get(second);
+        nextTranspositionKeyIndices.set(first, secondValue);
+        nextTranspositionKeyIndices.set(second, firstValue);
 
-                proposal.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, nextTranspositionKeyIndices));
+        proposal = solution.clone();
 
-                evaluate(proposal);
+        proposal.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, nextTranspositionKeyIndices));
 
-                best = selectNext(temperature, best, proposal);
+        evaluate(proposal);
 
-                if (best == proposal) {
-                    transpositionKeyIndices.clear();
-                    transpositionKeyIndices.addAll(nextTranspositionKeyIndices);
-                }
-            }
+        best = selectNext(temperature, best, proposal);
+
+        if (best == proposal) {
+            transpositionKeyIndices.clear();
+            transpositionKeyIndices.addAll(nextTranspositionKeyIndices);
         }
 
         return best;
@@ -223,7 +224,7 @@ public class TranspositionSearcher {
         // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
         acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
 
-        log.debug("Acceptance probability: {}", acceptanceProbability);
+        log.info("Solution score: {}, Proposal Score: {}, Temperature: {}, Acceptance probability: {}", String.format("%1$.2f", solutionScore), String.format("%1$.2f", proposalScore), String.format("%1$,.2f", temperature), String.format("%1$,.4f", acceptanceProbability));
 
         if (acceptanceProbability < 0d) {
             throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");
@@ -238,11 +239,11 @@ public class TranspositionSearcher {
 
     private double evaluate(CipherSolution cipherSolution) {
 //        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
-//        int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
+        int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
 //        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
         float languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
 
-        float scaledScore = languageModelScore;
+        float scaledScore = languageModelScore + (cycleScore / 25f);
 
         cipherSolution.clearLogProbabilities();
         cipherSolution.addLogProbability(0, scaledScore);

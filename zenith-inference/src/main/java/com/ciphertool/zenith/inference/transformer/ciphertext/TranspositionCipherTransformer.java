@@ -36,7 +36,7 @@ public class TranspositionCipherTransformer extends AbstractTranspositionCipherT
 
     @Override
     protected Cipher unwrap(Cipher cipher, List<Integer> columnIndices) {
-        log.debug("Unwrapping transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKeyString, columnIndices);
+        log.debug("Performing transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKeyString, columnIndices);
 
         int rows = cipher.length() / columnIndices.size();
 
