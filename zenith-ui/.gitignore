@@ -1,0 +1,11 @@
+/bin
+/target
+/log
+.settings
+.project
+.classpath
+.idea
+*.iml
+node_modules
+node
+vendor

@@ -212,6 +212,16 @@ public class Cipher {
         return true;
     }
 
+    public String asSingleLineString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (Ciphertext ciphertext : ciphertextCharacters) {
+            sb.append(ciphertext.getValue());
+        }
+
+        return sb.toString();
+    }
+
     /*
      * Prints the properties of the cipher and then outputs the entire ciphertext list in block format.
      */
