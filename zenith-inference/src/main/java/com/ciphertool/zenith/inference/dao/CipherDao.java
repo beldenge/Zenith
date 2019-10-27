@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.dao;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.CipherJson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +79,7 @@ public class CipherDao {
 
         for (Resource resource : resources){
             try (InputStream inputStream = resource.getInputStream()) {
-                Cipher nextCipher = OBJECT_MAPPER.readValue(inputStream, Cipher.class);
+                Cipher nextCipher = new Cipher(OBJECT_MAPPER.readValue(inputStream, CipherJson.class));
 
                 if (containsCipher(nextCipher)) {
                     throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
@@ -105,7 +106,7 @@ public class CipherDao {
             }
 
             try {
-                Cipher nextCipher = OBJECT_MAPPER.readValue(file, Cipher.class);
+                Cipher nextCipher = new Cipher(OBJECT_MAPPER.readValue(file, CipherJson.class));
 
                 if (containsCipher(nextCipher)) {
                     throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
@@ -128,7 +129,7 @@ public class CipherDao {
         String outputFilename = "." + File.separator + cipher.getName() + "-" + dateText + JSON_EXTENSION;
 
         try {
-            OBJECT_MAPPER.writeValue(new File(outputFilename), cipher);
+            OBJECT_MAPPER.writeValue(new File(outputFilename), new CipherJson(cipher));
         } catch (IOException e) {
             throw new IllegalStateException("Unable to write Cipher with name=" + cipher.getName() + " to file=" + outputFilename + ".");
         }

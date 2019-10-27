@@ -46,6 +46,22 @@ public class Cipher {
         this.columns = columns;
     }
 
+    public Cipher(CipherJson cipherJson) {
+        this(cipherJson.getName(), cipherJson.getRows(), cipherJson.getColumns());
+
+        String[] ciphertexts = cipherJson.getCiphertext().split("\\s+");
+
+        for (int i = 0; i < ciphertexts.length; i ++) {
+            ciphertextCharacters.add(new Ciphertext(i, ciphertexts[i]));
+        }
+
+        if (cipherJson.getKnownSolutionKey() != null && !cipherJson.getKnownSolutionKey().isEmpty()) {
+            for (Map.Entry<String, String> entry : cipherJson.getKnownSolutionKey().entrySet()) {
+                knownSolutionKey.put(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
     public int length() {
         return rows * columns;
     }
