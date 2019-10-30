@@ -1,8 +1,31 @@
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+  <!-- Sidebar Toggle (Topbar) -->
+  <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+    <i class="fa fa-bars"></i>
+  </button>
+
+  <!-- Topbar Search -->
+  <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+    <div class="input-group">
+      <select name="search" class="form-control bg-light border-0 small" [(ngModel)]="selectedCipher">
+        <option [ngValue]="cipher" *ngFor="let cipher of ciphers">{{cipher.name}}</option>
+      </select>
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="button">
+          <i class="fas fa-chevron-down fa-sm"></i>
+        </button>
+      </div>
+    </div>
+  </form>
+
+</nav>
+
 <div class="container-fluid">
 
   <!-- Page Heading -->
   <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Cipher Name</h1>
+    <h1 class="h3 mb-0 text-gray-800">{{selectedCipher.name | uppercase}}</h1>
   </div>
 
   <app-cipher-stats-summary></app-cipher-stats-summary>
@@ -10,7 +33,7 @@
   <div class="row">
 
     <div class="col-xl-6 col-lg-7">
-      <app-ciphertext></app-ciphertext>
+      <app-ciphertext [cipher]="selectedCipher"></app-ciphertext>
     </div>
 
     <div class="col-xl-6 col-lg-5">

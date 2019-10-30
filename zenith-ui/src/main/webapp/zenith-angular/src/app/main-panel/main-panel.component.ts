@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CipherService } from "../cipher.service";
+import { Cipher } from "../models/Cipher";
 
 @Component({
   selector: 'app-main-panel',
@@ -6,10 +8,15 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./main-panel.component.css']
 })
 export class MainPanelComponent implements OnInit {
+  ciphers: Cipher[];
+  selectedCipher: Cipher;
 
-  constructor() { }
+  constructor(private cipherService: CipherService) { }
 
   ngOnInit() {
+    this.cipherService.getCiphers().subscribe(cipherResponse => {
+      this.ciphers = cipherResponse.ciphers;
+      this.selectedCipher = this.ciphers[0];
+    });
   }
-
 }
