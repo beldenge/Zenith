@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 
+declare var $: any;
+
 @Component({
   selector: 'app-main-panel',
   templateUrl: './main-panel.component.html',
@@ -17,6 +19,17 @@ export class MainPanelComponent implements OnInit {
     this.cipherService.getCiphers().subscribe(cipherResponse => {
       this.ciphers = cipherResponse.ciphers;
       this.selectedCipher = this.ciphers[0];
+    });
+
+    $('#cipher_select_button, #cipher_select').off('mouseover').on('mouseover', function() {
+      $('#cipher_select').trigger('focus');
+      $('#cipher_select').off('mouseout').on('mouseout', function() {
+        $('#cipher_select').trigger('blur');
+      });
+    });
+
+    $('#cipher_select').off('click').on('click', function() {
+      $('#cipher_select').off('mouseout');
     });
   }
 }

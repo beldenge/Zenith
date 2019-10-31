@@ -9,3 +9,27 @@ select {
 select::-ms-expand {
   display: none;
 }
+
+.input-group > select.form-control {
+  border-top-right-radius: 0.35rem;
+  border-bottom-right-radius: 0.35rem;
+}
+
+div.input-group-append {
+  position: relative;
+  right: 38px;
+}
+
+.rounded {
+  border-radius: 0.35rem;
+}
+
+.cursor-default {
+  cursor: default;
+}
+
+/* Get rid of the stupid outline in Firefox */
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #000;
+}
