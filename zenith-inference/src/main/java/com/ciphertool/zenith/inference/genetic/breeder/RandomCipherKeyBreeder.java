@@ -22,20 +22,24 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class RandomCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private GeneDao geneDao;
+
+    @Override
+    public void init(Cipher cipher) {
+        super.init(cipher);
+    }
 
     @Override
     public Chromosome breed() {

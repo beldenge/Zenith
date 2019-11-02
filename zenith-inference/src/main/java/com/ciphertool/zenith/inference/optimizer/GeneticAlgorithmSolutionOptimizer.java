@@ -29,9 +29,11 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
+import com.ciphertool.zenith.inference.genetic.breeder.AbstractCipherKeyBreeder;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
@@ -44,16 +46,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -142,13 +141,10 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
     private FitnessEvaluator fitnessEvaluator;
 
-    @PostConstruct
-    public void init() {
-        // Set the proper Population
-        List<String> existentPopulations = populations.stream()
-                .map(population -> population.getClass().getSimpleName())
-                .collect(Collectors.toList());
+    private Cipher initialized = null;
 
+    public void init(Cipher cipher) {
+        // Set the proper Population
         for (Population population : populations) {
             if (population.getClass().getSimpleName().equals(populationName)) {
                 this.population = population;
@@ -157,32 +153,33 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
         }
 
         if (population == null) {
+            List<String> existentPopulations = populations.stream()
+                    .map(population -> population.getClass().getSimpleName())
+                    .collect(Collectors.toList());
+
             log.error("The Population with name {} does not exist.  Please use a name from the following: {}", populationName, existentPopulations);
             throw new IllegalArgumentException("The Population with name " + populationName + " does not exist.");
         }
 
         // Set the proper Breeder
-        List<String> existentBreeders = breeders.stream()
-                .map(breeder -> breeder.getClass().getSimpleName())
-                .collect(Collectors.toList());
-
         for (Breeder breeder : breeders) {
             if (breeder.getClass().getSimpleName().equals(breederName)) {
                 this.breeder = breeder;
+                ((AbstractCipherKeyBreeder) breeder).init(cipher);
                 break;
             }
         }
 
         if (breeder == null) {
+            List<String> existentBreeders = breeders.stream()
+                    .map(breeder -> breeder.getClass().getSimpleName())
+                    .collect(Collectors.toList());
+
             log.error("The Breeder with name {} does not exist.  Please use a name from the following: {}", breederName, existentBreeders);
             throw new IllegalArgumentException("The Breeder with name " + breederName + " does not exist.");
         }
 
         // Set the proper CrossoverAlgorithm
-        List<String> existentCrossoverAlgorithms = crossoverAlgorithms.stream()
-                .map(crossoverAlgorithm -> crossoverAlgorithm.getClass().getSimpleName())
-                .collect(Collectors.toList());
-
         for (CrossoverAlgorithm crossoverAlgorithm : crossoverAlgorithms) {
             if (crossoverAlgorithm.getClass().getSimpleName().equals(crossoverAlgorithmName)) {
                 this.crossoverAlgorithm = crossoverAlgorithm;
@@ -191,15 +188,15 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
         }
 
         if (crossoverAlgorithm == null) {
+            List<String> existentCrossoverAlgorithms = crossoverAlgorithms.stream()
+                    .map(crossoverAlgorithm -> crossoverAlgorithm.getClass().getSimpleName())
+                    .collect(Collectors.toList());
+
             log.error("The CrossoverAlgorithm with name {} does not exist.  Please use a name from the following: {}", crossoverAlgorithmName, existentCrossoverAlgorithms);
             throw new IllegalArgumentException("The CrossoverAlgorithm with name " + crossoverAlgorithmName + " does not exist.");
         }
 
         // Set the proper MutationAlgorithm
-        List<String> existentMutationAlgorithms = mutationAlgorithms.stream()
-                .map(mutationAlgorithm -> mutationAlgorithm.getClass().getSimpleName())
-                .collect(Collectors.toList());
-
         for (MutationAlgorithm mutationAlgorithm : mutationAlgorithms) {
             if (mutationAlgorithm.getClass().getSimpleName().equals(mutationAlgorithmName)) {
                 this.mutationAlgorithm = mutationAlgorithm;
@@ -208,15 +205,15 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
         }
 
         if (mutationAlgorithm == null) {
+            List<String> existentMutationAlgorithms = mutationAlgorithms.stream()
+                    .map(mutationAlgorithm -> mutationAlgorithm.getClass().getSimpleName())
+                    .collect(Collectors.toList());
+
             log.error("The MutationAlgorithm with name {} does not exist.  Please use a name from the following: {}", mutationAlgorithmName, existentMutationAlgorithms);
             throw new IllegalArgumentException("The MutationAlgorithm with name " + mutationAlgorithmName + " does not exist.");
         }
 
         // Set the proper Selector
-        List<String> existentSelectors = selectors.stream()
-                .map(selector -> selector.getClass().getSimpleName())
-                .collect(Collectors.toList());
-
         for (Selector selector : selectors) {
             if (selector.getClass().getSimpleName().equals(selectorName)) {
                 this.selector = selector;
@@ -225,15 +222,24 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
         }
 
         if (selector == null) {
+            List<String> existentSelectors = selectors.stream()
+                    .map(selector -> selector.getClass().getSimpleName())
+                    .collect(Collectors.toList());
+
             log.error("The Selector with name {} does not exist.  Please use a name from the following: {}", selectorName, existentSelectors);
             throw new IllegalArgumentException("The Selector with name " + selectorName + " does not exist.");
         }
 
         fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers, indexOfCoincidenceEvaluator, solutionScorer);
+        this.initialized = cipher;
     }
 
     @Override
-    public CipherSolution optimize() {
+    public CipherSolution optimize(Cipher cipher) {
+        if (initialized == null || initialized != cipher) {
+            init(cipher);
+        }
+
         GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
                 .crossoverAlgorithm(crossoverAlgorithm)
                 .mutationAlgorithm(mutationAlgorithm)

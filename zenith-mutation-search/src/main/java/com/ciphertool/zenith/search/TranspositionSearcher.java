@@ -239,7 +239,7 @@ public class TranspositionSearcher {
 
     private double evaluate(CipherSolution cipherSolution) {
 //        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
-        int cycleScore = cycleCountEvaluator.evaluate(cipherSolution);
+        int cycleScore = cycleCountEvaluator.evaluate(cipher, cipherSolution);
 //        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
         float languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
 

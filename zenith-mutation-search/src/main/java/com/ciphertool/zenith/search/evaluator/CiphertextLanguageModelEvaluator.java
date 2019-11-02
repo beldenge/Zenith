@@ -44,7 +44,7 @@ public class CiphertextLanguageModelEvaluator {
         Cipher backupOfOriginalCipher = originalCipher.clone();
         overwriteCipher(mutatedCipher, originalCipher);
 
-        CipherSolution cipherSolution = optimizer.optimize();
+        CipherSolution cipherSolution = optimizer.optimize(mutatedCipher);
 
         overwriteCipher(backupOfOriginalCipher, originalCipher);
 

@@ -24,11 +24,6 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.MarkovModelPlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.transformer.ciphertext.RemoveLastRowCipherTransformer;
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -37,8 +32,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import javax.validation.constraints.Min;
-import java.util.Comparator;
-import java.util.List;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.search",
@@ -46,14 +39,14 @@ import java.util.List;
         "com.ciphertool.zenith.model.archive",
         "com.ciphertool.zenith.inference.dao",
         "com.ciphertool.zenith.inference.evaluator",
+        "com.ciphertool.zenith.inference.genetic",
         "com.ciphertool.zenith.inference.optimizer",
         "com.ciphertool.zenith.inference.printer",
         "com.ciphertool.zenith.inference.transformer",
-        "com.ciphertool.zenith.inference.util"
+        "com.ciphertool.zenith.inference.util",
+        "com.ciphertool.zenith.inference.configuration"
 })
 public class MutationSearchApplication implements CommandLineRunner {
-    private Logger log = LoggerFactory.getLogger(getClass());
-
     @Value("${cipher.name}")
     private String cipherName;
 
@@ -88,42 +81,6 @@ public class MutationSearchApplication implements CommandLineRunner {
         }
 
         return cipher;
-    }
-
-    @Bean
-    public ArrayMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
-        long startFindAll = System.currentTimeMillis();
-        log.info("Beginning retrieval of all n-grams.");
-
-        /*
-         * Begin setting up letter n-gram model
-         */
-        List<TreeNGram> nGramNodes = letterNGramDao.findAll();
-
-        log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
-
-        ArrayMarkovModel letterMarkovModel = new ArrayMarkovModel(markovOrder);
-
-        long startAdding = System.currentTimeMillis();
-        log.info("Adding nodes to the model.");
-
-        nGramNodes.stream()
-                .filter(node -> node.getOrder() == 1)
-                .forEach(letterMarkovModel::addNode);
-
-        nGramNodes.stream()
-                .filter(node -> node.getOrder() == markovOrder)
-                .sorted(Comparator.comparing(TreeNGram::getCount).reversed())
-                .limit(maxNGramsToKeep)
-                .forEach(letterMarkovModel::addNode);
-
-        log.info("Finished adding {} nodes to the letter n-gram model in {}ms.", letterMarkovModel.getMapSize(), (System.currentTimeMillis() - startAdding));
-
-        float unknownLetterNGramProbability = 1f / (float) letterMarkovModel.getTotalNGramCount();
-        letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-        letterMarkovModel.setUnknownLetterNGramLogProbability((float) Math.log(unknownLetterNGramProbability));
-
-        return letterMarkovModel;
     }
 
     @Bean

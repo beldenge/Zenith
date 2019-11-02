@@ -24,10 +24,8 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,15 +33,13 @@ import java.util.stream.Collectors;
 public class CiphertextCycleCountEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private Cipher cipher;
-
     private List<String> uniqueCiphertextCharacters;
 
     private List<CyclePair> uniqueCyclePairs;
 
-    @PostConstruct
-    public void init() {
+    private Cipher initialized = null;
+
+    public void init(Cipher cipher) {
         uniqueCiphertextCharacters = cipher.getCiphertextCharacters().stream()
                 .map(ciphertext -> ciphertext.getValue())
                 .distinct()
@@ -97,9 +93,15 @@ public class CiphertextCycleCountEvaluator {
         for (CyclePair insignificantCyclePair : insignificantCyclePairs) {
             uniqueCyclePairs.remove(insignificantCyclePair);
         }
+
+        initialized = cipher;
     }
 
-    public int evaluate(CipherSolution solutionProposal) {
+    public int evaluate(Cipher cipher, CipherSolution solutionProposal) {
+        if (initialized == null || initialized != cipher) {
+            init(cipher);
+        }
+
         long startEvaluation = System.currentTimeMillis();
 
         Cipher cipherProposal = solutionProposal.getCipher();

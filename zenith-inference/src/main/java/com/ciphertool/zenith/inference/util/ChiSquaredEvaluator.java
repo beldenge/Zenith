@@ -7,7 +7,6 @@ import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,20 +17,24 @@ public class ChiSquaredEvaluator {
     private Map<String, Long> englishLetterCounts = new HashMap<>(LetterUtils.NUMBER_OF_LETTERS);
 
     @Autowired
-    private Cipher cipher;
-
-    @Autowired
     private ArrayMarkovModel letterMarkovModel;
 
-    @PostConstruct
-    public void init() {
+    private Cipher initialized = null;
+
+    public void init(Cipher cipher) {
         for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
             double letterProbability = (double) node.getCount() / (double) letterMarkovModel.getTotalNGramCount();
             englishLetterCounts.put(node.getCumulativeString(), Math.round(letterProbability * cipher.length()));
         }
+
+        initialized = cipher;
     }
 
-    public double evaluate(String solutionString) {
+    public double evaluate(Cipher cipher, String solutionString) {
+        if (initialized == null || initialized != cipher) {
+            init(cipher);
+        }
+
         Map<String, Long> solutionLetterCounts = new HashMap<>(LetterUtils.NUMBER_OF_LETTERS);
 
         for (int i = 0; i < LanguageConstants.LOWERCASE_LETTERS.length; i ++) {

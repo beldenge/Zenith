@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.genetic.breeder;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
@@ -29,16 +30,13 @@ import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -49,9 +47,9 @@ public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
 
-    @PostConstruct
-    public void init() {
-        super.init();
+    @Override
+    public void init(Cipher cipher) {
+        super.init(cipher);
 
         Double probability;
         for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {

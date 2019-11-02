@@ -31,5 +31,9 @@ export class MainPanelComponent implements OnInit {
     $('#cipher_select').off('click').on('click', function() {
       $('#cipher_select').off('mouseout');
     });
+
+    $('#cipher_select').off('change').on('change', function() {
+      $('#cipher_select').trigger('blur');
+    });
   }
 }

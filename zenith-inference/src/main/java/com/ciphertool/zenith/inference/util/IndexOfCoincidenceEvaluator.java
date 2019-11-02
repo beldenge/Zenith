@@ -20,10 +20,7 @@
 package com.ciphertool.zenith.inference.util;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Component
 public class IndexOfCoincidenceEvaluator {
@@ -32,20 +29,24 @@ public class IndexOfCoincidenceEvaluator {
     private int[] precomputedNominatorValues;
     private float denominator;
 
-    @Autowired
-    private Cipher cipher;
+    private Cipher initialized = null;
 
-    @PostConstruct
-    public void init() {
+    public void init(Cipher cipher) {
         denominator = cipher.length() * (cipher.length() - 1);
         precomputedNominatorValues = new int[cipher.length()];
 
         for (int i = 0; i < cipher.length(); i ++) {
             precomputedNominatorValues[i] = i * (i - 1);
         }
+
+        initialized = cipher;
     }
 
-    public float evaluate(String solutionString) {
+    public float evaluate(Cipher cipher, String solutionString) {
+        if (initialized == null || initialized != cipher) {
+            init(cipher);
+        }
+
         resetLetterCounts();
 
         for (int i = 0; i < solutionString.length(); i++) {

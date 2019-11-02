@@ -21,13 +21,8 @@ package com.ciphertool.zenith.inference;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.ciphertext.*;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
-import com.ciphertool.zenith.model.dao.LetterNGramDao;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -38,45 +33,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
-import javax.validation.constraints.Min;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SpringBootApplication(scanBasePackages = {
-        "com.ciphertool.zenith.inference",
-        "com.ciphertool.zenith.model.dao",
-        "com.ciphertool.zenith.model.archive"
-})
+@SpringBootApplication
 public class InferenceApplication implements CommandLineRunner {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
-    private final static String PLAINTEXT_TRANSFORMER_SUFFIX = PlaintextTransformer.class.getSimpleName();
-
-    @Configuration
-    @ComponentScan({
-            "com.ciphertool.zenith.genetic.algorithms.crossover",
-            "com.ciphertool.zenith.genetic.algorithms.mutation",
-            "com.ciphertool.zenith.genetic.algorithms",
-            "com.ciphertool.zenith.genetic.algorithms.selection",
-            "com.ciphertool.zenith.genetic.population"
-    })
-    @ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
-    public class GeneticAlgorithmConfiguration {
-    }
 
     @Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
     private int corePoolSize;
@@ -86,13 +58,6 @@ public class InferenceApplication implements CommandLineRunner {
 
     @Value("${task-executor.queue-capacity}")
     private int queueCapacity;
-
-    @Value("${markov.letter.order}")
-    private int markovOrder;
-
-    @Min(1)
-    @Value("${language-model.max-ngrams-to-keep}")
-    private int maxNGramsToKeep;
 
     @Value("${decipherment.transposition.iterations:1}")
     protected int transpositionIterations;
@@ -106,11 +71,8 @@ public class InferenceApplication implements CommandLineRunner {
     @Value("${decipherment.transformers.ciphertext}")
     private List<String> cipherTransformersToUse;
 
-    @Value("${decipherment.transformers.plaintext}")
-    private List<String> plaintextTransformersToUse;
-
-    @Value("${decipherment.evaluator.plaintext}")
-    private String plaintextEvaluatorName;
+    @Autowired
+    private Cipher cipher;
 
     @Autowired
     private List<SolutionOptimizer> optimizers;
@@ -139,7 +101,7 @@ public class InferenceApplication implements CommandLineRunner {
             throw new IllegalArgumentException("The SolutionOptimizer with name " + optimizerName + " does not exist.");
         }
 
-        solutionOptimizer.optimize();
+        solutionOptimizer.optimize(cipher);
     }
 
     @Bean
@@ -201,87 +163,6 @@ public class InferenceApplication implements CommandLineRunner {
         }
 
         return cipher;
-    }
-
-    @Bean
-    public ArrayMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
-        long startFindAll = System.currentTimeMillis();
-        log.info("Beginning retrieval of all n-grams.");
-
-        /*
-         * Begin setting up letter n-gram model
-         */
-        List<TreeNGram> nGramNodes = letterNGramDao.findAll();
-
-        log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
-
-        ArrayMarkovModel letterMarkovModel = new ArrayMarkovModel(markovOrder);
-
-        long startAdding = System.currentTimeMillis();
-        log.info("Adding nodes to the model.");
-
-        nGramNodes.stream()
-                .filter(node -> node.getOrder() == 1)
-                .forEach(letterMarkovModel::addNode);
-
-        nGramNodes.stream()
-                .filter(node -> node.getOrder() == markovOrder)
-                .sorted(Comparator.comparing(TreeNGram::getCount).reversed())
-                .limit(maxNGramsToKeep)
-                .forEach(letterMarkovModel::addNode);
-
-        log.info("Finished adding {} nodes to the letter n-gram model in {}ms.", letterMarkovModel.getMapSize(), (System.currentTimeMillis() - startAdding));
-
-        float unknownLetterNGramProbability = 1f / (float) letterMarkovModel.getTotalNGramCount();
-        letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-        letterMarkovModel.setUnknownLetterNGramLogProbability((float) Math.log(unknownLetterNGramProbability));
-
-        return letterMarkovModel;
-    }
-
-    @Bean
-    public List<PlaintextTransformer> activePlaintextTransformers(List<PlaintextTransformer> plaintextTransformers) {
-        if (plaintextTransformers == null || plaintextTransformers.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<PlaintextTransformer> toUse = new ArrayList<>(plaintextTransformersToUse.size());
-        List<String> existentPlaintextTransformers = plaintextTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(PLAINTEXT_TRANSFORMER_SUFFIX, ""))
-                .collect(Collectors.toList());
-
-        for (String transformerName : plaintextTransformersToUse) {
-            if (!existentPlaintextTransformers.contains(transformerName)) {
-                log.error("The PlaintextTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentPlaintextTransformers);
-                throw new IllegalArgumentException("The PlaintextTransformer with name " + transformerName + " does not exist.");
-            }
-
-            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                if (plaintextTransformer.getClass().getSimpleName().replace(PLAINTEXT_TRANSFORMER_SUFFIX, "").equals(transformerName)) {
-                    toUse.add(plaintextTransformer);
-
-                    break;
-                }
-            }
-        }
-
-        return toUse;
-    }
-
-    @Bean
-    public PlaintextEvaluator plaintextEvaluator(List<PlaintextEvaluator> plaintextEvaluators) {
-        for (PlaintextEvaluator evaluator : plaintextEvaluators) {
-            if (evaluator.getClass().getSimpleName().equals(plaintextEvaluatorName)) {
-                return evaluator;
-            }
-        }
-
-        List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
-                .map(evaluator -> evaluator.getClass().getSimpleName())
-                .collect(Collectors.toList());
-
-        log.error("The PlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
-        throw new IllegalArgumentException("The PlaintextEvaluator with name " + plaintextEvaluatorName + " does not exist.");
     }
 
     @Bean

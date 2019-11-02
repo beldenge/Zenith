@@ -36,9 +36,6 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private Cipher cipher;
-
-    @Autowired
     private ArrayMarkovModel letterMarkovModel;
 
     private int order;
@@ -53,10 +50,10 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public float[][] evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public float[][] evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
-        float[][] logProbabilitiesUpdated = evaluateLetterNGrams(solution, solutionString, ciphertextKey);
+        float[][] logProbabilitiesUpdated = evaluateLetterNGrams(cipher, solution, solutionString, ciphertextKey);
 
         if (log.isDebugEnabled()) {
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
@@ -65,7 +62,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
         return logProbabilitiesUpdated;
     }
 
-    protected float[][] evaluateLetterNGrams(CipherSolution solution, String solutionString, String ciphertextKey) {
+    protected float[][] evaluateLetterNGrams(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         int stringLengthMinusOrder = solutionString.length() - order;
 
         float[][] logProbabilitiesUpdated;

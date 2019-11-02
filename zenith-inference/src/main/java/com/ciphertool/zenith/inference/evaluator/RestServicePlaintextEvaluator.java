@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
@@ -54,7 +55,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public float[][] evaluate(CipherSolution solution, String solutionString, String ciphertextKey) {
+    public float[][] evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startEvaluation = System.currentTimeMillis();
 
         RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();

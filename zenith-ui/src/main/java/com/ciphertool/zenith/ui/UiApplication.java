@@ -33,8 +33,7 @@ import java.net.URISyntaxException;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.api",
-        "com.ciphertool.zenith.ui",
-        "com.ciphertool.zenith.inference.dao"
+        "com.ciphertool.zenith.ui"
 })
 public class UiApplication {
     private static Logger log = LoggerFactory.getLogger(UiApplication.class);

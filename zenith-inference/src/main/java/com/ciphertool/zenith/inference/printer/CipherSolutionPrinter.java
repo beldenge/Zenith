@@ -35,7 +35,7 @@ public class CipherSolutionPrinter {
         Cipher cipher = solution.getCipher();
         StringBuilder sb = new StringBuilder();
         sb.append("Solution [probability=" + solution.getProbability() + ", logProbability=" + solution.getLogProbability() + ", score=" + solution.getScore()
-                + ", indexOfCoincidence=" + solution.getIndexOfCoincidence() + ", chiSquared=" + chiSquaredEvaluator.evaluate(plaintext) + (cipher.hasKnownSolution() ? ", proximity="
+                + ", indexOfCoincidence=" + solution.getIndexOfCoincidence() + ", chiSquared=" + chiSquaredEvaluator.evaluate(cipher, plaintext) + (cipher.hasKnownSolution() ? ", proximity="
                 + String.format("%1$,.2f", solution.evaluateKnownSolution() * 100.0) + "%" : "") + "]\n");
 
         for (int i = 0; i < plaintext.length(); i++) {

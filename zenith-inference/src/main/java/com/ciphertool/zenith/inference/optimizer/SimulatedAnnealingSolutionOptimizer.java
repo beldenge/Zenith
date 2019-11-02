@@ -36,13 +36,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.SplittableRandom;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "SimulatedAnnealingSolutionOptimizer")
 public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -67,9 +68,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private float knownSolutionCorrectnessThreshold;
 
     @Autowired
-    private Cipher cipher;
-
-    @Autowired
     private SolutionScorer solutionScorer;
 
     @Autowired
@@ -89,7 +87,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private CipherSolutionPrinter cipherSolutionPrinter;
 
     @Override
-    public CipherSolution optimize() {
+    public CipherSolution optimize(Cipher cipher) {
         int cipherKeySize = (int) cipher.getCiphertextCharacters().stream()
                 .map(c -> c.getValue())
                 .distinct()
@@ -132,7 +130,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
             long start = System.currentTimeMillis();
 
-            CipherSolution best = performEpoch(initialSolution, mappingKeys);
+            CipherSolution best = performEpoch(cipher, initialSolution, mappingKeys);
 
             long elapsed = System.currentTimeMillis() - start;
             totalElapsed += elapsed;
@@ -174,7 +172,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return solutionProposal;
     }
 
-    private CipherSolution performEpoch(CipherSolution initialSolution, String[] mappingKeys) {
+    private CipherSolution performEpoch(Cipher cipher, CipherSolution initialSolution, String[] mappingKeys) {
         String solutionString = initialSolution.asSingleLineString();
         if (plaintextTransformers != null) {
             for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
@@ -182,8 +180,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             }
         }
 
-        plaintextEvaluator.evaluate(initialSolution, solutionString, null);
-        initialSolution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(solutionString));
+        plaintextEvaluator.evaluate(cipher, initialSolution, solutionString, null);
+        initialSolution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
         initialSolution.setScore(solutionScorer.score(initialSolution));
 
         if (log.isDebugEnabled()) {
@@ -206,7 +204,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (float) i) / samplerIterations)) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
-            next = runLetterSampler(temperature, next, solutionCharArray, mappingKeys);
+            next = runLetterSampler(cipher, temperature, next, solutionCharArray, mappingKeys);
 
             if (log.isDebugEnabled()) {
                 long now = System.currentTimeMillis();
@@ -218,7 +216,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
         return next;
     }
 
-    private CipherSolution runLetterSampler(float temperature, CipherSolution solution, char[] solutionCharArray, String[] mappingKeys) {
+    private CipherSolution runLetterSampler(Cipher cipher, float temperature, CipherSolution solution, char[] solutionCharArray, String[] mappingKeys) {
         String nextKey;
 
         // For each cipher symbol type, run the letter sampling
@@ -250,8 +248,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
                 }
             }
 
-            float[][] logProbabilitiesUpdated = plaintextEvaluator.evaluate(solution, proposalString, nextKey);
-            solution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(proposalString));
+            float[][] logProbabilitiesUpdated = plaintextEvaluator.evaluate(cipher, solution, proposalString, nextKey);
+            solution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(cipher, proposalString));
             solution.setScore(solutionScorer.score(solution));
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {

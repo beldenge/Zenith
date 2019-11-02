@@ -24,11 +24,9 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.util.LetterUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class CipherKeyGeneDao implements GeneDao {
     @Override
     public Gene findRandomGene(Chromosome chromosome) {

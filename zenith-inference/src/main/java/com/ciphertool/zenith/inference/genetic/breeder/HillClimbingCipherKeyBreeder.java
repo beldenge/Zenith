@@ -22,6 +22,7 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
@@ -35,16 +36,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.optimizer", havingValue = "GeneticAlgorithmSolutionOptimizer")
 public class HillClimbingCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -69,9 +67,9 @@ public class HillClimbingCipherKeyBreeder extends AbstractCipherKeyBreeder {
 
     private PlaintextEvaluatorWrappingFitnessEvaluator fitnessEvaluator;
 
-    @PostConstruct
-    public void init() {
-        super.init();
+    @Override
+    public void init(Cipher cipher) {
+        super.init(cipher);
 
         fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers, indexOfCoincidenceEvaluator, solutionScorer);
     }

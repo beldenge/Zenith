@@ -201,15 +201,12 @@ public class Cipher {
         }
 
         Cipher other = (Cipher) obj;
-        if (ciphertextCharacters == null) {
-            if (other.ciphertextCharacters != null) {
-                return false;
-            }
-        } else if (!ciphertextCharacters.equals(other.ciphertextCharacters)) {
+
+        if (columns != other.columns) {
             return false;
         }
 
-        if (columns != other.columns) {
+        if (rows != other.rows) {
             return false;
         }
 
@@ -221,7 +218,11 @@ public class Cipher {
             return false;
         }
 
-        if (rows != other.rows) {
+        if (ciphertextCharacters == null) {
+            if (other.ciphertextCharacters != null) {
+                return false;
+            }
+        } else if (!ciphertextCharacters.equals(other.ciphertextCharacters)) {
             return false;
         }
 

@@ -55,31 +55,19 @@ public class CipherKeyChromosome implements Chromosome<String> {
         genes = new HashMap<>(numGenes);
     }
 
-    /**
-     * @return the cipher
-     */
     public Cipher getCipher() {
         return this.cipher;
     }
 
-    /**
-     * @param cipher the cipher to set
-     */
     public void setCipher(Cipher cipher) {
         this.cipher = cipher;
     }
 
-    /**
-     * @return the evaluationNeeded
-     */
     @Override
     public boolean isEvaluationNeeded() {
         return evaluationNeeded;
     }
 
-    /**
-     * @param evaluationNeeded the evaluationNeeded to set
-     */
     @Override
     public void setEvaluationNeeded(boolean evaluationNeeded) {
         this.evaluationNeeded = evaluationNeeded;

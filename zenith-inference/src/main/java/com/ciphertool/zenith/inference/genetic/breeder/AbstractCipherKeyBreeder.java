@@ -22,20 +22,18 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class AbstractCipherKeyBreeder implements Breeder {
-    @Autowired
     protected Cipher cipher;
 
     protected String[] keys;
 
-    @PostConstruct
-    public void init() {
+    public void init(Cipher cipher) {
+        this.cipher = cipher;
+
         List<String> keyList = cipher.getCiphertextCharacters().stream()
                 .map(Ciphertext::getValue)
                 .distinct()
