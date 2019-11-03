@@ -14,6 +14,7 @@ export class MainPanelComponent implements OnInit {
   ciphers: Cipher[];
   selectedCipher: Cipher;
   solution: string;
+  isRunning: boolean = false;
 
   constructor(private cipherService: CipherService, private solutionService: SolutionService) { }
 
@@ -40,8 +41,12 @@ export class MainPanelComponent implements OnInit {
   }
 
   solve() {
+    this.isRunning = true;
+    this.solution = null;
+
     this.solutionService.solve(this.selectedCipher).subscribe(solutionResponse => {
       this.solution = solutionResponse.plaintext;
+      this.isRunning = false;
     });
   }
 

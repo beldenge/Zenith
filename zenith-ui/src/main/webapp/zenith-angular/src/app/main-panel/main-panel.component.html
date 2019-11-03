@@ -39,9 +39,9 @@
 
   <div class="row">
     <div class="col-xl-12">
-      <a href="#" class="btn btn-success btn-icon-split float-right" (click)="solve()">
+      <a href="javascript:void(0);" class="btn btn-success btn-icon-split float-right" (click)="solve()">
         <span class="icon text-white-50">
-          <i class="fas fa-play"></i>
+          <i [ngClass]="{'fas': true, 'fa-play' : !isRunning, 'fa-spinner' : isRunning, 'fa-spin': isRunning}"></i>
         </span>
         <span class="text">Solve</span>
       </a>
