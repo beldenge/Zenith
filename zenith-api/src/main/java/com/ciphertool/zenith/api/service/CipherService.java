@@ -23,6 +23,9 @@ import com.ciphertool.zenith.api.model.CipherResponse;
 import com.ciphertool.zenith.api.model.CipherResponseItem;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
+import com.ciphertool.zenith.inference.statistics.CiphertextMultiplicityEvaluator;
+import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +39,15 @@ public class CipherService {
     @Autowired
     private CipherDao cipherDao;
 
+    @Autowired
+    private CiphertextMultiplicityEvaluator multiplicityEvaluator;
+
+    @Autowired
+    private CiphertextRepeatingBigramEvaluator bigramEvaluator;
+
+    @Autowired
+    private CiphertextCycleCountEvaluator cycleCountEvaluator;
+
     @GetMapping
     @ResponseBody
     public CipherResponse findCiphers() {
@@ -45,6 +57,10 @@ public class CipherService {
 
         for (Cipher cipher : ciphers) {
             CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString());
+
+            cipherResponseItem.setMultiplicity(multiplicityEvaluator.evaluate(cipher));
+            cipherResponseItem.setBigramRepeats(bigramEvaluator.evaluate(cipher));
+            cipherResponseItem.setCycleScore(cycleCountEvaluator.evaluate(cipher));
 
             cipherResponse.getCiphers().add(cipherResponseItem);
         }

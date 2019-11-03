@@ -37,14 +37,15 @@ import javax.validation.constraints.Min;
         "com.ciphertool.zenith.search",
         "com.ciphertool.zenith.model.dao",
         "com.ciphertool.zenith.model.archive",
+        "com.ciphertool.zenith.inference.configuration",
         "com.ciphertool.zenith.inference.dao",
         "com.ciphertool.zenith.inference.evaluator",
         "com.ciphertool.zenith.inference.genetic",
         "com.ciphertool.zenith.inference.optimizer",
         "com.ciphertool.zenith.inference.printer",
+        "com.ciphertool.zenith.inference.statistics",
         "com.ciphertool.zenith.inference.transformer",
-        "com.ciphertool.zenith.inference.util",
-        "com.ciphertool.zenith.inference.configuration"
+        "com.ciphertool.zenith.inference.util"
 })
 public class MutationSearchApplication implements CommandLineRunner {
     @Value("${cipher.name}")

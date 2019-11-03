@@ -22,9 +22,9 @@ package com.ciphertool.zenith.search;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.transformer.ciphertext.UnwrapTranspositionCipherTransformer;
-import com.ciphertool.zenith.search.evaluator.CiphertextCycleCountEvaluator;
+import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
 import com.ciphertool.zenith.search.evaluator.CiphertextLanguageModelEvaluator;
-import com.ciphertool.zenith.search.evaluator.CiphertextRepeatingBigramEvaluator;
+import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
 import com.ciphertool.zenith.search.evaluator.CiphertextRowLevelEntropyEvaluator;
 import com.ciphertool.zenith.search.model.EpochResults;
 import org.slf4j.Logger;
@@ -238,8 +238,8 @@ public class TranspositionSearcher {
     }
 
     private double evaluate(CipherSolution cipherSolution) {
-//        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipherSolution);
-        int cycleScore = cycleCountEvaluator.evaluate(cipher, cipherSolution);
+//        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipher);
+        int cycleScore = cycleCountEvaluator.evaluate(cipher);
 //        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
         float languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
 

@@ -9,7 +9,7 @@
   <form class="d-none d-sm-inline-block form-inline mr-0 ml-md-3 my-2 my-md-0 mw-100 navbar-search">
     <div class="input-group rounded bg-light">
       <select id="cipher_select" name="search" class="form-control bg-transparent border-0 small" [(ngModel)]="selectedCipher" (change)="clearSolution()">
-        <option [ngValue]="cipher" *ngFor="let cipher of ciphers">{{cipher.name}}</option>
+        <option [ngValue]="cipher" *ngFor="let cipher of ciphers">{{cipher.name}} ({{cipher.rows}} x {{cipher.columns}})</option>
       </select>
       <div id="cipher_select_button" class="input-group-append">
         <button class="btn btn-primary cursor-default">
@@ -23,7 +23,7 @@
 
 <div class="container-fluid">
 
-  <app-cipher-stats-summary></app-cipher-stats-summary>
+  <app-cipher-stats-summary [cipher]="selectedCipher"></app-cipher-stats-summary>
 
   <div class="row">
 

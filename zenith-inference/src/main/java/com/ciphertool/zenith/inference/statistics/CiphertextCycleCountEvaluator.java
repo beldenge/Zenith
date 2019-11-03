@@ -17,10 +17,9 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.search.evaluator;
+package com.ciphertool.zenith.inference.statistics;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.CipherSolution;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,19 +96,18 @@ public class CiphertextCycleCountEvaluator {
         initialized = cipher;
     }
 
-    public int evaluate(Cipher cipher, CipherSolution solutionProposal) {
+    public int evaluate(Cipher cipher) {
         if (initialized == null || initialized != cipher) {
             init(cipher);
         }
 
         long startEvaluation = System.currentTimeMillis();
 
-        Cipher cipherProposal = solutionProposal.getCipher();
-        int end = cipherProposal.length();
+        int end = cipher.length();
 
         Map<String, List<Integer>> ciphertextIndices = new HashMap<>();
         for (int i = 0; i < end; i++) {
-            String ciphertext = cipherProposal.getCiphertextCharacters().get(i).getValue();
+            String ciphertext = cipher.getCiphertextCharacters().get(i).getValue();
 
             if (!ciphertextIndices.containsKey(ciphertext)) {
                 ciphertextIndices.put(ciphertext, new ArrayList<>());

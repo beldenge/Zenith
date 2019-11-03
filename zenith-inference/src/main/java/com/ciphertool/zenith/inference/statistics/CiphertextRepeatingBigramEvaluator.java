@@ -17,10 +17,9 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.search.evaluator;
+package com.ciphertool.zenith.inference.statistics;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +32,9 @@ import java.util.Map;
 public class CiphertextRepeatingBigramEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    public int evaluate(CipherSolution cipherProposal) {
+    public int evaluate(Cipher cipher) {
         long startEvaluation = System.currentTimeMillis();
 
-        Cipher cipher = cipherProposal.getCipher();
         int repeatingBigramCount = 0;
         int end = cipher.length();
 

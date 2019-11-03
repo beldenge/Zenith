@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { Cipher } from "../models/Cipher";
 
 @Component({
   selector: 'app-cipher-stats-summary',
@@ -6,10 +7,10 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./cipher-stats-summary.component.css']
 })
 export class CipherStatsSummaryComponent implements OnInit {
+  @Input() cipher: Cipher;
 
   constructor() { }
 
   ngOnInit() {
   }
-
 }

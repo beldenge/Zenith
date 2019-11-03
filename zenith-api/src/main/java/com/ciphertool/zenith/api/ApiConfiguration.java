@@ -44,6 +44,7 @@ import java.util.Collections;
         "com.ciphertool.zenith.inference.genetic",
         "com.ciphertool.zenith.inference.optimizer",
         "com.ciphertool.zenith.inference.printer",
+        "com.ciphertool.zenith.inference.statistics",
         "com.ciphertool.zenith.inference.transformer",
         "com.ciphertool.zenith.inference.util"
 })
