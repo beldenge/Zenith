@@ -10,6 +10,7 @@ import { MainPanelComponent } from './main-panel/main-panel.component';
 import { CipherStatsSummaryComponent } from './cipher-stats-summary/cipher-stats-summary.component';
 import { CiphertextComponent } from './ciphertext/ciphertext.component';
 import { PlaintextComponent } from './plaintext/plaintext.component';
+import { BlockifyPipe } from './blockify.pipe';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { PlaintextComponent } from './plaintext/plaintext.component';
     MainPanelComponent,
     CipherStatsSummaryComponent,
     CiphertextComponent,
-    PlaintextComponent
+    PlaintextComponent,
+    BlockifyPipe
   ],
   imports: [
     BrowserModule,

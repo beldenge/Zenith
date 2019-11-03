@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { Cipher } from "../models/Cipher";
 
 @Component({
   selector: 'app-plaintext',
@@ -6,10 +7,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./plaintext.component.css']
 })
 export class PlaintextComponent implements OnInit {
+  @Input() cipher: Cipher;
+  @Input() solution: string;
 
   constructor() { }
 
   ngOnInit() {
   }
-
 }

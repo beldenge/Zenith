@@ -8,7 +8,7 @@
   <!-- Topbar Search -->
   <form class="d-none d-sm-inline-block form-inline mr-0 ml-md-3 my-2 my-md-0 mw-100 navbar-search">
     <div class="input-group rounded bg-light">
-      <select id="cipher_select" name="search" class="form-control bg-transparent border-0 small" [(ngModel)]="selectedCipher">
+      <select id="cipher_select" name="search" class="form-control bg-transparent border-0 small" [(ngModel)]="selectedCipher" (change)="clearSolution()">
         <option [ngValue]="cipher" *ngFor="let cipher of ciphers">{{cipher.name}}</option>
       </select>
       <div id="cipher_select_button" class="input-group-append">
@@ -32,14 +32,14 @@
     </div>
 
     <div class="col-xl-6 col-lg-5">
-      <app-plaintext></app-plaintext>
+      <app-plaintext [cipher]="selectedCipher" [solution]="solution"></app-plaintext>
     </div>
 
   </div>
 
   <div class="row">
     <div class="col-xl-12">
-      <a href="#" class="btn btn-success btn-icon-split float-right">
+      <a href="#" class="btn btn-success btn-icon-split float-right" (click)="solve()">
         <span class="icon text-white-50">
           <i class="fas fa-play"></i>
         </span>

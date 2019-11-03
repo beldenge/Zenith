@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
+import { SolutionService } from "../solution.service";
 
 declare var $: any;
 
@@ -12,8 +13,9 @@ declare var $: any;
 export class MainPanelComponent implements OnInit {
   ciphers: Cipher[];
   selectedCipher: Cipher;
+  solution: string;
 
-  constructor(private cipherService: CipherService) { }
+  constructor(private cipherService: CipherService, private solutionService: SolutionService) { }
 
   ngOnInit() {
     this.cipherService.getCiphers().subscribe(cipherResponse => {
@@ -35,5 +37,15 @@ export class MainPanelComponent implements OnInit {
     $('#cipher_select').off('change').on('change', function() {
       $('#cipher_select').trigger('blur');
     });
+  }
+
+  solve() {
+    this.solutionService.solve(this.selectedCipher).subscribe(solutionResponse => {
+      this.solution = solutionResponse.plaintext;
+    });
+  }
+
+  clearSolution() {
+    this.solution = null;
   }
 }

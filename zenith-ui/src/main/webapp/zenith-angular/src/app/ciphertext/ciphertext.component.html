@@ -17,8 +17,6 @@
   </div>
   <!-- Card Body -->
   <div class="card-body">
-    <div class="chart-area">
-      {{cipher?.ciphertext}}
-    </div>
+    <div>{{cipher?.ciphertext | blockify : cipher?.columns}}</div>
   </div>
 </div>
