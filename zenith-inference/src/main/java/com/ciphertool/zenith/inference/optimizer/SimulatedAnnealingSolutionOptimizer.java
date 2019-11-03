@@ -101,10 +101,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
             letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
 
-            log.info(node.getCumulativeString().charAt(0) + ": " + probability);
+            log.debug("{}: {}", node.getCumulativeString().charAt(0), probability);
         }
 
-        log.info("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
+        log.debug("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
 
         Collections.sort(letterUnigramProbabilities);
         RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();

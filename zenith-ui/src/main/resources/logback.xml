@@ -12,25 +12,15 @@ You should have received a copy of the GNU General Public License along with Zen
 -->
 
 <configuration>
+	<logger name="com.ciphertool.zenith.inference.printer.CipherSolutionPrinter" level="WARN" />
+
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p %t %c{1} - %m%n</pattern>
 		</encoder>
 	</appender>
 
-	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<encoder>
-			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p %t %c{1} - %m%n</pattern>
-		</encoder>
-		<file>log/zenith-ui.log</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>log/zenith-ui-%d{yyyy-MM-dd}.log</fileNamePattern>
-			<maxHistory>10</maxHistory>
-		</rollingPolicy>
-	</appender>
-
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
-		<appender-ref ref="FILE" />
 	</root>
 </configuration>
