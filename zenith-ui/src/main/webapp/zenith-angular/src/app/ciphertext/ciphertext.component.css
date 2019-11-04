@@ -1,4 +1,5 @@
 .card-body div {
   white-space: pre;
   font-family: "Courier New", Courier, monospace;
+  color: initial;
 }
