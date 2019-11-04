@@ -19,11 +19,25 @@
 
 package com.ciphertool.zenith.ui;
 
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
- * This class does nothing except trigger AutoConfiguration for a Spring Boot web application.
+ * This class does two things:
+ *  1. triggers AutoConfiguration for a Spring Boot web application, namely to serve static resources
+ *  2. renders the index.html for any pages that get resolved to /error, so that the Angular routing can take over
  */
 @Controller
-public class AutoConfigurationController {
+public class AutoConfigurationController implements ErrorController {
+    @RequestMapping("/error")
+    public ModelAndView error() {
+        return new ModelAndView("index.html");
+    }
+
+    @Override
+    public String getErrorPath() {
+        return "/error";
+    }
 }

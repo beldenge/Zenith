@@ -6,11 +6,11 @@ import { SolutionService } from "../solution.service";
 declare var $: any;
 
 @Component({
-  selector: 'app-main-panel',
-  templateUrl: './main-panel.component.html',
-  styleUrls: ['./main-panel.component.css']
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css']
 })
-export class MainPanelComponent implements OnInit {
+export class DashboardComponent implements OnInit {
   ciphers: Cipher[];
   selectedCipher: Cipher;
   solution: string;
