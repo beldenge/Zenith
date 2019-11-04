@@ -17,6 +17,6 @@
   </div>
   <!-- Card Body -->
   <div class="card-body">
-    <div>{{cipher?.ciphertext | blockify : cipher?.columns}}</div>
+    <div *ngIf="cipher">{{cipher?.ciphertext | blockify : cipher?.columns}}</div>
   </div>
 </div>
