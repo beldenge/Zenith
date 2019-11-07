@@ -19,8 +19,11 @@
 
 package com.ciphertool.zenith.api.service;
 
+import com.ciphertool.zenith.api.model.SolutionRequest;
+import com.ciphertool.zenith.api.model.SolutionResponse;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -34,5 +37,11 @@ public class ConfigurationService {
     @ResponseBody
     public List<Cipher> readConfiguration() {
         return Collections.singletonList(new Cipher());
+    }
+
+    @PostMapping
+    @ResponseBody
+    public SolutionResponse updateConfiguration(@Validated @RequestBody SolutionRequest request) {
+        return null;
     }
 }

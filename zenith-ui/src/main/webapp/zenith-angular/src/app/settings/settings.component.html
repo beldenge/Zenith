@@ -1,26 +1,86 @@
-<div class="card o-hidden border-0 shadow-lg h-100">
-  <div class="card-body p-0">
-    <!-- Nested Row within Card Body -->
-    <div class="p-5">
-      <div class="text-center">
-        <h1 class="h4 text-gray-900 mb-4">Settings</h1>
+<div class="container-fluid px-5">
+  <form class="user" [formGroup]="generalSettingsForm" (ngSubmit)="onSubmit()">
+    <div class="card o-hidden border-0 shadow-lg h-100 mt-5">
+      <div class="card-body p-0">
+        <!-- Nested Row within Card Body -->
+        <div class="p-5">
+          <div class="text-center">
+            <h1 class="h4 text-gray-900 mb-4">Settings</h1>
+          </div>
+            <div class="form-group row">
+              <div class="col-sm-4 mb-3 mb-sm-0 mx-auto">
+                <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !generalSettingsForm.get('epochs').valid}" placeholder="Epochs">
+                <div class="text-center text-danger small" *ngIf="!generalSettingsForm.get('epochs').valid">Must be a number greater than 0</div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-sm-4 mx-auto">
+                <input type="text" class="form-control form-control-user" formControlName="plaintextEvaluator" [ngClass]="{'is-invalid': !generalSettingsForm.get('plaintextEvaluator').valid}" placeholder="Plaintext Evaluator">
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-sm-4 mx-auto">
+                <input type="radio" value="SimulatedAnnealingOptimizer" formControlName="optimizer"> Simulated Annealing<br>
+                <input type="radio" value="GeneticAlgorithmOptimizer" formControlName="optimizer"> Genetic Algorithm <sup class="font-weight-bold">(BETA)</sup><br>
+              </div>
+            </div>
+            <button type="submit" [disabled]="!generalSettingsForm.valid" class="btn btn-primary btn-user btn-block col-md-1 float-right mb-3">Apply</button>
+        </div>
       </div>
-      <form class="user">
-        <div class="form-group row">
-          <div class="col-sm-6 mb-3 mb-sm-0">
-            <input type="text" class="form-control form-control-user" id="exampleFirstName" placeholder="First Name">
-          </div>
-          <div class="col-sm-6">
-            <input type="text" class="form-control form-control-user" id="exampleLastName" placeholder="Last Name">
-          </div>
-        </div>
-        <div class="form-group">
-          <input type="email" class="form-control form-control-user" id="exampleInputEmail" placeholder="Email Address">
-        </div>
-        <a href="#" class="btn btn-primary btn-user btn-block">
-          Apply
-        </a>
-      </form>
     </div>
-  </div>
+    <div *ngIf="generalSettingsForm.get('optimizer').value=='SimulatedAnnealingOptimizer'" class="card o-hidden border-0 shadow-lg h-100 mt-5">
+      <div class="card-body p-0">
+        <!-- Nested Row within Card Body -->
+        <div class="p-5">
+          <div class="text-center">
+            <h1 class="h4 text-gray-900 mb-4">Simulated Annealing Settings</h1>
+          </div>
+          <div class="form-group row">
+            <div class="col-sm-4 mb-3 mb-sm-0 mx-auto">
+              <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !generalSettingsForm.get('epochs').valid}" placeholder="Epochs">
+              <div class="text-center text-danger small" *ngIf="!generalSettingsForm.get('epochs').valid">Must be a number greater than 0</div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-sm-4 mx-auto">
+              <input type="text" class="form-control form-control-user" formControlName="plaintextEvaluator" [ngClass]="{'is-invalid': !generalSettingsForm.get('plaintextEvaluator').valid}" placeholder="Plaintext Evaluator">
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-sm-4 mx-auto">
+              <input type="text" class="form-control form-control-user" formControlName="optimizer" [ngClass]="{'is-invalid': !generalSettingsForm.get('optimizer').valid}" placeholder="Optimizer">
+            </div>
+          </div>
+          <button type="submit" [disabled]="!generalSettingsForm.valid" class="btn btn-primary btn-user btn-block col-md-1 float-right mb-3">Apply</button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="generalSettingsForm.get('optimizer').value=='GeneticAlgorithmOptimizer'" class="card o-hidden border-0 shadow-lg h-100 mt-5">
+      <div class="card-body p-0 beta">
+        <!-- Nested Row within Card Body -->
+        <div class="p-5">
+          <div class="text-center">
+            <h1 class="h4 text-gray-900 mb-4">Genetic Algorithm Settings</h1>
+          </div>
+          <div class="form-group row">
+            <div class="col-sm-4 mb-3 mb-sm-0 mx-auto">
+              <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !generalSettingsForm.get('epochs').valid}" placeholder="Epochs">
+              <div class="text-center text-danger small" *ngIf="!generalSettingsForm.get('epochs').valid">Must be a number greater than 0</div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-sm-4 mx-auto">
+              <input type="text" class="form-control form-control-user" formControlName="plaintextEvaluator" [ngClass]="{'is-invalid': !generalSettingsForm.get('plaintextEvaluator').valid}" placeholder="Plaintext Evaluator">
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-sm-4 mx-auto">
+              <input type="text" class="form-control form-control-user" formControlName="optimizer" [ngClass]="{'is-invalid': !generalSettingsForm.get('optimizer').valid}" placeholder="Optimizer">
+            </div>
+          </div>
+          <button type="submit" [disabled]="!generalSettingsForm.valid" class="btn btn-primary btn-user btn-block col-md-1 float-right mb-3">Apply</button>
+        </div>
+      </div>
+    </div>
+  </form>
 </div>
