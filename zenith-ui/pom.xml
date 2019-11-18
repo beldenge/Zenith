@@ -61,7 +61,7 @@ You should have received a copy of the GNU General Public License along with Zen
                         </goals>
                         <configuration>
                             <!-- Two sets of double-hyphens are required since we are passing the argument to the 'ng build' referenced by the 'build' target -->
-                            <arguments>run-script build -- --prod</arguments>
+                            <arguments>run-script build -- --prod --build-optimizer=false</arguments>
                         </configuration>
                         <phase>generate-resources</phase>
                     </execution>
