@@ -14,6 +14,9 @@ import { BlockifyPipe } from './blockify.pipe';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { SortablejsModule } from "ngx-sortablejs";
+import { TransformersComponent } from './transformers/transformers.component';
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 @NgModule({
   declarations: [
@@ -25,14 +28,17 @@ import { NotFoundComponent } from './not-found/not-found.component';
     BlockifyPipe,
     DashboardComponent,
     SettingsComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    TransformersComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SortablejsModule.forRoot({ animation: 150 }),
+    BrowserAnimationsModule
   ],
   providers: [
     JsonPipe

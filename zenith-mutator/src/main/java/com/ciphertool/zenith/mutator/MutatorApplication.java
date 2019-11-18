@@ -19,24 +19,26 @@
 
 package com.ciphertool.zenith.mutator;
 
-import com.ciphertool.zenith.inference.dao.CipherDao;
-import com.ciphertool.zenith.inference.entities.Cipher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.mutator",
+        "com.ciphertool.zenith.model.dao",
+        "com.ciphertool.zenith.model.archive",
+        "com.ciphertool.zenith.inference.configuration",
         "com.ciphertool.zenith.inference.dao",
-        "com.ciphertool.zenith.inference.transformer.ciphertext"
+        "com.ciphertool.zenith.inference.evaluator",
+        "com.ciphertool.zenith.inference.genetic",
+        "com.ciphertool.zenith.inference.optimizer",
+        "com.ciphertool.zenith.inference.printer",
+        "com.ciphertool.zenith.inference.statistics",
+        "com.ciphertool.zenith.inference.transformer",
+        "com.ciphertool.zenith.inference.util"
 })
 public class MutatorApplication implements CommandLineRunner {
-    @Value("${cipher.name}")
-    private String cipherName;
-
     @Autowired
     private Mutator mutator;
 
@@ -47,10 +49,5 @@ public class MutatorApplication implements CommandLineRunner {
     @Override
     public void run(String... arg0) {
         mutator.mutate();
-    }
-
-    @Bean
-    public Cipher cipher(CipherDao cipherDao) {
-        return cipherDao.findByCipherName(cipherName);
     }
 }

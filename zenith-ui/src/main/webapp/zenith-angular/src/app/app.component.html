@@ -7,9 +7,9 @@
   <div id="content-wrapper" class="d-flex flex-column">
 
     <!-- Main Content -->
-    <div id="content">
+    <div id="content" [@routeAnimations]="getState(outlet)">
 
-      <router-outlet></router-outlet>
+      <router-outlet #outlet="outlet"></router-outlet>
 
     </div>
     <!-- End of Main Content -->

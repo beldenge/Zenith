@@ -48,3 +48,8 @@ Absolutely, and you are encouraged to do so.  It's released under the GNU Genera
 
 *What if I have other questions?* \
 Feel free to post an issue on this Github repository.
+
+# Acknowledgements
+A very big thank you to the creator of AZDecrypt.  Project Zenith owes a great deal of its success to their insights and assistance.
+
+[AZDecrypt](http://zodiackillersite.com/viewtopic.php?f=81&t=3198)

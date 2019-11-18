@@ -19,7 +19,10 @@
 
 package com.ciphertool.zenith.inference.configuration;
 
+import com.ciphertool.zenith.inference.dao.CipherDao;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.transformer.ciphertext.*;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -50,8 +53,12 @@ import java.util.stream.Collectors;
 })
 public class InferenceConfiguration {
     private final static String PLAINTEXT_TRANSFORMER_SUFFIX = PlaintextTransformer.class.getSimpleName();
+    private final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
 
     private Logger log = LoggerFactory.getLogger(getClass());
+
+    @Value("${cipher.name}")
+    private String cipherName;
 
     @Value("${markov.letter.order}")
     private int markovOrder;
@@ -60,11 +67,78 @@ public class InferenceConfiguration {
     @Value("${language-model.max-ngrams-to-keep}")
     private int maxNGramsToKeep;
 
+    @Value("${decipherment.transposition.iterations:1}")
+    private int transpositionIterations;
+
     @Value("${decipherment.transformers.plaintext}")
     private List<String> plaintextTransformersToUse;
 
     @Value("${decipherment.evaluator.plaintext}")
     private String plaintextEvaluatorName;
+
+    @Value("${decipherment.transformers.ciphertext}")
+    private List<String> cipherTransformersToUse;
+
+    @Bean
+    public Cipher cipher(CipherDao cipherDao, List<CipherTransformer> cipherTransformers) {
+        Cipher cipher =  cipherDao.findByCipherName(cipherName);
+
+        if (cipherTransformers == null || cipherTransformers.isEmpty()) {
+            return cipher;
+        }
+
+        List<CipherTransformer> toUse = new ArrayList<>(cipherTransformersToUse.size());
+        List<String> existentCipherTransformers = cipherTransformers.stream()
+                .map(transformer -> transformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, ""))
+                .collect(Collectors.toList());
+
+        for (String transformerName : cipherTransformersToUse) {
+            String transformerNameBeforeParenthesis = transformerName.contains("(") ? transformerName.substring(0, transformerName.indexOf('(')) : transformerName;
+
+            if (!existentCipherTransformers.contains(transformerNameBeforeParenthesis)) {
+                log.error("The CipherTransformer with name {} does not exist.  Please use a name from the following: {}", transformerNameBeforeParenthesis, existentCipherTransformers);
+                throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParenthesis + " does not exist.");
+            }
+
+            for (CipherTransformer cipherTransformer : cipherTransformers) {
+                if (cipherTransformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, "").equals(transformerNameBeforeParenthesis)) {
+                    if (transformerName.contains("(") && transformerName.endsWith(")")) {
+                        String parameter = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
+
+                        if (cipherTransformer instanceof TranspositionCipherTransformer) {
+                            String transpositionKeyString = parameter;
+                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
+                            nextTransformer.init();
+                            toUse.add(nextTransformer);
+                        } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer) {
+                            String transpositionKeyString = parameter;
+                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
+                            nextTransformer.init();
+                            toUse.add(nextTransformer);
+                        } else if (cipherTransformer instanceof PeriodCipherTransformer) {
+                            int period = Integer.parseInt(parameter);
+                            toUse.add(new PeriodCipherTransformer(period));
+                        } else if (cipherTransformer instanceof UnwrapPeriodCipherTransformer) {
+                            int period = Integer.parseInt(parameter);
+                            toUse.add(new UnwrapPeriodCipherTransformer(period));
+                        } else {
+                            throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParenthesis + " does not accept parameters.");
+                        }
+                    } else {
+                        toUse.add(cipherTransformer);
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        for (CipherTransformer cipherTransformer : toUse) {
+            cipher = cipherTransformer.transform(cipher);
+        }
+
+        return cipher;
+    }
 
     @Bean
     public ArrayMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {

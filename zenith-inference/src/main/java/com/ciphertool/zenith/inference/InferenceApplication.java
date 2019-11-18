@@ -19,10 +19,8 @@
 
 package com.ciphertool.zenith.inference;
 
-import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.ciphertext.*;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -40,15 +38,12 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class InferenceApplication implements CommandLineRunner {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    private final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
 
     @Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
     private int corePoolSize;
@@ -59,17 +54,8 @@ public class InferenceApplication implements CommandLineRunner {
     @Value("${task-executor.queue-capacity}")
     private int queueCapacity;
 
-    @Value("${decipherment.transposition.iterations:1}")
-    protected int transpositionIterations;
-
-    @Value("${cipher.name}")
-    private String cipherName;
-
     @Value("${decipherment.optimizer}")
     private String optimizerName;
-
-    @Value("${decipherment.transformers.ciphertext}")
-    private List<String> cipherTransformersToUse;
 
     @Autowired
     private Cipher cipher;
@@ -102,67 +88,6 @@ public class InferenceApplication implements CommandLineRunner {
         }
 
         solutionOptimizer.optimize(cipher);
-    }
-
-    @Bean
-    public Cipher cipher(CipherDao cipherDao, List<CipherTransformer> cipherTransformers) {
-        Cipher cipher =  cipherDao.findByCipherName(cipherName);
-
-        if (cipherTransformers == null || cipherTransformers.isEmpty()) {
-            return cipher;
-        }
-
-        List<CipherTransformer> toUse = new ArrayList<>(cipherTransformersToUse.size());
-        List<String> existentCipherTransformers = cipherTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, ""))
-                .collect(Collectors.toList());
-
-        for (String transformerName : cipherTransformersToUse) {
-            String transformerNameBeforeParenthesis = transformerName.contains("(") ? transformerName.substring(0, transformerName.indexOf('(')) : transformerName;
-
-            if (!existentCipherTransformers.contains(transformerNameBeforeParenthesis)) {
-                log.error("The CipherTransformer with name {} does not exist.  Please use a name from the following: {}", transformerNameBeforeParenthesis, existentCipherTransformers);
-                throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParenthesis + " does not exist.");
-            }
-
-            for (CipherTransformer cipherTransformer : cipherTransformers) {
-                if (cipherTransformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, "").equals(transformerNameBeforeParenthesis)) {
-                    if (transformerName.contains("(") && transformerName.endsWith(")")) {
-                        String parameter = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
-
-                        if (cipherTransformer instanceof TranspositionCipherTransformer) {
-                            String transpositionKeyString = parameter;
-                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
-                            nextTransformer.init();
-                            toUse.add(nextTransformer);
-                        } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer) {
-                            String transpositionKeyString = parameter;
-                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
-                            nextTransformer.init();
-                            toUse.add(nextTransformer);
-                        } else if (cipherTransformer instanceof PeriodCipherTransformer) {
-                            int period = Integer.parseInt(parameter);
-                            toUse.add(new PeriodCipherTransformer(period));
-                        } else if (cipherTransformer instanceof UnwrapPeriodCipherTransformer) {
-                            int period = Integer.parseInt(parameter);
-                            toUse.add(new UnwrapPeriodCipherTransformer(period));
-                        } else {
-                            throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParenthesis + " does not accept parameters.");
-                        }
-                    } else {
-                        toUse.add(cipherTransformer);
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        for (CipherTransformer cipherTransformer : toUse) {
-            cipher = cipherTransformer.transform(cipher);
-        }
-
-        return cipher;
     }
 
     @Bean

@@ -224,7 +224,7 @@ public class TranspositionSearcher {
         // Need to convert to log probabilities in order for the acceptance probability calculation to be useful
         acceptanceProbability = Math.exp(((solutionScore - proposalScore) / temperature) * -1d);
 
-        log.info("Solution score: {}, Proposal Score: {}, Temperature: {}, Acceptance probability: {}", String.format("%1$.2f", solutionScore), String.format("%1$.2f", proposalScore), String.format("%1$,.2f", temperature), String.format("%1$,.4f", acceptanceProbability));
+        log.debug("Solution score: {}, Proposal Score: {}, Temperature: {}, Acceptance probability: {}", String.format("%1$.2f", solutionScore), String.format("%1$.2f", proposalScore), String.format("%1$,.2f", temperature), String.format("%1$,.4f", acceptanceProbability));
 
         if (acceptanceProbability < 0d) {
             throw new IllegalStateException("Acceptance probability was calculated to be less than zero.  Please review the math as this should not happen.");

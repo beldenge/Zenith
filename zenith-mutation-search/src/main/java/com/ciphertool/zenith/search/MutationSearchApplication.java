@@ -19,17 +19,11 @@
 
 package com.ciphertool.zenith.search;
 
-import com.ciphertool.zenith.inference.dao.CipherDao;
-import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.evaluator.MarkovModelPlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.transformer.ciphertext.RemoveLastRowCipherTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 import javax.validation.constraints.Min;
 
@@ -48,18 +42,12 @@ import javax.validation.constraints.Min;
         "com.ciphertool.zenith.inference.util"
 })
 public class MutationSearchApplication implements CommandLineRunner {
-    @Value("${cipher.name}")
-    private String cipherName;
-
     @Value("${markov.letter.order}")
     private int markovOrder;
 
     @Min(1)
     @Value("${language-model.max-ngrams-to-keep}")
     private int maxNGramsToKeep;
-
-    @Value("${decipherment.remove-last-row:true}")
-    private boolean removeLastRow;
 
     @Autowired
     private TranspositionSearcher searcher;
@@ -71,21 +59,5 @@ public class MutationSearchApplication implements CommandLineRunner {
     @Override
     public void run(String... arg0) {
         searcher.run();
-    }
-
-    @Bean
-    public Cipher cipher(RemoveLastRowCipherTransformer lastRowCipherTransformer, CipherDao cipherDao) {
-        Cipher cipher = cipherDao.findByCipherName(cipherName);
-
-        if (removeLastRow) {
-            cipher = lastRowCipherTransformer.transform(cipher);
-        }
-
-        return cipher;
-    }
-
-    @Bean
-    public PlaintextEvaluator plaintextEvaluator(MarkovModelPlaintextEvaluator markovModelPlaintextEvaluator) {
-        return markovModelPlaintextEvaluator;
     }
 }
