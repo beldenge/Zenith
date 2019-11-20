@@ -17,15 +17,16 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.transformer.ciphertext;
+package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import lombok.Getter;
+import lombok.Setter;
 
-public interface CipherTransformer {
-    Cipher transform(Cipher cipher);
+import java.util.ArrayList;
+import java.util.List;
 
-    default TransformerInputType getInputType() {
-        return TransformerInputType.NONE;
-    }
+@Getter
+@Setter
+public class TransformerResponse {
+    private List<TransformerResponseItem> transformers = new ArrayList<>();
 }

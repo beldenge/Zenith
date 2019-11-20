@@ -35,7 +35,7 @@
                 <div class="row no-gutters align-items-center">
                   <div class="col mr-2">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{item.name}}</div>
-                    <div *ngIf="item.configuration" class="h5 mb-0 font-weight-bold text-gray-800">{{item.configuration}}</div>
+                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.inputType}}</div>
                   </div>
                 </div>
               </div>
@@ -71,7 +71,7 @@
                 <div class="row no-gutters align-items-center">
                   <div class="col mr-2">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{item.name}}</div>
-                    <div *ngIf="item.configuration" class="h5 mb-0 font-weight-bold text-gray-800">{{item.configuration}}</div>
+                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.inputType}}</div>
                   </div>
                   <div class="col-auto">
                     <i class="fas fa-times-circle fa-2x" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>

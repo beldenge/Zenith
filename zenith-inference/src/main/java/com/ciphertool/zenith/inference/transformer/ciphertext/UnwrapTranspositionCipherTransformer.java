@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.transformer.TransformerInputType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -60,5 +61,10 @@ public class UnwrapTranspositionCipherTransformer extends AbstractTranspositionC
         }
 
         return transformed;
+    }
+
+    @Override
+    public TransformerInputType getInputType() {
+        return TransformerInputType.TEXT_OR_NUMBER_ARRAY;
     }
 }

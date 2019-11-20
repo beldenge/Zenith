@@ -1,4 +1,4 @@
 export class CiphertextTransformer {
   name: string;
-  configuration: string;
+  inputType: string;
 }

@@ -17,15 +17,11 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.transformer.ciphertext;
+package com.ciphertool.zenith.inference.transformer;
 
-import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
-
-public interface CipherTransformer {
-    Cipher transform(Cipher cipher);
-
-    default TransformerInputType getInputType() {
-        return TransformerInputType.NONE;
-    }
+public enum TransformerInputType {
+    TEXT,
+    NUMBER,
+    TEXT_OR_NUMBER_ARRAY,
+    NONE;
 }

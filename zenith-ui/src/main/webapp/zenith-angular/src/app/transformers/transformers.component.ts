@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SortablejsOptions} from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { CiphertextTransformer } from "../models/CiphertextTransformer";
+import { TransformerService } from "../transformer.service";
 
 @Component({
   selector: 'app-transformers',
@@ -18,28 +19,7 @@ import { CiphertextTransformer } from "../models/CiphertextTransformer";
 export class TransformersComponent implements OnInit {
   public hoverClasses: string[] = [];
 
-  availableTransformerList: CiphertextTransformer[] = [
-    {
-      name: 'Flip Horizontally',
-      configuration: null
-    },
-    {
-      name: 'Upper Left Quadrant',
-      configuration: null
-    },
-    {
-      name: 'Upper Right Quadrant',
-      configuration: null
-    },
-    {
-      name: 'Lower Right Quadrant',
-      configuration: null
-    },
-    {
-      name: 'Flip Horizontally',
-      configuration: null
-    }
-  ];
+  availableTransformerList: CiphertextTransformer[] = [];
 
   appliedTransformerList: CiphertextTransformer[] = [];
 
@@ -56,13 +36,18 @@ export class TransformersComponent implements OnInit {
     group: 'clone-group'
   };
 
+  constructor(private transformerService: TransformerService) { }
+
   ngOnInit(): void {
+    this.transformerService.getTransformers().subscribe(ciphertextTransformerResponse => {
+      this.availableTransformerList = ciphertextTransformerResponse.transformers;
+    });
   }
 
   cloneTransformer = (item) => {
     return {
       name: item.name,
-      configuration: item.configuration
+      inputType: item.inputType
     };
   };
 
