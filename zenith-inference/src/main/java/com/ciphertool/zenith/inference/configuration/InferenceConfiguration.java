@@ -106,13 +106,11 @@ public class InferenceConfiguration {
                         String parameter = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
 
                         if (cipherTransformer instanceof TranspositionCipherTransformer) {
-                            String transpositionKeyString = parameter;
-                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
+                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(parameter, transpositionIterations);
                             nextTransformer.init();
                             toUse.add(nextTransformer);
                         } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer) {
-                            String transpositionKeyString = parameter;
-                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(transpositionKeyString, transpositionIterations);
+                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(parameter, transpositionIterations);
                             nextTransformer.init();
                             toUse.add(nextTransformer);
                         } else if (cipherTransformer instanceof PeriodCipherTransformer) {
@@ -121,6 +119,8 @@ public class InferenceConfiguration {
                         } else if (cipherTransformer instanceof UnwrapPeriodCipherTransformer) {
                             int period = Integer.parseInt(parameter);
                             toUse.add(new UnwrapPeriodCipherTransformer(period));
+                        } else if (cipherTransformer instanceof RemoveSymbolCipherTransformer) {
+                            toUse.add(new RemoveSymbolCipherTransformer(parameter));
                         } else {
                             throw new IllegalArgumentException("The CipherTransformer with name " + transformerNameBeforeParenthesis + " does not accept parameters.");
                         }

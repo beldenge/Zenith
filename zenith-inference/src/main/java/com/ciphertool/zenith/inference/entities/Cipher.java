@@ -136,6 +136,9 @@ public class Cipher {
 
     public void removeCiphertextCharacter(Ciphertext ciphertext) {
         this.ciphertextCharacters.remove(ciphertext);
+        this.ciphertextCharacters.stream()
+                .filter(nextCiphertext -> nextCiphertext.getCiphertextId() > ciphertext.getCiphertextId())
+                .forEach(nextCiphertext -> nextCiphertext.setCiphertextId(nextCiphertext.getCiphertextId() - 1));
         this.cipherSymbolIndicesMap.clear();
     }
 
