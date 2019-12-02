@@ -32,18 +32,10 @@ public class OneTimePadPlaintextTransformer implements PlaintextTransformer {
     public String transform(String plaintext) {
         StringBuilder sb = new StringBuilder();
 
-        int keyIndex = 0;
         for (int i = 0; i < plaintext.length(); i ++) {
-            int sum = LetterUtils.charToOrdinal(plaintext.charAt(i)) + LetterUtils.charToOrdinal(key.charAt(keyIndex));
+            int sum = LetterUtils.charToOrdinal(plaintext.charAt(i)) + LetterUtils.charToOrdinal(key.charAt(i % key.length()));
 
             sb.append(LetterUtils.ordinalToChar(sum % LetterUtils.NUMBER_OF_LETTERS));
-
-            if (keyIndex == key.length() - 1) {
-                keyIndex = 0;
-            }
-            else {
-                keyIndex++;
-            }
         }
 
         return sb.toString();
