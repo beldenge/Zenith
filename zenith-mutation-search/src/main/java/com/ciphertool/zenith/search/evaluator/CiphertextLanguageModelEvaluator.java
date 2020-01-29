@@ -24,12 +24,16 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class CiphertextLanguageModelEvaluator {
+    @Value("${decipherment.epochs:1}")
+    private int epochs;
+
     @Autowired
     private Cipher originalCipher;
 
@@ -44,7 +48,7 @@ public class CiphertextLanguageModelEvaluator {
         Cipher backupOfOriginalCipher = originalCipher.clone();
         overwriteCipher(mutatedCipher, originalCipher);
 
-        CipherSolution cipherSolution = optimizer.optimize(mutatedCipher);
+        CipherSolution cipherSolution = optimizer.optimize(mutatedCipher, epochs);
 
         overwriteCipher(backupOfOriginalCipher, originalCipher);
 

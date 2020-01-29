@@ -23,5 +23,5 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 
 public interface SolutionOptimizer {
-    CipherSolution optimize(Cipher cipher);
+    CipherSolution optimize(Cipher cipher, int epochs);
 }

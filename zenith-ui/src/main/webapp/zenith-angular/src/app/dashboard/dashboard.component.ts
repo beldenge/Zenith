@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { SolutionService } from "../solution.service";
+import {FormBuilder, Validators} from "@angular/forms";
 
 declare var $: any;
 
@@ -15,8 +16,11 @@ export class DashboardComponent implements OnInit {
   selectedCipher: Cipher;
   solution: string;
   isRunning: boolean = false;
+  hyperparametersForm = this.fb.group({
+    epochs: ['', [Validators.min(1), Validators.pattern("^[0-9]*$")]]
+  });
 
-  constructor(private cipherService: CipherService, private solutionService: SolutionService) { }
+  constructor(private fb: FormBuilder, private cipherService: CipherService, private solutionService: SolutionService) { }
 
   ngOnInit() {
     this.cipherService.getCiphers().subscribe(cipherResponse => {
@@ -44,7 +48,7 @@ export class DashboardComponent implements OnInit {
     this.isRunning = true;
     this.solution = null;
 
-    this.solutionService.solve(this.selectedCipher).subscribe(solutionResponse => {
+    this.solutionService.solve(this.selectedCipher, this.hyperparametersForm.get('epochs').value).subscribe(solutionResponse => {
       this.solution = solutionResponse.plaintext;
       this.isRunning = false;
     });

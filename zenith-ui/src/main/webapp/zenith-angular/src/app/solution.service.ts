@@ -12,13 +12,13 @@ export class SolutionService {
     private http: HttpClient
   ) {}
 
-  solve(cipher: Cipher) {
+  solve(cipher: Cipher, epochs: number) {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     });
 
-    let request = new SolutionRequest(cipher.rows, cipher.columns, cipher.ciphertext);
+    let request = new SolutionRequest(cipher.rows, cipher.columns, cipher.ciphertext, epochs);
 
     return this.http.post<SolutionResponse>('http://localhost:8080/api/solutions', request, { headers: headers });
   }

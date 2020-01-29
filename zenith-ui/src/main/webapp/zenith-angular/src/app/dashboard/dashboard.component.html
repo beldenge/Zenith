@@ -37,9 +37,17 @@
 
   </div>
 
-  <div class="row">
-    <div class="col-xl-12">
-      <a href="javascript:void(0);" class="btn btn-success btn-icon-split float-right" (click)="solve()">
+  <div class="row justify-content-end">
+    <div class="col-xl-1">
+      <form class="user" [formGroup]="hyperparametersForm">
+        <div class="form-group">
+          <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" placeholder="Epochs">
+          <div class="text-center text-danger small" *ngIf="!hyperparametersForm.get('epochs').valid">Must be a number greater than 0</div>
+        </div>
+      </form>
+    </div>
+    <div class="col-xl-1">
+      <a href="javascript:void(0);" class="btn btn-success btn-icon-split float-right mt-1" (click)="solve()">
         <span class="icon text-white-50">
           <i [ngClass]="{'fas': true, 'fa-play' : !isRunning, 'fa-spinner' : isRunning, 'fa-spin': isRunning}"></i>
         </span>

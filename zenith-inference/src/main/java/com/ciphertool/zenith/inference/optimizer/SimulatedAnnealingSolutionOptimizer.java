@@ -61,9 +61,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     @Value("${markov.letter.order}")
     private int markovOrder;
 
-    @Value("${decipherment.epochs:1}")
-    private int epochs;
-
     @Value("${decipherment.known-solution.correctness-threshold:0.9}")
     private float knownSolutionCorrectnessThreshold;
 
@@ -87,7 +84,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private CipherSolutionPrinter cipherSolutionPrinter;
 
     @Override
-    public CipherSolution optimize(Cipher cipher) {
+    public CipherSolution optimize(Cipher cipher, int epochs) {
         int cipherKeySize = (int) cipher.getCiphertextCharacters().stream()
                 .map(c -> c.getValue())
                 .distinct()

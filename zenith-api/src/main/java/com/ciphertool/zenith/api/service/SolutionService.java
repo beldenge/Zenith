@@ -46,7 +46,7 @@ public class SolutionService {
             cipher.addCiphertextCharacter(new Ciphertext(i, String.valueOf(request.getCiphertext().charAt(i))));
         }
 
-        CipherSolution cipherSolution = optimizer.optimize(cipher);
+        CipherSolution cipherSolution = optimizer.optimize(cipher, request.getEpochs());
 
         return new SolutionResponse(cipherSolution.asSingleLineString());
     }

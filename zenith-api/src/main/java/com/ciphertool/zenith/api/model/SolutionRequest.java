@@ -39,4 +39,7 @@ public class SolutionRequest {
 
     @NotBlank
     private String ciphertext;
+
+    @Min(1)
+    private int epochs = 1;
 }

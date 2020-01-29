@@ -57,6 +57,9 @@ public class InferenceApplication implements CommandLineRunner {
     @Value("${decipherment.optimizer}")
     private String optimizerName;
 
+    @Value("${decipherment.epochs:1}")
+    private int epochs;
+
     @Autowired
     private Cipher cipher;
 
@@ -87,7 +90,7 @@ public class InferenceApplication implements CommandLineRunner {
             throw new IllegalArgumentException("The SolutionOptimizer with name " + optimizerName + " does not exist.");
         }
 
-        solutionOptimizer.optimize(cipher);
+        solutionOptimizer.optimize(cipher, epochs);
     }
 
     @Bean

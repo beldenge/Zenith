@@ -56,9 +56,6 @@ import java.util.stream.Collectors;
 public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${decipherment.epochs:1}")
-    private int epochs;
-
     @Value("${decipherment.known-solution.correctness-threshold:0.9}")
     private double knownSolutionCorrectnessThreshold;
 
@@ -235,7 +232,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher) {
+    public CipherSolution optimize(Cipher cipher, int epochs) {
         if (initialized == null || initialized != cipher) {
             init(cipher);
         }
