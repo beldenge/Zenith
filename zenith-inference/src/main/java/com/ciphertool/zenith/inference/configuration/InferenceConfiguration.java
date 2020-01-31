@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.validation.constraints.Min;
 import java.util.ArrayList;
@@ -56,6 +58,15 @@ public class InferenceConfiguration {
     private final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
 
     private Logger log = LoggerFactory.getLogger(getClass());
+
+    @Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+    private int corePoolSize;
+
+    @Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
+    private int maxPoolSize;
+
+    @Value("${task-executor.queue-capacity}")
+    private int queueCapacity;
 
     @Value("${cipher.name}")
     private String cipherName;
@@ -219,5 +230,19 @@ public class InferenceConfiguration {
 
         log.error("The PlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
         throw new IllegalArgumentException("The PlaintextEvaluator with name " + plaintextEvaluatorName + " does not exist.");
+    }
+
+    @Bean
+    @Primary
+    public ThreadPoolTaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+        taskExecutor.setCorePoolSize(corePoolSize);
+        taskExecutor.setMaxPoolSize(maxPoolSize);
+        taskExecutor.setQueueCapacity(queueCapacity);
+        taskExecutor.setKeepAliveSeconds(5);
+        taskExecutor.setAllowCoreThreadTimeOut(true);
+
+        return taskExecutor;
     }
 }

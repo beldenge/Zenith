@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
-import { SolutionService } from "../solution.service";
-import {FormBuilder, Validators} from "@angular/forms";
+import { FormBuilder, Validators } from "@angular/forms";
+import { WebSocketAPI } from "../websocket.api";
+import {SolutionRequest} from "../models/SolutionRequest";
+import {SolutionResponse} from "../models/SolutionResponse";
 
 declare var $: any;
 
@@ -12,17 +14,21 @@ declare var $: any;
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
+  webSocketAPI: WebSocketAPI;
   ciphers: Cipher[];
   selectedCipher: Cipher;
   solution: string;
   isRunning: boolean = false;
+  progressPercentage: number = 0;
   hyperparametersForm = this.fb.group({
-    epochs: ['', [Validators.min(1), Validators.pattern("^[0-9]*$")]]
+    epochs: ['1', [Validators.min(1), Validators.pattern("^[0-9]*$")]]
   });
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private solutionService: SolutionService) { }
+  constructor(private fb: FormBuilder, private cipherService: CipherService) { }
 
   ngOnInit() {
+    this.webSocketAPI = new WebSocketAPI();
+
     this.cipherService.getCiphers().subscribe(cipherResponse => {
       this.ciphers = cipherResponse.ciphers;
       this.selectedCipher = this.ciphers[0];
@@ -48,9 +54,19 @@ export class DashboardComponent implements OnInit {
     this.isRunning = true;
     this.solution = null;
 
-    this.solutionService.solve(this.selectedCipher, this.hyperparametersForm.get('epochs').value).subscribe(solutionResponse => {
-      this.solution = solutionResponse.plaintext;
-      this.isRunning = false;
+    let request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
+
+    let self = this;
+    this.webSocketAPI.connectAndSend(request, function (response) {
+      console.log('Message received from server: ' + response);
+
+      self.solution = JSON.parse(response.body).plaintext;
+      self.isRunning = false;
+
+      // TODO: we won't want to disconnect on the first response when handling multiple progress responses
+      self.webSocketAPI.disconnect();
+    }, function(error) {
+      self.isRunning = false;
     });
   }
 

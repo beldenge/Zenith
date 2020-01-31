@@ -26,20 +26,22 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
 
-@RestController
-@CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping(value = "/api/solutions", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+@Controller
 public class SolutionService {
+    @Autowired
+    private SimpMessagingTemplate template;
+
     @Autowired
     private SimulatedAnnealingSolutionOptimizer optimizer;
 
-    @PostMapping
-    @ResponseBody
-    public SolutionResponse solve(@Validated @RequestBody SolutionRequest request) {
+    @MessageMapping("/solutions")
+    public void solve(@Validated @RequestBody SolutionRequest request) {
         Cipher cipher = new Cipher(null, request.getRows(), request.getColumns());
 
         for (int i = 0; i < request.getCiphertext().length(); i ++) {
@@ -48,6 +50,6 @@ public class SolutionService {
 
         CipherSolution cipherSolution = optimizer.optimize(cipher, request.getEpochs());
 
-        return new SolutionResponse(cipherSolution.asSingleLineString());
+        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString()));
     }
 }

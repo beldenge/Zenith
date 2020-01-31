@@ -38,16 +38,23 @@
   </div>
 
   <div class="row justify-content-end">
+    <div class="col-xl-10" *ngIf="hyperparametersForm.get('epochs').value > 1 && isRunning">
+      <h4 class="small font-weight-bold">Progress <span class="float-right">{{progressPercentage}}%</span></h4>
+      <div class="progress">
+        <div class="progress-bar" role="progressbar" style="width: {{progressPercentage}}%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+    </div>
     <div class="col-xl-1">
       <form class="user" [formGroup]="hyperparametersForm">
-        <div class="form-group">
-          <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" placeholder="Epochs">
-          <div class="text-center text-danger small" *ngIf="!hyperparametersForm.get('epochs').valid">Must be a number greater than 0</div>
+        <div class="form-group row">
+          <label class="col-md-6 my-auto" for="epochs">Epochs</label>
+          <input id="epochs" type="text" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}">
         </div>
+        <div class="text-center text-danger small" *ngIf="!hyperparametersForm.get('epochs').valid">Must be a number greater than 0</div>
       </form>
     </div>
     <div class="col-xl-1">
-      <a href="javascript:void(0);" class="btn btn-success btn-icon-split float-right mt-1" (click)="solve()">
+      <a href="javascript:void(0);" class="btn btn-success btn-icon-split float-right" (click)="solve()">
         <span class="icon text-white-50">
           <i [ngClass]="{'fas': true, 'fa-play' : !isRunning, 'fa-spinner' : isRunning, 'fa-spin': isRunning}"></i>
         </span>
