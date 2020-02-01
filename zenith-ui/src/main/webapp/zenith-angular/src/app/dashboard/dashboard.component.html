@@ -38,10 +38,10 @@
   </div>
 
   <div class="row justify-content-end">
-    <div class="col-xl-10" *ngIf="hyperparametersForm.get('epochs').value > 1 && isRunning">
-      <h4 class="small font-weight-bold">Progress <span class="float-right">{{progressPercentage}}%</span></h4>
+    <div class="col-xl-10" *ngIf="hyperparametersForm.get('epochs').value > 1">
+      <h4 class="small font-weight-bold">Progress <span class="float-right">{{progressPercentage | number:'1.0-0'}}%</span></h4>
       <div class="progress">
-        <div class="progress-bar" role="progressbar" style="width: {{progressPercentage}}%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="progress-bar" role="progressbar" [ngStyle]="{'width': progressPercentage + '%'}" aria-valuemin="0" aria-valuemax="100"></div>
       </div>
     </div>
     <div class="col-xl-1">

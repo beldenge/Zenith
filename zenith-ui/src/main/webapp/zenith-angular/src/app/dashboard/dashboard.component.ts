@@ -3,8 +3,7 @@ import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { FormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
-import {SolutionRequest} from "../models/SolutionRequest";
-import {SolutionResponse} from "../models/SolutionResponse";
+import { SolutionRequest } from "../models/SolutionRequest";
 
 declare var $: any;
 
@@ -51,6 +50,7 @@ export class DashboardComponent implements OnInit {
   }
 
   solve() {
+    this.progressPercentage = 0;
     this.isRunning = true;
     this.solution = null;
 
@@ -58,13 +58,14 @@ export class DashboardComponent implements OnInit {
 
     let self = this;
     this.webSocketAPI.connectAndSend(request, function (response) {
-      console.log('Message received from server: ' + response);
-
-      self.solution = JSON.parse(response.body).plaintext;
-      self.isRunning = false;
-
-      // TODO: we won't want to disconnect on the first response when handling multiple progress responses
-      self.webSocketAPI.disconnect();
+      if (response.headers.type === 'SOLUTION') {
+        self.solution = JSON.parse(response.body).plaintext;
+        self.isRunning = false;
+        self.webSocketAPI.disconnect();
+      } else if (response.headers.type === 'EPOCH_COMPLETE') {
+        let responseBody = JSON.parse(response.body);
+        self.progressPercentage = (responseBody.epochsCompleted / responseBody.epochsTotal) * 100;
+      }
     }, function(error) {
       self.isRunning = false;
     });

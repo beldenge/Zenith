@@ -79,7 +79,7 @@ public class InferenceApplication implements CommandLineRunner {
             throw new IllegalArgumentException("The SolutionOptimizer with name " + optimizerName + " does not exist.");
         }
 
-        solutionOptimizer.optimize(cipher, epochs);
+        solutionOptimizer.optimize(cipher, epochs, null);
     }
 
     @Bean

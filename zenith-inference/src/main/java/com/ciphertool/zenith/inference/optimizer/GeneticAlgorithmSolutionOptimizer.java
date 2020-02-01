@@ -232,7 +232,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs) {
+    public CipherSolution optimize(Cipher cipher, int epochs, OnEpochComplete onEpochComplete) {
         if (initialized == null || initialized != cipher) {
             init(cipher);
         }
@@ -305,6 +305,10 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
             }
 
             overallBest = (overallBest == null) ? bestSolution : (bestSolution.getScore() > overallBest.getScore() ? bestSolution : overallBest);
+
+            if (onEpochComplete != null) {
+                onEpochComplete.fire(epoch + 1);
+            }
         }
 
         if (last != null && last.getCipher().hasKnownSolution()) {

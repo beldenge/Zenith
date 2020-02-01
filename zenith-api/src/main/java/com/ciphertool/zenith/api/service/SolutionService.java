@@ -19,8 +19,10 @@
 
 package com.ciphertool.zenith.api.service;
 
+import com.ciphertool.zenith.api.model.EpochCompleteResponse;
 import com.ciphertool.zenith.api.model.SolutionRequest;
 import com.ciphertool.zenith.api.model.SolutionResponse;
+import com.ciphertool.zenith.api.model.WebSocketResponseType;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
@@ -32,8 +34,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 public class SolutionService {
+    private static final String TYPE_HEADER_KEY = "type";
+
     @Autowired
     private SimpMessagingTemplate template;
 
@@ -48,8 +55,16 @@ public class SolutionService {
             cipher.addCiphertextCharacter(new Ciphertext(i, String.valueOf(request.getCiphertext().charAt(i))));
         }
 
-        CipherSolution cipherSolution = optimizer.optimize(cipher, request.getEpochs());
+        Map<String, Object> epochCompleteHeaders = new HashMap<>();
+        epochCompleteHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.EPOCH_COMPLETE);
 
-        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString()));
+        CipherSolution cipherSolution = optimizer.optimize(cipher, request.getEpochs(), (i) ->
+            template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), epochCompleteHeaders)
+        );
+
+        Map<String, Object> solutionHeaders = new HashMap<>();
+        solutionHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION);
+
+        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString()), solutionHeaders);
     }
 }

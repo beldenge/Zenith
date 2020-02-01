@@ -11,7 +11,6 @@ export class WebSocketAPI {
     self.stompClient.connect({}, function (frame) {
       self.send(request);
 
-      console.log('Connected*: ' + frame);
       self.stompClient.subscribe('/topic/solutions', successHandler, errorHandler);
     });
   };

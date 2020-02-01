@@ -84,7 +84,7 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     private CipherSolutionPrinter cipherSolutionPrinter;
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs) {
+    public CipherSolution optimize(Cipher cipher, int epochs, OnEpochComplete onEpochComplete) {
         int cipherKeySize = (int) cipher.getCiphertextCharacters().stream()
                 .map(c -> c.getValue())
                 .distinct()
@@ -142,6 +142,10 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
             }
 
             overallBest = (overallBest == null) ? best : (best.getScore() > overallBest.getScore() ? best : overallBest);
+
+            if (onEpochComplete != null) {
+                onEpochComplete.fire(epoch + 1);
+            }
         }
 
         if (cipher.hasKnownSolution()) {
