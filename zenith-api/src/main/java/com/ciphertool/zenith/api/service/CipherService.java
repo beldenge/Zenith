@@ -58,10 +58,6 @@ public class CipherService {
         for (Cipher cipher : ciphers) {
             CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString());
 
-            cipherResponseItem.setMultiplicity(multiplicityEvaluator.evaluate(cipher));
-            cipherResponseItem.setBigramRepeats(bigramEvaluator.evaluate(cipher));
-            cipherResponseItem.setCycleScore(cycleCountEvaluator.evaluate(cipher));
-
             cipherResponse.getCiphers().add(cipherResponseItem);
         }
 
