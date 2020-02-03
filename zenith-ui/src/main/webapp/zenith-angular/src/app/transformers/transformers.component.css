@@ -1,3 +1,13 @@
 .cursor-pointer {
   cursor: pointer;
 }
+
+.transformer {
+  cursor: grab;
+}
+
+#available_transformers_list {
+  max-height: 600px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}

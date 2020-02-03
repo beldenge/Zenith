@@ -10,7 +10,6 @@ public class TranspositionCipherTransformerTest {
     @Test
     public void testTransposeOnce() {
         TranspositionCipherTransformer cipherTransformer = new TranspositionCipherTransformer();
-        cipherTransformer.transpositionIterations = 1;
         cipherTransformer.transpositionKeyString = "TOMATO";
         cipherTransformer.init();
 
@@ -114,7 +113,6 @@ public class TranspositionCipherTransformerTest {
     @Test
     public void testTransposeTwice() {
         TranspositionCipherTransformer cipherTransformer = new TranspositionCipherTransformer();
-        cipherTransformer.transpositionIterations = 2;
         cipherTransformer.transpositionKeyString = "TOMATO";
         cipherTransformer.init();
 
@@ -164,6 +162,7 @@ public class TranspositionCipherTransformerTest {
         cipher.addCiphertextCharacter(new Ciphertext(41, "X"));
 
         Cipher transformed = cipherTransformer.transform(cipher);
+        transformed = cipherTransformer.transform(transformed);
 
         assertEquals(42, cipher.length());
         assertEquals(6, transformed.getColumns());

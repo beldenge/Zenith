@@ -19,16 +19,19 @@
 
 package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class TransformerResponseItem {
-    private String name;
-    private String displayName;
-    private TransformerInputType inputType;
+public class TransformationRequest {
+    @NotBlank
+    private String cipherName;
+
+    @NotEmpty
+    private List<String> transformers;
 }

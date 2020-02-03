@@ -39,6 +39,7 @@ public class Mutator {
     public void mutate() {
         cipher.setName(cipher.getName() + "-mutated");
         cipher.clearKnownSolutionKey();
-        cipherDao.writeToFile(transpositionCipherTransformer.transform(cipher));
+        // The injected Cipher should have been run through any configured transformers via the @Bean in the InferenceConfiguration class
+        cipherDao.writeToFile(cipher);
     }
 }

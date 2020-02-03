@@ -9,33 +9,20 @@
 
   <div class="row">
 
-    <div class="col-xl-6">
+    <div class="col-xl-3">
       <div class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">Available Transformers</h6>
-          <div class="dropdown no-arrow">
-            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLinkAvailable" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-            </a>
-            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLinkAvailable">
-              <div class="dropdown-header">Dropdown Header:</div>
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Another action</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="#">Something else here</a>
-            </div>
-          </div>
         </div>
         <!-- Card Body -->
-        <div class="card-body" [sortablejs]="availableTransformerList" [sortablejsOptions]="availableTransformerListOptions" [sortablejsCloneFunction]="cloneTransformer">
+        <div id="available_transformers_list" class="card-body" [sortablejs]="availableTransformerList" [sortablejsOptions]="availableTransformerListOptions" [sortablejsCloneFunction]="cloneTransformer">
           <div class="col-xl-12 mb-4 transformer" *ngFor="let item of availableTransformerList">
-            <div class="card border-left-primary shadow h-100 py-2">
-              <div class="card-body">
+            <div class="card border-left-primary shadow h-100 py-2 pl-3">
+              <div class="card-body p-2">
                 <div class="row no-gutters align-items-center">
                   <div class="col mr-2">
-                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{item.name}}</div>
-                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.inputType}}</div>
+                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
                   </div>
                 </div>
               </div>
@@ -45,36 +32,24 @@
       </div>
     </div>
 
-    <div class="col-xl-6">
+    <div class="col-xl-3">
       <div id="ciphertext_transformer_pipeline" class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">Transformer Pipeline</h6>
-          <div class="dropdown no-arrow">
-            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLinkApplied" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-            </a>
-            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLinkApplied">
-              <div class="dropdown-header">Dropdown Header:</div>
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Another action</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="#">Something else here</a>
-            </div>
-          </div>
         </div>
         <!-- Card Body -->
         <div class="card-body" [sortablejs]="appliedTransformerList" [sortablejsOptions]="appliedTransformerListOptions" [sortablejsCloneFunction]="cloneTransformer">
+          <div *ngIf="!appliedTransformerList.length">Drop transformers here</div>
           <div class="col-xl-12 mb-4 transformer" *ngFor="let item of appliedTransformerList; let i = index" [@simpleFadeAnimation]>
-            <div class="card border-left-primary shadow h-100 py-2">
-              <div class="card-body">
+            <div class="card border-left-primary shadow h-100 py-2 pl-3">
+              <div class="card-body p-2">
                 <div class="row no-gutters align-items-center">
                   <div class="col mr-2">
-                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{item.name}}</div>
-                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.inputType}}</div>
+                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
                   </div>
                   <div class="col-auto">
-                    <i class="fas fa-times-circle fa-2x" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>
+                    <i class="fas fa-times-circle fa-lg" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>
                   </div>
                 </div>
               </div>

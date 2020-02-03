@@ -30,33 +30,27 @@ public class TranspositionCipherTransformer extends AbstractTranspositionCipherT
     public TranspositionCipherTransformer() {
     }
 
-    public TranspositionCipherTransformer(String transpositionKeyString, int transpositionIterations) {
+    public TranspositionCipherTransformer(String transpositionKeyString) {
         this.transpositionKeyString = transpositionKeyString;
-        this.transpositionIterations = transpositionIterations;
     }
 
     @Override
     protected Cipher unwrap(Cipher cipher, List<Integer> columnIndices) {
-        log.debug("Performing transposition {} time{} using column key '{}' with indices {}.", transpositionIterations, (transpositionIterations > 1 ? "s" : ""), transpositionKeyString, columnIndices);
+        log.debug("Performing transposition using column key '{}' with indices {}.", transpositionKeyString, columnIndices);
 
         int rows = cipher.length() / columnIndices.size();
 
         Cipher transformed = cipher.clone();
         Cipher clone = cipher;
-        for (int iter = 0; iter < transpositionIterations; iter++) {
-            if (iter > 0) {
-                clone = transformed.clone();
-            }
 
-            int k = 0;
+        int k = 0;
 
-            for (int i = 0; i < columnIndices.size(); i++) {
-                int columnIndex = columnIndices.indexOf(i);
+        for (int i = 0; i < columnIndices.size(); i++) {
+            int columnIndex = columnIndices.indexOf(i);
 
-                for (int j = 0; j < rows; j++) {
-                    transformed.replaceCiphertextCharacter(k, clone.getCiphertextCharacters().get((j * columnIndices.size()) + columnIndex).clone());
-                    k++;
-                }
+            for (int j = 0; j < rows; j++) {
+                transformed.replaceCiphertextCharacter(k, clone.getCiphertextCharacters().get((j * columnIndices.size()) + columnIndex).clone());
+                k++;
             }
         }
 

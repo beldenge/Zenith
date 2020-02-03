@@ -43,6 +43,7 @@ public class CiphertextTransformerService {
         for (CipherTransformer cipherTransformer : cipherTransformers) {
             TransformerResponseItem responseItem = new TransformerResponseItem();
             responseItem.setName(cipherTransformer.getClass().getSimpleName());
+            responseItem.setDisplayName(cipherTransformer.getDisplayName());
             responseItem.setInputType(cipherTransformer.getInputType());
 
             transformerResponse.getTransformers().add(responseItem);

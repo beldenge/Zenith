@@ -1,12 +1,29 @@
+/**
+ * Copyright 2017-2020 George Belden
+ *
+ * This file is part of Zenith.
+ *
+ * Zenith is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * Zenith is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * Zenith. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.model.LanguageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,23 +32,13 @@ import java.util.List;
 public abstract class AbstractTranspositionCipherTransformer implements CipherTransformer {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${decipherment.transposition.column-key:#{null}}")
     protected List<Integer> transpositionKey;
 
-    @Value("${decipherment.transposition.column-key-string:#{null}}")
     protected String transpositionKeyString;
 
-    @Value("${decipherment.transposition.iterations:1}")
-    protected int transpositionIterations;
-
-    @PostConstruct
     public void init() {
         if (transpositionKeyString != null && !transpositionKeyString.isEmpty()) {
             transpositionKey = getIndicesForTranspositionKey();
-        }
-
-        if (transpositionIterations <= 0) {
-            transpositionIterations = 1;
         }
 
         List<Integer> toCheck = new ArrayList<>(transpositionKey);

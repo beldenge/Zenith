@@ -16,8 +16,5 @@ decipherment.epochs | 10 | The number of times to run the hill climbing algorith
 simulated-annealing.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
 simulated-annealing.temperature.max | 0.1 | Annealing temperature at the beginning of each epoch
 simulated-annealing.temperature.min | 0.001 | Annealing temperature at the end of each epoch
-decipherment.transposition.column-key-string | N/A | A String representation of a column key used as a transposition key during encipherment (case-insensitive, ignored if decipherment.transposition.column-key is specified)
-decipherment.transposition.column-key | N/A | A comma-separated integer array representation of a column key used as a transposition key during encipherment
-decipherment.transposition.iterations | 1 | The number of times to perform transposition with the given key
 decipherment.transposition.key-length.min | 17 | When the transposition key length is not known, this is the key length to start hill climbing with (must be greater than 1 and less than or equal to decipherment.transposition.key-length.max)
 decipherment.transposition.key-length.max | 17 | When the transposition key length is not known, this is the key length to end hill climbing with (must be greater than or equal to decipherment.transposition.key-length.min)

@@ -21,11 +21,18 @@ package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import org.apache.commons.lang3.StringUtils;
 
 public interface CipherTransformer {
     Cipher transform(Cipher cipher);
 
     default TransformerInputType getInputType() {
         return TransformerInputType.NONE;
+    }
+
+    default String getDisplayName() {
+        String displayName = getClass().getSimpleName().replace("CipherTransformer", "");
+
+        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(displayName), ' ');
     }
 }

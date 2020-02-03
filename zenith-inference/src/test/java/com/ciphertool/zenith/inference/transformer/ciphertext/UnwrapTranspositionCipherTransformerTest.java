@@ -29,7 +29,6 @@ public class UnwrapTranspositionCipherTransformerTest {
     @Test
     public void testTransposeOnce() {
         UnwrapTranspositionCipherTransformer cipherTransformer = new UnwrapTranspositionCipherTransformer();
-        cipherTransformer.transpositionIterations = 1;
         cipherTransformer.transpositionKeyString = "TOMATO";
         cipherTransformer.init();
 
@@ -133,7 +132,6 @@ public class UnwrapTranspositionCipherTransformerTest {
     @Test
     public void testTransposeTwice() {
         UnwrapTranspositionCipherTransformer cipherTransformer = new UnwrapTranspositionCipherTransformer();
-        cipherTransformer.transpositionIterations = 2;
         cipherTransformer.transpositionKeyString = "TOMATO";
         cipherTransformer.init();
 
@@ -183,6 +181,7 @@ public class UnwrapTranspositionCipherTransformerTest {
         cipher.addCiphertextCharacter(new Ciphertext(41, "M"));
 
         Cipher transformed = cipherTransformer.transform(cipher);
+        transformed = cipherTransformer.transform(transformed);
 
         assertEquals(42, cipher.length());
         assertEquals(6, transformed.getColumns());

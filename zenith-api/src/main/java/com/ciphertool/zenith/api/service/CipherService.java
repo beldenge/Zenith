@@ -21,11 +21,13 @@ package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.CipherResponse;
 import com.ciphertool.zenith.api.model.CipherResponseItem;
+import com.ciphertool.zenith.api.model.TransformationRequest;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextMultiplicityEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
+import com.ciphertool.zenith.inference.transformer.TransformationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +40,9 @@ import java.util.List;
 public class CipherService {
     @Autowired
     private CipherDao cipherDao;
+
+    @Autowired
+    private TransformationManager transformationManager;
 
     @Autowired
     private CiphertextMultiplicityEvaluator multiplicityEvaluator;
@@ -60,6 +65,22 @@ public class CipherService {
 
             cipherResponse.getCiphers().add(cipherResponseItem);
         }
+
+        return cipherResponse;
+    }
+
+    @PostMapping
+    @ResponseBody
+    public CipherResponse transformCipher(@RequestBody TransformationRequest transformationRequest) {
+        CipherResponse cipherResponse = new CipherResponse();
+
+        Cipher cipher = cipherDao.findByCipherName(transformationRequest.getCipherName());
+
+        cipher = transformationManager.transform(cipher, transformationRequest.getTransformers());
+
+        CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString());
+
+        cipherResponse.getCiphers().add(cipherResponseItem);
 
         return cipherResponse;
     }

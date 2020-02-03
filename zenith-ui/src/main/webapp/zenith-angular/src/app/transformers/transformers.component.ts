@@ -47,6 +47,7 @@ export class TransformersComponent implements OnInit {
   cloneTransformer = (item) => {
     return {
       name: item.name,
+      displayName: item.displayName,
       inputType: item.inputType
     };
   };
