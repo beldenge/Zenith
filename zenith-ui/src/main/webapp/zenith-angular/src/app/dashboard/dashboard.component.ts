@@ -28,9 +28,12 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.webSocketAPI = new WebSocketAPI();
 
-    this.cipherService.getCiphers().subscribe(cipherResponse => {
-      this.ciphers = cipherResponse.ciphers;
-      this.selectedCipher = this.ciphers[0];
+    this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
+      this.selectedCipher = selectedCipher
+    });
+
+    this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
+      this.ciphers = ciphers
     });
 
     $('#cipher_select_button, #cipher_select').off('mouseover').on('mouseover', function() {
@@ -71,7 +74,9 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  clearSolution() {
+  onCipherSelect() {
     this.solution = null;
+    localStorage.setItem('selected_cipher_name', this.selectedCipher.name);
+    this.cipherService.updateSelectedCipher(this.selectedCipher);
   }
 }

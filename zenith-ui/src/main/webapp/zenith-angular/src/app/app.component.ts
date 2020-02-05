@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { animate, animateChild, group, query, style, transition, trigger } from "@angular/animations";
-import { RouterOutlet } from "@angular/router";
+import { CipherService } from "./cipher.service";
 
 @Component({
   selector: 'app-root',
@@ -35,10 +35,31 @@ import { RouterOutlet } from "@angular/router";
     ])
   ]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'zenith-angular';
+
+  constructor(private cipherService: CipherService) { }
 
   getState(outlet) {
     return outlet.activatedRouteData.state;
+  }
+
+  ngOnInit() {
+    this.cipherService.getCiphers().subscribe(cipherResponse => {
+      let ciphers = cipherResponse.ciphers;
+      this.cipherService.updateCiphers(ciphers);
+
+      this.cipherService.updateSelectedCipher(ciphers[0]);
+
+      if(localStorage.getItem('selected_cipher_name')) {
+        let selectedCipherName = localStorage.getItem('selected_cipher_name');
+
+        let selectedCipher = ciphers.find(cipher => {
+          return cipher.name === selectedCipherName;
+        });
+
+        this.cipherService.updateSelectedCipher(selectedCipher);
+      }
+    });
   }
 }
