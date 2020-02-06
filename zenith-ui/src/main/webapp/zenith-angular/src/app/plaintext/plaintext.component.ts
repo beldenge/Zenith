@@ -19,7 +19,7 @@ export class PlaintextComponent implements OnInit {
   blockifyPipe = new BlockifyPipe();
 
   constructor(private cipherService: CipherService) {
-    this.cipher$ = cipherService.getSelectedCipherAsObservable()
+    this.cipher$ = cipherService.getSelectedCipherAsObservable();
   }
 
   ngOnInit() {

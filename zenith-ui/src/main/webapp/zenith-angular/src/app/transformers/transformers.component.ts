@@ -3,6 +3,10 @@ import { SortablejsOptions} from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { CiphertextTransformer } from "../models/CiphertextTransformer";
 import { TransformerService } from "../transformer.service";
+import { CipherService } from "../cipher.service";
+import { Cipher } from "../models/Cipher";
+import { Observable } from "rxjs";
+import { TransformationRequest } from "../models/TransformationRequest";
 
 @Component({
   selector: 'app-transformers',
@@ -17,6 +21,8 @@ import { TransformerService } from "../transformer.service";
   ]
 })
 export class TransformersComponent implements OnInit {
+  cipher: Cipher;
+  cipher$: Observable<Cipher>;
   public hoverClasses: string[] = [];
 
   availableTransformerList: CiphertextTransformer[] = [];
@@ -32,15 +38,41 @@ export class TransformersComponent implements OnInit {
     sort: false
   };
 
-  appliedTransformerListOptions: SortablejsOptions = {
-    group: 'clone-group'
+  onAppliedTransformersChange = (event: any) => {
+    let transformationRequest: TransformationRequest = {
+      cipherName: this.cipher.name,
+      transformers: []
+    };
+
+    this.appliedTransformerList.forEach(transformer => {
+      transformationRequest.transformers.push(transformer.name);
+    });
+
+    this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
+      this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
+    });
+
+    return true;
   };
 
-  constructor(private transformerService: TransformerService) { }
+  appliedTransformerListOptions: SortablejsOptions = {
+    group: 'clone-group',
+    onAdd: this.onAppliedTransformersChange,
+    onRemove: this.onAppliedTransformersChange,
+    onMove: this.onAppliedTransformersChange
+  };
+
+  constructor(private transformerService: TransformerService, private cipherService: CipherService) {
+    this.cipher$ = cipherService.getSelectedCipherAsObservable();
+  }
 
   ngOnInit(): void {
     this.transformerService.getTransformers().subscribe(ciphertextTransformerResponse => {
       this.availableTransformerList = ciphertextTransformerResponse.transformers;
+    });
+
+    this.cipher$.subscribe(cipher => {
+      this.cipher = cipher;
     });
   }
 
@@ -58,5 +90,7 @@ export class TransformersComponent implements OnInit {
     if (transformerIndex >= 0 && transformerIndex < this.appliedTransformerList.length) {
       this.appliedTransformerList.splice(transformerIndex, 1);
     }
+
+    this.onAppliedTransformersChange.call(null);
   }
 }

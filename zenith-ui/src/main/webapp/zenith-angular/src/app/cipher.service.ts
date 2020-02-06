@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CipherResponse } from "./models/CipherResponse";
 import { BehaviorSubject, Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
+import { TransformationRequest } from "./models/TransformationRequest";
 
 @Injectable({
   providedIn: 'root'
@@ -38,5 +39,14 @@ export class CipherService {
     });
 
     return this.http.get<CipherResponse>('http://localhost:8080/api/ciphers', { headers: headers });
+  }
+
+  transformCipher(transformationRequest: TransformationRequest) {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+
+    return this.http.post<CipherResponse>('http://localhost:8080/api/ciphers', transformationRequest, { headers: headers });
   }
 }

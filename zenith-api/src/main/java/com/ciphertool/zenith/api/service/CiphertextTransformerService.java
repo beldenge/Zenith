@@ -21,6 +21,7 @@ package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.TransformerResponse;
 import com.ciphertool.zenith.api.model.TransformerResponseItem;
+import com.ciphertool.zenith.inference.transformer.TransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -42,7 +43,7 @@ public class CiphertextTransformerService {
 
         for (CipherTransformer cipherTransformer : cipherTransformers) {
             TransformerResponseItem responseItem = new TransformerResponseItem();
-            responseItem.setName(cipherTransformer.getClass().getSimpleName());
+            responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(TransformationManager.CIPHER_TRANSFORMER_SUFFIX, ""));
             responseItem.setDisplayName(cipherTransformer.getDisplayName());
             responseItem.setInputType(cipherTransformer.getInputType());
 

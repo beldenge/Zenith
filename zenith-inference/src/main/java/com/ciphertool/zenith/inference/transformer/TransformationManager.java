@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class TransformationManager {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
+    public final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
 
     @Autowired
     private List<CipherTransformer> cipherTransformers;
