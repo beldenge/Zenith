@@ -22,17 +22,21 @@ package com.ciphertool.zenith.api.service;
 import com.ciphertool.zenith.api.model.CipherResponse;
 import com.ciphertool.zenith.api.model.CipherResponseItem;
 import com.ciphertool.zenith.api.model.TransformationRequest;
+import com.ciphertool.zenith.api.model.TransformationRequestStep;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextMultiplicityEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
 import com.ciphertool.zenith.inference.transformer.TransformationManager;
+import com.ciphertool.zenith.inference.transformer.TransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -71,12 +75,20 @@ public class CipherService {
 
     @PostMapping
     @ResponseBody
-    public CipherResponse transformCipher(@RequestBody TransformationRequest transformationRequest) {
+    public CipherResponse transformCipher(@Validated @RequestBody TransformationRequest transformationRequest) {
         CipherResponse cipherResponse = new CipherResponse();
 
         Cipher cipher = cipherDao.findByCipherName(transformationRequest.getCipherName());
 
-        cipher = transformationManager.transform(cipher, transformationRequest.getTransformers());
+        if (cipher == null) {
+            throw new IllegalArgumentException("No cipher found for name " + transformationRequest.getCipherName() + ".");
+        }
+
+        List<TransformationStep> steps = transformationRequest.getSteps().stream()
+                .map(TransformationRequestStep::asStep)
+                .collect(Collectors.toList());
+
+        cipher = transformationManager.transform(cipher, steps);
 
         CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString());
 

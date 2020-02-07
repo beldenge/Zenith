@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
+import com.ciphertool.zenith.inference.transformer.TransformerInputType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -54,5 +55,15 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
         transformed.setColumns(length);
 
         return transformed;
+    }
+
+    @Override
+    public String getInputName() {
+        return "symbol";
+    }
+
+    @Override
+    public TransformerInputType getInputType() {
+        return TransformerInputType.TEXT;
     }
 }

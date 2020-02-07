@@ -17,19 +17,16 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.transformer;
 
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class TransformerResponseItem {
-    private String name;
-    private String displayName;
-    private String inputName;
-    private TransformerInputType inputType;
+@AllArgsConstructor
+public class TransformationStep {
+    private String transformerName;
+    private String argument;
 }

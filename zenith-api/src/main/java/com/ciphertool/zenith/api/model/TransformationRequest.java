@@ -33,5 +33,5 @@ public class TransformationRequest {
     private String cipherName;
 
     @NotEmpty
-    private List<String> transformers;
+    private List<TransformationRequestStep> steps;
 }

@@ -27,6 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 public interface CipherTransformer {
     Cipher transform(Cipher cipher);
 
+    default String getInputName() {
+        return null;
+    }
+
     default TransformerInputType getInputType() {
         return TransformerInputType.NONE;
     }

@@ -22,7 +22,7 @@
               <div class="card-body p-2">
                 <div class="row no-gutters align-items-center">
                   <div class="col mr-2">
-                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
                   </div>
                 </div>
               </div>
@@ -45,10 +45,16 @@
             <div class="card border-left-primary shadow h-100 py-2 pl-3">
               <div class="card-body p-2">
                 <div class="row no-gutters align-items-center">
-                  <div class="col mr-2">
-                    <div *ngIf="item.inputType" class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
+                  <div class="col-md-6">
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
                   </div>
-                  <div class="col-auto">
+                  <div class="col-md-4" *ngIf="item.inputType !== 'NONE'">
+                      <div class="form-group row mb-0">
+                        <label class="col-md-6 my-auto text-right" for="transformer{{i}}">{{item.inputName}}:</label>
+                        <input id="transformer{{i}}" type="text" class="form-control col-md-6" [(ngModel)]="item.inputValue" (change)="onAppliedTransformersChange(null)">
+                      </div>
+                  </div>
+                  <div class="col-md-{{item.inputType !== 'NONE' ? 2 : 6}} text-right">
                     <i class="fas fa-times-circle fa-lg" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>
                   </div>
                 </div>

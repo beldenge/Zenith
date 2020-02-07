@@ -50,6 +50,11 @@ public class PeriodCipherTransformer implements CipherTransformer {
     }
 
     @Override
+    public String getInputName() {
+        return "length";
+    }
+
+    @Override
     public TransformerInputType getInputType() {
         return TransformerInputType.NUMBER;
     }

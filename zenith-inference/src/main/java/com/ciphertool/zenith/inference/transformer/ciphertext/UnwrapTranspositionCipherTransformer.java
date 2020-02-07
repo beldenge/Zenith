@@ -58,6 +58,11 @@ public class UnwrapTranspositionCipherTransformer extends AbstractTranspositionC
     }
 
     @Override
+    public String getInputName() {
+        return "key";
+    }
+
+    @Override
     public TransformerInputType getInputType() {
         return TransformerInputType.TEXT_OR_NUMBER_ARRAY;
     }

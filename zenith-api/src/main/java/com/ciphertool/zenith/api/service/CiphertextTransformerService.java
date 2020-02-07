@@ -45,6 +45,7 @@ public class CiphertextTransformerService {
             TransformerResponseItem responseItem = new TransformerResponseItem();
             responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(TransformationManager.CIPHER_TRANSFORMER_SUFFIX, ""));
             responseItem.setDisplayName(cipherTransformer.getDisplayName());
+            responseItem.setInputName(cipherTransformer.getInputName());
             responseItem.setInputType(cipherTransformer.getInputType());
 
             transformerResponse.getTransformers().add(responseItem);

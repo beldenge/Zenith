@@ -58,6 +58,11 @@ public class TranspositionCipherTransformer extends AbstractTranspositionCipherT
     }
 
     @Override
+    public String getInputName() {
+        return "key";
+    }
+
+    @Override
     public TransformerInputType getInputType() {
         return TransformerInputType.TEXT_OR_NUMBER_ARRAY;
     }

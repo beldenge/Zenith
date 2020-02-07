@@ -23,6 +23,7 @@ import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.transformer.TransformationManager;
+import com.ciphertool.zenith.inference.transformer.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.ciphertext.*;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
@@ -92,7 +93,21 @@ public class InferenceConfiguration {
     public Cipher cipher(CipherDao cipherDao, TransformationManager transformationManager) {
         Cipher cipher = cipherDao.findByCipherName(cipherName);
 
-        return transformationManager.transform(cipher, cipherTransformersToUse);
+        List<TransformationStep> transformationSteps = new ArrayList<>(cipherTransformersToUse.size());
+
+        for (String transformerName : cipherTransformersToUse) {
+            String transformerNameBeforeParenthesis = transformerName.contains("(") ? transformerName.substring(0, transformerName.indexOf('(')) : transformerName;
+
+            if (transformerName.contains("(") && transformerName.endsWith(")")) {
+                String argument = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
+
+                transformationSteps.add(new TransformationStep(transformerNameBeforeParenthesis, argument));
+            } else {
+                transformationSteps.add(new TransformationStep(transformerNameBeforeParenthesis, null));
+            }
+        }
+
+        return transformationManager.transform(cipher, transformationSteps);
     }
 
     @Bean

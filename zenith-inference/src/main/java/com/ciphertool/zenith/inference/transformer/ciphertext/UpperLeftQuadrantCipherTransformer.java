@@ -30,7 +30,7 @@ public class UpperLeftQuadrantCipherTransformer implements CipherTransformer {
         int halfOfRows = cipher.getRows() / 2;
         int halfOfColumns = cipher.getColumns() / 2;
 
-        Cipher quadrant = new Cipher(cipher.getName() + "_upperLeftQuadrant", halfOfRows, halfOfColumns);
+        Cipher quadrant = new Cipher(cipher.getName(), halfOfRows, halfOfColumns);
 
         int id = 0;
         for (int i = 0; i < halfOfRows; i++) {

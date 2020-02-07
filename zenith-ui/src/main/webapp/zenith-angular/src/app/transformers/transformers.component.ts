@@ -41,16 +41,28 @@ export class TransformersComponent implements OnInit {
   onAppliedTransformersChange = (event: any) => {
     let transformationRequest: TransformationRequest = {
       cipherName: this.cipher.name,
-      transformers: []
+      steps: []
     };
 
+    let satisfied = true;
+
     this.appliedTransformerList.forEach(transformer => {
-      transformationRequest.transformers.push(transformer.name);
+      if (transformer.inputName && !transformer.inputValue) {
+        satisfied = false;
+        return;
+      }
+
+      transformationRequest.steps.push({
+        transformerName: transformer.name,
+        argument: transformer.inputValue
+      });
     });
 
-    this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
-      this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
-    });
+    if (satisfied) {
+      this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
+        this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
+      });
+    }
 
     return true;
   };
@@ -80,7 +92,8 @@ export class TransformersComponent implements OnInit {
     return {
       name: item.name,
       displayName: item.displayName,
-      inputType: item.inputType
+      inputType: item.inputType,
+      inputName: item.inputName
     };
   };
 

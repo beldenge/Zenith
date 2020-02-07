@@ -19,17 +19,25 @@
 
 package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import com.ciphertool.zenith.inference.transformer.TransformationStep;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 @Getter
 @Setter
 @NoArgsConstructor
-public class TransformerResponseItem {
-    private String name;
-    private String displayName;
-    private String inputName;
-    private TransformerInputType inputType;
+public class TransformationRequestStep {
+    @NotBlank
+    private String transformerName;
+
+    @Size(min = 1)
+    private String argument;
+
+    public TransformationStep asStep() {
+        return new TransformationStep(transformerName, argument);
+    }
 }
