@@ -4,7 +4,7 @@
     <h1 class="h3 mb-0 text-gray-800">Ciphertext Transformation Pipeline</h1>
   </div>
   <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <p>Drag transformers from the left to build a top-down transformer pipeline on the right.  These will apply to the ciphertext (post-substitution).</p>
+    <p>Drag transformers from the left to build a top-down transformer pipeline in the middle.  These will apply in realtime to the ciphertext (post-substitution) on the right.</p>
   </div>
 
   <div class="row">
@@ -16,8 +16,8 @@
           <h6 class="m-0 font-weight-bold text-primary">Available Transformers</h6>
         </div>
         <!-- Card Body -->
-        <div id="available_transformers_list" class="card-body" [sortablejs]="availableTransformerList" [sortablejsOptions]="availableTransformerListOptions" [sortablejsCloneFunction]="cloneTransformer">
-          <div class="col-xl-12 mb-4 transformer" *ngFor="let item of availableTransformerList">
+        <div id="available_transformers_list" class="card-body" [sortablejs]="availableTransformers" [sortablejsOptions]="availableTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
+          <div class="col-xl-12 mb-4 transformer" *ngFor="let item of availableTransformers">
             <div class="card border-left-primary shadow h-100 py-2 pl-3">
               <div class="card-body p-2">
                 <div class="row no-gutters align-items-center">
@@ -39,9 +39,9 @@
           <h6 class="m-0 font-weight-bold text-primary">Transformer Pipeline</h6>
         </div>
         <!-- Card Body -->
-        <div class="card-body" [sortablejs]="appliedTransformerList" [sortablejsOptions]="appliedTransformerListOptions" [sortablejsCloneFunction]="cloneTransformer">
-          <div *ngIf="!appliedTransformerList.length">Drop transformers here</div>
-          <div class="col-xl-12 mb-4 transformer" *ngFor="let item of appliedTransformerList; let i = index" [@simpleFadeAnimation]>
+        <div class="card-body" [sortablejs]="appliedTransformers" [sortablejsOptions]="appliedTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
+          <div *ngIf="!appliedTransformers.length">Drop transformers here</div>
+          <div class="col-xl-12 mb-4 transformer" *ngFor="let item of appliedTransformers; let i = index" [@simpleFadeAnimation]>
             <div class="card border-left-primary shadow h-100 py-2 pl-3">
               <div class="card-body p-2">
                 <div class="row no-gutters align-items-center">

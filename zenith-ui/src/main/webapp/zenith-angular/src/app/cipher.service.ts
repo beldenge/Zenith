@@ -9,23 +9,23 @@ import { TransformationRequest } from "./models/TransformationRequest";
   providedIn: 'root'
 })
 export class CipherService {
-  private selectedCipher = new BehaviorSubject<Cipher>(null);
-  private ciphers = new BehaviorSubject<Cipher[]>(null);
+  private selectedCipher$ = new BehaviorSubject<Cipher>(null);
+  private ciphers$ = new BehaviorSubject<Cipher[]>(null);
 
   getSelectedCipherAsObservable(): Observable<Cipher> {
-    return this.selectedCipher.asObservable();
+    return this.selectedCipher$.asObservable();
   }
 
   updateSelectedCipher(cipher: Cipher): void {
-    return this.selectedCipher.next(cipher);
+    return this.selectedCipher$.next(cipher);
   }
 
   getCiphersAsObservable(): Observable<Cipher[]> {
-    return this.ciphers.asObservable();
+    return this.ciphers$.asObservable();
   }
 
   updateCiphers(ciphers: Cipher[]): void {
-    return this.ciphers.next(ciphers);
+    return this.ciphers$.next(ciphers);
   }
 
   constructor(

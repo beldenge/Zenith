@@ -25,11 +25,9 @@ export class TransformersComponent implements OnInit {
   cipher$: Observable<Cipher>;
   public hoverClasses: string[] = [];
 
-  availableTransformerList: CiphertextTransformer[] = [];
+  availableTransformers: CiphertextTransformer[] = [];
 
-  appliedTransformerList: CiphertextTransformer[] = [];
-
-  availableTransformerListOptions: SortablejsOptions = {
+  availableTransformersOptions: SortablejsOptions = {
     group: {
       name: 'clone-group',
       pull: 'clone',
@@ -37,6 +35,10 @@ export class TransformersComponent implements OnInit {
     },
     sort: false
   };
+
+  appliedTransformers: CiphertextTransformer[] = [];
+
+  appliedTransformers$: Observable<CiphertextTransformer[]>;
 
   onAppliedTransformersChange = (event: any) => {
     let transformationRequest: TransformationRequest = {
@@ -46,7 +48,7 @@ export class TransformersComponent implements OnInit {
 
     let satisfied = true;
 
-    this.appliedTransformerList.forEach(transformer => {
+    this.appliedTransformers.forEach(transformer => {
       if (transformer.inputName && !transformer.inputValue) {
         satisfied = false;
         return;
@@ -62,12 +64,14 @@ export class TransformersComponent implements OnInit {
       this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
         this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
       });
+
+      this.transformerService.updateAppliedTransformers(this.appliedTransformers);
     }
 
     return true;
   };
 
-  appliedTransformerListOptions: SortablejsOptions = {
+  appliedTransformersOptions: SortablejsOptions = {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChange,
     onRemove: this.onAppliedTransformersChange,
@@ -76,15 +80,20 @@ export class TransformersComponent implements OnInit {
 
   constructor(private transformerService: TransformerService, private cipherService: CipherService) {
     this.cipher$ = cipherService.getSelectedCipherAsObservable();
+    this.appliedTransformers$ = transformerService.getAppliedTransformersAsObservable();
   }
 
   ngOnInit(): void {
     this.transformerService.getTransformers().subscribe(ciphertextTransformerResponse => {
-      this.availableTransformerList = ciphertextTransformerResponse.transformers;
+      this.availableTransformers = ciphertextTransformerResponse.transformers;
     });
 
     this.cipher$.subscribe(cipher => {
       this.cipher = cipher;
+    });
+
+    this.appliedTransformers$.subscribe(appliedTransformers => {
+      this.appliedTransformers = appliedTransformers;
     });
   }
 
@@ -100,8 +109,8 @@ export class TransformersComponent implements OnInit {
   removeTransformer(transformerIndex: number): void {
     this.hoverClasses = [];
 
-    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformerList.length) {
-      this.appliedTransformerList.splice(transformerIndex, 1);
+    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformers.length) {
+      this.appliedTransformers.splice(transformerIndex, 1);
     }
 
     this.onAppliedTransformersChange.call(null);

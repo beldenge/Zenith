@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @Getter
@@ -32,6 +31,5 @@ public class TransformationRequest {
     @NotBlank
     private String cipherName;
 
-    @NotEmpty
     private List<TransformationRequestStep> steps;
 }
