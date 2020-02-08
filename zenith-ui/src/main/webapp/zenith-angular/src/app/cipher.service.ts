@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { CipherResponse } from "./models/CipherResponse";
 import { BehaviorSubject, Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
@@ -33,20 +33,10 @@ export class CipherService {
   ) {}
 
   getCiphers() {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    });
-
-    return this.http.get<CipherResponse>('http://localhost:8080/api/ciphers', { headers: headers });
+    return this.http.get<CipherResponse>('http://localhost:8080/api/ciphers');
   }
 
   transformCipher(transformationRequest: TransformationRequest) {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    });
-
-    return this.http.post<CipherResponse>('http://localhost:8080/api/ciphers', transformationRequest, { headers: headers });
+    return this.http.post<CipherResponse>('http://localhost:8080/api/ciphers', transformationRequest);
   }
 }

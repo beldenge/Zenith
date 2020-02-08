@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { CiphertextTransformerResponse } from "./models/CiphertextTransformerResponse";
 import { CiphertextTransformer } from "./models/CiphertextTransformer";
-import {BehaviorSubject, Observable} from "rxjs";
-import {Cipher} from "./models/Cipher";
+import { BehaviorSubject, Observable } from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -24,11 +23,6 @@ export class TransformerService {
   }
 
   getTransformers() {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    });
-
-    return this.http.get<CiphertextTransformerResponse>('http://localhost:8080/api/transformers', { headers: headers });
+    return this.http.get<CiphertextTransformerResponse>('http://localhost:8080/api/transformers');
   }
 }

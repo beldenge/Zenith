@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from "@angular/common";
 
@@ -18,6 +18,7 @@ import { SortablejsModule } from "ngx-sortablejs";
 import { TransformersComponent } from './transformers/transformers.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MatTooltipModule } from '@angular/material';
+import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor";
 
 @NgModule({
   declarations: [
@@ -43,7 +44,12 @@ import { MatTooltipModule } from '@angular/material';
     MatTooltipModule
   ],
   providers: [
-    JsonPipe
+    JsonPipe,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: DefaultHttpInterceptor,
+      multi: true
+    },
   ],
   bootstrap: [AppComponent]
 })
