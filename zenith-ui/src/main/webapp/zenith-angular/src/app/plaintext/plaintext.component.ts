@@ -3,6 +3,7 @@ import { Cipher } from "../models/Cipher";
 import { BehaviorSubject, Observable } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 import { CipherService } from "../cipher.service";
+import { MatTooltip } from "@angular/material/tooltip";
 
 const originalTooltipText = 'Copy to clipboard';
 
@@ -28,7 +29,7 @@ export class PlaintextComponent implements OnInit {
     });
   }
 
-  copyPlaintext() {
+  copyPlaintext(tooltip : MatTooltip) {
     var plaintextElement = document.createElement("textarea");
     plaintextElement.id = 'txt';
     plaintextElement.style.position = 'fixed';
@@ -40,7 +41,9 @@ export class PlaintextComponent implements OnInit {
     plaintextElement.select();
     document.execCommand('copy');
 
+    tooltip.hide();
     this.tooltipText.next('Copied!');
+    tooltip.show();
   }
 
   resetTooltipText() {
