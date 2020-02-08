@@ -74,6 +74,10 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  byName(c1: Cipher, c2: Cipher): boolean {
+    return c1 && c2 ? c1.name === c2.name : c1 === c2;
+  }
+
   onCipherSelect() {
     this.solution = null;
     localStorage.setItem('selected_cipher_name', this.selectedCipher.name);
