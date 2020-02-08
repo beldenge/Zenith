@@ -5,8 +5,6 @@ import { FormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
 
-declare var $: any;
-
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -35,21 +33,17 @@ export class DashboardComponent implements OnInit {
     this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
       this.ciphers = ciphers
     });
+  }
 
-    $('#cipher_select_button, #cipher_select').off('mouseover').on('mouseover', function() {
-      $('#cipher_select').trigger('focus');
-      $('#cipher_select').off('mouseout').on('mouseout', function() {
-        $('#cipher_select').trigger('blur');
-      });
-    });
+  onMouseOverSelect(element: HTMLElement) {
+    element.focus();
+    element.onmouseout = (event: MouseEvent) => {
+      element.blur();
+    };
+  }
 
-    $('#cipher_select').off('click').on('click', function() {
-      $('#cipher_select').off('mouseout');
-    });
-
-    $('#cipher_select').off('change').on('change', function() {
-      $('#cipher_select').trigger('blur');
-    });
+  onClickSelect(element: HTMLElement) {
+    element.onmouseout = () => {};
   }
 
   solve() {
@@ -78,7 +72,8 @@ export class DashboardComponent implements OnInit {
     return c1 && c2 ? c1.name === c2.name : c1 === c2;
   }
 
-  onCipherSelect() {
+  onCipherSelect(element: HTMLElement) {
+    element.blur();
     this.solution = null;
     localStorage.setItem('selected_cipher_name', this.selectedCipher.name);
     this.cipherService.updateSelectedCipher(this.selectedCipher);
