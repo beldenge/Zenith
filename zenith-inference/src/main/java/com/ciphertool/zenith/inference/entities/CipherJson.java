@@ -12,6 +12,8 @@ public class CipherJson {
 
     private String ciphertext;
 
+    private boolean readOnly;
+
     private Map<String, String> knownSolutionKey = new HashMap<>();
 
     public CipherJson() {
@@ -78,6 +80,14 @@ public class CipherJson {
 
     public void setCiphertext(String ciphertext) {
         this.ciphertext = ciphertext;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
     }
 
     public Map<String, String> getKnownSolutionKey() {

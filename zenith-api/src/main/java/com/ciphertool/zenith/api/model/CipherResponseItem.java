@@ -30,6 +30,7 @@ public class CipherResponseItem {
     private String name;
     private int rows;
     private int columns;
+    private boolean readOnly;
     private String ciphertext;
     private double multiplicity;
     private double entropy;
@@ -38,10 +39,11 @@ public class CipherResponseItem {
     private int bigramRepeats;
     private int cycleScore;
 
-    public CipherResponseItem(String name, int rows, int columns, String ciphertext) {
+    public CipherResponseItem(String name, int rows, int columns, String ciphertext, boolean readOnly) {
         this.name = name;
         this.rows = rows;
         this.columns = columns;
         this.ciphertext = ciphertext;
+        this.readOnly = readOnly;
     }
 }

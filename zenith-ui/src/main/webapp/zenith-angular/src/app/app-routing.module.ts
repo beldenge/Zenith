@@ -4,6 +4,7 @@ import { DashboardComponent } from "./dashboard/dashboard.component";
 import { SettingsComponent } from "./settings/settings.component";
 import { NotFoundComponent } from "./not-found/not-found.component";
 import { TransformersComponent } from "./transformers/transformers.component";
+import { ManageCiphersComponent } from "./manage-ciphers/manage-ciphers.component";
 
 
 const routes: Routes = [
@@ -11,6 +12,7 @@ const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, data: { state: 'dashboard' } },
   { path: 'settings', component: SettingsComponent, data: { state: 'settings' } },
   { path: 'transformers', component: TransformersComponent, data: { state: 'transformers' } },
+  { path: 'ciphers', component: ManageCiphersComponent, data: { state: 'ciphers' } },
   { path: '**', component: NotFoundComponent }
 ];
 

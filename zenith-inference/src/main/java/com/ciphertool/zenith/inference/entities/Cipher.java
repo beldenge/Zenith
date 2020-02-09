@@ -30,6 +30,8 @@ public class Cipher {
 
     private int rows;
 
+    private boolean readOnly;
+
     private List<Ciphertext> ciphertextCharacters = new ArrayList<>();
 
     private Map<String, String> knownSolutionKey = new HashMap<>();
@@ -46,8 +48,16 @@ public class Cipher {
         this.columns = columns;
     }
 
+    public Cipher(String name, int columns, int rows, boolean readOnly) {
+        this.name = name;
+        this.columns = columns;
+        this.rows = rows;
+        this.readOnly = readOnly;
+    }
+
     public Cipher(CipherJson cipherJson) {
         this(cipherJson.getName(), cipherJson.getRows(), cipherJson.getColumns());
+        this.readOnly = cipherJson.isReadOnly();
 
         String[] ciphertexts = cipherJson.getCiphertext().split("\\s+");
 
@@ -125,6 +135,14 @@ public class Cipher {
         this.rows = rows;
     }
 
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
     public List<Ciphertext> getCiphertextCharacters() {
         return Collections.unmodifiableList(ciphertextCharacters);
     }
@@ -164,6 +182,7 @@ public class Cipher {
 
     public Cipher clone() {
         Cipher cloned = new Cipher(this.name, this.rows, this.columns);
+        cloned.readOnly = this.readOnly;
 
         for (Ciphertext ciphertext : this.ciphertextCharacters) {
             cloned.addCiphertextCharacter(ciphertext.clone());

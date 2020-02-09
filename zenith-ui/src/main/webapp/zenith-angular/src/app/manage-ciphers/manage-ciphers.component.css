@@ -1,0 +1,31 @@
+table {
+  width: 95%;
+  table-layout: fixed;
+}
+
+th, td {
+  overflow: hidden;
+  width: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mat-column-name {
+  width: 25%;
+}
+
+.mat-column-rows {
+  width: 5%;
+}
+
+.mat-column-columns {
+  width: 5%;
+}
+
+.mat-column-ciphertext {
+  width: 55%;
+}
+
+.mat-column-actions {
+  width: 10%;
+}

@@ -65,7 +65,7 @@ public class CipherService {
         List<Cipher> ciphers = cipherDao.findAll();
 
         for (Cipher cipher : ciphers) {
-            CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString());
+            CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString(), cipher.isReadOnly());
 
             cipherResponse.getCiphers().add(cipherResponseItem);
         }
@@ -90,7 +90,7 @@ public class CipherService {
 
         cipher = transformationManager.transform(cipher, steps);
 
-        CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString());
+        CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString(), cipher.isReadOnly());
 
         cipherResponse.getCiphers().add(cipherResponseItem);
 

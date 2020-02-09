@@ -4,8 +4,6 @@ import { Cipher } from "../models/Cipher";
 import { FormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
-import { MatDialog } from "@angular/material/dialog";
-import { NewCipherModalComponent } from "../new-cipher-modal/new-cipher-modal.component";
 
 @Component({
   selector: 'app-dashboard',
@@ -24,7 +22,7 @@ export class DashboardComponent implements OnInit {
   });
   selectHasFocus: boolean = false;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private dialog: MatDialog) { }
+  constructor(private fb: FormBuilder, private cipherService: CipherService) { }
 
   ngOnInit() {
     this.webSocketAPI = new WebSocketAPI();
@@ -89,14 +87,5 @@ export class DashboardComponent implements OnInit {
     this.solution = null;
     localStorage.setItem('selected_cipher_name', this.selectedCipher.name);
     this.cipherService.updateSelectedCipher(this.selectedCipher);
-  }
-
-  openNewCipherModal() {
-    const dialogRef = this.dialog.open(NewCipherModalComponent, {
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-    });
   }
 }

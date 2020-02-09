@@ -25,6 +25,10 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatStepperModule } from "@angular/material/stepper";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { ManageCiphersComponent } from './manage-ciphers/manage-ciphers.component';
+import { MatTableModule } from "@angular/material/table";
+import { MatSortModule } from "@angular/material/sort";
+import { MatPaginatorModule } from "@angular/material/paginator";
 
 @NgModule({
   declarations: [
@@ -38,7 +42,8 @@ import { MatInputModule } from "@angular/material/input";
     SettingsComponent,
     NotFoundComponent,
     TransformersComponent,
-    NewCipherModalComponent
+    NewCipherModalComponent,
+    ManageCiphersComponent
   ],
   imports: [
     BrowserModule,
@@ -53,7 +58,10 @@ import { MatInputModule } from "@angular/material/input";
     MatButtonModule,
     MatStepperModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule
   ],
   providers: [
     JsonPipe,
