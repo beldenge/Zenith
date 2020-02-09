@@ -1,0 +1,50 @@
+<h1 mat-dialog-title>Create a new cipher</h1>
+<div mat-dialog-content>
+  <mat-vertical-stepper [linear]="true" #stepper>
+    <mat-step [stepControl]="nameFormGroup">
+      <form [formGroup]="nameFormGroup">
+        <ng-template matStepLabel>Name</ng-template>
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" type="text" required>
+          <mat-error>A unique name is required</mat-error>
+        </mat-form-field>
+        <div>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="dimensionsFormGroup">
+      <form [formGroup]="dimensionsFormGroup">
+        <ng-template matStepLabel>Dimensions</ng-template>
+        <mat-form-field appearance="outline">
+          <mat-label>Rows</mat-label>
+          <input matInput formControlName="rows" type="text" required>
+          <mat-error>A number 0 or greater is required</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Columns</mat-label>
+          <input matInput formControlName="columns" type="text" required>
+          <mat-error>A number 0 or greater is required</mat-error>
+        </mat-form-field>
+        <div>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="ciphertextFormGroup">
+      <form [formGroup]="ciphertextFormGroup">
+        <ng-template matStepLabel>Ciphertext</ng-template>
+        <mat-form-field appearance="outline">
+          <mat-label>Ciphertext</mat-label>
+          <textarea matInput formControlName="ciphertext" required rows="3" class="w-100"></textarea>
+          <mat-error>Ciphertext is required</mat-error>
+        </mat-form-field>
+      </form>
+    </mat-step>
+  </mat-vertical-stepper>
+</div>
+<div mat-dialog-actions>
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button *ngIf="ciphertextFormGroup.valid">Save</button>
+</div>

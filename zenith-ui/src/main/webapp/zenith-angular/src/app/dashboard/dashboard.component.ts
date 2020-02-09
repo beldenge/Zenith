@@ -4,6 +4,8 @@ import { Cipher } from "../models/Cipher";
 import { FormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
+import { MatDialog } from "@angular/material/dialog";
+import { NewCipherModalComponent } from "../new-cipher-modal/new-cipher-modal.component";
 
 @Component({
   selector: 'app-dashboard',
@@ -20,8 +22,9 @@ export class DashboardComponent implements OnInit {
   hyperparametersForm = this.fb.group({
     epochs: ['1', [Validators.min(1), Validators.pattern("^[0-9]*$")]]
   });
+  selectHasFocus: boolean = false;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService) { }
+  constructor(private fb: FormBuilder, private cipherService: CipherService, private dialog: MatDialog) { }
 
   ngOnInit() {
     this.webSocketAPI = new WebSocketAPI();
@@ -35,15 +38,24 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  onMouseOverSelect(element: HTMLElement) {
-    element.focus();
-    element.onmouseout = (event: MouseEvent) => {
-      element.blur();
-    };
+  onMouseDownSelect(element: HTMLElement) {
+    this.selectHasFocus = true;
   }
 
-  onClickSelect(element: HTMLElement) {
-    element.onmouseout = () => {};
+  onMouseOverSelect(element: HTMLElement) {
+    if (!this.selectHasFocus) {
+      element.focus();
+    }
+  }
+
+  onMouseOutSelect(element: HTMLElement) {
+    if (!this.selectHasFocus) {
+      element.blur();
+    }
+  }
+
+  onFocusOutSelect(element: HTMLElement) {
+    this.selectHasFocus = false;
   }
 
   solve() {
@@ -77,5 +89,14 @@ export class DashboardComponent implements OnInit {
     this.solution = null;
     localStorage.setItem('selected_cipher_name', this.selectedCipher.name);
     this.cipherService.updateSelectedCipher(this.selectedCipher);
+  }
+
+  openNewCipherModal() {
+    const dialogRef = this.dialog.open(NewCipherModalComponent, {
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
   }
 }

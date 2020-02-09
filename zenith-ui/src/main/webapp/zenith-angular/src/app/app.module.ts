@@ -19,6 +19,12 @@ import { TransformersComponent } from './transformers/transformers.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MatTooltipModule } from '@angular/material';
 import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor";
+import { NewCipherModalComponent } from './new-cipher-modal/new-cipher-modal.component';
+import { MatDialogModule } from "@angular/material/dialog";
+import { MatButtonModule } from "@angular/material/button";
+import { MatStepperModule } from "@angular/material/stepper";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
 
 @NgModule({
   declarations: [
@@ -31,7 +37,8 @@ import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor"
     DashboardComponent,
     SettingsComponent,
     NotFoundComponent,
-    TransformersComponent
+    TransformersComponent,
+    NewCipherModalComponent
   ],
   imports: [
     BrowserModule,
@@ -41,7 +48,12 @@ import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor"
     ReactiveFormsModule,
     SortablejsModule.forRoot({ animation: 150 }),
     BrowserAnimationsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatStepperModule,
+    MatFormFieldModule,
+    MatInputModule
   ],
   providers: [
     JsonPipe,
@@ -51,6 +63,9 @@ import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor"
       multi: true
     },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    NewCipherModalComponent
+  ]
 })
 export class AppModule { }
