@@ -4,7 +4,7 @@ import { MatTableDataSource } from "@angular/material/table";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 import { Cipher } from "../models/Cipher";
-import { NewCipherModalComponent } from "../new-cipher-modal/new-cipher-modal.component";
+import { CipherModalComponent } from "../cipher-modal/cipher-modal.component";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
@@ -41,14 +41,20 @@ export class ManageCiphersComponent implements OnInit {
     this.ciphersDataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  openNewCipherModal() {
-    this.dialog.open(NewCipherModalComponent, {});
+  createCipher() {
+    this.dialog.open(CipherModalComponent, {
+      data: {
+        mode: 'CREATE'
+      }
+    });
   }
 
   editCipher(cipher: Cipher) {
-    this._snackBar.open('Updated "' + cipher.name + '"', '',{
-      duration: 2000,
-      verticalPosition: 'top'
+    this.dialog.open(CipherModalComponent, {
+      data: {
+        cipher: cipher,
+        mode: 'EDIT'
+      }
     });
   }
 

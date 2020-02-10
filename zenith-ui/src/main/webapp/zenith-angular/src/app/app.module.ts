@@ -19,7 +19,7 @@ import { TransformersComponent } from './transformers/transformers.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MatTooltipModule } from '@angular/material';
 import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor";
-import { NewCipherModalComponent } from './new-cipher-modal/new-cipher-modal.component';
+import { CipherModalComponent } from './cipher-modal/cipher-modal.component';
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
 import { MatStepperModule } from "@angular/material/stepper";
@@ -43,7 +43,7 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
     SettingsComponent,
     NotFoundComponent,
     TransformersComponent,
-    NewCipherModalComponent,
+    CipherModalComponent,
     ManageCiphersComponent
   ],
   imports: [
@@ -75,7 +75,7 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
   ],
   bootstrap: [AppComponent],
   entryComponents: [
-    NewCipherModalComponent
+    CipherModalComponent
   ]
 })
 export class AppModule { }

@@ -1,4 +1,4 @@
-<h1 mat-dialog-title>Create a new cipher</h1>
+<h1 mat-dialog-title>{{mode === 'CREATE' ? 'Create a new cipher' : 'Update "' + cipher.name + '"'}}</h1>
 <div mat-dialog-content>
   <form [formGroup]="newCipherForm">
     <mat-vertical-stepper #stepper [linear]="true" formArrayName="formArray">

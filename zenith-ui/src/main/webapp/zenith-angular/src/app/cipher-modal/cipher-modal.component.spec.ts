@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NewCipherModalComponent } from './new-cipher-modal.component';
+import { CipherModalComponent } from './cipher-modal.component';
 
-describe('NewCipherModalComponent', () => {
-  let component: NewCipherModalComponent;
-  let fixture: ComponentFixture<NewCipherModalComponent>;
+describe('CipherModalComponent', () => {
+  let component: CipherModalComponent;
+  let fixture: ComponentFixture<CipherModalComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NewCipherModalComponent ]
+      declarations: [ CipherModalComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(NewCipherModalComponent);
+    fixture = TestBed.createComponent(CipherModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
