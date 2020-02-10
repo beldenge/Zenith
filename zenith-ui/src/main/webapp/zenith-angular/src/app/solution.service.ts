@@ -3,6 +3,9 @@ import { HttpClient } from "@angular/common/http";
 import { Cipher } from "./models/Cipher";
 import { SolutionResponse } from "./models/SolutionResponse";
 import { SolutionRequest } from "./models/SolutionRequest";
+import { environment } from "../environments/environment";
+
+const ENDPOINT_URL = environment.apiUrlBase + '/solutions';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +18,6 @@ export class SolutionService {
   solve(cipher: Cipher, epochs: number) {
     let request = new SolutionRequest(cipher.rows, cipher.columns, cipher.ciphertext, epochs);
 
-    return this.http.post<SolutionResponse>('http://localhost:8080/api/solutions', request);
+    return this.http.post<SolutionResponse>(ENDPOINT_URL, request);
   }
 }

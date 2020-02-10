@@ -3,6 +3,9 @@ import { HttpClient } from "@angular/common/http";
 import { CiphertextTransformerResponse } from "./models/CiphertextTransformerResponse";
 import { CiphertextTransformer } from "./models/CiphertextTransformer";
 import { BehaviorSubject, Observable } from "rxjs";
+import { environment } from "../environments/environment";
+
+const ENDPOINT_URL = environment.apiUrlBase + '/transformers';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +26,6 @@ export class TransformerService {
   }
 
   getTransformers() {
-    return this.http.get<CiphertextTransformerResponse>('http://localhost:8080/api/transformers');
+    return this.http.get<CiphertextTransformerResponse>(ENDPOINT_URL);
   }
 }

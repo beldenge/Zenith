@@ -5,6 +5,9 @@ import { BehaviorSubject, Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
 import { TransformationRequest } from "./models/TransformationRequest";
 import { CipherRequest } from "./models/CipherRequest";
+import { environment } from "../environments/environment";
+
+const ENDPOINT_URL = environment.apiUrlBase + '/ciphers';
 
 @Injectable({
   providedIn: 'root'
@@ -34,22 +37,22 @@ export class CipherService {
   ) {}
 
   getCiphers() {
-    return this.http.get<CipherResponse>('http://localhost:8080/api/ciphers');
+    return this.http.get<CipherResponse>(ENDPOINT_URL);
   }
 
   transformCipher(cipherName: string, transformationRequest: TransformationRequest) {
-    return this.http.post<CipherResponse>('http://localhost:8080/api/ciphers/' + cipherName, transformationRequest);
+    return this.http.post<CipherResponse>(ENDPOINT_URL + '/' + cipherName, transformationRequest);
   }
 
   createCipher(cipherRequest: CipherRequest) {
-    return this.http.post<void>('http://localhost:8080/api/ciphers', cipherRequest);
+    return this.http.post<void>(ENDPOINT_URL, cipherRequest);
   }
 
   updateCipher(cipherName: string, cipherRequest: CipherRequest) {
-    return this.http.put<void>('http://localhost:8080/api/ciphers/' + cipherName, cipherRequest);
+    return this.http.put<void>(ENDPOINT_URL + '/' + cipherName, cipherRequest);
   }
 
   deleteCipher(cipherName: string) {
-    return this.http.delete<void>('http://localhost:8080/api/ciphers/' + cipherName);
+    return this.http.delete<void>(ENDPOINT_URL + '/' + cipherName);
   }
 }
