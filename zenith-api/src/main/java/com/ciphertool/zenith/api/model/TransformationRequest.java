@@ -22,14 +22,12 @@ package com.ciphertool.zenith.api.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.Valid;
 import java.util.List;
 
 @Getter
 @Setter
 public class TransformationRequest {
-    @NotBlank
-    private String cipherName;
-
+    @Valid
     private List<TransformationRequestStep> steps;
 }

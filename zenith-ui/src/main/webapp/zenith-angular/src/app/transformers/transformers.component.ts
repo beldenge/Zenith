@@ -42,7 +42,6 @@ export class TransformersComponent implements OnInit {
 
   onAppliedTransformersChange = (event: any) => {
     let transformationRequest: TransformationRequest = {
-      cipherName: this.cipher.name,
       steps: []
     };
 
@@ -61,7 +60,7 @@ export class TransformersComponent implements OnInit {
     });
 
     if (satisfied) {
-      this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
+      this.cipherService.transformCipher(this.cipher.name, transformationRequest).subscribe(cipherResponse => {
         this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
       });
 

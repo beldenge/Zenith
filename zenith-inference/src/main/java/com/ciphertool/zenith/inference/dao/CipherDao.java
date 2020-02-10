@@ -32,9 +32,9 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,9 +45,6 @@ public class CipherDao {
     private static final String CIPHERS_DIRECTORY = "ciphers";
     private static final String JSON_EXTENSION = ".json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
-
-    private List<Cipher> ciphers = new ArrayList<>();
 
     public Cipher findByCipherName(String name) {
         if (name == null || name.isEmpty()) {
@@ -63,10 +60,6 @@ public class CipherDao {
     }
 
     public List<Cipher> findAll() {
-        if (!ciphers.isEmpty()) {
-            return ciphers;
-        }
-
         // First read ciphers from the classpath
         ClassLoader cl = this.getClass().getClassLoader();
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
@@ -77,11 +70,13 @@ public class CipherDao {
             throw new IllegalStateException("Unable to read ciphers from classpath directory=" + CIPHERS_DIRECTORY, ioe);
         }
 
+        List<Cipher> ciphers = new ArrayList<>();
+
         for (Resource resource : resources){
             try (InputStream inputStream = resource.getInputStream()) {
                 Cipher nextCipher = new Cipher(OBJECT_MAPPER.readValue(inputStream, CipherJson.class));
 
-                if (containsCipher(nextCipher)) {
+                if (containsCipher(ciphers, nextCipher)) {
                     throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
                 }
 
@@ -108,7 +103,7 @@ public class CipherDao {
             try {
                 Cipher nextCipher = new Cipher(OBJECT_MAPPER.readValue(file, CipherJson.class));
 
-                if (containsCipher(nextCipher)) {
+                if (containsCipher(ciphers, nextCipher)) {
                     throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
                 }
 
@@ -123,10 +118,8 @@ public class CipherDao {
     }
 
     public void writeToFile(Cipher cipher) {
-        String dateText = LocalDateTime.now().format(DATE_TIME_FORMATTER);
-
         // Write the file to the current working directory
-        String outputFilename = "." + File.separator + cipher.getName() + "-" + dateText + JSON_EXTENSION;
+        String outputFilename = Paths.get(CIPHERS_DIRECTORY).toAbsolutePath().toString() + File.separator + cipher.getName() + JSON_EXTENSION;
 
         try {
             OBJECT_MAPPER.writeValue(new File(outputFilename), new CipherJson(cipher));
@@ -135,7 +128,27 @@ public class CipherDao {
         }
     }
 
-    private boolean containsCipher(Cipher newCipher) {
+    public void delete(String name) throws IOException {
+        File localCiphersDirectory = new File(Paths.get(CIPHERS_DIRECTORY).toAbsolutePath().toString());
+
+        if (!localCiphersDirectory.exists() || !localCiphersDirectory.isDirectory()) {
+            return;
+        }
+
+        Path cipherPath = localCiphersDirectory.toPath().resolve(name + JSON_EXTENSION);
+
+        if (!Files.exists(cipherPath)) {
+            return;
+        }
+
+        if (Files.isDirectory(cipherPath)) {
+            throw new IllegalArgumentException("Deletion path resolved to a directory: " + cipherPath.toString() + ".");
+        }
+
+        Files.delete(localCiphersDirectory.toPath().resolve(name + JSON_EXTENSION));
+    }
+
+    private boolean containsCipher(List<Cipher> ciphers, Cipher newCipher) {
         return ciphers.stream().anyMatch(cipher -> cipher.getName().equals(newCipher.getName()));
     }
 }

@@ -1,8 +1,8 @@
 <h1 mat-dialog-title>Create a new cipher</h1>
 <div mat-dialog-content>
-  <mat-vertical-stepper [linear]="true" #stepper>
-    <mat-step [stepControl]="nameFormGroup">
-      <form [formGroup]="nameFormGroup">
+  <form [formGroup]="newCipherForm">
+    <mat-vertical-stepper #stepper [linear]="true" formArrayName="formArray">
+      <mat-step formGroupName="0" [stepControl]="formArray?.get([0])">
         <ng-template matStepLabel>Name</ng-template>
         <mat-form-field appearance="outline">
           <mat-label>Name</mat-label>
@@ -10,12 +10,10 @@
           <mat-error>A unique name is required</mat-error>
         </mat-form-field>
         <div>
-          <button mat-button matStepperNext>Next</button>
+          <button type="button" mat-button matStepperNext>Next</button>
         </div>
-      </form>
-    </mat-step>
-    <mat-step [stepControl]="dimensionsFormGroup">
-      <form [formGroup]="dimensionsFormGroup">
+      </mat-step>
+      <mat-step formGroupName="1" [stepControl]="formArray?.get([1])">
         <ng-template matStepLabel>Dimensions</ng-template>
         <mat-form-field appearance="outline">
           <mat-label>Rows</mat-label>
@@ -28,23 +26,21 @@
           <mat-error>A number 0 or greater is required</mat-error>
         </mat-form-field>
         <div>
-          <button mat-button matStepperNext>Next</button>
+          <button type="button" mat-button matStepperNext>Next</button>
         </div>
-      </form>
-    </mat-step>
-    <mat-step [stepControl]="ciphertextFormGroup">
-      <form [formGroup]="ciphertextFormGroup">
+      </mat-step>
+      <mat-step formGroupName="2" [stepControl]="formArray?.get([2])">
         <ng-template matStepLabel>Ciphertext</ng-template>
         <mat-form-field appearance="outline">
           <mat-label>Ciphertext</mat-label>
           <textarea matInput formControlName="ciphertext" required rows="3" class="w-100"></textarea>
           <mat-error>Ciphertext is required</mat-error>
         </mat-form-field>
-      </form>
-    </mat-step>
-  </mat-vertical-stepper>
+      </mat-step>
+    </mat-vertical-stepper>
+  </form>
 </div>
 <div mat-dialog-actions>
-  <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-button *ngIf="ciphertextFormGroup.valid">Save</button>
+  <button type="button" mat-button mat-dialog-close>Cancel</button>
+  <button mat-button *ngIf="ciphertextFormGroup.valid" (click)="save()">Save</button>
 </div>

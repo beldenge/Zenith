@@ -6,6 +6,7 @@ import { MatPaginator } from "@angular/material/paginator";
 import { Cipher } from "../models/Cipher";
 import { NewCipherModalComponent } from "../new-cipher-modal/new-cipher-modal.component";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-manage-ciphers',
@@ -14,36 +15,55 @@ import { MatDialog } from "@angular/material/dialog";
 })
 export class ManageCiphersComponent implements OnInit {
   displayedColumns: string[] = ['name', 'rows', 'columns', 'ciphertext', 'actions'];
-  ciphers: MatTableDataSource<any>;
+  ciphersDataSource: MatTableDataSource<any>;
   pageSizeOptions = [10, 20, 50];
+  ciphers: Cipher[];
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
 
-  constructor(private cipherService: CipherService, private dialog: MatDialog) { }
+  constructor(private cipherService: CipherService, private dialog: MatDialog, private _snackBar: MatSnackBar) { }
 
   ngOnInit() {
-    this.cipherService.getCiphersAsObservable().subscribe((ciphers$) => {
-      this.ciphers = new MatTableDataSource(ciphers$);
-      this.ciphers.sort = this.sort;
-      this.ciphers.paginator = this.paginator;
-      this.ciphers.filterPredicate = (data: Cipher, filter: string) => {
+    this.cipherService.getCiphersAsObservable().subscribe((ciphers) => {
+      this.ciphersDataSource = new MatTableDataSource(ciphers);
+      this.ciphersDataSource.sort = this.sort;
+      this.ciphersDataSource.paginator = this.paginator;
+      this.ciphersDataSource.filterPredicate = (data: Cipher, filter: string) => {
         return data.name.indexOf(filter) > -1;
       };
+      this.ciphers = ciphers;
     });
   }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.ciphers.filter = filterValue.trim().toLowerCase();
+    this.ciphersDataSource.filter = filterValue.trim().toLowerCase();
   }
 
   openNewCipherModal() {
-    const dialogRef = this.dialog.open(NewCipherModalComponent, {
-    });
+    this.dialog.open(NewCipherModalComponent, {});
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
+  editCipher(cipher: Cipher) {
+    this._snackBar.open('Updated "' + cipher.name + '"', '',{
+      duration: 2000,
+      verticalPosition: 'top'
+    });
+  }
+
+  deleteCipher(cipher: Cipher) {
+    this.cipherService.deleteCipher(cipher.name).subscribe(() => {
+      let filteredCiphers = this.ciphers.filter((next) => {
+        return next.name !== cipher.name;
+      });
+
+      this.cipherService.updateCiphers(filteredCiphers);
+
+      this._snackBar.open('Deleted "' + cipher.name + '"', '',{
+        duration: 2000,
+        verticalPosition: 'top'
+      });
     });
   }
 }
