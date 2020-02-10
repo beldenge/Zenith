@@ -1,5 +1,19 @@
-table {
+#table-container {
+ width: 95%;
+}
+
+#filter-container {
   width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mat-form-field {
+  width: 25%;
+}
+
+table {
+  width: 100%;
   table-layout: fixed;
 }
 

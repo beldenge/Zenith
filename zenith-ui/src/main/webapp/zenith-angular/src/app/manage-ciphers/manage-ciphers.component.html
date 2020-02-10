@@ -1,58 +1,66 @@
-<div class="float-left p-4">
-  Ciphers are saved to: ciphers.json
+<div class="row">
+  <div class="col-md-6 text-left pt-4 pb-0 px-4">
+    Ciphers are saved to: ciphers.json
+  </div>
+
+  <div class="col-md-6 text-right">
+    <div class="pt-4 pb-0 px-4">
+      <a href="javascript:void(0);" class="btn btn-primary btn-icon-split" (click)="openNewCipherModal()">
+        <span class="icon text-white-50">
+          <i [ngClass]="{'fas': true, 'fa-plus': true}"></i>
+        </span>
+        <span class="text">New</span>
+      </a>
+    </div>
+  </div>
 </div>
 
-<div class="float-right p-4">
-  <a href="javascript:void(0);" class="btn btn-primary btn-icon-split" (click)="openNewCipherModal()">
-    <span class="icon text-white-50">
-      <i [ngClass]="{'fas': true, 'fa-plus': true}"></i>
-    </span>
-    <span class="text">New</span>
-  </a>
+<div id="filter-container">
+  <mat-form-field>
+    <mat-label>Filter</mat-label>
+    <input matInput (keyup)="applyFilter($event)">
+  </mat-form-field>
 </div>
 
-<mat-form-field *ngIf="ciphersDataSource?.data.length > pageSizeOptions[0]">
-  <mat-label>Filter</mat-label>
-  <input matInput (keyup)="applyFilter($event)">
-</mat-form-field>
+<div id="table-container" class="mat-elevation-z8 mx-auto">
+  <table mat-table [dataSource]="ciphersDataSource" matSort>
 
-<table mat-table [dataSource]="ciphersDataSource" matSort class="mat-elevation-z8 mx-auto">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+      <td mat-cell *matCellDef="let cipher"> {{cipher.name}} </td>
+    </ng-container>
 
-  <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
-    <td mat-cell *matCellDef="let cipher"> {{cipher.name}} </td>
-  </ng-container>
+    <ng-container matColumnDef="rows">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Rows </th>
+      <td mat-cell *matCellDef="let cipher"> {{cipher.rows}} </td>
+    </ng-container>
 
-  <ng-container matColumnDef="rows">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Rows </th>
-    <td mat-cell *matCellDef="let cipher"> {{cipher.rows}} </td>
-  </ng-container>
+    <ng-container matColumnDef="columns">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Columns </th>
+      <td mat-cell *matCellDef="let cipher"> {{cipher.columns}} </td>
+    </ng-container>
 
-  <ng-container matColumnDef="columns">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Columns </th>
-    <td mat-cell *matCellDef="let cipher"> {{cipher.columns}} </td>
-  </ng-container>
+    <ng-container matColumnDef="ciphertext">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Ciphertext </th>
+      <td mat-cell *matCellDef="let cipher"> {{cipher.ciphertext}} </td>
+    </ng-container>
 
-  <ng-container matColumnDef="ciphertext">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Ciphertext </th>
-    <td mat-cell *matCellDef="let cipher"> {{cipher.ciphertext}} </td>
-  </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let cipher" [ngClass]="'text-center'">
+        <ng-container *ngIf="!cipher.readOnly">
+          <i class="fas fa-edit text-primary mx-2 cursor-pointer" matTooltip="Edit" matTooltipPosition="above" (click)="editCipher(cipher)"></i>
+          <i class="fas fa-trash-alt text-danger mx-2 cursor-pointer" matTooltip="Delete" matTooltipPosition="above" (click)="deleteCipher(cipher)"></i>
+        </ng-container>
+        <ng-container *ngIf="cipher.readOnly">
+          <p class="m-auto text-muted"><small>Read-only</small></p>
+        </ng-container>
+      </td>
+    </ng-container>
 
-  <ng-container matColumnDef="actions">
-    <th mat-header-cell *matHeaderCellDef></th>
-    <td mat-cell *matCellDef="let cipher" [ngClass]="'text-center'">
-      <ng-container *ngIf="!cipher.readOnly">
-        <i class="fas fa-edit text-primary mx-2 cursor-pointer" matTooltip="Edit" matTooltipPosition="above" (click)="editCipher(cipher)"></i>
-        <i class="fas fa-trash-alt text-danger mx-2 cursor-pointer" matTooltip="Delete" matTooltipPosition="above" (click)="deleteCipher(cipher)"></i>
-      </ng-container>
-      <ng-container *ngIf="cipher.readOnly">
-        <p class="m-auto text-muted"><small>Read-only</small></p>
-      </ng-container>
-    </td>
-  </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
 
-  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-</table>
-
-<mat-paginator *ngIf="ciphersDataSource?.data.length > pageSizeOptions[0]" [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+  <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
+</div>
