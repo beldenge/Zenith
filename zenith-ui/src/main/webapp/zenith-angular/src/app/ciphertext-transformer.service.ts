@@ -10,7 +10,7 @@ const ENDPOINT_URL = environment.apiUrlBase + '/transformers';
 @Injectable({
   providedIn: 'root'
 })
-export class TransformerService {
+export class CiphertextTransformerService {
   private appliedTransformers$ = new BehaviorSubject<CiphertextTransformer[]>([]);
 
   constructor(

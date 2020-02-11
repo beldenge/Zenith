@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { SortablejsOptions} from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { CiphertextTransformer } from "../models/CiphertextTransformer";
-import { TransformerService } from "../transformer.service";
+import { CiphertextTransformerService } from "../ciphertext-transformer.service";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { Observable } from "rxjs";
-import { TransformationRequest } from "../models/TransformationRequest";
+import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
 
 @Component({
   selector: 'app-ciphertext-transformers',
@@ -41,7 +41,7 @@ export class CiphertextTransformersComponent implements OnInit {
   appliedTransformers$: Observable<CiphertextTransformer[]>;
 
   onAppliedTransformersChange = (event: any) => {
-    let transformationRequest: TransformationRequest = {
+    let transformationRequest: CiphertextTransformationRequest = {
       steps: []
     };
 
@@ -77,7 +77,7 @@ export class CiphertextTransformersComponent implements OnInit {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: TransformerService, private cipherService: CipherService) {
+  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService) {
     this.cipher$ = cipherService.getSelectedCipherAsObservable();
     this.appliedTransformers$ = transformerService.getAppliedTransformersAsObservable();
   }

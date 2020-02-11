@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { CipherResponse } from "./models/CipherResponse";
 import { BehaviorSubject, Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
-import { TransformationRequest } from "./models/TransformationRequest";
+import { CiphertextTransformationRequest } from "./models/CiphertextTransformationRequest";
 import { CipherRequest } from "./models/CipherRequest";
 import { environment } from "../environments/environment";
 
@@ -40,7 +40,7 @@ export class CipherService {
     return this.http.get<CipherResponse>(ENDPOINT_URL);
   }
 
-  transformCipher(cipherName: string, transformationRequest: TransformationRequest) {
+  transformCipher(cipherName: string, transformationRequest: CiphertextTransformationRequest) {
     return this.http.post<CipherResponse>(ENDPOINT_URL + '/' + cipherName, transformationRequest);
   }
 
