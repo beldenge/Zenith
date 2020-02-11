@@ -9,9 +9,9 @@ import { Observable } from "rxjs";
 import { TransformationRequest } from "../models/TransformationRequest";
 
 @Component({
-  selector: 'app-transformers',
-  templateUrl: './transformers.component.html',
-  styleUrls: ['./transformers.component.css'],
+  selector: 'app-ciphertext-transformers',
+  templateUrl: './ciphertext-transformers.component.html',
+  styleUrls: ['./ciphertext-transformers.component.css'],
   animations: [
     // the fade-in/fade-out animation.
     trigger('simpleFadeAnimation', [
@@ -20,7 +20,7 @@ import { TransformationRequest } from "../models/TransformationRequest";
     ])
   ]
 })
-export class TransformersComponent implements OnInit {
+export class CiphertextTransformersComponent implements OnInit {
   cipher: Cipher;
   cipher$: Observable<Cipher>;
   public hoverClasses: string[] = [];

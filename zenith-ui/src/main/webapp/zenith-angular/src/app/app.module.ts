@@ -15,7 +15,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { SortablejsModule } from "ngx-sortablejs";
-import { TransformersComponent } from './transformers/transformers.component';
+import { CiphertextTransformersComponent } from './ciphertext-transformers/ciphertext-transformers.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MatTooltipModule } from '@angular/material';
 import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor";
@@ -43,7 +43,7 @@ import { PlaintextTransformersComponent } from './plaintext-transformers/plainte
     DashboardComponent,
     SettingsComponent,
     NotFoundComponent,
-    TransformersComponent,
+    CiphertextTransformersComponent,
     CipherModalComponent,
     ManageCiphersComponent,
     PlaintextTransformersComponent
