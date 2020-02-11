@@ -30,6 +30,7 @@ import { MatTableModule } from "@angular/material/table";
 import { MatSortModule } from "@angular/material/sort";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { PlaintextTransformersComponent } from './plaintext-transformers/plaintext-transformers.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
     NotFoundComponent,
     TransformersComponent,
     CipherModalComponent,
-    ManageCiphersComponent
+    ManageCiphersComponent,
+    PlaintextTransformersComponent
   ],
   imports: [
     BrowserModule,
