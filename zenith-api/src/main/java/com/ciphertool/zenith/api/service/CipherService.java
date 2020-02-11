@@ -25,7 +25,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextMultiplicityEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
-import com.ciphertool.zenith.inference.transformer.TransformationManager;
+import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.TransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,7 +45,7 @@ public class CipherService {
     private CipherDao cipherDao;
 
     @Autowired
-    private TransformationManager transformationManager;
+    private CiphertextTransformationManager ciphertextTransformationManager;
 
     @Autowired
     private CiphertextMultiplicityEvaluator multiplicityEvaluator;
@@ -87,7 +87,7 @@ public class CipherService {
                 .map(TransformationRequestStep::asStep)
                 .collect(Collectors.toList());
 
-        cipher = transformationManager.transform(cipher, steps);
+        cipher = ciphertextTransformationManager.transform(cipher, steps);
 
         CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString(), cipher.isReadOnly());
 

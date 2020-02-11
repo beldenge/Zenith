@@ -19,6 +19,17 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
+import com.ciphertool.zenith.inference.entities.FormlyForm;
+import org.apache.commons.lang3.StringUtils;
+
 public interface PlaintextTransformer {
     String transform(String plaintext);
+
+    default String getDisplayName() {
+        String displayName = getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), "");
+
+        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(displayName), ' ');
+    }
+
+    FormlyForm getForm();
 }

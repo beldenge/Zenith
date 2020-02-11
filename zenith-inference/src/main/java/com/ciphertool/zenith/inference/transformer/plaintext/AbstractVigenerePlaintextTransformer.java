@@ -19,10 +19,16 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
+import com.ciphertool.zenith.inference.entities.FormlyForm;
+import com.ciphertool.zenith.inference.entities.FormlyFormField;
+import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
 import com.ciphertool.zenith.model.LanguageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractVigenerePlaintextTransformer implements PlaintextTransformer {
     protected Logger log = LoggerFactory.getLogger(getClass());
@@ -41,4 +47,37 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
 
     @Value("${vigenere-transformer.key}")
     protected String key;
+
+    @Override
+    public FormlyForm getForm() {
+        FormlyForm form = new FormlyForm();
+
+        List<FormlyFormField> fields = new ArrayList<>(1);
+
+        FormlyTemplateOptions vigenereSquareOptions = new FormlyTemplateOptions();
+        vigenereSquareOptions.setLabel("Vigenere Square");
+        vigenereSquareOptions.setRequired(true);
+
+        FormlyFormField vigenereSquare = new FormlyFormField();
+        vigenereSquare.setKey("vigenereSquare");
+        vigenereSquare.setType("text");
+        vigenereSquare.setTemplateOptions(vigenereSquareOptions);
+
+        fields.add(vigenereSquare);
+
+        FormlyTemplateOptions keyOptions = new FormlyTemplateOptions();
+        keyOptions.setLabel("Key");
+        keyOptions.setRequired(true);
+
+        FormlyFormField key = new FormlyFormField();
+        key.setKey("key");
+        key.setType("input");
+        key.setTemplateOptions(keyOptions);
+
+        fields.add(key);
+
+        form.setFields(fields);
+
+        return form;
+    }
 }

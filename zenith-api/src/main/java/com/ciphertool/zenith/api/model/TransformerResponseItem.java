@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.api.model;
 
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.transformer.TransformerInputType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,4 +33,5 @@ public class TransformerResponseItem {
     private String displayName;
     private String inputName;
     private TransformerInputType inputType;
+    private FormlyForm form;
 }

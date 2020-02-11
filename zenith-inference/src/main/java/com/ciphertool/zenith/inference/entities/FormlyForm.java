@@ -17,23 +17,19 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.transformer.plaintext;
+package com.ciphertool.zenith.inference.entities;
 
-import com.ciphertool.zenith.inference.util.LetterUtils;
-import org.springframework.stereotype.Component;
+import lombok.Getter;
+import lombok.Setter;
 
-@Component
-public class OneTimePadPlaintextTransformer extends AbstractOneTimePadPlaintextTransformer {
-    @Override
-    public String transform(String plaintext) {
-        StringBuilder sb = new StringBuilder();
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-        for (int i = 0; i < plaintext.length(); i ++) {
-            int sum = LetterUtils.charToOrdinal(plaintext.charAt(i)) + LetterUtils.charToOrdinal(key.charAt(i % key.length()));
-
-            sb.append(LetterUtils.ordinalToChar(sum % LetterUtils.NUMBER_OF_LETTERS));
-        }
-
-        return sb.toString();
-    }
+@Getter
+@Setter
+public class FormlyForm {
+    private Map<String, Object> model = new HashMap<>();
+    private List<FormlyFormField> fields = new ArrayList<>();
 }

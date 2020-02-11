@@ -21,6 +21,8 @@
     "@angular/platform-browser": "^8.2.14",
     "@angular/platform-browser-dynamic": "^8.2.14",
     "@angular/router": "^8.2.14",
+    "@ngx-formly/core": "^5.5.11",
+    "@ngx-formly/material": "^5.5.11",
     "net": "^1.0.2",
     "ngx-sortablejs": "^3.1.3",
     "rxjs": "~6.4.0",

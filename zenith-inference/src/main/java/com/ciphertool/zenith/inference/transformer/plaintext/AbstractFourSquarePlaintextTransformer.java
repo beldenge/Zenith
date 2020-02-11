@@ -19,13 +19,18 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
+import com.ciphertool.zenith.inference.entities.FormlyForm;
+import com.ciphertool.zenith.inference.entities.FormlyFormField;
+import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractFourSquarePlaintextTransformer implements PlaintextTransformer {
@@ -73,6 +78,61 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyTopRightMap = getKeyMapFromKeyString(keyTopRight);
         keyBottomLeftMap = getKeyMapFromKeyString(keyBottomLeft);
         keyBottomRightMap = getKeyMapFromKeyString(keyBottomRight);
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        FormlyForm form = new FormlyForm();
+
+        List<FormlyFormField> fields = new ArrayList<>(4);
+
+        FormlyTemplateOptions keyTopLeftOptions = new FormlyTemplateOptions();
+        keyTopLeftOptions.setLabel("Top Left Key");
+        keyTopLeftOptions.setRequired(true);
+
+        FormlyFormField keyTopLeft = new FormlyFormField();
+        keyTopLeft.setKey("keyTopLeft");
+        keyTopLeft.setType("input");
+        keyTopLeft.setTemplateOptions(keyTopLeftOptions);
+
+        fields.add(keyTopLeft);
+
+        FormlyTemplateOptions keyTopRightOptions = new FormlyTemplateOptions();
+        keyTopRightOptions.setLabel("Top Right Key");
+        keyTopRightOptions.setRequired(true);
+
+        FormlyFormField keyTopRight = new FormlyFormField();
+        keyTopRight.setKey("keyTopRight");
+        keyTopRight.setType("input");
+        keyTopRight.setTemplateOptions(keyTopRightOptions);
+
+        fields.add(keyTopRight);
+
+        FormlyTemplateOptions keyBottomLeftOptions = new FormlyTemplateOptions();
+        keyBottomLeftOptions.setLabel("Bottom Left Key");
+        keyBottomLeftOptions.setRequired(true);
+
+        FormlyFormField keyBottomLeft = new FormlyFormField();
+        keyBottomLeft.setKey("keyBottomLeft");
+        keyBottomLeft.setType("input");
+        keyBottomLeft.setTemplateOptions(keyBottomLeftOptions);
+
+        fields.add(keyBottomLeft);
+
+        FormlyTemplateOptions keyBottomRightOptions = new FormlyTemplateOptions();
+        keyBottomRightOptions.setLabel("Bottom Right Key");
+        keyBottomRightOptions.setRequired(true);
+
+        FormlyFormField keyBottomRight = new FormlyFormField();
+        keyBottomRight.setKey("keyBottomRight");
+        keyBottomRight.setType("input");
+        keyBottomRight.setTemplateOptions(keyBottomRightOptions);
+
+        fields.add(keyBottomRight);
+
+        form.setFields(fields);
+
+        return form;
     }
 
     @AllArgsConstructor

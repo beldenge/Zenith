@@ -21,8 +21,11 @@ package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.TransformerResponse;
 import com.ciphertool.zenith.api.model.TransformerResponseItem;
-import com.ciphertool.zenith.inference.transformer.TransformationManager;
+import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -32,21 +35,44 @@ import java.util.List;
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/api/transformers", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-public class CiphertextTransformerService {
+public class TransformerService {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private List<CipherTransformer> cipherTransformers;
 
-    @GetMapping
+    @Autowired
+    private List<PlaintextTransformer> plaintextTransformers;
+
+    @GetMapping("/ciphertext")
     @ResponseBody
-    public TransformerResponse findTransformers() {
+    public TransformerResponse findCiphertextTransformers() {
         TransformerResponse transformerResponse = new TransformerResponse();
 
         for (CipherTransformer cipherTransformer : cipherTransformers) {
             TransformerResponseItem responseItem = new TransformerResponseItem();
-            responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(TransformationManager.CIPHER_TRANSFORMER_SUFFIX, ""));
+            responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(CiphertextTransformationManager.CIPHER_TRANSFORMER_SUFFIX, ""));
             responseItem.setDisplayName(cipherTransformer.getDisplayName());
             responseItem.setInputName(cipherTransformer.getInputName());
             responseItem.setInputType(cipherTransformer.getInputType());
+
+            transformerResponse.getTransformers().add(responseItem);
+        }
+
+        return transformerResponse;
+    }
+
+    @GetMapping("/plaintext")
+    @ResponseBody
+    public TransformerResponse findPlaintextTransformers() {
+        TransformerResponse transformerResponse = new TransformerResponse();
+
+        for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
+            TransformerResponseItem responseItem = new TransformerResponseItem();
+            responseItem.setName(plaintextTransformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), ""));
+            responseItem.setDisplayName(plaintextTransformer.getDisplayName());
+            log.info(plaintextTransformer.getDisplayName());
+            responseItem.setForm(plaintextTransformer.getForm());
 
             transformerResponse.getTransformers().add(responseItem);
         }

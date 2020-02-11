@@ -20,14 +20,10 @@
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import com.ciphertool.zenith.inference.util.LetterUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UnwrapOneTimePadPlaintextTransformer implements PlaintextTransformer {
-    @Value("${one-time-pad-transformer.key}")
-    private String key;
-
+public class UnwrapOneTimePadPlaintextTransformer extends AbstractOneTimePadPlaintextTransformer {
     @Override
     public String transform(String plaintext) {
         StringBuilder sb = new StringBuilder();

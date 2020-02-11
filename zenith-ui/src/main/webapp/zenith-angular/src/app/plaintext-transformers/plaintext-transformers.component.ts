@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from "rxjs";
 import { SortablejsOptions } from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
-import { PlaintextTransformer } from "../models/PlaintextTransformer";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { PlaintextTransformationRequest } from "../models/PlaintextTransformationRequest";
+import { ZenithTransformer } from "../models/ZenithTransformer";
 
 @Component({
   selector: 'app-plaintext-transformers',
@@ -20,8 +20,9 @@ import { PlaintextTransformationRequest } from "../models/PlaintextTransformatio
 })
 export class PlaintextTransformersComponent implements OnInit {
   public hoverClasses: string[] = [];
+  sampleSolution: string = 'thetomatoisaplantinthenightshadefamilyxxxx';
 
-  availableTransformers: PlaintextTransformer[] = [];
+  availableTransformers: ZenithTransformer[] = [];
 
   availableTransformersOptions: SortablejsOptions = {
     group: {
@@ -32,9 +33,9 @@ export class PlaintextTransformersComponent implements OnInit {
     sort: false
   };
 
-  appliedTransformers: PlaintextTransformer[] = [];
+  appliedTransformers: ZenithTransformer[] = [];
 
-  appliedTransformers$: Observable<PlaintextTransformer[]>;
+  appliedTransformers$: Observable<ZenithTransformer[]>;
 
   onAppliedTransformersChange = (event: any) => {
     let transformationRequest: PlaintextTransformationRequest = {
@@ -54,7 +55,7 @@ export class PlaintextTransformersComponent implements OnInit {
     if (satisfied) {
       // TODO: Update plaintext sample
 
-      // this.transformerService.updateAppliedTransformers(this.appliedTransformers);
+      this.transformerService.updateAppliedTransformers(this.appliedTransformers);
     }
 
     return true;
@@ -68,10 +69,14 @@ export class PlaintextTransformersComponent implements OnInit {
   };
 
   constructor(private transformerService: PlaintextTransformerService) {
-    // this.appliedTransformers$ = transformerService.getAppliedTransformersAsObservable();
+    this.appliedTransformers$ = transformerService.getAppliedTransformersAsObservable();
   }
 
   ngOnInit(): void {
+    this.transformerService.getTransformers().subscribe(transformerResponse => {
+      this.availableTransformers = transformerResponse.transformers;
+    });
+
     this.appliedTransformers$.subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
     });
@@ -80,7 +85,9 @@ export class PlaintextTransformersComponent implements OnInit {
   cloneTransformer = (item) => {
     return {
       name: item.name,
-      displayName: item.displayName
+      displayName: item.displayName,
+      form: item.form,
+      model: item.model
     };
   };
 

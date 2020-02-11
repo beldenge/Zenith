@@ -31,6 +31,8 @@ import { MatSortModule } from "@angular/material/sort";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { PlaintextTransformersComponent } from './plaintext-transformers/plaintext-transformers.component';
+import { FormlyMaterialModule } from "@ngx-formly/material";
+import { FormlyModule } from "@ngx-formly/core";
 
 @NgModule({
   declarations: [
@@ -65,7 +67,9 @@ import { PlaintextTransformersComponent } from './plaintext-transformers/plainte
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    FormlyModule.forRoot(),
+    FormlyMaterialModule
   ],
   providers: [
     JsonPipe,

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SortablejsOptions} from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
-import { CiphertextTransformer } from "../models/CiphertextTransformer";
+import { ZenithTransformer } from "../models/ZenithTransformer";
 import { CiphertextTransformerService } from "../ciphertext-transformer.service";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
@@ -25,7 +25,7 @@ export class CiphertextTransformersComponent implements OnInit {
   cipher$: Observable<Cipher>;
   public hoverClasses: string[] = [];
 
-  availableTransformers: CiphertextTransformer[] = [];
+  availableTransformers: ZenithTransformer[] = [];
 
   availableTransformersOptions: SortablejsOptions = {
     group: {
@@ -36,9 +36,9 @@ export class CiphertextTransformersComponent implements OnInit {
     sort: false
   };
 
-  appliedTransformers: CiphertextTransformer[] = [];
+  appliedTransformers: ZenithTransformer[] = [];
 
-  appliedTransformers$: Observable<CiphertextTransformer[]>;
+  appliedTransformers$: Observable<ZenithTransformer[]>;
 
   onAppliedTransformersChange = (event: any) => {
     let transformationRequest: CiphertextTransformationRequest = {
@@ -83,8 +83,8 @@ export class CiphertextTransformersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.transformerService.getTransformers().subscribe(ciphertextTransformerResponse => {
-      this.availableTransformers = ciphertextTransformerResponse.transformers;
+    this.transformerService.getTransformers().subscribe(transformerResponse => {
+      this.availableTransformers = transformerResponse.transformers;
     });
 
     this.cipher$.subscribe(cipher => {

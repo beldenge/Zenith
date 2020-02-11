@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class TransformationManager {
+public class CiphertextTransformationManager {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     public final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();

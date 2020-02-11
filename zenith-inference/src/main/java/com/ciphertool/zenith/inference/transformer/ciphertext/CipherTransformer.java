@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.transformer.TransformationManager;
+import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.TransformerInputType;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,7 +36,7 @@ public interface CipherTransformer {
     }
 
     default String getDisplayName() {
-        String displayName = getClass().getSimpleName().replace(TransformationManager.CIPHER_TRANSFORMER_SUFFIX, "");
+        String displayName = getClass().getSimpleName().replace(CiphertextTransformationManager.CIPHER_TRANSFORMER_SUFFIX, "");
 
         return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(displayName), ' ');
     }

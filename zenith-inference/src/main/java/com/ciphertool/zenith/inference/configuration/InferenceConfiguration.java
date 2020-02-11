@@ -22,7 +22,7 @@ package com.ciphertool.zenith.inference.configuration;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.transformer.TransformationManager;
+import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.ciphertext.*;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
@@ -90,7 +90,7 @@ public class InferenceConfiguration {
     private List<String> cipherTransformersToUse;
 
     @Bean
-    public Cipher cipher(CipherDao cipherDao, TransformationManager transformationManager) {
+    public Cipher cipher(CipherDao cipherDao, CiphertextTransformationManager ciphertextTransformationManager) {
         Cipher cipher = cipherDao.findByCipherName(cipherName);
 
         List<TransformationStep> transformationSteps = new ArrayList<>(cipherTransformersToUse.size());
@@ -107,7 +107,7 @@ public class InferenceConfiguration {
             }
         }
 
-        return transformationManager.transform(cipher, transformationSteps);
+        return ciphertextTransformationManager.transform(cipher, transformationSteps);
     }
 
     @Bean
