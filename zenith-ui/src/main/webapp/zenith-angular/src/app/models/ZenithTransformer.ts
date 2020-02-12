@@ -7,4 +7,5 @@ export class ZenithTransformer {
   inputType: string;
   inputValue: string;
   form: FormlyForm;
+  order: number;
 }

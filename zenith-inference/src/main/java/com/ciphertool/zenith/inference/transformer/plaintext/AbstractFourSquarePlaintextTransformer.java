@@ -23,6 +23,7 @@ import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
 import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,11 +34,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@NoArgsConstructor
 public abstract class AbstractFourSquarePlaintextTransformer implements PlaintextTransformer {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected static final int KEY_LENGTH = 25;
     protected static final int SQUARE_SIZE = 5;
+    public static final String KEY_TOP_LEFT = "keyTopLeft";
+    public static final String KEY_TOP_RIGHT = "keyTopRight";
+    public static final String KEY_BOTTOM_LEFT = "keyBottomLeft";
+    public static final String KEY_BOTTOM_RIGHT = "keyBottomRight";
 
     @Value("${four-square-transformer.key.top-left}")
     protected String keyTopLeft;
@@ -80,6 +86,14 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyBottomRightMap = getKeyMapFromKeyString(keyBottomRight);
     }
 
+    public AbstractFourSquarePlaintextTransformer(Map<String, Object> data) {
+        keyTopLeft = (String) data.get(KEY_TOP_LEFT);
+        keyTopRight = (String) data.get(KEY_TOP_RIGHT);
+        keyBottomLeft = (String) data.get(KEY_BOTTOM_LEFT);
+        keyBottomRight = (String) data.get(KEY_BOTTOM_RIGHT);
+        init();
+    }
+
     @Override
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
@@ -91,8 +105,8 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyTopLeftOptions.setRequired(true);
 
         FormlyFormField keyTopLeft = new FormlyFormField();
-        keyTopLeft.setKey("keyTopLeft");
-        keyTopLeft.setType("input");
+        keyTopLeft.setKey(KEY_TOP_LEFT);
+        keyTopLeft.setType("textarea");
         keyTopLeft.setTemplateOptions(keyTopLeftOptions);
 
         fields.add(keyTopLeft);
@@ -102,8 +116,8 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyTopRightOptions.setRequired(true);
 
         FormlyFormField keyTopRight = new FormlyFormField();
-        keyTopRight.setKey("keyTopRight");
-        keyTopRight.setType("input");
+        keyTopRight.setKey(KEY_TOP_RIGHT);
+        keyTopRight.setType("textarea");
         keyTopRight.setTemplateOptions(keyTopRightOptions);
 
         fields.add(keyTopRight);
@@ -113,8 +127,8 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyBottomLeftOptions.setRequired(true);
 
         FormlyFormField keyBottomLeft = new FormlyFormField();
-        keyBottomLeft.setKey("keyBottomLeft");
-        keyBottomLeft.setType("input");
+        keyBottomLeft.setKey(KEY_BOTTOM_LEFT);
+        keyBottomLeft.setType("textarea");
         keyBottomLeft.setTemplateOptions(keyBottomLeftOptions);
 
         fields.add(keyBottomLeft);
@@ -124,8 +138,8 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyBottomRightOptions.setRequired(true);
 
         FormlyFormField keyBottomRight = new FormlyFormField();
-        keyBottomRight.setKey("keyBottomRight");
-        keyBottomRight.setType("input");
+        keyBottomRight.setKey(KEY_BOTTOM_RIGHT);
+        keyBottomRight.setType("textarea");
         keyBottomRight.setTemplateOptions(keyBottomRightOptions);
 
         fields.add(keyBottomRight);

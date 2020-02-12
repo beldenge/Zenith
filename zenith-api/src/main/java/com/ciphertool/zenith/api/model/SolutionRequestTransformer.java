@@ -19,32 +19,22 @@
 
 package com.ciphertool.zenith.api.model;
 
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
-public class SolutionRequest {
-    @NotNull
-    @Min(0)
-    private int rows;
-
-    @NotNull
-    @Min(0)
-    private int columns;
-
+public class SolutionRequestTransformer {
     @NotBlank
-    private String ciphertext;
+    private String transformerName;
+    private Map<String, Object> data = new HashMap<>();
 
-    @Min(1)
-    private int epochs = 1;
-
-    @Valid
-    private List<SolutionRequestTransformer> plaintextTransformers;
+    public PlaintextTransformationStep asStep() {
+        return new PlaintextTransformationStep(transformerName, data);
+    }
 }

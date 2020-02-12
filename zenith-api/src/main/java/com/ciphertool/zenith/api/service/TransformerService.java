@@ -21,7 +21,6 @@ package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.TransformerResponse;
 import com.ciphertool.zenith.api.model.TransformerResponseItem;
-import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import org.slf4j.Logger;
@@ -51,10 +50,12 @@ public class TransformerService {
 
         for (CipherTransformer cipherTransformer : cipherTransformers) {
             TransformerResponseItem responseItem = new TransformerResponseItem();
-            responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(CiphertextTransformationManager.CIPHER_TRANSFORMER_SUFFIX, ""));
+            responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), ""));
             responseItem.setDisplayName(cipherTransformer.getDisplayName());
             responseItem.setInputName(cipherTransformer.getInputName());
             responseItem.setInputType(cipherTransformer.getInputType());
+            responseItem.setForm(cipherTransformer.getForm());
+            responseItem.setOrder(cipherTransformer.getOrder());
 
             transformerResponse.getTransformers().add(responseItem);
         }
@@ -73,6 +74,7 @@ public class TransformerService {
             responseItem.setDisplayName(plaintextTransformer.getDisplayName());
             log.info(plaintextTransformer.getDisplayName());
             responseItem.setForm(plaintextTransformer.getForm());
+            responseItem.setOrder(plaintextTransformer.getOrder());
 
             transformerResponse.getTransformers().add(responseItem);
         }

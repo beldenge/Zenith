@@ -19,25 +19,15 @@
 
 package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.inference.transformer.TransformationStep;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.validation.Valid;
+import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class TransformationRequestStep {
-    @NotBlank
-    private String transformerName;
-
-    @Size(min = 1)
-    private String argument;
-
-    public TransformationStep asStep() {
-        return new TransformationStep(transformerName, argument);
-    }
+public class CiphertextTransformationRequest {
+    @Valid
+    private List<CiphertextTransformationRequestStep> steps;
 }

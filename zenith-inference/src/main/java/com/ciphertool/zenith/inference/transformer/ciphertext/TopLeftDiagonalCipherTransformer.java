@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -57,5 +58,15 @@ public class TopLeftDiagonalCipherTransformer implements CipherTransformer {
         }
 
         return transformed;
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return new FormlyForm();
+    }
+
+    @Override
+    public int getOrder() {
+        return 20;
     }
 }

@@ -19,10 +19,18 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
+@NoArgsConstructor
 @Component
 public class UnwrapFourSquarePlaintextTransformer extends AbstractFourSquarePlaintextTransformer {
+    public UnwrapFourSquarePlaintextTransformer(Map<String, Object> data) {
+        super(data);
+    }
+
     @Override
     public String transform(String plaintext) {
         if (plaintext.length() % 2 != 0) {
@@ -42,5 +50,15 @@ public class UnwrapFourSquarePlaintextTransformer extends AbstractFourSquarePlai
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public PlaintextTransformer getInstance(Map<String, Object> data) {
+        return new UnwrapFourSquarePlaintextTransformer(data);
+    }
+
+    @Override
+    public int getOrder() {
+        return 4;
     }
 }

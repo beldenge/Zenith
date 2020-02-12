@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.transformer.TransformerInputType;
 import org.springframework.stereotype.Component;
 
@@ -65,5 +66,15 @@ public class TranspositionCipherTransformer extends AbstractTranspositionCipherT
     @Override
     public TransformerInputType getInputType() {
         return TransformerInputType.TEXT_OR_NUMBER_ARRAY;
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return new FormlyForm();
+    }
+
+    @Override
+    public int getOrder() {
+        return 18;
     }
 }

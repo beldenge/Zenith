@@ -17,17 +17,22 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.optimizer;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.Valid;
 import java.util.List;
 
-@Getter
-@Setter
-public class TransformationRequest {
-    @Valid
-    private List<TransformationRequestStep> steps;
+public abstract class AbstractSolutionOptimizer implements SolutionOptimizer {
+    @Autowired
+    protected PlaintextTransformationManager plaintextTransformationManager;
+
+    @Autowired
+    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
+
+    @Autowired
+    protected CipherSolutionPrinter cipherSolutionPrinter;
 }

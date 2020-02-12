@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -36,5 +37,15 @@ public class RemoveFirstRowCipherTransformer implements CipherTransformer {
         transformed.setRows(transformed.getRows() - 1);
 
         return transformed;
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return new FormlyForm();
+    }
+
+    @Override
+    public int getOrder() {
+        return 11;
     }
 }

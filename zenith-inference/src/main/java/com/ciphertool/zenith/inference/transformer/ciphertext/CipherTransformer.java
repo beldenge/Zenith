@@ -20,11 +20,10 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
+import com.ciphertool.zenith.inference.transformer.Transformer;
 import com.ciphertool.zenith.inference.transformer.TransformerInputType;
-import org.apache.commons.lang3.StringUtils;
 
-public interface CipherTransformer {
+public interface CipherTransformer extends Transformer {
     Cipher transform(Cipher cipher);
 
     default String getInputName() {
@@ -33,11 +32,5 @@ public interface CipherTransformer {
 
     default TransformerInputType getInputType() {
         return TransformerInputType.NONE;
-    }
-
-    default String getDisplayName() {
-        String displayName = getClass().getSimpleName().replace(CiphertextTransformationManager.CIPHER_TRANSFORMER_SUFFIX, "");
-
-        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(displayName), ' ');
     }
 }

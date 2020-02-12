@@ -33,7 +33,7 @@
     </div>
 
     <div class="col-xl-4">
-      <div id="ciphertext_transformer_pipeline" class="card shadow mb-4">
+      <div id="plaintext_transformer_pipeline" class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">Transformer Pipeline</h6>
@@ -49,8 +49,8 @@
                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
                   </div>
                   <div class="col-md-4" *ngIf="item.form">
-                    <form [formGroup]="item.form">
-                      <formly-form [form]="item.form" [fields]="item.form.fields" [model]="item.form.model"></formly-form>
+                    <form [formGroup]="item.form.form">
+                      <formly-form [form]="item.form.form" [fields]="item.form.fields" [model]="item.form.model"></formly-form>
                     </form>
                   </div>
                   <div class="col-md-{{item.form ? 2 : 6}} text-right">

@@ -28,13 +28,13 @@ import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.model.LanguageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -56,8 +56,10 @@ public class HillClimbingCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private PlaintextEvaluator plaintextEvaluator;
 
     @Autowired
-    @Qualifier("activePlaintextTransformers")
-    private List<PlaintextTransformer> plaintextTransformers;
+    private PlaintextTransformationManager plaintextTransformationManager;
+
+    @Autowired
+    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
 
     @Autowired
     private SolutionScorer solutionScorer;
@@ -71,7 +73,7 @@ public class HillClimbingCipherKeyBreeder extends AbstractCipherKeyBreeder {
     public void init(Cipher cipher) {
         super.init(cipher);
 
-        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers, indexOfCoincidenceEvaluator, solutionScorer);
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformationManager, plaintextTransformationSteps, indexOfCoincidenceEvaluator, solutionScorer);
     }
 
     @Override

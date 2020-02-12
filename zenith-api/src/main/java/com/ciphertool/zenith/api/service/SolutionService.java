@@ -19,14 +19,13 @@
 
 package com.ciphertool.zenith.api.service;
 
-import com.ciphertool.zenith.api.model.EpochCompleteResponse;
-import com.ciphertool.zenith.api.model.SolutionRequest;
-import com.ciphertool.zenith.api.model.SolutionResponse;
-import com.ciphertool.zenith.api.model.WebSocketResponseType;
+import com.ciphertool.zenith.api.model.*;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -35,7 +34,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class SolutionService {
@@ -46,6 +47,9 @@ public class SolutionService {
 
     @Autowired
     private SimulatedAnnealingSolutionOptimizer optimizer;
+
+    @Autowired
+    private PlaintextTransformationManager plaintextTransformationManager;
 
     @MessageMapping("/solutions")
     public void solve(@Validated @RequestBody SolutionRequest request) {
@@ -65,6 +69,17 @@ public class SolutionService {
         Map<String, Object> solutionHeaders = new HashMap<>();
         solutionHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION);
 
-        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString()), solutionHeaders);
+        String solution = cipherSolution.asSingleLineString();
+        List<SolutionRequestTransformer> transformers = request.getPlaintextTransformers();
+
+        if (transformers != null && !transformers.isEmpty()) {
+            List<PlaintextTransformationStep> steps = transformers.stream()
+                    .map(SolutionRequestTransformer::asStep)
+                    .collect(Collectors.toList());
+
+            solution = plaintextTransformationManager.transform(solution, steps);
+        }
+
+        template.convertAndSend("/topic/solutions", new SolutionResponse(solution), solutionHeaders);
     }
 }

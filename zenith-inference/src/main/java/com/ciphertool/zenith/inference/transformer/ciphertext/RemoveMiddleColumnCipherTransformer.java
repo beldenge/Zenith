@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -47,5 +48,15 @@ public class RemoveMiddleColumnCipherTransformer implements CipherTransformer {
         transformed.setColumns(transformed.getColumns() - 1);
 
         return transformed;
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return new FormlyForm();
+    }
+
+    @Override
+    public int getOrder() {
+        return 14;
     }
 }

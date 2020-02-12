@@ -17,16 +17,18 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.transformer;
+package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 @AllArgsConstructor
-public class TransformationStep {
+public class PlaintextTransformationStep {
     private String transformerName;
-    private String argument;
+    private Map<String, Object> data;
 }

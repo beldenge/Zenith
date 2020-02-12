@@ -23,27 +23,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
 @Setter
-public class SolutionRequest {
-    @NotNull
-    @Min(0)
-    private int rows;
-
-    @NotNull
-    @Min(0)
-    private int columns;
-
+public class SamplePlaintextTransformationRequest {
     @NotBlank
-    private String ciphertext;
-
-    @Min(1)
-    private int epochs = 1;
+    private String plaintext;
 
     @Valid
     private List<SolutionRequestTransformer> plaintextTransformers;

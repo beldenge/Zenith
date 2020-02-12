@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,5 +36,15 @@ public class ReverseCipherTransformer implements CipherTransformer {
         }
 
         return transformed;
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return new FormlyForm();
+    }
+
+    @Override
+    public int getOrder() {
+        return 1;
     }
 }

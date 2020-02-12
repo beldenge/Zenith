@@ -17,34 +17,16 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.transformer.ciphertext;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-
 @Getter
 @Setter
-public class SolutionRequest {
-    @NotNull
-    @Min(0)
-    private int rows;
-
-    @NotNull
-    @Min(0)
-    private int columns;
-
-    @NotBlank
-    private String ciphertext;
-
-    @Min(1)
-    private int epochs = 1;
-
-    @Valid
-    private List<SolutionRequestTransformer> plaintextTransformers;
+@AllArgsConstructor
+public class CiphertextTransformationStep {
+    private String transformerName;
+    private String argument;
 }

@@ -17,22 +17,23 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.transformer;
 
 import com.ciphertool.zenith.inference.entities.FormlyForm;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import org.apache.commons.lang3.StringUtils;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class TransformerResponseItem {
-    private String name;
-    private String displayName;
-    private String inputName;
-    private TransformerInputType inputType;
-    private FormlyForm form;
-    private int order;
+public interface Transformer {
+    default String getDisplayName() {
+        String displayName = getClass().getSimpleName()
+                .replace(PlaintextTransformer.class.getSimpleName(), "")
+                .replace(CipherTransformer.class.getSimpleName(), "");
+
+        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(displayName), ' ');
+    }
+
+    FormlyForm getForm();
+
+    int getOrder();
 }

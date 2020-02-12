@@ -20,10 +20,18 @@
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import com.ciphertool.zenith.inference.util.LetterUtils;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
+@NoArgsConstructor
 @Component
 public class VigenerePlaintextTransformer extends AbstractVigenerePlaintextTransformer {
+    public VigenerePlaintextTransformer(Map<String, Object> data) {
+        super(data);
+    }
+
     @Override
     public String transform(String plaintext) {
         StringBuilder sb = new StringBuilder();
@@ -36,5 +44,15 @@ public class VigenerePlaintextTransformer extends AbstractVigenerePlaintextTrans
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public PlaintextTransformer getInstance(Map<String, Object> data) {
+        return new VigenerePlaintextTransformer(data);
+    }
+
+    @Override
+    public int getOrder() {
+        return 1;
     }
 }

@@ -38,13 +38,10 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
-import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +50,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
+public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${decipherment.known-solution.correctness-threshold:0.9}")
@@ -89,9 +86,6 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     @Value("${genetic-algorithm.selection.implementation}")
     private String selectorName;
 
-    @Value("${genetic-algorithm.fitness.implementation}")
-    private String fitnessEvaluatorName;
-
     @Autowired
     private List<Population> populations;
 
@@ -110,10 +104,6 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
     @Autowired
     private List<Selector> selectors;
 
-    @Autowired(required = false)
-    @Qualifier("activePlaintextTransformers")
-    private List<PlaintextTransformer> plaintextTransformers;
-
     @Autowired
     private PlaintextEvaluator plaintextEvaluator;
 
@@ -122,9 +112,6 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
 
     @Autowired
     private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
-
-    @Autowired
-    private CipherSolutionPrinter cipherSolutionPrinter;
 
     private Population population;
 
@@ -227,7 +214,7 @@ public class GeneticAlgorithmSolutionOptimizer implements SolutionOptimizer {
             throw new IllegalArgumentException("The Selector with name " + selectorName + " does not exist.");
         }
 
-        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformers, indexOfCoincidenceEvaluator, solutionScorer);
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformationManager, plaintextTransformationSteps, indexOfCoincidenceEvaluator, solutionScorer);
         this.initialized = cipher;
     }
 

@@ -22,10 +22,9 @@ package com.ciphertool.zenith.inference.configuration;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.TransformationStep;
-import com.ciphertool.zenith.inference.transformer.ciphertext.*;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
+import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.plaintext.*;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
@@ -39,10 +38,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.validation.constraints.Min;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -56,9 +52,6 @@ import java.util.stream.Collectors;
         "com.ciphertool.zenith.model.archive"
 })
 public class InferenceConfiguration {
-    private final static String PLAINTEXT_TRANSFORMER_SUFFIX = PlaintextTransformer.class.getSimpleName();
-    private final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
-
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
@@ -80,20 +73,38 @@ public class InferenceConfiguration {
     @Value("${language-model.max-ngrams-to-keep}")
     private int maxNGramsToKeep;
 
-    @Value("${decipherment.transformers.plaintext}")
-    private List<String> plaintextTransformersToUse;
-
     @Value("${decipherment.evaluator.plaintext}")
     private String plaintextEvaluatorName;
 
     @Value("${decipherment.transformers.ciphertext}")
     private List<String> cipherTransformersToUse;
 
+    @Value("${four-square-transformer.key.top-left}")
+    protected String fourSquareKeyTopLeft;
+
+    @Value("${four-square-transformer.key.top-right}")
+    protected String fourSquareKeyTopRight;
+
+    @Value("${four-square-transformer.key.bottom-left}")
+    protected String fourSquareKeyBottomLeft;
+
+    @Value("${four-square-transformer.key.bottom-right}")
+    protected String fourSquareKeyBottomRight;
+
+    @Value("${one-time-pad-transformer.key}")
+    protected String oneTimePadKey;
+
+    @Value("${vigenere-transformer.key}")
+    protected String vigenereKey;
+
+    @Value("${decipherment.transformers.plaintext}")
+    protected List<String> plaintextTransformersToUse;
+
     @Bean
     public Cipher cipher(CipherDao cipherDao, CiphertextTransformationManager ciphertextTransformationManager) {
         Cipher cipher = cipherDao.findByCipherName(cipherName);
 
-        List<TransformationStep> transformationSteps = new ArrayList<>(cipherTransformersToUse.size());
+        List<CiphertextTransformationStep> transformationSteps = new ArrayList<>(cipherTransformersToUse.size());
 
         for (String transformerName : cipherTransformersToUse) {
             String transformerNameBeforeParenthesis = transformerName.contains("(") ? transformerName.substring(0, transformerName.indexOf('(')) : transformerName;
@@ -101,9 +112,9 @@ public class InferenceConfiguration {
             if (transformerName.contains("(") && transformerName.endsWith(")")) {
                 String argument = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
 
-                transformationSteps.add(new TransformationStep(transformerNameBeforeParenthesis, argument));
+                transformationSteps.add(new CiphertextTransformationStep(transformerNameBeforeParenthesis, argument));
             } else {
-                transformationSteps.add(new TransformationStep(transformerNameBeforeParenthesis, null));
+                transformationSteps.add(new CiphertextTransformationStep(transformerNameBeforeParenthesis, null));
             }
         }
 
@@ -147,35 +158,6 @@ public class InferenceConfiguration {
     }
 
     @Bean
-    public List<PlaintextTransformer> activePlaintextTransformers(List<PlaintextTransformer> plaintextTransformers) {
-        if (plaintextTransformers == null || plaintextTransformers.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<PlaintextTransformer> toUse = new ArrayList<>(plaintextTransformersToUse.size());
-        List<String> existentPlaintextTransformers = plaintextTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(PLAINTEXT_TRANSFORMER_SUFFIX, ""))
-                .collect(Collectors.toList());
-
-        for (String transformerName : plaintextTransformersToUse) {
-            if (!existentPlaintextTransformers.contains(transformerName)) {
-                log.error("The PlaintextTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentPlaintextTransformers);
-                throw new IllegalArgumentException("The PlaintextTransformer with name " + transformerName + " does not exist.");
-            }
-
-            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                if (plaintextTransformer.getClass().getSimpleName().replace(PLAINTEXT_TRANSFORMER_SUFFIX, "").equals(transformerName)) {
-                    toUse.add(plaintextTransformer);
-
-                    break;
-                }
-            }
-        }
-
-        return toUse;
-    }
-
-    @Bean
     public PlaintextEvaluator plaintextEvaluator(List<PlaintextEvaluator> plaintextEvaluators) {
         for (PlaintextEvaluator evaluator : plaintextEvaluators) {
             if (evaluator.getClass().getSimpleName().equals(plaintextEvaluatorName)) {
@@ -189,6 +171,31 @@ public class InferenceConfiguration {
 
         log.error("The PlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
         throw new IllegalArgumentException("The PlaintextEvaluator with name " + plaintextEvaluatorName + " does not exist.");
+    }
+
+    @Bean
+    public List<PlaintextTransformationStep> plaintextTransformationSteps() {
+        List<PlaintextTransformationStep> plaintextTransformationSteps = new ArrayList<>();
+
+        for (String toUse : plaintextTransformersToUse) {
+            Map<String, Object> data = new HashMap<>();
+
+            if (toUse.contains("OneTimePad")) {
+                data.put(AbstractOneTimePadPlaintextTransformer.KEY, oneTimePadKey);
+            } else if (toUse.contains("FourSquare")) {
+                data.put(AbstractFourSquarePlaintextTransformer.KEY_TOP_LEFT, fourSquareKeyTopLeft);
+                data.put(AbstractFourSquarePlaintextTransformer.KEY_TOP_RIGHT, fourSquareKeyTopRight);
+                data.put(AbstractFourSquarePlaintextTransformer.KEY_BOTTOM_LEFT, fourSquareKeyBottomLeft);
+                data.put(AbstractFourSquarePlaintextTransformer.KEY_BOTTOM_RIGHT, fourSquareKeyBottomRight);
+            } else if (toUse.contains("Vigenere")) {
+                data.put(AbstractVigenerePlaintextTransformer.VIGENERE_SQUARE, null);
+                data.put(AbstractVigenerePlaintextTransformer.KEY, vigenereKey);
+            }
+
+            plaintextTransformationSteps.add(new PlaintextTransformationStep(toUse, data));
+        }
+
+        return plaintextTransformationSteps;
     }
 
     @Bean

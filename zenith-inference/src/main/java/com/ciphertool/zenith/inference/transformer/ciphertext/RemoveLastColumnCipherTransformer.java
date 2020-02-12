@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -36,5 +37,15 @@ public class RemoveLastColumnCipherTransformer implements CipherTransformer {
         transformed.setColumns(transformed.getColumns() - 1);
 
         return transformed;
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return new FormlyForm();
+    }
+
+    @Override
+    public int getOrder() {
+        return 12;
     }
 }

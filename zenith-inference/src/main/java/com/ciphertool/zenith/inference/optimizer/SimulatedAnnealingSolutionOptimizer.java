@@ -23,9 +23,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
-import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
@@ -34,7 +32,6 @@ import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +41,7 @@ import java.util.List;
 import java.util.SplittableRandom;
 
 @Component
-public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
+public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static SplittableRandom RANDOM = new SplittableRandom();
@@ -58,9 +55,6 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     @Value("${simulated-annealing.temperature.min}")
     private float annealingTemperatureMin;
 
-    @Value("${markov.letter.order}")
-    private int markovOrder;
-
     @Value("${decipherment.known-solution.correctness-threshold:0.9}")
     private float knownSolutionCorrectnessThreshold;
 
@@ -73,15 +67,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
 
-    @Autowired(required = false)
-    @Qualifier("activePlaintextTransformers")
-    private List<PlaintextTransformer> plaintextTransformers;
-
     @Autowired
     private PlaintextEvaluator plaintextEvaluator;
-
-    @Autowired
-    private CipherSolutionPrinter cipherSolutionPrinter;
 
     @Override
     public CipherSolution optimize(Cipher cipher, int epochs, OnEpochComplete onEpochComplete) {
@@ -175,10 +162,9 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
     private CipherSolution performEpoch(Cipher cipher, CipherSolution initialSolution, String[] mappingKeys) {
         String solutionString = initialSolution.asSingleLineString();
-        if (plaintextTransformers != null) {
-            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                solutionString = plaintextTransformer.transform(solutionString);
-            }
+
+        if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
+            solutionString = plaintextTransformationManager.transform(solutionString, plaintextTransformationSteps);
         }
 
         plaintextEvaluator.evaluate(cipher, initialSolution, solutionString, null);
@@ -243,10 +229,8 @@ public class SimulatedAnnealingSolutionOptimizer implements SolutionOptimizer {
 
             String proposalString = new String(solutionCharArray);
 
-            if (plaintextTransformers != null) {
-                for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                    proposalString = plaintextTransformer.transform(proposalString);
-                }
+            if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
+                proposalString = plaintextTransformationManager.transform(proposalString, plaintextTransformationSteps);
             }
 
             float[][] logProbabilitiesUpdated = plaintextEvaluator.evaluate(cipher, solution, proposalString, nextKey);

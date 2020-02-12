@@ -22,13 +22,22 @@ package com.ciphertool.zenith.inference.transformer.plaintext;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
 import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collections;
+import java.util.Map;
 
+@NoArgsConstructor
 public abstract class AbstractOneTimePadPlaintextTransformer implements PlaintextTransformer {
+    public static final String KEY = "key";
+
     @Value("${one-time-pad-transformer.key}")
     protected String key;
+
+    public AbstractOneTimePadPlaintextTransformer(Map<String, Object> data) {
+        key = (String) data.get(KEY);
+    }
 
     @Override
     public FormlyForm getForm() {
@@ -39,8 +48,8 @@ public abstract class AbstractOneTimePadPlaintextTransformer implements Plaintex
         templateOptions.setRequired(true);
 
         FormlyFormField key = new FormlyFormField();
-        key.setKey("key");
-        key.setType("input");
+        key.setKey(KEY);
+        key.setType("textarea");
         key.setTemplateOptions(templateOptions);
 
         form.setFields(Collections.singletonList(key));

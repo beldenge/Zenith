@@ -23,15 +23,21 @@ import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
 import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
 import com.ciphertool.zenith.model.LanguageConstants;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+@NoArgsConstructor
 public abstract class AbstractVigenerePlaintextTransformer implements PlaintextTransformer {
     protected Logger log = LoggerFactory.getLogger(getClass());
+
+    public static final String VIGENERE_SQUARE = "vigenereSquare";
+    public static final String KEY = "key";
 
     protected static char[][] vigenereSquare = new char[26][26];
 
@@ -48,6 +54,11 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
     @Value("${vigenere-transformer.key}")
     protected String key;
 
+    public AbstractVigenerePlaintextTransformer(Map<String, Object> data) {
+//        vigenereSquare = (String) data.get(VIGENERE_SQUARE);
+        key = (String) data.get(KEY);
+    }
+
     @Override
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
@@ -59,8 +70,8 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         vigenereSquareOptions.setRequired(true);
 
         FormlyFormField vigenereSquare = new FormlyFormField();
-        vigenereSquare.setKey("vigenereSquare");
-        vigenereSquare.setType("text");
+        vigenereSquare.setKey(VIGENERE_SQUARE);
+        vigenereSquare.setType("textarea");
         vigenereSquare.setTemplateOptions(vigenereSquareOptions);
 
         fields.add(vigenereSquare);
@@ -70,7 +81,7 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         keyOptions.setRequired(true);
 
         FormlyFormField key = new FormlyFormField();
-        key.setKey("key");
+        key.setKey(KEY);
         key.setType("input");
         key.setTemplateOptions(keyOptions);
 

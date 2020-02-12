@@ -25,8 +25,8 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextMultiplicityEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
-import com.ciphertool.zenith.inference.transformer.CiphertextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.TransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
+import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -74,7 +74,7 @@ public class CipherService {
 
     @PostMapping("/{cipherName}")
     @ResponseBody
-    public CipherResponse transformCipher(@PathVariable String cipherName, @Validated @RequestBody TransformationRequest transformationRequest) {
+    public CipherResponse transformCipher(@PathVariable String cipherName, @Validated @RequestBody CiphertextTransformationRequest transformationRequest) {
         CipherResponse cipherResponse = new CipherResponse();
 
         Cipher cipher = cipherDao.findByCipherName(cipherName);
@@ -83,8 +83,8 @@ public class CipherService {
             throw new IllegalArgumentException("No cipher found for name " + cipherName + ".");
         }
 
-        List<TransformationStep> steps = transformationRequest.getSteps().stream()
-                .map(TransformationRequestStep::asStep)
+        List<CiphertextTransformationStep> steps = transformationRequest.getSteps().stream()
+                .map(CiphertextTransformationRequestStep::asStep)
                 .collect(Collectors.toList());
 
         cipher = ciphertextTransformationManager.transform(cipher, steps);

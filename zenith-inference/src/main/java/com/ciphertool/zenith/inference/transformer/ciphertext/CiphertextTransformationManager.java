@@ -17,15 +17,15 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.transformer;
+package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.transformer.ciphertext.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,18 +34,22 @@ import java.util.stream.Collectors;
 public class CiphertextTransformationManager {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    public final static String CIPHER_TRANSFORMER_SUFFIX = CipherTransformer.class.getSimpleName();
+    private List<String> existentCipherTransformers;
 
     @Autowired
     private List<CipherTransformer> cipherTransformers;
 
-    public Cipher transform(Cipher cipher, List<TransformationStep> steps) {
-        List<CipherTransformer> toUse = new ArrayList<>(steps.size());
-        List<String> existentCipherTransformers = cipherTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, ""))
+    @PostConstruct
+    public void init() {
+        existentCipherTransformers = cipherTransformers.stream()
+                .map(transformer -> transformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), ""))
                 .collect(Collectors.toList());
+    }
 
-        for (TransformationStep step : steps) {
+    public Cipher transform(Cipher cipher, List<CiphertextTransformationStep> steps) {
+        List<CipherTransformer> toUse = new ArrayList<>(steps.size());
+
+        for (CiphertextTransformationStep step : steps) {
             String transformerName = step.getTransformerName();
             String argument = step.getArgument();
 
@@ -55,7 +59,7 @@ public class CiphertextTransformationManager {
             }
 
             for (CipherTransformer cipherTransformer : cipherTransformers) {
-                if (cipherTransformer.getClass().getSimpleName().replace(CIPHER_TRANSFORMER_SUFFIX, "").equals(transformerName)) {
+                if (cipherTransformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), "").equals(transformerName)) {
                     if (argument != null && !argument.isEmpty()) {
                         if (cipherTransformer instanceof TranspositionCipherTransformer) {
                             TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(argument);

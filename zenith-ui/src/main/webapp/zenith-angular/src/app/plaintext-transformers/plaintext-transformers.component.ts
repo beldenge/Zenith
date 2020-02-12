@@ -74,7 +74,9 @@ export class PlaintextTransformersComponent implements OnInit {
 
   ngOnInit(): void {
     this.transformerService.getTransformers().subscribe(transformerResponse => {
-      this.availableTransformers = transformerResponse.transformers;
+      this.availableTransformers = transformerResponse.transformers.sort((t1, t2) => {
+        return t1.order - t2.order;
+      });
     });
 
     this.appliedTransformers$.subscribe(appliedTransformers => {
