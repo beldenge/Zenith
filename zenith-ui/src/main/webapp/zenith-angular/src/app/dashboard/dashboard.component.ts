@@ -4,10 +4,11 @@ import { Cipher } from "../models/Cipher";
 import { FormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
-import {PlaintextTransformerService} from "../plaintext-transformer.service";
-import {ZenithTransformer} from "../models/ZenithTransformer";
-import {Observable} from "rxjs";
-import {SolutionRequestTransformer} from "../models/SolutionRequestTransformer";
+import { PlaintextTransformerService } from "../plaintext-transformer.service";
+import { ZenithTransformer } from "../models/ZenithTransformer";
+import { Observable } from "rxjs";
+import { SolutionRequestTransformer } from "../models/SolutionRequestTransformer";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-dashboard',
@@ -28,7 +29,7 @@ export class DashboardComponent implements OnInit {
   appliedPlaintextTransformers: ZenithTransformer[] = [];
   appliedPlaintextTransformers$: Observable<ZenithTransformer[]>;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService) {
+  constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService, private _snackBar: MatSnackBar) {
     this.appliedPlaintextTransformers$ = plaintextTransformerService.getAppliedTransformersAsObservable();
   }
 
@@ -69,16 +70,12 @@ export class DashboardComponent implements OnInit {
   }
 
   solve() {
-    this.progressPercentage = 0;
-    this.isRunning = true;
-    this.solution = null;
-
     let request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
+
+    let allValid = true;
 
     if (this.appliedPlaintextTransformers.length) {
       let plaintextTransformers = [];
-
-      let allValid = true;
 
       this.appliedPlaintextTransformers.forEach((transformer) => {
         plaintextTransformers.push(new SolutionRequestTransformer(transformer.name, transformer.form.model));
@@ -90,6 +87,19 @@ export class DashboardComponent implements OnInit {
         request.plaintextTransformers = plaintextTransformers;
       }
     }
+
+    if (!allValid) {
+      this._snackBar.open('Errors exist in plaintext transformers.  Please correct them before solving.', '',{
+        duration: 2000,
+        verticalPosition: 'top'
+      });
+
+      return;
+    }
+
+    this.progressPercentage = 0;
+    this.isRunning = true;
+    this.solution = null;
 
     let self = this;
     this.webSocketAPI.connectAndSend(request, function (response) {
