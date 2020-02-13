@@ -72,7 +72,6 @@ public class TransformerService {
             TransformerResponseItem responseItem = new TransformerResponseItem();
             responseItem.setName(plaintextTransformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), ""));
             responseItem.setDisplayName(plaintextTransformer.getDisplayName());
-            log.info(plaintextTransformer.getDisplayName());
             responseItem.setForm(plaintextTransformer.getForm());
             responseItem.setOrder(plaintextTransformer.getOrder());
 
