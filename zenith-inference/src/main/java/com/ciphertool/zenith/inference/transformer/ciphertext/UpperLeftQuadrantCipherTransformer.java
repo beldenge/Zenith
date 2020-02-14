@@ -24,6 +24,8 @@ import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class UpperLeftQuadrantCipherTransformer implements CipherTransformer {
     @Override
@@ -47,8 +49,13 @@ public class UpperLeftQuadrantCipherTransformer implements CipherTransformer {
     }
 
     @Override
+    public CipherTransformer getInstance(Map<String, Object> data) {
+        return new UpperLeftQuadrantCipherTransformer();
+    }
+
+    @Override
     public FormlyForm getForm() {
-        return new FormlyForm();
+        return null;
     }
 
     @Override

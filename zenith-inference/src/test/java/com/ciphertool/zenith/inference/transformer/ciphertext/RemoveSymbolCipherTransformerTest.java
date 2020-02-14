@@ -23,12 +23,14 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static org.junit.Assert.assertEquals;
 
 public class RemoveSymbolCipherTransformerTest {
     @Test
     public void testTransform() {
-        RemoveSymbolCipherTransformer cipherTransformer = new RemoveSymbolCipherTransformer("T");
+        RemoveSymbolCipherTransformer cipherTransformer = new RemoveSymbolCipherTransformer(Collections.singletonMap(RemoveSymbolCipherTransformer.SYMBOL, "T"));
 
         Cipher cipher = new Cipher("tomato", 7, 6);
 

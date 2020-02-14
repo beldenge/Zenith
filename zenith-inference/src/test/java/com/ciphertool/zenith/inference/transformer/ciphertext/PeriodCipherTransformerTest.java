@@ -23,12 +23,14 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static org.junit.Assert.assertEquals;
 
 public class PeriodCipherTransformerTest {
     @Test
     public void testTransform() {
-        PeriodCipherTransformer cipherTransformer = new PeriodCipherTransformer(5);
+        PeriodCipherTransformer cipherTransformer = new PeriodCipherTransformer(Collections.singletonMap(AbstractPeriodCipherTransformer.LENGTH, 5));
 
         Cipher cipher = new Cipher("tomato", 7, 6);
 

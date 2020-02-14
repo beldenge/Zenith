@@ -32,6 +32,7 @@ import java.util.Map;
 public class SolutionRequestTransformer {
     @NotBlank
     private String transformerName;
+
     private Map<String, Object> data = new HashMap<>();
 
     public PlaintextTransformationStep asStep() {

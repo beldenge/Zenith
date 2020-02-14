@@ -5,6 +5,7 @@ import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { PlaintextTransformationRequest } from "../models/PlaintextTransformationRequest";
 import { ZenithTransformer } from "../models/ZenithTransformer";
+import { FormGroup } from "@angular/forms";
 
 @Component({
   selector: 'app-plaintext-transformers',
@@ -37,6 +38,11 @@ export class PlaintextTransformersComponent implements OnInit {
 
   appliedTransformers$: Observable<ZenithTransformer[]>;
 
+  // On adding of a new item to the Sortable list, the event fires before the formly form is initialized, so we cannot rely on validation alone
+  onAppliedTransformersChangeNew = (event: any) => {
+    this.onAppliedTransformersChange({ isNew: true });
+  };
+
   onAppliedTransformersChange = (event: any) => {
     let transformationRequest: PlaintextTransformationRequest = {
       steps: []
@@ -45,11 +51,10 @@ export class PlaintextTransformersComponent implements OnInit {
     let satisfied = true;
 
     this.appliedTransformers.forEach(transformer => {
-      // TODO: validate required fields
-
-      // transformationRequest.steps.push({
-      //   transformerName: transformer.name
-      // });
+      if (transformer.form && ((event && event.isNew) || !transformer.form.form.valid)) {
+        satisfied = false;
+        return;
+      }
     });
 
     if (satisfied) {
@@ -63,7 +68,7 @@ export class PlaintextTransformersComponent implements OnInit {
 
   appliedTransformersOptions: SortablejsOptions = {
     group: 'clone-group',
-    onAdd: this.onAppliedTransformersChange,
+    onAdd: this.onAppliedTransformersChangeNew,
     onRemove: this.onAppliedTransformersChange,
     onMove: this.onAppliedTransformersChange
   };
@@ -85,12 +90,18 @@ export class PlaintextTransformersComponent implements OnInit {
   }
 
   cloneTransformer = (item) => {
-    return {
+    let clone = {
       name: item.name,
       displayName: item.displayName,
       form: item.form,
       model: item.model
     };
+
+    if (clone.form) {
+      clone.form.form = new FormGroup({});
+    }
+
+    return clone;
   };
 
   removeTransformer(transformerIndex: number): void {
@@ -100,6 +111,6 @@ export class PlaintextTransformersComponent implements OnInit {
       this.appliedTransformers.splice(transformerIndex, 1);
     }
 
-    this.onAppliedTransformersChange.call(null);
+    this.onAppliedTransformersChange(null);
   }
 }

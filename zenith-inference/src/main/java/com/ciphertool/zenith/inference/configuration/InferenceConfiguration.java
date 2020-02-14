@@ -112,7 +112,7 @@ public class InferenceConfiguration {
             if (transformerName.contains("(") && transformerName.endsWith(")")) {
                 String argument = transformerName.substring(transformerName.indexOf('(') + 1, transformerName.length() - 1);
 
-                transformationSteps.add(new CiphertextTransformationStep(transformerNameBeforeParenthesis, argument));
+                transformationSteps.add(new CiphertextTransformationStep(transformerNameBeforeParenthesis, Collections.singletonMap("argument", argument)));
             } else {
                 transformationSteps.add(new CiphertextTransformationStep(transformerNameBeforeParenthesis, null));
             }

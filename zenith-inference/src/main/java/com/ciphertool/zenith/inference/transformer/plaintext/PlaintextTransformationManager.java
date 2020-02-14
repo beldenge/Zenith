@@ -48,8 +48,8 @@ public class PlaintextTransformationManager {
     public String transform(String plaintext, List<PlaintextTransformationStep> steps) {
         List<PlaintextTransformer> toUse = new ArrayList<>(steps.size());
 
-        for (PlaintextTransformationStep transformerStep : steps) {
-            String transformerName = transformerStep.getTransformerName();
+        for (PlaintextTransformationStep step : steps) {
+            String transformerName = step.getTransformerName();
 
             if (!existentPlaintextTransformers.contains(transformerName)) {
                 log.error("The PlaintextTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentPlaintextTransformers);
@@ -58,7 +58,7 @@ public class PlaintextTransformationManager {
 
             for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
                 if (plaintextTransformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), "").equals(transformerName)) {
-                    toUse.add(plaintextTransformer.getInstance(transformerStep.getData()));
+                    toUse.add(plaintextTransformer.getInstance(step.getData()));
 
                     break;
                 }

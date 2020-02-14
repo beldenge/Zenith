@@ -1,11 +1,9 @@
 import { FormlyForm } from "@ngx-formly/core";
+import {FormGroup} from "@angular/forms";
 
 export class ZenithTransformer {
   name: string;
   displayName: string;
-  inputName: string;
-  inputType: string;
-  inputValue: string;
   form: FormlyForm;
   order: number;
 }

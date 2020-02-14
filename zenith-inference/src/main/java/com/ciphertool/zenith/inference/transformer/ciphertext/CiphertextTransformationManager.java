@@ -51,7 +51,6 @@ public class CiphertextTransformationManager {
 
         for (CiphertextTransformationStep step : steps) {
             String transformerName = step.getTransformerName();
-            String argument = step.getArgument();
 
             if (!existentCipherTransformers.contains(transformerName)) {
                 log.error("The CipherTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentCipherTransformers);
@@ -60,29 +59,7 @@ public class CiphertextTransformationManager {
 
             for (CipherTransformer cipherTransformer : cipherTransformers) {
                 if (cipherTransformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), "").equals(transformerName)) {
-                    if (argument != null && !argument.isEmpty()) {
-                        if (cipherTransformer instanceof TranspositionCipherTransformer) {
-                            TranspositionCipherTransformer nextTransformer = new TranspositionCipherTransformer(argument);
-                            nextTransformer.init();
-                            toUse.add(nextTransformer);
-                        } else if (cipherTransformer instanceof UnwrapTranspositionCipherTransformer) {
-                            UnwrapTranspositionCipherTransformer nextTransformer = new UnwrapTranspositionCipherTransformer(argument);
-                            nextTransformer.init();
-                            toUse.add(nextTransformer);
-                        } else if (cipherTransformer instanceof PeriodCipherTransformer) {
-                            int period = Integer.parseInt(argument);
-                            toUse.add(new PeriodCipherTransformer(period));
-                        } else if (cipherTransformer instanceof UnwrapPeriodCipherTransformer) {
-                            int period = Integer.parseInt(argument);
-                            toUse.add(new UnwrapPeriodCipherTransformer(period));
-                        } else if (cipherTransformer instanceof RemoveSymbolCipherTransformer) {
-                            toUse.add(new RemoveSymbolCipherTransformer(argument));
-                        } else {
-                            throw new IllegalArgumentException("The CipherTransformer with name " + transformerName + " does not accept parameters.");
-                        }
-                    } else {
-                        toUse.add(cipherTransformer);
-                    }
+                    toUse.add(cipherTransformer.getInstance(step.getData()));
 
                     break;
                 }

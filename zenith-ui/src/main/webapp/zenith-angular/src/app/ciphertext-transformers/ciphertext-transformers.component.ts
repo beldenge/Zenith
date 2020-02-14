@@ -7,6 +7,7 @@ import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { Observable } from "rxjs";
 import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
+import { FormGroup } from "@angular/forms";
 
 @Component({
   selector: 'app-ciphertext-transformers',
@@ -40,6 +41,11 @@ export class CiphertextTransformersComponent implements OnInit {
 
   appliedTransformers$: Observable<ZenithTransformer[]>;
 
+  // On adding of a new item to the Sortable list, the event fires before the formly form is initialized, so we cannot rely on validation alone
+  onAppliedTransformersChangeNew = (event: any) => {
+    this.onAppliedTransformersChange({ isNew: true });
+  };
+
   onAppliedTransformersChange = (event: any) => {
     let transformationRequest: CiphertextTransformationRequest = {
       steps: []
@@ -48,14 +54,14 @@ export class CiphertextTransformersComponent implements OnInit {
     let satisfied = true;
 
     this.appliedTransformers.forEach(transformer => {
-      if (transformer.inputName && !transformer.inputValue) {
+      if (transformer.form && ((event && event.isNew) || !transformer.form.form.valid)) {
         satisfied = false;
         return;
       }
 
       transformationRequest.steps.push({
         transformerName: transformer.name,
-        argument: transformer.inputValue
+        data: transformer.form ? transformer.form.model : null
       });
     });
 
@@ -72,7 +78,7 @@ export class CiphertextTransformersComponent implements OnInit {
 
   appliedTransformersOptions: SortablejsOptions = {
     group: 'clone-group',
-    onAdd: this.onAppliedTransformersChange,
+    onAdd: this.onAppliedTransformersChangeNew,
     onRemove: this.onAppliedTransformersChange,
     onMove: this.onAppliedTransformersChange
   };
@@ -99,12 +105,18 @@ export class CiphertextTransformersComponent implements OnInit {
   }
 
   cloneTransformer = (item) => {
-    return {
+    let clone = {
       name: item.name,
       displayName: item.displayName,
-      inputType: item.inputType,
-      inputName: item.inputName
+      form: item.form,
+      model: item.model
     };
+
+    if (clone.form) {
+      clone.form.form = new FormGroup({});
+    }
+
+    return clone;
   };
 
   removeTransformer(transformerIndex: number): void {
@@ -114,6 +126,6 @@ export class CiphertextTransformersComponent implements OnInit {
       this.appliedTransformers.splice(transformerIndex, 1);
     }
 
-    this.onAppliedTransformersChange.call(null);
+    this.onAppliedTransformersChange(null);
   }
 }

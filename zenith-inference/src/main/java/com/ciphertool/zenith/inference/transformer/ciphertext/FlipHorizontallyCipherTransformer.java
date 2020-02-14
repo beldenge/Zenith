@@ -23,6 +23,8 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class FlipHorizontallyCipherTransformer implements CipherTransformer {
     @Override
@@ -44,8 +46,13 @@ public class FlipHorizontallyCipherTransformer implements CipherTransformer {
     }
 
     @Override
+    public CipherTransformer getInstance(Map<String, Object> data) {
+        return new FlipHorizontallyCipherTransformer();
+    }
+
+    @Override
     public FormlyForm getForm() {
-        return new FormlyForm();
+        return null;
     }
 
     @Override

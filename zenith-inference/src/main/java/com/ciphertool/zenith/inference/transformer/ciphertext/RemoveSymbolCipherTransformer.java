@@ -19,21 +19,26 @@
 
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
-import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.Ciphertext;
-import com.ciphertool.zenith.inference.entities.FormlyForm;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import com.ciphertool.zenith.inference.entities.*;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.Map;
+
+@NoArgsConstructor
 @Component
 public class RemoveSymbolCipherTransformer implements CipherTransformer {
+    public static final String SYMBOL = "symbol";
     private String symbolToRemove;
 
-    public RemoveSymbolCipherTransformer() {
-    }
+    public RemoveSymbolCipherTransformer(Map<String, Object> data) {
+        symbolToRemove = (String) data.get(SYMBOL);
 
-    public RemoveSymbolCipherTransformer(String symbolToRemove) {
-        this.symbolToRemove = symbolToRemove;
+        // Support backwards compatibility with command-line method
+        if (symbolToRemove == null) {
+            symbolToRemove = (String) data.get("argument");
+        }
     }
 
     @Override
@@ -59,18 +64,26 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
     }
 
     @Override
-    public String getInputName() {
-        return "symbol";
-    }
-
-    @Override
-    public TransformerInputType getInputType() {
-        return TransformerInputType.TEXT;
+    public CipherTransformer getInstance(Map<String, Object> data) {
+        return new RemoveSymbolCipherTransformer(data);
     }
 
     @Override
     public FormlyForm getForm() {
-        return new FormlyForm();
+        FormlyForm form = new FormlyForm();
+
+        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        templateOptions.setLabel("Symbol");
+        templateOptions.setRequired(true);
+
+        FormlyFormField key = new FormlyFormField();
+        key.setKey(SYMBOL);
+        key.setType("input");
+        key.setTemplateOptions(templateOptions);
+
+        form.setFields(Collections.singletonList(key));
+
+        return form;
     }
 
     @Override

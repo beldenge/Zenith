@@ -52,8 +52,6 @@ public class TransformerService {
             TransformerResponseItem responseItem = new TransformerResponseItem();
             responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), ""));
             responseItem.setDisplayName(cipherTransformer.getDisplayName());
-            responseItem.setInputName(cipherTransformer.getInputName());
-            responseItem.setInputType(cipherTransformer.getInputType());
             responseItem.setForm(cipherTransformer.getForm());
             responseItem.setOrder(cipherTransformer.getOrder());
 

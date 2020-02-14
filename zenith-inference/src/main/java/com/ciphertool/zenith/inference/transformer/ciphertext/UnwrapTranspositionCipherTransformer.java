@@ -20,19 +20,17 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.FormlyForm;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
+@NoArgsConstructor
 @Component
 public class UnwrapTranspositionCipherTransformer extends AbstractTranspositionCipherTransformer {
-    public UnwrapTranspositionCipherTransformer() {
-    }
-
-    public UnwrapTranspositionCipherTransformer(String transpositionKeyString) {
-        this.transpositionKeyString = transpositionKeyString;
+    public UnwrapTranspositionCipherTransformer(Map<String, Object> data) {
+        super(data);
     }
 
     @Override
@@ -59,18 +57,8 @@ public class UnwrapTranspositionCipherTransformer extends AbstractTranspositionC
     }
 
     @Override
-    public String getInputName() {
-        return "key";
-    }
-
-    @Override
-    public TransformerInputType getInputType() {
-        return TransformerInputType.TEXT_OR_NUMBER_ARRAY;
-    }
-
-    @Override
-    public FormlyForm getForm() {
-        return new FormlyForm();
+    public CipherTransformer getInstance(Map<String, Object> data) {
+        return new UnwrapTranspositionCipherTransformer(data);
     }
 
     @Override

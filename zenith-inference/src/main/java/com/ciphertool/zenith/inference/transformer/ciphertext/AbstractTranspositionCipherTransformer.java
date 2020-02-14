@@ -20,17 +20,21 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
+import com.ciphertool.zenith.inference.entities.FormlyFormField;
+import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
 import com.ciphertool.zenith.model.LanguageConstants;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
+@NoArgsConstructor
 public abstract class AbstractTranspositionCipherTransformer implements CipherTransformer {
     protected Logger log = LoggerFactory.getLogger(getClass());
+
+    public static final String KEY = "key";
 
     protected List<Integer> transpositionKey;
 
@@ -50,6 +54,17 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
                 throw new IllegalArgumentException("The transposition column key indices must be zero-based with no gaps or duplicates.");
             }
         }
+    }
+
+    public AbstractTranspositionCipherTransformer(Map<String, Object> data) {
+        transpositionKeyString = (String) data.get(KEY);
+
+        // Support backwards compatibility with command-line method
+        if (transpositionKeyString == null) {
+            transpositionKeyString = (String) data.get("argument");
+        }
+
+        init();
     }
 
     @Override
@@ -94,5 +109,23 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
         }
 
         return Arrays.asList(columnIndices);
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        FormlyForm form = new FormlyForm();
+
+        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        templateOptions.setLabel("Key");
+        templateOptions.setRequired(true);
+
+        FormlyFormField key = new FormlyFormField();
+        key.setKey(KEY);
+        key.setType("input");
+        key.setTemplateOptions(templateOptions);
+
+        form.setFields(Collections.singletonList(key));
+
+        return form;
     }
 }

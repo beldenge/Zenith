@@ -25,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class RemoveMiddleColumnCipherTransformer implements CipherTransformer {
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -51,8 +53,13 @@ public class RemoveMiddleColumnCipherTransformer implements CipherTransformer {
     }
 
     @Override
+    public CipherTransformer getInstance(Map<String, Object> data) {
+        return new RemoveMiddleColumnCipherTransformer();
+    }
+
+    @Override
     public FormlyForm getForm() {
-        return new FormlyForm();
+        return null;
     }
 
     @Override

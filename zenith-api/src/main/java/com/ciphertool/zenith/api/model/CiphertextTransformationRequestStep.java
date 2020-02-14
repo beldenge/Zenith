@@ -25,7 +25,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -34,10 +35,9 @@ public class CiphertextTransformationRequestStep {
     @NotBlank
     private String transformerName;
 
-    @Size(min = 1)
-    private String argument;
+    private Map<String, Object> data = new HashMap<>();
 
     public CiphertextTransformationStep asStep() {
-        return new CiphertextTransformationStep(transformerName, argument);
+        return new CiphertextTransformationStep(transformerName, data);
     }
 }

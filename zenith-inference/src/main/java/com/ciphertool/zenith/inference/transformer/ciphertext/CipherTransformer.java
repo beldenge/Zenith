@@ -21,16 +21,11 @@ package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.transformer.Transformer;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+
+import java.util.Map;
 
 public interface CipherTransformer extends Transformer {
     Cipher transform(Cipher cipher);
 
-    default String getInputName() {
-        return null;
-    }
-
-    default TransformerInputType getInputType() {
-        return TransformerInputType.NONE;
-    }
+    CipherTransformer getInstance(Map<String, Object> data);
 }

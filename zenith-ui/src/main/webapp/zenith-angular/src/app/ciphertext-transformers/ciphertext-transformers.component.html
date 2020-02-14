@@ -48,13 +48,13 @@
                   <div class="col-md-6">
                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
                   </div>
-                  <div class="col-md-4" *ngIf="item.inputType !== 'NONE'">
-                      <div class="form-group row mb-0">
-                        <label class="col-md-6 my-auto text-right" for="transformer{{i}}">{{item.inputName}}:</label>
-                        <input id="transformer{{i}}" type="text" class="form-control col-md-6" [(ngModel)]="item.inputValue" (change)="onAppliedTransformersChange(null)">
-                      </div>
+                  <div class="col-md-4" *ngIf="item.form">
+                    <form [formGroup]="item.form.form">
+                      <formly-form [form]="item.form.form" [fields]="item.form.fields" [model]="item.form.model" (modelChange)="onAppliedTransformersChange(null)"></formly-form>
+                    </form>
+                    <div *ngIf="item.form.form.valid">LOL</div>
                   </div>
-                  <div class="col-md-{{item.inputType !== 'NONE' ? 2 : 6}} text-right">
+                  <div class="col-md-{{item.form ? 2 : 6}} text-right">
                     <i class="fas fa-times-circle fa-lg" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>
                   </div>
                 </div>

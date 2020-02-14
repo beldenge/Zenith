@@ -20,18 +20,16 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.FormlyForm;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
+@NoArgsConstructor
 @Component
-public class UnwrapPeriodCipherTransformer implements CipherTransformer {
-    private int period;
-
-    public UnwrapPeriodCipherTransformer() {}
-
-    public UnwrapPeriodCipherTransformer(int period) {
-        this.period = period;
+public class UnwrapPeriodCipherTransformer extends AbstractPeriodCipherTransformer {
+    public UnwrapPeriodCipherTransformer(Map<String, Object> data) {
+        super(data);
     }
 
     @Override
@@ -51,18 +49,8 @@ public class UnwrapPeriodCipherTransformer implements CipherTransformer {
     }
 
     @Override
-    public String getInputName() {
-        return "length";
-    }
-
-    @Override
-    public TransformerInputType getInputType() {
-        return TransformerInputType.NUMBER;
-    }
-
-    @Override
-    public FormlyForm getForm() {
-        return new FormlyForm();
+    public CipherTransformer getInstance(Map<String, Object> data) {
+        return new UnwrapPeriodCipherTransformer(data);
     }
 
     @Override
