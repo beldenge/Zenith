@@ -22,9 +22,6 @@ package com.ciphertool.zenith.api.service;
 import com.ciphertool.zenith.api.model.*;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
-import com.ciphertool.zenith.inference.statistics.CiphertextMultiplicityEvaluator;
-import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,15 +43,6 @@ public class CipherService {
 
     @Autowired
     private CiphertextTransformationManager ciphertextTransformationManager;
-
-    @Autowired
-    private CiphertextMultiplicityEvaluator multiplicityEvaluator;
-
-    @Autowired
-    private CiphertextRepeatingBigramEvaluator bigramEvaluator;
-
-    @Autowired
-    private CiphertextCycleCountEvaluator cycleCountEvaluator;
 
     @GetMapping
     @ResponseBody

@@ -96,6 +96,10 @@ public class CiphertextCycleCountEvaluator {
         initialized = cipher;
     }
 
+    public synchronized int evaluateThreadSafe(Cipher cipher) {
+        return evaluate(cipher);
+    }
+
     public int evaluate(Cipher cipher) {
         if (initialized == null || initialized != cipher) {
             init(cipher);

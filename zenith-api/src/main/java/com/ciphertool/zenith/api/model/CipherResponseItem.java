@@ -32,12 +32,6 @@ public class CipherResponseItem {
     private int columns;
     private boolean readOnly;
     private String ciphertext;
-    private double multiplicity;
-    private double entropy;
-    private double indexOfCoincidence;
-    private double chiSquared;
-    private int bigramRepeats;
-    private int cycleScore;
 
     public CipherResponseItem(String name, int rows, int columns, String ciphertext, boolean readOnly) {
         this.name = name;

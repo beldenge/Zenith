@@ -19,7 +19,13 @@
 
 package com.ciphertool.zenith.api.model;
 
-public enum WebSocketResponseType {
-    EPOCH_COMPLETE,
-    SOLUTION;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+public class DoubleResponse {
+    private double value;
 }

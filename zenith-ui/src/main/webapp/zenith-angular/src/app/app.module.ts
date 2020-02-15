@@ -34,6 +34,7 @@ import { PlaintextTransformersComponent } from './plaintext-transformers/plainte
 import { FormlyMaterialModule } from "@ngx-formly/material";
 import { FormlyModule } from "@ngx-formly/core";
 import { PlaintextSampleComponent } from './plaintext-sample/plaintext-sample.component';
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @NgModule({
   declarations: [
@@ -58,7 +59,7 @@ import { PlaintextSampleComponent } from './plaintext-sample/plaintext-sample.co
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    SortablejsModule.forRoot({ animation: 150 }),
+    SortablejsModule.forRoot({animation: 150}),
     BrowserAnimationsModule,
     MatTooltipModule,
     MatDialogModule,
@@ -71,7 +72,8 @@ import { PlaintextSampleComponent } from './plaintext-sample/plaintext-sample.co
     MatPaginatorModule,
     MatSnackBarModule,
     FormlyModule.forRoot(),
-    FormlyMaterialModule
+    FormlyMaterialModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     JsonPipe,

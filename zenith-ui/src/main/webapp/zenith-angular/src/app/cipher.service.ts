@@ -32,9 +32,7 @@ export class CipherService {
     return this.ciphers$.next(ciphers);
   }
 
-  constructor(
-    private http: HttpClient
-  ) {}
+  constructor(private http: HttpClient) {}
 
   getCiphers() {
     return this.http.get<CipherResponse>(ENDPOINT_URL);
