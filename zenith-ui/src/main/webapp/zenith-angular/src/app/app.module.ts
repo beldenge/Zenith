@@ -33,6 +33,7 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { PlaintextTransformersComponent } from './plaintext-transformers/plaintext-transformers.component';
 import { FormlyMaterialModule } from "@ngx-formly/material";
 import { FormlyModule } from "@ngx-formly/core";
+import { PlaintextSampleComponent } from './plaintext-sample/plaintext-sample.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { FormlyModule } from "@ngx-formly/core";
     CiphertextTransformersComponent,
     CipherModalComponent,
     ManageCiphersComponent,
-    PlaintextTransformersComponent
+    PlaintextTransformersComponent,
+    PlaintextSampleComponent
   ],
   imports: [
     BrowserModule,

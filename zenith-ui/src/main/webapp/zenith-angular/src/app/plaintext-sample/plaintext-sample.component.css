@@ -1,0 +1,12 @@
+.card-body div {
+  white-space: pre;
+  font-family: "Courier New", Courier, monospace;
+  color: initial;
+}
+
+.card {
+  position: absolute;
+  width: 97%;
+  top: 0;
+  bottom: 0;
+}
