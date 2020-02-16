@@ -11,6 +11,10 @@ const ENDPOINT_URL = environment.apiUrlBase + '/statistics';
 export class CipherStatisticsService {
   constructor(private http: HttpClient) { }
 
+  getUniqueSymbols(cipherName: string) {
+    return this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/uniqueSymbols');
+  }
+
   getMultiplicity(cipherName: string) {
     return this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/multiplicity');
   }
@@ -21,10 +25,6 @@ export class CipherStatisticsService {
 
   getIndexOfCoincidence(cipherName: string) {
     return this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/indexOfCoincidence');
-  }
-
-  getChiSquared(cipherName: string) {
-    return this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/chiSquared');
   }
 
   getBigramRepeats(cipherName: string) {

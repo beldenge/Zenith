@@ -9,12 +9,13 @@ import {CipherStatisticsService} from "../cipher-statistics.service";
   styleUrls: ['./cipher-stats-summary.component.css']
 })
 export class CipherStatsSummaryComponent implements OnInit {
+  uniqueSymbols: number = null;
   multiplicity: number = null;
   entropy: number = null;
   indexOfCoincidence: number = null;
-  chiSquared: number = null;
   bigramRepeats: number = null;
   cycleScore: number = null;
+  selectedCipher: Cipher;
 
   constructor(private cipherService: CipherService, private statisticsService: CipherStatisticsService) { }
 
@@ -24,12 +25,28 @@ export class CipherStatsSummaryComponent implements OnInit {
         return;
       }
 
+      let skipStatistics = false;
+
+      if (this.selectedCipher && this.selectedCipher.ciphertext === selectedCipher.ciphertext) {
+        skipStatistics = true;
+      }
+
+      this.selectedCipher = selectedCipher;
+
+      if (skipStatistics) {
+        return;
+      }
+
+      this.uniqueSymbols = null;
       this.multiplicity = null;
       this.entropy = null;
       this.indexOfCoincidence = null;
-      this.chiSquared = null;
       this.bigramRepeats = null;
       this.cycleScore = null;
+
+      this.statisticsService.getUniqueSymbols(selectedCipher.name).subscribe((response) => {
+        this.uniqueSymbols = response.value;
+      });
 
       this.statisticsService.getMultiplicity(selectedCipher.name).subscribe((response) => {
         this.multiplicity = response.value;
@@ -41,10 +58,6 @@ export class CipherStatsSummaryComponent implements OnInit {
 
       this.statisticsService.getIndexOfCoincidence(selectedCipher.name).subscribe((response) => {
         this.indexOfCoincidence = response.value;
-      });
-
-      this.statisticsService.getChiSquared(selectedCipher.name).subscribe((response) => {
-        this.chiSquared = response.value;
       });
 
       this.statisticsService.getBigramRepeats(selectedCipher.name).subscribe((response) => {

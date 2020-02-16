@@ -4,9 +4,26 @@
       <div class="card-body p-2 pl-3">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Unique Symbols</div>
+            <mat-spinner *ngIf="uniqueSymbols === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
+            <div *ngIf="uniqueSymbols !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{uniqueSymbols}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-2 col-md-6 mb-4">
+    <div class="card border-left-primary shadow h-100 py-2">
+      <div class="card-body p-2 pl-3">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Multiplicity</div>
             <mat-spinner *ngIf="multiplicity === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="multiplicity !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{multiplicity | number : '1.2-2'}}</div>
+            <div *ngIf="multiplicity !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{multiplicity | number : '1.4-4'}}</div>
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
@@ -23,7 +40,7 @@
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Entropy</div>
             <mat-spinner *ngIf="entropy === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="entropy !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{entropy | number : '1.2-2'}}</div>
+            <div *ngIf="entropy !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{entropy | number : '1.4-4'}}</div>
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
@@ -40,24 +57,7 @@
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Index Of Coincidence (IoC)</div>
             <mat-spinner *ngIf="indexOfCoincidence === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="indexOfCoincidence !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{indexOfCoincidence | number : '1.2-2'}}</div>
-          </div>
-          <div class="col-auto">
-            <i class="text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-2 col-md-6 mb-4">
-    <div class="card border-left-primary shadow h-100 py-2">
-      <div class="card-body p-2 pl-3">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Chi Squared</div>
-            <mat-spinner *ngIf="chiSquared === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="chiSquared !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{chiSquared | number : '1.2-2'}}</div>
+            <div *ngIf="indexOfCoincidence !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{indexOfCoincidence | number : '1.4-4'}}</div>
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>

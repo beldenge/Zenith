@@ -107,7 +107,7 @@ public interface Population {
 
         Map<Object, Map<Object, Double>> symbolProbabilities = new HashMap<>();
 
-        double populationSize = (double) this.size();
+        double populationSize = this.size();
 
         Map<Object, Double> probabilityMap;
 

@@ -23,9 +23,7 @@ import com.ciphertool.zenith.api.model.DoubleResponse;
 import com.ciphertool.zenith.api.model.IntResponse;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
-import com.ciphertool.zenith.inference.statistics.CiphertextMultiplicityEvaluator;
-import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
+import com.ciphertool.zenith.inference.statistics.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +36,16 @@ public class CipherStatisticsService {
     private CipherDao cipherDao;
 
     @Autowired
+    private CiphertextUniqueSymbolsEvaluator uniqueSymbolsEvaluator;
+
+    @Autowired
     private CiphertextMultiplicityEvaluator multiplicityEvaluator;
+
+    @Autowired
+    private CiphertextEntropyEvaluator entropyEvaluator;
+
+    @Autowired
+    private CiphertextIndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
 
     @Autowired
     private CiphertextRepeatingBigramEvaluator bigramEvaluator;
@@ -56,6 +63,12 @@ public class CipherStatisticsService {
         return cipher;
     }
 
+    @GetMapping("/uniqueSymbols")
+    @ResponseBody
+    public DoubleResponse getChiSquared(@PathVariable String cipherName) {
+        return new DoubleResponse(uniqueSymbolsEvaluator.evaluate(getCipher(cipherName)));
+    }
+
     @GetMapping("/multiplicity")
     @ResponseBody
     public DoubleResponse getMultiplicity(@PathVariable String cipherName) {
@@ -65,19 +78,13 @@ public class CipherStatisticsService {
     @GetMapping("/entropy")
     @ResponseBody
     public DoubleResponse getEntropy(@PathVariable String cipherName) {
-        return new DoubleResponse(multiplicityEvaluator.evaluate(getCipher(cipherName)));
+        return new DoubleResponse(entropyEvaluator.evaluate(getCipher(cipherName)));
     }
 
     @GetMapping("/indexOfCoincidence")
     @ResponseBody
     public DoubleResponse getIndexOfCoincidence(@PathVariable String cipherName) {
-        return new DoubleResponse(multiplicityEvaluator.evaluate(getCipher(cipherName)));
-    }
-
-    @GetMapping("/chiSquared")
-    @ResponseBody
-    public DoubleResponse getChiSquared(@PathVariable String cipherName) {
-        return new DoubleResponse(multiplicityEvaluator.evaluate(getCipher(cipherName)));
+        return new DoubleResponse(indexOfCoincidenceEvaluator.evaluate(getCipher(cipherName)));
     }
 
     @GetMapping("/bigramRepeats")
