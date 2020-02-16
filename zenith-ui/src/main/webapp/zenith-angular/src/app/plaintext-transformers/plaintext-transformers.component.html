@@ -50,7 +50,7 @@
                   </div>
                   <div class="col-md-4" *ngIf="item.form">
                     <form [formGroup]="item.form.form">
-                      <formly-form [form]="item.form.form" [fields]="item.form.fields" [model]="item.form.model"></formly-form>
+                      <formly-form [form]="item.form.form" [fields]="item.form.fields" [model]="item.form.model" (modelChange)="onAppliedTransformersChange(null)"></formly-form>
                     </form>
                   </div>
                   <div class="col-md-{{item.form ? 2 : 6}} text-right">
@@ -65,7 +65,7 @@
     </div>
 
     <div class="col-xl-4">
-      <app-plaintext-sample [sample]="sampleSolution"></app-plaintext-sample>
+      <app-plaintext-sample [sample]="transformedSample"></app-plaintext-sample>
     </div>
 
   </div>

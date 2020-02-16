@@ -3,9 +3,9 @@ import { Observable } from "rxjs";
 import { SortablejsOptions } from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
-import { PlaintextTransformationRequest } from "../models/PlaintextTransformationRequest";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { FormGroup } from "@angular/forms";
+import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
 
 @Component({
   selector: 'app-plaintext-transformers',
@@ -21,7 +21,8 @@ import { FormGroup } from "@angular/forms";
 })
 export class PlaintextTransformersComponent implements OnInit {
   public hoverClasses: string[] = [];
-  sampleSolution: string = 'thetomatoisaplantinthenightshadefamilyxxxx';
+  originalSample: string = 'thetomatoisaplantinthenightshadefamilyxxxx';
+  transformedSample: string = this.originalSample;
 
   availableTransformers: ZenithTransformer[] = [];
 
@@ -44,8 +45,9 @@ export class PlaintextTransformersComponent implements OnInit {
   };
 
   onAppliedTransformersChange = (event: any) => {
-    let transformationRequest: PlaintextTransformationRequest = {
-      steps: []
+    let transformationRequest: SamplePlaintextTransformationRequest = {
+      plaintext: this.originalSample,
+      plaintextTransformers: []
     };
 
     let satisfied = true;
@@ -55,10 +57,17 @@ export class PlaintextTransformersComponent implements OnInit {
         satisfied = false;
         return;
       }
+
+      transformationRequest.plaintextTransformers.push({
+        transformerName: transformer.name,
+        data: transformer.form ? transformer.form.model : null
+      });
     });
 
     if (satisfied) {
-      // TODO: Update plaintext sample
+      this.transformerService.transformSample(transformationRequest).subscribe(response => {
+        this.transformedSample = response.plaintext;
+      });
 
       this.transformerService.updateAppliedTransformers(this.appliedTransformers);
     }
