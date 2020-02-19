@@ -113,6 +113,7 @@ public class SolutionService {
         String solution = cipherSolution.asSingleLineString();
         List<SolutionRequestTransformer> transformers = request.getPlaintextTransformers();
 
+        // FIXME: this needs to transform the plaintext within the optimizer, otherwise we are not optimizing on the right plaintext
         if (transformers != null && !transformers.isEmpty()) {
             List<PlaintextTransformationStep> steps = transformers.stream()
                     .map(SolutionRequestTransformer::asStep)
@@ -121,6 +122,6 @@ public class SolutionService {
             solution = plaintextTransformationManager.transform(solution, steps);
         }
 
-        template.convertAndSend("/topic/solutions", new SolutionResponse(solution), solutionHeaders);
+        template.convertAndSend("/topic/solutions", new SolutionResponse(solution, Double.valueOf(cipherSolution.getScore())), solutionHeaders);
     }
 }

@@ -28,4 +28,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SolutionResponse {
     private String plaintext;
+    private Double score;
 }

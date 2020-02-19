@@ -16,6 +16,7 @@ export class PlaintextComponent implements OnInit {
   cipher: Cipher;
   cipher$: Observable<Cipher>;
   @Input() solution: string;
+  @Input() score: number;
   tooltipText = new BehaviorSubject<string>(originalTooltipText);
   blockifyPipe = new BlockifyPipe();
 

@@ -48,6 +48,6 @@ public class PlaintextSampleService {
 
         String transformed = plaintextTransformationManager.transform(transformationRequest.getPlaintext(), steps);
 
-        return new SolutionResponse(transformed);
+        return new SolutionResponse(transformed, 0d);
     }
 }

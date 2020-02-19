@@ -23,6 +23,7 @@ export class DashboardComponent implements OnInit {
   ciphers: Cipher[];
   selectedCipher: Cipher;
   solution: string;
+  score: number;
   isRunning: boolean = false;
   progressPercentage: number = 0;
   hyperparametersForm = this.fb.group({
@@ -126,7 +127,9 @@ export class DashboardComponent implements OnInit {
     let self = this;
     this.webSocketAPI.connectAndSend(request, function (response) {
       if (response.headers.type === 'SOLUTION') {
-        self.solution = JSON.parse(response.body).plaintext;
+        let json = JSON.parse(response.body);
+        self.solution = json.plaintext;
+        self.score = json.score;
         self.isRunning = false;
         self.webSocketAPI.disconnect();
         self.progressPercentage = 100;

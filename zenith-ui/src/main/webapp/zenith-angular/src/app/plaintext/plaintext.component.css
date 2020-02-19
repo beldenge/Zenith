@@ -10,3 +10,7 @@
   top: 0;
   bottom: 0;
 }
+
+#plaintext_score {
+  line-height: 1.2;
+}
