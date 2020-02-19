@@ -32,31 +32,18 @@ import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.SplittableRandom;
+import java.util.*;
 
 @Component
 public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static SplittableRandom RANDOM = new SplittableRandom();
-
-    @Value("${simulated-annealing.sampler.iterations}")
-    private int samplerIterations;
-
-    @Value("${simulated-annealing.temperature.max}")
-    private float annealingTemperatureMax;
-
-    @Value("${simulated-annealing.temperature.min}")
-    private float annealingTemperatureMin;
-
-    @Value("${decipherment.known-solution.correctness-threshold:0.9}")
-    private float knownSolutionCorrectnessThreshold;
+    public static final String SAMPLER_ITERATIONS = "samplerIterations";
+    public static final String ANNEALING_TEMPERATURE_MIN = "annealingTemperatureMin";
+    public static final String ANNEALING_TEMPERATURE_MAX = "annealingTemperatureMax";
 
     @Autowired
     private SolutionScorer solutionScorer;
@@ -71,7 +58,12 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     private PlaintextEvaluator plaintextEvaluator;
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, OnEpochComplete onEpochComplete) {
+        float knownSolutionCorrectnessThreshold = (float) configuration.get(KNOWN_SOLUTION_CORRECTNESS_THRESHOLD);
+        int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
+        float annealingTemperatureMin = (float) configuration.get(ANNEALING_TEMPERATURE_MIN);
+        float annealingTemperatureMax = (float) configuration.get(ANNEALING_TEMPERATURE_MAX);
+
         int cipherKeySize = (int) cipher.getCiphertextCharacters().stream()
                 .map(c -> c.getValue())
                 .distinct()
@@ -114,7 +106,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
             long start = System.currentTimeMillis();
 
-            CipherSolution best = performEpoch(cipher, initialSolution, mappingKeys);
+            CipherSolution best = performEpoch(cipher, initialSolution, mappingKeys, samplerIterations, annealingTemperatureMin, annealingTemperatureMax);
 
             long elapsed = System.currentTimeMillis() - start;
             totalElapsed += elapsed;
@@ -160,7 +152,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         return solutionProposal;
     }
 
-    private CipherSolution performEpoch(Cipher cipher, CipherSolution initialSolution, String[] mappingKeys) {
+    private CipherSolution performEpoch(Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax) {
         String solutionString = initialSolution.asSingleLineString();
 
         if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {

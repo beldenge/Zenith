@@ -23,9 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.util.List;
 
 @Getter
@@ -45,6 +43,21 @@ public class SolutionRequest {
     @Min(1)
     private int epochs = 1;
 
+    @DecimalMin("0.0")
+    @DecimalMax("100.0")
+    private float knownSolutionCorrectnessThreshold;
+
     @Valid
     private List<SolutionRequestTransformer> plaintextTransformers;
+
+    @Valid
+    private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
+
+    @Valid
+    private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
+
+    @AssertTrue(message = "One and only one of simulatedAnnealingConfiguration or geneticAlgorithmConfiguration must be set")
+    public boolean isOnlyOneOptimizerConfigured() {
+        return (simulatedAnnealingConfiguration != null && geneticAlgorithmConfiguration == null) || (simulatedAnnealingConfiguration == null && geneticAlgorithmConfiguration != null);
+    }
 }

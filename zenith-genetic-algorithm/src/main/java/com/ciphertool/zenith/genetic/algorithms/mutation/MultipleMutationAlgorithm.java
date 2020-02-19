@@ -19,11 +19,11 @@
 
 package com.ciphertool.zenith.genetic.algorithms.mutation;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,14 +34,13 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class MultipleMutationAlgorithm implements MutationAlgorithm<Chromosome<Object>> {
-    @Value("${genetic-algorithm.mutation.max-per-individual}")
-    private int maxMutations;
-
     @Autowired
     private GeneDao geneDao;
 
     @Override
-    public boolean mutateChromosome(Chromosome<Object> chromosome) {
+    public boolean mutateChromosome(Chromosome<Object> chromosome, GeneticAlgorithmStrategy strategy) {
+        int maxMutations = strategy.getMaxMutationsPerIndividual();
+
         Chromosome original = chromosome.clone();
         int numMutations;
 

@@ -17,34 +17,63 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic;
+package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
-import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
-import com.ciphertool.zenith.genetic.population.Population;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+
+import javax.validation.constraints.*;
 
 @Getter
-@Builder
-public class GeneticAlgorithmStrategy {
+@Setter
+public class GeneticAlgorithmConfiguration {
+    @NotNull
+    @Min(1)
     private Integer populationSize;
+
+    @NotNull
+    @Min(1)
     private Integer numberOfGenerations;
+
     private Integer elitism;
-    private Population population;
+
+    @NotBlank
+    private String populationName;
+
+    @Min(1)
     private Integer latticeRows;
+
+    @Min(1)
     private Integer latticeColumns;
+
     private Boolean latticeWrapAround;
+
+    @Min(1)
     private Integer latticeRadius;
-    private CrossoverAlgorithm crossoverAlgorithm;
-    private FitnessEvaluator fitnessEvaluator;
-    private MutationAlgorithm mutationAlgorithm;
+
+    @NotBlank
+    private String breederName;
+
+    @NotBlank
+    private String crossoverAlgorithmName;
+
+    @NotBlank
+    private String mutationAlgorithmName;
+
+    @NotNull
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
     private Double mutationRate;
+
     private Integer maxMutationsPerIndividual;
-    private Breeder breeder;
-    private Selector selector;
+
+    @NotBlank
+    private String selectorName;
+
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
     private Double tournamentSelectorAccuracy;
+
+    @Min(1)
     private Integer tournamentSize;
 }

@@ -1,7 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { Validators } from '@angular/forms';
+import { ConfigurationService } from "../configuration.service";
+import { SelectOption } from "../models/SelectOption";
+import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
+import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
+
+const INTEGER_PATTERN: string = "^[0-9]+$";
+const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
 
 @Component({
   selector: 'app-settings',
@@ -9,18 +16,128 @@ import { Validators } from '@angular/forms';
   styleUrls: ['./settings.component.css']
 })
 export class SettingsComponent implements OnInit {
-  generalSettingsForm = this.fb.group({
-    epochs: ['', [Validators.min(1), Validators.pattern("^[0-9]*$")]],
-    optimizer: ['SimulatedAnnealingOptimizer'],
-    plaintextEvaluator: ['']
+  optimizerNames: SelectOption[] = ConfigurationService.OPTIMIZER_NAMES;
+  populationNames: SelectOption[] = ConfigurationService.POPULATION_NAMES;
+  breederNames: SelectOption[] = ConfigurationService.BREEDER_NAMES;
+  crossoverAlgorithmNames: SelectOption[] = ConfigurationService.CROSSOVER_ALGORITHM_NAMES;
+  mutationAlgorithmNames: SelectOption[] = ConfigurationService.MUTATION_ALGORITHM_NAMES;
+  selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
+  simulatedAnnealingFormGroup = this.fb.group({
+    samplerIterations: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    annealingTemperatureMin: [null, [Validators.pattern(DECIMAL_PATTERN)]],
+    annealingTemperatureMax: [null, [Validators.pattern(DECIMAL_PATTERN)]],
   });
 
-  constructor(private fb: FormBuilder, private json: JsonPipe) { }
+  geneticAlgorithmFormGroup = this.fb.group({
+    populationSize: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    numberOfGenerations: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    elitism: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    populationName: [null],
+    latticeRows: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    latticeColumns: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    latticeWrapAround: [null],
+    latticeRadius: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    breederName: [null],
+    crossoverAlgorithmName: [null],
+    mutationAlgorithmName: [null],
+    mutationRate: [null, [Validators.min(0.0), Validators.max(1.0), Validators.pattern(DECIMAL_PATTERN)]],
+    maxMutationsPerIndividual: [null, [Validators.pattern(INTEGER_PATTERN)]],
+    selectorName: [null],
+    tournamentSelectorAccuracy: [null, [Validators.min(0.0), Validators.max(1.0), Validators.pattern(DECIMAL_PATTERN)]],
+    tournamentSize: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]]
+  });
+
+  generalSettingsForm = this.fb.group({
+    optimizer: [this.optimizerNames[0], [Validators.required]],
+    simulatedAnnealingConfiguration: this.simulatedAnnealingFormGroup,
+    geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup
+  });
+
+  constructor(private fb: FormBuilder, private json: JsonPipe, private configurationService: ConfigurationService) { }
 
   ngOnInit() {
+    this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
+      let patch = {
+        samplerIterations: configuration.samplerIterations,
+        annealingTemperatureMin: configuration.annealingTemperatureMin,
+        annealingTemperatureMax: configuration.annealingTemperatureMax,
+      };
+
+      if (JSON.stringify(this.simulatedAnnealingFormGroup.value) !== JSON.stringify(patch)) {
+        this.simulatedAnnealingFormGroup.patchValue(patch);
+        this.generalSettingsForm.patchValue({ simulatedAnnealingConfiguration: this.simulatedAnnealingFormGroup });
+      }
+    });
+
+    this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
+      let patch = {
+        populationSize: configuration.populationSize,
+        numberOfGenerations: configuration.numberOfGenerations,
+        elitism: configuration.elitism,
+        populationName: this.populationNames.find(name => name.name === configuration.populationName),
+        latticeRows: configuration.latticeRows,
+        latticeColumns: configuration.latticeColumns,
+        latticeWrapAround: configuration.latticeWrapAround,
+        latticeRadius: configuration.latticeRadius,
+        breederName: this.breederNames.find(name => name.name === configuration.breederName),
+        crossoverAlgorithmName: this.crossoverAlgorithmNames.find(name => name.name === configuration.crossoverAlgorithmName),
+        mutationAlgorithmName: this.mutationAlgorithmNames.find(name => name.name === configuration.mutationAlgorithmName),
+        mutationRate: configuration.mutationRate,
+        maxMutationsPerIndividual: configuration.maxMutationsPerIndividual,
+        selectorName: this.selectorNames.find(name => name.name === configuration.selectorName),
+        tournamentSelectorAccuracy: configuration.tournamentSelectorAccuracy,
+        tournamentSize: configuration.tournamentSize
+      };
+
+      if (JSON.stringify(this.geneticAlgorithmFormGroup.value) !== JSON.stringify(patch)) {
+        this.geneticAlgorithmFormGroup.patchValue(patch);
+        this.generalSettingsForm.patchValue({geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup});
+      }
+    });
+
+    this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
+      if (this.generalSettingsForm.get('optimizer').value !== optimizer) {
+        this.generalSettingsForm.patchValue({ optimizer: optimizer });
+      }
+    });
+
+    this.onFormChange();
   }
 
-  onSubmit() {
-    console.log('Form data: ' + this.json.transform(this.generalSettingsForm.value));
+  onFormChange() {
+    this.generalSettingsForm.valueChanges.subscribe(val => {
+      this.configurationService.updateSelectedOptimizer(this.generalSettingsForm.get('optimizer').value);
+
+      if (this.generalSettingsForm.get('optimizer').value === this.optimizerNames[0]) {
+        let configuration: SimulatedAnnealingConfiguration = {
+          samplerIterations: this.simulatedAnnealingFormGroup.get('samplerIterations').value,
+          annealingTemperatureMin: this.simulatedAnnealingFormGroup.get('annealingTemperatureMin').value,
+          annealingTemperatureMax: this.simulatedAnnealingFormGroup.get('annealingTemperatureMax').value
+        };
+
+        this.configurationService.updateSimulatedAnnealingConfiguration(configuration);
+      } else {
+        let configuration: GeneticAlgorithmConfiguration = {
+          populationSize: this.geneticAlgorithmFormGroup.get('populationSize').value,
+          numberOfGenerations: this.geneticAlgorithmFormGroup.get('numberOfGenerations').value,
+          elitism: this.geneticAlgorithmFormGroup.get('elitism').value,
+          populationName: this.geneticAlgorithmFormGroup.get('populationName').value.name,
+          latticeRows: this.geneticAlgorithmFormGroup.get('latticeRows').value,
+          latticeColumns: this.geneticAlgorithmFormGroup.get('latticeColumns').value,
+          latticeWrapAround: this.geneticAlgorithmFormGroup.get('latticeWrapAround').value,
+          latticeRadius: this.geneticAlgorithmFormGroup.get('latticeRadius').value,
+          breederName: this.geneticAlgorithmFormGroup.get('breederName').value.name,
+          crossoverAlgorithmName: this.geneticAlgorithmFormGroup.get('crossoverAlgorithmName').value.name,
+          mutationAlgorithmName: this.geneticAlgorithmFormGroup.get('mutationAlgorithmName').value.name,
+          mutationRate: this.geneticAlgorithmFormGroup.get('mutationRate').value,
+          maxMutationsPerIndividual: this.geneticAlgorithmFormGroup.get('maxMutationsPerIndividual').value,
+          selectorName: this.geneticAlgorithmFormGroup.get('selectorName').value.name,
+          tournamentSelectorAccuracy: this.geneticAlgorithmFormGroup.get('tournamentSelectorAccuracy').value,
+          tournamentSize: this.geneticAlgorithmFormGroup.get('tournamentSize').value
+        };
+
+        this.configurationService.updateGeneticAlgorithmConfiguration(configuration);
+      }
+    });
   }
 }

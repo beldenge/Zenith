@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.genetic.algorithms.mutation;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class MandatorySingleMutationAlgorithm implements MutationAlgorithm<Chrom
     private GeneDao geneDao;
 
     @Override
-    public boolean mutateChromosome(Chromosome<Object> chromosome) {
+    public boolean mutateChromosome(Chromosome<Object> chromosome, GeneticAlgorithmStrategy strategy) {
         Chromosome original = chromosome.clone();
 
         List<Object> availableKeys = new ArrayList<>(chromosome.getGenes().keySet());

@@ -6,9 +6,12 @@ import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { ZenithTransformer } from "../models/ZenithTransformer";
-import { Observable } from "rxjs";
 import { SolutionRequestTransformer } from "../models/SolutionRequestTransformer";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { ConfigurationService } from "../configuration.service";
+import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
+import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
+import { SelectOption } from "../models/SelectOption";
 
 @Component({
   selector: 'app-dashboard',
@@ -27,10 +30,11 @@ export class DashboardComponent implements OnInit {
   });
   selectHasFocus: boolean = false;
   appliedPlaintextTransformers: ZenithTransformer[] = [];
-  appliedPlaintextTransformers$: Observable<ZenithTransformer[]>;
+  optimizer: SelectOption;
+  geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
+  simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService, private _snackBar: MatSnackBar) {
-    this.appliedPlaintextTransformers$ = plaintextTransformerService.getAppliedTransformersAsObservable();
+  constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService) {
   }
 
   ngOnInit() {
@@ -44,8 +48,20 @@ export class DashboardComponent implements OnInit {
       this.ciphers = ciphers
     });
 
-    this.appliedPlaintextTransformers$.subscribe(appliedTransformers => {
+    this.plaintextTransformerService.getAppliedTransformersAsObservable().subscribe(appliedTransformers => {
       this.appliedPlaintextTransformers = appliedTransformers;
+    });
+
+    this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
+      this.optimizer = optimizer;
+    });
+
+    this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
+      this.simulatedAnnealingConfiguration = configuration;
+    });
+
+    this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
+      this.geneticAlgorithmConfiguration = configuration;
     });
   }
 
@@ -71,6 +87,12 @@ export class DashboardComponent implements OnInit {
 
   solve() {
     let request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
+
+    if (this.optimizer === ConfigurationService.OPTIMIZER_NAMES[0]) {
+      request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration;
+    } else {
+      request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration;
+    }
 
     let allValid = true;
 
@@ -107,6 +129,7 @@ export class DashboardComponent implements OnInit {
         self.solution = JSON.parse(response.body).plaintext;
         self.isRunning = false;
         self.webSocketAPI.disconnect();
+        self.progressPercentage = 100;
       } else if (response.headers.type === 'EPOCH_COMPLETE') {
         let responseBody = JSON.parse(response.body);
         self.progressPercentage = (responseBody.epochsCompleted / responseBody.epochsTotal) * 100;

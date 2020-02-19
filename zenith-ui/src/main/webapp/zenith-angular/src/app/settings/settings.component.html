@@ -1,84 +1,256 @@
 <div class="container-fluid px-5">
-  <form class="user" [formGroup]="generalSettingsForm" (ngSubmit)="onSubmit()">
+  <form class="user" [formGroup]="generalSettingsForm">
     <div class="card o-hidden border-0 shadow-lg h-100 mt-5">
       <div class="card-body p-0">
         <!-- Nested Row within Card Body -->
         <div class="p-5">
           <div class="text-center">
-            <h1 class="h4 text-gray-900 mb-4">Settings</h1>
+            <h1 class="h4 text-gray-900 mb-4">Optimization Strategy</h1>
           </div>
             <div class="form-group row">
-              <div class="col-sm-4 mb-3 mb-sm-0 mx-auto">
-                <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !generalSettingsForm.get('epochs').valid}" placeholder="Epochs">
-                <div class="text-center text-danger small" *ngIf="!generalSettingsForm.get('epochs').valid">Must be a number greater than 0</div>
-              </div>
-            </div>
-            <div class="form-group row">
               <div class="col-sm-4 mx-auto">
-                <input type="text" class="form-control form-control-user" formControlName="plaintextEvaluator" [ngClass]="{'is-invalid': !generalSettingsForm.get('plaintextEvaluator').valid}" placeholder="Plaintext Evaluator">
+                <mat-radio-group formControlName="optimizer" aria-label="Select an option" class="row">
+                  <mat-radio-button [value]="optimizerNames[0]" class="col-md-6">{{optimizerNames[0].displayName}}</mat-radio-button>
+                  <mat-radio-button [value]="optimizerNames[1]" class="col-md-6">{{optimizerNames[1].displayName}} <sup class="font-weight-bold">(BETA)</sup></mat-radio-button>
+                </mat-radio-group>
               </div>
             </div>
-            <div class="form-group row">
-              <div class="col-sm-4 mx-auto">
-                <input type="radio" value="SimulatedAnnealingOptimizer" formControlName="optimizer"> Simulated Annealing<br>
-                <input type="radio" value="GeneticAlgorithmOptimizer" formControlName="optimizer"> Genetic Algorithm <sup class="font-weight-bold">(BETA)</sup><br>
-              </div>
-            </div>
-            <button type="submit" [disabled]="!generalSettingsForm.valid" class="btn btn-primary btn-user btn-block col-md-1 float-right mb-3">Apply</button>
         </div>
       </div>
     </div>
-    <div *ngIf="generalSettingsForm.get('optimizer').value=='SimulatedAnnealingOptimizer'" class="card o-hidden border-0 shadow-lg h-100 mt-5">
-      <div class="card-body p-0">
+    <div *ngIf="generalSettingsForm.get('optimizer').value === optimizerNames[0]" class="card o-hidden border-0 shadow-lg h-100 mt-5">
+      <div class="card-body p-0" formGroupName="simulatedAnnealingConfiguration">
         <!-- Nested Row within Card Body -->
         <div class="p-5">
           <div class="text-center">
             <h1 class="h4 text-gray-900 mb-4">Simulated Annealing Settings</h1>
           </div>
           <div class="form-group row">
-            <div class="col-sm-4 mb-3 mb-sm-0 mx-auto">
-              <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !generalSettingsForm.get('epochs').valid}" placeholder="Epochs">
-              <div class="text-center text-danger small" *ngIf="!generalSettingsForm.get('epochs').valid">Must be a number greater than 0</div>
+            <div class="col-sm-4 mx-auto">
+              <mat-form-field appearance="outline">
+                <mat-label>Sampler Iterations</mat-label>
+                <input matInput formControlName="samplerIterations">
+              </mat-form-field>
             </div>
           </div>
           <div class="form-group row">
             <div class="col-sm-4 mx-auto">
-              <input type="text" class="form-control form-control-user" formControlName="plaintextEvaluator" [ngClass]="{'is-invalid': !generalSettingsForm.get('plaintextEvaluator').valid}" placeholder="Plaintext Evaluator">
+              <mat-form-field appearance="outline">
+                <mat-label>Annealing Temperature Minimum</mat-label>
+                <input matInput formControlName="annealingTemperatureMin">
+              </mat-form-field>
             </div>
           </div>
           <div class="form-group row">
             <div class="col-sm-4 mx-auto">
-              <input type="text" class="form-control form-control-user" formControlName="optimizer" [ngClass]="{'is-invalid': !generalSettingsForm.get('optimizer').valid}" placeholder="Optimizer">
+              <mat-form-field appearance="outline">
+                <mat-label>Annealing Temperature Maximum</mat-label>
+                <input matInput formControlName="annealingTemperatureMax">
+              </mat-form-field>
             </div>
           </div>
-          <button type="submit" [disabled]="!generalSettingsForm.valid" class="btn btn-primary btn-user btn-block col-md-1 float-right mb-3">Apply</button>
         </div>
       </div>
     </div>
-    <div *ngIf="generalSettingsForm.get('optimizer').value=='GeneticAlgorithmOptimizer'" class="card o-hidden border-0 shadow-lg h-100 mt-5">
-      <div class="card-body p-0 beta">
+    <div *ngIf="generalSettingsForm.get('optimizer').value === optimizerNames[1]" class="card o-hidden border-0 shadow-lg h-100 mt-5">
+      <div class="card-body p-0 beta" formGroupName="geneticAlgorithmConfiguration">
         <!-- Nested Row within Card Body -->
         <div class="p-5">
           <div class="text-center">
             <h1 class="h4 text-gray-900 mb-4">Genetic Algorithm Settings</h1>
           </div>
-          <div class="form-group row">
-            <div class="col-sm-4 mb-3 mb-sm-0 mx-auto">
-              <input type="text" class="form-control form-control-user" formControlName="epochs" [ngClass]="{'is-invalid': !generalSettingsForm.get('epochs').valid}" placeholder="Epochs">
-              <div class="text-center text-danger small" *ngIf="!generalSettingsForm.get('epochs').valid">Must be a number greater than 0</div>
+
+            <div class="col-xl-6 mx-auto">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary">General</h6>
+                </div>
+                <div class="card-body mx-4">
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Population Size</mat-label>
+                        <input matInput formControlName="populationSize">
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Number of Generations</mat-label>
+                        <input matInput formControlName="numberOfGenerations">
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Elitism</mat-label>
+                        <input matInput formControlName="elitism">
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Breeder Name</mat-label>
+                        <mat-select formControlName="breederName">
+                          <mat-option *ngFor="let breederName of breederNames" [value]="breederName">
+                            {{breederName.displayName}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Crossover Algorithm Name</mat-label>
+                        <mat-select formControlName="crossoverAlgorithmName">
+                          <mat-option *ngFor="let crossoverAlgorithmName of crossoverAlgorithmNames" [value]="crossoverAlgorithmName">
+                            {{crossoverAlgorithmName.displayName}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-sm-4 mx-auto">
-              <input type="text" class="form-control form-control-user" formControlName="plaintextEvaluator" [ngClass]="{'is-invalid': !generalSettingsForm.get('plaintextEvaluator').valid}" placeholder="Plaintext Evaluator">
+
+            <div class="col-xl-6 mx-auto">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary">Population</h6>
+                </div>
+                <div class="card-body mx-4">
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Population Name</mat-label>
+                        <mat-select formControlName="populationName">
+                          <mat-option *ngFor="let populationName of populationNames" [value]="populationName">
+                            {{populationName.displayName}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <ng-container *ngIf="geneticAlgorithmFormGroup.get('populationName').value === populationNames[1]">
+                    <div class="form-group">
+                      <div class="mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Lattice Rows</mat-label>
+                          <input matInput formControlName="latticeRows">
+                        </mat-form-field>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Lattice Columns</mat-label>
+                          <input matInput formControlName="latticeColumns">
+                        </mat-form-field>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Lattice Wrap-around</mat-label>
+                          <input matInput formControlName="latticeWrapAround">
+                        </mat-form-field>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Lattice Selection Radius</mat-label>
+                          <input matInput formControlName="latticeRadius">
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-sm-4 mx-auto">
-              <input type="text" class="form-control form-control-user" formControlName="optimizer" [ngClass]="{'is-invalid': !generalSettingsForm.get('optimizer').valid}" placeholder="Optimizer">
+
+            <div class="col-xl-6 mx-auto">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary">Mutation</h6>
+                </div>
+                <div class="card-body mx-4">
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mutation Algorithm Name</mat-label>
+                        <mat-select formControlName="mutationAlgorithmName">
+                          <mat-option *ngFor="let mutationAlgorithmName of mutationAlgorithmNames" [value]="mutationAlgorithmName">
+                            {{mutationAlgorithmName.displayName}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="geneticAlgorithmFormGroup.get('mutationAlgorithmName').value === mutationAlgorithmNames[0]">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mutation Rate</mat-label>
+                        <input matInput formControlName="mutationRate">
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="geneticAlgorithmFormGroup.get('mutationAlgorithmName').value === mutationAlgorithmNames[1]">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Maximum Mutations Per Individual</mat-label>
+                        <input matInput formControlName="maxMutationsPerIndividual">
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <button type="submit" [disabled]="!generalSettingsForm.valid" class="btn btn-primary btn-user btn-block col-md-1 float-right mb-3">Apply</button>
+
+            <div class="col-xl-6 mx-auto">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary">Selection</h6>
+                </div>
+                <div class="card-body mx-4">
+                  <div class="form-group">
+                    <div class="mx-auto">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Selector Name</mat-label>
+                        <mat-select formControlName="selectorName">
+                          <mat-option *ngFor="let selectorName of selectorNames" [value]="selectorName">
+                            {{selectorName.displayName}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <ng-container *ngIf="geneticAlgorithmFormGroup.get('selectorName').value === selectorNames[0]">
+                    <div class="form-group">
+                      <div class="mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Tournament Selector Accuracy</mat-label>
+                          <input matInput formControlName="tournamentSelectorAccuracy">
+                        </mat-form-field>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Tournament Size</mat-label>
+                          <input matInput formControlName="tournamentSize">
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
         </div>
       </div>
     </div>

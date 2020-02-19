@@ -19,9 +19,11 @@
 
 package com.ciphertool.zenith.genetic.population;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,14 +33,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+@NoArgsConstructor
 @Component
 public class StandardPopulation extends AbstractPopulation {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private List<Chromosome> individuals = new ArrayList<>();
     private Selector selector;
+    private GeneticAlgorithmStrategy strategy;
 
-    public StandardPopulation() {
+    @Override
+    public void init(GeneticAlgorithmStrategy strategy) {
+        this.strategy = strategy;
     }
 
     @Override
@@ -52,10 +58,10 @@ public class StandardPopulation extends AbstractPopulation {
 
         @Override
         public Parents call() {
-            int momIndex = selector.getNextIndex(individuals);
+            int momIndex = selector.getNextIndex(individuals, strategy);
             Chromosome mom = getIndividuals().get(momIndex);
 
-            int dadIndex = selector.getNextIndex(individuals);
+            int dadIndex = selector.getNextIndex(individuals, strategy);
             // Ensure that dadIndex is different from momIndex
             dadIndex += (dadIndex == momIndex) ? ((dadIndex == 0) ? 1 : -1) : 0;
             Chromosome dad = getIndividuals().get(dadIndex);

@@ -33,3 +33,9 @@ select:-moz-focusring {
   color: transparent;
   text-shadow: 0 0 0 #000;
 }
+
+#version_badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}

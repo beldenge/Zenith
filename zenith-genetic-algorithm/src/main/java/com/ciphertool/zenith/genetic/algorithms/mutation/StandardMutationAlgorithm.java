@@ -19,10 +19,10 @@
 
 package com.ciphertool.zenith.genetic.algorithms.mutation;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -30,17 +30,12 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class StandardMutationAlgorithm implements MutationAlgorithm<Chromosome<Object>> {
-    @Value("${genetic-algorithm.mutation.rate}")
-    private Double mutationRate;
-
     @Autowired
     private GeneDao geneDao;
 
     @Override
-    public boolean mutateChromosome(Chromosome<Object> chromosome) {
-        if (mutationRate == null) {
-            throw new IllegalStateException("The mutationRate cannot be null.");
-        }
+    public boolean mutateChromosome(Chromosome<Object> chromosome, GeneticAlgorithmStrategy strategy) {
+        double mutationRate = strategy.getMutationRate();
 
         Chromosome original = chromosome.clone();
         Set<Object> keys = chromosome.getGenes().keySet();

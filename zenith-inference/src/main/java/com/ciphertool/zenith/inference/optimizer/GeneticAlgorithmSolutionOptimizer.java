@@ -42,7 +42,6 @@ import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -53,38 +52,22 @@ import java.util.stream.Collectors;
 public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${decipherment.known-solution.correctness-threshold:0.9}")
-    private double knownSolutionCorrectnessThreshold;
-
-    @Value("${genetic-algorithm.population.size}")
-    private int populationSize;
-
-    @Value("${genetic-algorithm.number-of-generations}")
-    private int numberOfGenerations;
-
-    @Value("${genetic-algorithm.elitism}")
-    private int elitism;
-
-    @Value("${genetic-algorithm.mutation.rate}")
-    private Double mutationRate;
-
-    @Value("${genetic-algorithm.mutation.max-per-individual}")
-    private int maxMutationsPerIndividual;
-
-    @Value("${genetic-algorithm.population.type}")
-    private String populationName;
-
-    @Value("${genetic-algorithm.breeder.implementation}")
-    private String breederName;
-
-    @Value("${genetic-algorithm.crossover.implementation}")
-    private String crossoverAlgorithmName;
-
-    @Value("${genetic-algorithm.mutation.implementation}")
-    private String mutationAlgorithmName;
-
-    @Value("${genetic-algorithm.selection.implementation}")
-    private String selectorName;
+    public static final String POPULATION_SIZE = "populationSize";
+    public static final String NUMBER_OF_GENERATIONS = "numberOfGenerations";
+    public static final String ELITISM = "elitism";
+    public static final String POPULATION_NAME = "populationName";
+    public static final String LATTICE_ROWS = "latticeRows";
+    public static final String LATTICE_COLUMNS = "latticeColumns";
+    public static final String LATTICE_WRAP_AROUND = "latticeWrapAround";
+    public static final String LATTICE_RADIUS = "latticeRadius";
+    public static final String BREEDER_NAME = "breederName";
+    public static final String CROSSOVER_ALGORITHM_NAME = "crossoverAlgorithmName";
+    public static final String MUTATION_ALGORITHM_NAME = "mutationAlgorithmName";
+    public static final String MUTATION_RATE = "mutationRate";
+    public static final String MAX_MUTATIONS_PER_INDIVIDUAL = "maxMutationsPerIndividual";
+    public static final String SELECTOR_NAME = "selectorName";
+    public static final String TOURNAMENT_SELECTOR_ACCURACY = "tournamentSelectorAccuracy";
+    public static final String TOURNAMENT_SIZE = "tournamentSize";
 
     @Autowired
     private List<Population> populations;
@@ -127,7 +110,13 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     private Cipher initialized = null;
 
-    public void init(Cipher cipher) {
+    public void init(Cipher cipher, Map<String, Object> configuration) {
+        String populationName = (String) configuration.get(POPULATION_NAME);
+        String breederName = (String) configuration.get(BREEDER_NAME);
+        String crossoverAlgorithmName = (String) configuration.get(CROSSOVER_ALGORITHM_NAME);
+        String mutationAlgorithmName = (String) configuration.get(MUTATION_ALGORITHM_NAME);
+        String selectorName = (String) configuration.get(SELECTOR_NAME);
+
         // Set the proper Population
         for (Population population : populations) {
             if (population.getClass().getSimpleName().equals(populationName)) {
@@ -219,23 +208,42 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, OnEpochComplete onEpochComplete) {
+        float knownSolutionCorrectnessThreshold = (float) configuration.get(KNOWN_SOLUTION_CORRECTNESS_THRESHOLD);
+        int populationSize = (int) configuration.get(POPULATION_SIZE);
+        int numberOfGenerations = (int) configuration.get(NUMBER_OF_GENERATIONS);
+        int elitism = (int) configuration.get(ELITISM);
+        Integer latticeRows = (Integer) configuration.get(LATTICE_ROWS);
+        Integer latticeColumns = (Integer) configuration.get(LATTICE_COLUMNS);
+        Boolean latticeWrapAround = (Boolean) configuration.get(LATTICE_WRAP_AROUND);
+        Integer latticeRadius = (Integer) configuration.get(LATTICE_RADIUS);
+        Double mutationRate = (Double) configuration.get(MUTATION_RATE);
+        Integer maxMutationsPerIndividual = (Integer) configuration.get(MAX_MUTATIONS_PER_INDIVIDUAL);
+        Double tournamentSelectorAccuracy = (Double) configuration.get(TOURNAMENT_SELECTOR_ACCURACY);
+        Integer tournamentSize = (Integer) configuration.get(TOURNAMENT_SIZE);
+
         if (initialized == null || initialized != cipher) {
-            init(cipher);
+            init(cipher, configuration);
         }
 
         GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
-                .crossoverAlgorithm(crossoverAlgorithm)
-                .mutationAlgorithm(mutationAlgorithm)
-                .selector(selector)
+                .populationSize(populationSize)
+                .numberOfGenerations(numberOfGenerations)
+                .elitism(elitism)
                 .population(population)
+                .latticeRows(latticeRows)
+                .latticeColumns(latticeColumns)
+                .latticeWrapAround(latticeWrapAround)
+                .latticeRadius(latticeRadius)
                 .fitnessEvaluator(fitnessEvaluator)
                 .breeder(breeder)
-                .populationSize(populationSize)
-                .maxGenerations(numberOfGenerations)
+                .crossoverAlgorithm(crossoverAlgorithm)
+                .mutationAlgorithm(mutationAlgorithm)
                 .mutationRate(mutationRate)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
-                .elitism(elitism)
+                .selector(selector)
+                .tournamentSelectorAccuracy(tournamentSelectorAccuracy)
+                .tournamentSize(tournamentSize)
                 .build();
 
         geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);

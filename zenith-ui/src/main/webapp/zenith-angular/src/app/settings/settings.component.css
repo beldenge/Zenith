@@ -27,3 +27,7 @@ sup {
   line-height: 27px;
   transform:rotate(-45deg);
 }
+
+.mat-form-field {
+  display: block;
+}

@@ -18,14 +18,13 @@
  */
 package com.ciphertool.zenith.genetic.algorithms.selection;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -33,22 +32,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TournamentSelector implements Selector {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Value("${genetic-algorithm.selection.tournament.accuracy}")
-    private Double selectionAccuracy;
-
-    @Value("${genetic-algorithm.selection.tournament.size}")
-    private int tournamentSize;
-
     @Autowired
     private RandomSelector randomSelector;
-
-    @PostConstruct
-    public void init() {
-        if (selectionAccuracy < 0.0 || selectionAccuracy > 1.0) {
-            throw new IllegalArgumentException("Tried to set a selectionAccuracy of " + selectionAccuracy
-                    + ", but TournamentSelector requires a selectionAccuracy between 0.0 and 1.0 inclusive.");
-        }
-    }
 
     @Override
     public synchronized void reIndex(List<Chromosome> individuals) {
@@ -58,7 +43,15 @@ public class TournamentSelector implements Selector {
     }
 
     @Override
-    public int getNextIndex(List<Chromosome> individuals) {
+    public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
+        double selectionAccuracy = strategy.getTournamentSelectorAccuracy();
+        int tournamentSize = strategy.getTournamentSize();
+
+        if (selectionAccuracy < 0.0 || selectionAccuracy > 1.0) {
+            throw new IllegalArgumentException("Tried to set a selectionAccuracy of " + selectionAccuracy
+                    + ", but TournamentSelector requires a selectionAccuracy between 0.0 and 1.0 inclusive.");
+        }
+
         if (individuals == null || individuals.isEmpty()) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 
@@ -68,7 +61,7 @@ public class TournamentSelector implements Selector {
         SortedMap<Integer, Chromosome> competitors = new TreeMap<>(Comparator.reverseOrder());
 
         for (int i = 0; i < Math.min(tournamentSize, individuals.size()); i ++) {
-            int chosenIndex = randomSelector.getNextIndex(individuals);
+            int chosenIndex = randomSelector.getNextIndex(individuals, strategy);
 
             // TODO: How to handle whether we've chosen the same individual more than once?
             competitors.put(chosenIndex, individuals.get(chosenIndex));
@@ -85,8 +78,8 @@ public class TournamentSelector implements Selector {
     }
 
     @Override
-    public int getNextIndexThreadSafe(List<Chromosome> individuals) {
+    public int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
         reIndex(individuals);
-        return getNextIndex(individuals);
+        return getNextIndex(individuals, strategy);
     }
 }

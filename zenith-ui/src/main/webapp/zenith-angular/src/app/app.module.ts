@@ -35,6 +35,8 @@ import { FormlyMaterialModule } from "@ngx-formly/material";
 import { FormlyModule } from "@ngx-formly/core";
 import { PlaintextSampleComponent } from './plaintext-sample/plaintext-sample.component';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatRadioModule } from "@angular/material/radio";
+import { MatSelectModule } from "@angular/material/select";
 
 @NgModule({
   declarations: [
@@ -73,7 +75,9 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     MatSnackBarModule,
     FormlyModule.forRoot(),
     FormlyMaterialModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatRadioModule,
+    MatSelectModule
   ],
   providers: [
     JsonPipe,

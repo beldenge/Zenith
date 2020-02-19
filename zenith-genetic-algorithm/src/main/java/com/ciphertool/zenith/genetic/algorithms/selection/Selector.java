@@ -18,6 +18,7 @@
  */
 package com.ciphertool.zenith.genetic.algorithms.selection;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public interface Selector {
      * @param individuals  the List of individuals to select from
      * @return the indice of the chosen individual within the population
      */
-    int getNextIndex(List<Chromosome> individuals);
+    int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy);
 
-    int getNextIndexThreadSafe(List<Chromosome> individuals);
+    int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy);
 }

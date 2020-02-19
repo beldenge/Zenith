@@ -96,7 +96,7 @@ public class StandardGeneticAlgorithm {
 
         do {
             proceedWithNextGeneration();
-        } while ((this.strategy.getMaxGenerations() < 0 || this.generationCount < this.strategy.getMaxGenerations()));
+        } while ((this.strategy.getNumberOfGenerations() < 0 || this.generationCount < this.strategy.getNumberOfGenerations()));
 
         finish();
     }
@@ -116,7 +116,7 @@ public class StandardGeneticAlgorithm {
             validationErrors.add("Parameter 'maxMutationsPerIndividual' must be greater than or equal to zero.");
         }
 
-        if (strategy.getMaxGenerations() == null || strategy.getMaxGenerations() == 0) {
+        if (strategy.getNumberOfGenerations() == null || strategy.getNumberOfGenerations() == 0) {
             validationErrors.add("Parameter 'maxGenerations' cannot be null and must not equal zero.");
         }
 
@@ -343,6 +343,7 @@ public class StandardGeneticAlgorithm {
         this.population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
         this.population.setSelector(geneticAlgorithmStrategy.getSelector());
         this.population.setBreeder(geneticAlgorithmStrategy.getBreeder());
+        this.population.init(geneticAlgorithmStrategy);
 
         this.strategy = geneticAlgorithmStrategy;
     }
@@ -380,7 +381,7 @@ public class StandardGeneticAlgorithm {
             /*
              * Mutate a gene within the Chromosome. The original Chromosome has been cloned.
              */
-            if (strategy.getMutationAlgorithm().mutateChromosome(chromosome)) {
+            if (strategy.getMutationAlgorithm().mutateChromosome(chromosome, strategy)) {
                 mutations.incrementAndGet();
             }
 

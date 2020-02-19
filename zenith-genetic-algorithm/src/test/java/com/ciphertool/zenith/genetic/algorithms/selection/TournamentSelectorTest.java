@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.genetic.algorithms.selection;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import org.junit.Before;
@@ -40,18 +41,16 @@ public class TournamentSelectorTest {
     private static TournamentSelector tournamentSelector;
     private static Logger logMock;
     private static RandomSelector randomSelectorMock;
+    private static GeneticAlgorithmStrategy strategy;
 
     @BeforeClass
     public static void setUp() {
         tournamentSelector = new TournamentSelector();
 
-        Field selectionAccuracyField = ReflectionUtils.findField(TournamentSelector.class, "selectionAccuracy");
-        ReflectionUtils.makeAccessible(selectionAccuracyField);
-        ReflectionUtils.setField(selectionAccuracyField, tournamentSelector, 0.9);
-
-        Field tournamentSizeField = ReflectionUtils.findField(TournamentSelector.class, "tournamentSize");
-        ReflectionUtils.makeAccessible(tournamentSizeField);
-        ReflectionUtils.setField(tournamentSizeField, tournamentSelector, 3);
+        strategy = GeneticAlgorithmStrategy.builder()
+                .tournamentSelectorAccuracy(0.9)
+                .tournamentSize(3)
+                .build();
 
         logMock = mock(Logger.class);
         Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
@@ -88,7 +87,7 @@ public class TournamentSelectorTest {
         individuals.add(chromosome3);
 
         tournamentSelector.reIndex(individuals);
-        int selectedIndex = tournamentSelector.getNextIndex(individuals);
+        int selectedIndex = tournamentSelector.getNextIndex(individuals, strategy);
 
         assertTrue(selectedIndex > -1);
         verifyZeroInteractions(logMock);
@@ -96,7 +95,7 @@ public class TournamentSelectorTest {
 
     @Test
     public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(null);
+        int selectedIndex = tournamentSelector.getNextIndex(null, strategy);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());
@@ -104,7 +103,7 @@ public class TournamentSelectorTest {
 
     @Test
     public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>());
+        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>(), strategy);
 
         assertEquals(-1, selectedIndex);
         verify(logMock, times(1)).warn(anyString());

@@ -88,6 +88,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).setSelector(eq(selectorMock));
         verify(populationMock, times(1)).setBreeder(eq(breederMock));
         verify(populationMock, times(1)).setElitism(eq(0));
+        verify(populationMock, times(1)).init(same(strategyToSet));
         verifyNoMoreInteractions(populationMock);
         verifyNoMoreInteractions(crossoverAlgorithmMock);
         verifyNoMoreInteractions(mutationAlgorithmMock);
@@ -112,7 +113,7 @@ public class StandardGeneticAlgorithmTest {
                 .populationSize(populationSize)
                 .selector(mock(Selector.class))
                 .mutationRate(mutationRate)
-                .maxGenerations(-1)
+                .numberOfGenerations(-1)
                 .build();
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
@@ -279,7 +280,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).calculateEntropy();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationAlgorithmMock, times(100)).mutateChromosome(any(Chromosome.class));
+        verify(mutationAlgorithmMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationAlgorithmMock);
 
         verify(crossoverAlgorithmMock, times(100)).crossover(any(Chromosome.class), any(Chromosome.class));
@@ -298,7 +299,7 @@ public class StandardGeneticAlgorithmTest {
                 .populationSize(1)
                 .selector(mock(Selector.class))
                 .mutationRate(0.0)
-                .maxGenerations(-1)
+                .numberOfGenerations(-1)
                 .build();
 
         Field strategyField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "strategy");
@@ -317,7 +318,7 @@ public class StandardGeneticAlgorithmTest {
                 .maxMutationsPerIndividual(-1)
                 .populationSize(0)
                 .selector(null)
-                .maxGenerations(0)
+                .numberOfGenerations(0)
                 .build();
 
         /*
@@ -507,7 +508,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).sortIndividuals();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationAlgorithmMock, times(100)).mutateChromosome(any(Chromosome.class));
+        verify(mutationAlgorithmMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationAlgorithmMock);
     }
 
@@ -559,7 +560,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).sortIndividuals();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationAlgorithmMock, times(initialPopulationSize)).mutateChromosome(any(Chromosome.class));
+        verify(mutationAlgorithmMock, times(initialPopulationSize)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationAlgorithmMock);
     }
 

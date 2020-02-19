@@ -17,17 +17,27 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.mutation;
+package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import lombok.Getter;
+import lombok.Setter;
 
-public interface MutationAlgorithm<T extends Chromosome> {
-    /**
-     * Performs a genetic mutation of the supplied Chromosome.
-     *
-     * @param chromosome the Chromosome to mutate
-     * @return whether the mutation was successful
-     */
-    boolean mutateChromosome(T chromosome, GeneticAlgorithmStrategy strategy);
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+@Getter
+@Setter
+public class SimulatedAnnealingConfiguration {
+    @NotNull
+    @Min(1)
+    private Integer samplerIterations;
+
+    @NotNull
+    @DecimalMin("0.0")
+    private Float annealingTemperatureMin;
+
+    @NotNull
+    @DecimalMin("0.0")
+    private Float annealingTemperatureMax;
 }

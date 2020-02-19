@@ -18,6 +18,7 @@
  */
 package com.ciphertool.zenith.genetic.algorithms.selection;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class RandomSelector implements Selector {
     }
 
     @Override
-    public int getNextIndex(List<Chromosome> individuals) {
+    public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
         if (individuals == null || individuals.isEmpty()) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 
@@ -49,8 +50,8 @@ public class RandomSelector implements Selector {
     }
 
     @Override
-    public int getNextIndexThreadSafe(List<Chromosome> individuals) {
+    public int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
         reIndex(individuals);
-        return getNextIndex(individuals);
+        return getNextIndex(individuals, strategy);
     }
 }

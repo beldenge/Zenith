@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.Breeder;
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
@@ -33,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface Population {
+    void init(GeneticAlgorithmStrategy strategy);
+
     Chromosome evaluateFitness(GenerationStatistics generationStatistics);
 
     int breed();

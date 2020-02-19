@@ -19,15 +19,14 @@
 
 package com.ciphertool.zenith.genetic.population;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,23 +36,24 @@ import java.util.stream.Collectors;
 
 @Component
 public class LatticePopulation extends AbstractPopulation {
-    @Value("${genetic-algorithm.population.lattice.rows}")
-    private int latticeRows;
-
-    @Value("${genetic-algorithm.population.lattice.columns}")
-    private int latticeColumns;
-
-    @Value("${genetic-algorithm.population.lattice.wrap-around}")
-    private boolean wrapAround;
-
-    @Min(1)
-    @Value("${genetic-algorithm.population.lattice.selection-radius:1}")
-    private int selectionRadius;
-
     private int currentRow = 0;
     private int nextColumn = 0;
     private Chromosome[][] individuals;
     private Selector selector;
+    private GeneticAlgorithmStrategy strategy;
+    private int latticeRows;
+    private int latticeColumns;
+    private boolean wrapAround;
+    private int selectionRadius;
+
+    @Override
+    public void init(GeneticAlgorithmStrategy strategy) {
+        this.strategy = strategy;
+        this.latticeRows = strategy.getLatticeRows();
+        this.latticeColumns = strategy.getLatticeColumns();
+        this.wrapAround = strategy.getLatticeWrapAround();
+        this.selectionRadius = strategy.getLatticeRadius();
+    }
 
     @Override
     public Callable newSelectionTask(){
@@ -154,14 +154,14 @@ public class LatticePopulation extends AbstractPopulation {
 
             Collections.sort(nearbyIndividuals);
 
-            int momIndex = selector.getNextIndexThreadSafe(nearbyIndividuals);
+            int momIndex = selector.getNextIndexThreadSafe(nearbyIndividuals, strategy);
             LatticeIndividual momCoordinates = nearbyLatticeIndividuals.get(momIndex);
             Chromosome mom = individuals[momCoordinates.getRow()][momCoordinates.getColumn()];
 
             // Ensure that dadIndex is different from momIndex
             nearbyIndividuals.remove(momIndex);
             nearbyLatticeIndividuals.remove(momIndex);
-            int dadIndex = selector.getNextIndexThreadSafe(nearbyIndividuals);
+            int dadIndex = selector.getNextIndexThreadSafe(nearbyIndividuals, strategy);
             LatticeIndividual dadCoordinates = nearbyLatticeIndividuals.get(dadIndex);
             Chromosome dad = individuals[dadCoordinates.getRow()][dadCoordinates.getColumn()];
 
