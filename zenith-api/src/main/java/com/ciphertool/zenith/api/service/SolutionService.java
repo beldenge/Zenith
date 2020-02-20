@@ -35,6 +35,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,11 +65,19 @@ public class SolutionService {
             cipher.addCiphertextCharacter(new Ciphertext(i, String.valueOf(request.getCiphertext().charAt(i))));
         }
 
+        List<SolutionRequestTransformer> transformers = request.getPlaintextTransformers();
+
+        List<PlaintextTransformationStep> steps = new ArrayList<>();
+        if (transformers != null && !transformers.isEmpty()) {
+            steps = transformers.stream()
+                    .map(SolutionRequestTransformer::asStep)
+                    .collect(Collectors.toList());
+        }
+
         Map<String, Object> epochCompleteHeaders = new HashMap<>();
         epochCompleteHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.EPOCH_COMPLETE);
 
         CipherSolution cipherSolution;
-
         Map<String, Object> configuration = new HashMap<>();
         configuration.put(AbstractSolutionOptimizer.KNOWN_SOLUTION_CORRECTNESS_THRESHOLD, request.getKnownSolutionCorrectnessThreshold());
 
@@ -78,7 +87,7 @@ public class SolutionService {
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MIN, simulatedAnnealingConfiguration.getAnnealingTemperatureMin());
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MAX, simulatedAnnealingConfiguration.getAnnealingTemperatureMax());
 
-            cipherSolution = simulatedAnnealingOptimizer.optimize(cipher, request.getEpochs(), configuration, (i) ->
+            cipherSolution = simulatedAnnealingOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, (i) ->
                     template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), epochCompleteHeaders)
             );
         } else if (request.getGeneticAlgorithmConfiguration() != null) {
@@ -100,7 +109,7 @@ public class SolutionService {
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SELECTOR_ACCURACY, geneticAlgorithmConfiguration.getTournamentSelectorAccuracy());
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, geneticAlgorithmConfiguration.getTournamentSize());
 
-            cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, (i) ->
+            cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, (i) ->
                     template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), epochCompleteHeaders)
             );
         } else {
@@ -111,16 +120,6 @@ public class SolutionService {
         solutionHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION);
 
         String solution = cipherSolution.asSingleLineString();
-        List<SolutionRequestTransformer> transformers = request.getPlaintextTransformers();
-
-        // FIXME: this needs to transform the plaintext within the optimizer, otherwise we are not optimizing on the right plaintext
-        if (transformers != null && !transformers.isEmpty()) {
-            List<PlaintextTransformationStep> steps = transformers.stream()
-                    .map(SolutionRequestTransformer::asStep)
-                    .collect(Collectors.toList());
-
-            solution = plaintextTransformationManager.transform(solution, steps);
-        }
 
         template.convertAndSend("/topic/solutions", new SolutionResponse(solution, Double.valueOf(cipherSolution.getScore())), solutionHeaders);
     }

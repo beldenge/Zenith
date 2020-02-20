@@ -24,6 +24,7 @@ import com.ciphertool.zenith.inference.optimizer.AbstractSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -120,6 +121,9 @@ public class InferenceApplication implements CommandLineRunner {
     private Cipher cipher;
 
     @Autowired
+    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
+
+    @Autowired
     private List<SolutionOptimizer> optimizers;
 
     private SolutionOptimizer solutionOptimizer;
@@ -168,7 +172,7 @@ public class InferenceApplication implements CommandLineRunner {
         configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SELECTOR_ACCURACY, tournamentSelectionAccuracy);
         configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, tournamentSize);
 
-        solutionOptimizer.optimize(cipher, epochs, configuration, null);
+        solutionOptimizer.optimize(cipher, epochs, configuration, plaintextTransformationSteps, null);
     }
 
     @Bean

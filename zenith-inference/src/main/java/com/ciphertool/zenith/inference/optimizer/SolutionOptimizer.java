@@ -21,9 +21,11 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 
+import java.util.List;
 import java.util.Map;
 
 public interface SolutionOptimizer {
-    CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, OnEpochComplete onEpochComplete);
+    CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, OnEpochComplete onEpochComplete);
 }

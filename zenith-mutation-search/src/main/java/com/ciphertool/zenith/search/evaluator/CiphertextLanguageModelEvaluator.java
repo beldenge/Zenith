@@ -25,6 +25,7 @@ import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.optimizer.AbstractSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -101,6 +102,9 @@ public class CiphertextLanguageModelEvaluator {
     private int tournamentSize;
 
     @Autowired
+    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
+
+    @Autowired
     private Cipher originalCipher;
 
     @Autowired
@@ -136,7 +140,7 @@ public class CiphertextLanguageModelEvaluator {
         configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SELECTOR_ACCURACY, tournamentSelectionAccuracy);
         configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, tournamentSize);
 
-        CipherSolution cipherSolution = optimizer.optimize(mutatedCipher, epochs, configuration, null);
+        CipherSolution cipherSolution = optimizer.optimize(mutatedCipher, epochs, configuration, plaintextTransformationSteps, null);
 
         overwriteCipher(backupOfOriginalCipher, originalCipher);
 

@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from "rxjs";
-import {ZenithTransformer} from "./models/ZenithTransformer";
 import { SimulatedAnnealingConfiguration } from "./models/SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./models/GeneticAlgorithmConfiguration";
-import { Validators } from "@angular/forms";
 import {SelectOption} from "./models/SelectOption";
 
 @Injectable({
@@ -117,5 +115,11 @@ export class ConfigurationService {
 
   updateGeneticAlgorithmConfiguration(configuration: GeneticAlgorithmConfiguration) {
     this.geneticAlgorithmConfiguration$.next(configuration);
+  }
+
+  restore() {
+    this.updateSelectedOptimizer(ConfigurationService.OPTIMIZER_NAMES[0]);
+    this.updateSimulatedAnnealingConfiguration(ConfigurationService.SIMULATED_ANNEALING_DEFAULTS);
+    this.updateGeneticAlgorithmConfiguration(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
   }
 }

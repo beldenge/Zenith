@@ -24,6 +24,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
@@ -58,7 +59,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     private PlaintextEvaluator plaintextEvaluator;
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, OnEpochComplete onEpochComplete) {
         float knownSolutionCorrectnessThreshold = (float) configuration.get(KNOWN_SOLUTION_CORRECTNESS_THRESHOLD);
         int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
         float annealingTemperatureMin = (float) configuration.get(ANNEALING_TEMPERATURE_MIN);
@@ -106,7 +107,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
             long start = System.currentTimeMillis();
 
-            CipherSolution best = performEpoch(cipher, initialSolution, mappingKeys, samplerIterations, annealingTemperatureMin, annealingTemperatureMax);
+            CipherSolution best = performEpoch(cipher, initialSolution, mappingKeys, samplerIterations, annealingTemperatureMin, annealingTemperatureMax, plaintextTransformationSteps);
 
             long elapsed = System.currentTimeMillis() - start;
             totalElapsed += elapsed;
@@ -152,7 +153,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         return solutionProposal;
     }
 
-    private CipherSolution performEpoch(Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax) {
+    private CipherSolution performEpoch(Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<PlaintextTransformationStep> plaintextTransformationSteps) {
         String solutionString = initialSolution.asSingleLineString();
 
         if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
@@ -183,7 +184,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (float) i) / samplerIterations)) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
-            next = runLetterSampler(cipher, temperature, next, solutionCharArray, mappingKeys);
+            next = runLetterSampler(cipher, temperature, next, solutionCharArray, mappingKeys, plaintextTransformationSteps);
 
             if (log.isDebugEnabled()) {
                 long now = System.currentTimeMillis();
@@ -195,7 +196,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         return next;
     }
 
-    private CipherSolution runLetterSampler(Cipher cipher, float temperature, CipherSolution solution, char[] solutionCharArray, String[] mappingKeys) {
+    private CipherSolution runLetterSampler(Cipher cipher, float temperature, CipherSolution solution, char[] solutionCharArray, String[] mappingKeys, List<PlaintextTransformationStep> plaintextTransformationSteps) {
         String nextKey;
 
         // For each cipher symbol type, run the letter sampling

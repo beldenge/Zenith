@@ -21,19 +21,13 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 public abstract class AbstractSolutionOptimizer implements SolutionOptimizer {
     public static final String KNOWN_SOLUTION_CORRECTNESS_THRESHOLD = "knownSolutionCorrectnessThreshold";
 
     @Autowired
     protected PlaintextTransformationManager plaintextTransformationManager;
-
-    @Autowired
-    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
 
     @Autowired
     protected CipherSolutionPrinter cipherSolutionPrinter;

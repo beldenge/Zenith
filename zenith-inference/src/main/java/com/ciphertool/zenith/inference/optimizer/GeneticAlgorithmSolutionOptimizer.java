@@ -38,6 +38,7 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,9 +109,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     private FitnessEvaluator fitnessEvaluator;
 
-    private Cipher initialized = null;
-
-    public void init(Cipher cipher, Map<String, Object> configuration) {
+    public void init(Cipher cipher, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps) {
         String populationName = (String) configuration.get(POPULATION_NAME);
         String breederName = (String) configuration.get(BREEDER_NAME);
         String crossoverAlgorithmName = (String) configuration.get(CROSSOVER_ALGORITHM_NAME);
@@ -204,11 +203,10 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         }
 
         fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformationManager, plaintextTransformationSteps, indexOfCoincidenceEvaluator, solutionScorer);
-        this.initialized = cipher;
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, OnEpochComplete onEpochComplete) {
         float knownSolutionCorrectnessThreshold = (float) configuration.get(KNOWN_SOLUTION_CORRECTNESS_THRESHOLD);
         int populationSize = (int) configuration.get(POPULATION_SIZE);
         int numberOfGenerations = (int) configuration.get(NUMBER_OF_GENERATIONS);
@@ -222,9 +220,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Double tournamentSelectorAccuracy = (Double) configuration.get(TOURNAMENT_SELECTOR_ACCURACY);
         Integer tournamentSize = (Integer) configuration.get(TOURNAMENT_SIZE);
 
-        if (initialized == null || initialized != cipher) {
-            init(cipher, configuration);
-        }
+        init(cipher, configuration, plaintextTransformationSteps);
 
         GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
                 .populationSize(populationSize)

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { Validators } from '@angular/forms';
 import { ConfigurationService } from "../configuration.service";
@@ -139,5 +139,9 @@ export class SettingsComponent implements OnInit {
         this.configurationService.updateGeneticAlgorithmConfiguration(configuration);
       }
     });
+  }
+
+  restore() {
+    this.configurationService.restore();
   }
 }
