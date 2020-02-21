@@ -12,6 +12,7 @@ import { ConfigurationService } from "../configuration.service";
 import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
 import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
 import { SelectOption } from "../models/SelectOption";
+import { IntroductionService } from "../introduction.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -35,7 +36,7 @@ export class DashboardComponent implements OnInit {
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService) {
+  constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
   }
 
   ngOnInit() {
@@ -63,6 +64,12 @@ export class DashboardComponent implements OnInit {
 
     this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
       this.geneticAlgorithmConfiguration = configuration;
+    });
+
+    this.introductionService.getShowIntroAsObservable().subscribe(showIntro => {
+      if (showIntro) {
+        this.introductionService.startIntroDashboard();
+      }
     });
   }
 

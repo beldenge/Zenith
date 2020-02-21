@@ -7,6 +7,7 @@ import { Cipher } from "../models/Cipher";
 import { CipherModalComponent } from "../cipher-modal/cipher-modal.component";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { IntroductionService } from "../introduction.service";
 
 @Component({
   selector: 'app-manage-ciphers',
@@ -22,7 +23,7 @@ export class ManageCiphersComponent implements OnInit {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
 
-  constructor(private cipherService: CipherService, private dialog: MatDialog, private _snackBar: MatSnackBar) { }
+  constructor(private cipherService: CipherService, private dialog: MatDialog, private _snackBar: MatSnackBar, private introductionService: IntroductionService) { }
 
   ngOnInit() {
     this.cipherService.getCiphersAsObservable().subscribe((ciphers) => {
@@ -33,6 +34,12 @@ export class ManageCiphersComponent implements OnInit {
         return data.name.indexOf(filter) > -1;
       };
       this.ciphers = ciphers;
+    });
+
+    this.introductionService.getShowIntroAsObservable().subscribe(showIntro => {
+      if (showIntro) {
+        this.introductionService.startIntroManageCiphers();
+      }
     });
   }
 
