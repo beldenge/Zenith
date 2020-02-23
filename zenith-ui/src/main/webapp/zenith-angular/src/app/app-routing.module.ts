@@ -6,6 +6,7 @@ import { NotFoundComponent } from "./not-found/not-found.component";
 import { CiphertextTransformersComponent } from "./ciphertext-transformers/ciphertext-transformers.component";
 import { ManageCiphersComponent } from "./manage-ciphers/manage-ciphers.component";
 import { PlaintextTransformersComponent } from "./plaintext-transformers/plaintext-transformers.component";
+import { HelpComponent } from "./help/help.component";
 
 
 const routes: Routes = [
@@ -15,6 +16,7 @@ const routes: Routes = [
   { path: 'transformers/ciphertext', component: CiphertextTransformersComponent, data: { state: 'ciphertext-transformers' } },
   { path: 'transformers/plaintext', component: PlaintextTransformersComponent, data: { state: 'plaintext-transformers' }},
   { path: 'ciphers', component: ManageCiphersComponent, data: { state: 'ciphers' } },
+  { path: 'help', component: HelpComponent, data: { state: 'help' } },
   { path: '**', component: NotFoundComponent }
 ];
 

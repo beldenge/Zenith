@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { FormBuilder, Validators } from "@angular/forms";
@@ -13,13 +13,14 @@ import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfigu
 import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
 import { SelectOption } from "../models/SelectOption";
 import { IntroductionService } from "../introduction.service";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   webSocketAPI: WebSocketAPI;
   ciphers: Cipher[];
   selectedCipher: Cipher;
@@ -35,6 +36,7 @@ export class DashboardComponent implements OnInit {
   optimizer: SelectOption;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
+  showIntroDashboardSubscription: Subscription;
 
   constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
   }
@@ -66,11 +68,16 @@ export class DashboardComponent implements OnInit {
       this.geneticAlgorithmConfiguration = configuration;
     });
 
-    this.introductionService.getShowIntroAsObservable().subscribe(showIntro => {
+    this.showIntroDashboardSubscription = this.introductionService.getShowIntroDashboardAsObservable().subscribe(showIntro => {
       if (showIntro) {
         this.introductionService.startIntroDashboard();
+        this.introductionService.updateShowIntroDashboard(false);
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.showIntroDashboardSubscription.unsubscribe();
   }
 
   onMouseDownSelect(element: HTMLElement) {

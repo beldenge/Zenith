@@ -7,7 +7,9 @@ import { BehaviorSubject } from "rxjs";
   providedIn: 'root'
 })
 export class IntroductionService {
-  showIntro = new BehaviorSubject(false);
+  showIntroDashboard = new BehaviorSubject(false);
+  showIntroManageCiphers = new BehaviorSubject(false);
+
   intro: introJs = new introJs();
   intro2: introJs = new introJs();
 
@@ -15,7 +17,14 @@ export class IntroductionService {
   }
 
   startIntro(): void {
-    this.showIntro.next(true);
+    this.showIntroDashboard.next(true);
+    this.showIntroManageCiphers.next(true);
+    this.router.navigate(['/dashboard']);
+  }
+
+  stopIntro(): void {
+    this.showIntroDashboard.next(false);
+    this.showIntroManageCiphers.next(false);
   }
 
   startIntroDashboard(): void {
@@ -54,6 +63,13 @@ export class IntroductionService {
     let self = this;
     this.intro.oncomplete(function() {
       self.router.navigate(['/ciphers']);
+
+      // Prevent the intro on other pages from being halted because of the onexit function below
+      self.intro.onexit(function() {});
+    });
+
+    this.intro.onexit(function() {
+      self.stopIntro();
     });
 
     this.intro.start();
@@ -80,12 +96,31 @@ export class IntroductionService {
     let self = this;
     this.intro2.oncomplete(function() {
       self.router.navigate(['/settings']);
+
+      // Prevent the intro on other pages from being halted because of the onexit function below
+      self.intro.onexit(function() {});
+    });
+
+    this.intro2.onexit(function() {
+      self.stopIntro();
     });
 
     this.intro2.start();
   }
 
-  getShowIntroAsObservable() {
-    return this.showIntro.asObservable();
+  getShowIntroDashboardAsObservable() {
+    return this.showIntroDashboard.asObservable();
+  }
+
+  updateShowIntroDashboard(showIntro: boolean) {
+    this.showIntroDashboard.next(showIntro);
+  }
+
+  getShowIntroManageCiphersAsObservable() {
+    return this.showIntroManageCiphers.asObservable();
+  }
+
+  updateShowIntroManageCiphers(showIntro: boolean) {
+    this.showIntroManageCiphers.next(showIntro);
   }
 }

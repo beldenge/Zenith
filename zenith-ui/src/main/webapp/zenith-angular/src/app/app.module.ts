@@ -37,6 +37,7 @@ import { PlaintextSampleComponent } from './plaintext-sample/plaintext-sample.co
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
+import { HelpComponent } from './help/help.component';
 
 @NgModule({
   declarations: [
@@ -53,7 +54,8 @@ import { MatSelectModule } from "@angular/material/select";
     CipherModalComponent,
     ManageCiphersComponent,
     PlaintextTransformersComponent,
-    PlaintextSampleComponent
+    PlaintextSampleComponent,
+    HelpComponent
   ],
   imports: [
     BrowserModule,

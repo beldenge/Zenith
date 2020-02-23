@@ -66,7 +66,6 @@ export class AppComponent implements OnInit {
 
     if (!localStorage.getItem('skip_intro')) {
       localStorage.setItem('skip_intro', 'true');
-      this.router.navigate(['/dashboard']);
       this.introductionService.startIntro();
     }
   }
