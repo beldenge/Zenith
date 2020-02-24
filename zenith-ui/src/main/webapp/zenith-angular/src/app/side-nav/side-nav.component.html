@@ -1,12 +1,13 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled" id="accordionSidebar">
 
   <!-- Sidebar - Brand -->
-  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+  <div class="sidebar-brand d-block align-items-center justify-content-center">
     <div class="sidebar-brand-icon">Zenith</div>
-  </a>
+    <div id="version_badge" class="badge badge-secondary mx-auto">v{{applicationVersion}}</div>
+  </div>
 
   <!-- Divider -->
-  <hr class="sidebar-divider my-0">
+  <hr class="sidebar-divider mt-3 mb-0">
 
   <!-- Nav Item - Dashboard -->
   <li id="nav_dashboard" class="nav-item active">
@@ -66,5 +67,4 @@
   <div class="text-center d-none d-md-inline">
     <button class="rounded-circle border-0" id="sidebarToggle"></button>
   </div>
-
 </ul>

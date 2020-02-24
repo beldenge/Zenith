@@ -8,6 +8,7 @@ import { Cipher } from "../models/Cipher";
 import { Observable } from "rxjs";
 import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
 import { FormGroup } from "@angular/forms";
+import { ConfigurationService } from "../configuration.service";
 
 @Component({
   selector: 'app-ciphertext-transformers',
@@ -70,7 +71,9 @@ export class CiphertextTransformersComponent implements OnInit {
         this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
       });
 
-      this.transformerService.updateAppliedTransformers(this.appliedTransformers);
+      if (!event || !event.skipUpdate) {
+        this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
+      }
     }
 
     return true;
@@ -83,9 +86,9 @@ export class CiphertextTransformersComponent implements OnInit {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService) {
+  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService) {
     this.cipher$ = cipherService.getSelectedCipherAsObservable();
-    this.appliedTransformers$ = transformerService.getAppliedTransformersAsObservable();
+    this.appliedTransformers$ = configurationService.getAppliedCiphertextTransformersAsObservable();
   }
 
   ngOnInit(): void {
@@ -101,6 +104,7 @@ export class CiphertextTransformersComponent implements OnInit {
 
     this.appliedTransformers$.subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
+      this.onAppliedTransformersChange({ skipUpdate: true });
     });
   }
 

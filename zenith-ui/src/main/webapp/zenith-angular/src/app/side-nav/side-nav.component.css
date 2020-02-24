@@ -1,3 +1,8 @@
 .sidebar {
   height: 100%;
 }
+
+#version_badge {
+  font-size: 0.6rem;
+  text-transform: lowercase;
+}

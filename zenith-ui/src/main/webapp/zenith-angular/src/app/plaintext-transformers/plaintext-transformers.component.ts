@@ -6,6 +6,7 @@ import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { FormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
+import { ConfigurationService } from "../configuration.service";
 
 @Component({
   selector: 'app-plaintext-transformers',
@@ -69,7 +70,9 @@ export class PlaintextTransformersComponent implements OnInit {
         this.transformedSample = response.plaintext;
       });
 
-      this.transformerService.updateAppliedTransformers(this.appliedTransformers);
+      if (!event || !event.skipUpdate) {
+        this.configurationService.updateAppliedPlaintextTransformers(this.appliedTransformers);
+      }
     }
 
     return true;
@@ -82,8 +85,8 @@ export class PlaintextTransformersComponent implements OnInit {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: PlaintextTransformerService) {
-    this.appliedTransformers$ = transformerService.getAppliedTransformersAsObservable();
+  constructor(private transformerService: PlaintextTransformerService, private configurationService: ConfigurationService) {
+    this.appliedTransformers$ = configurationService.getAppliedPlaintextTransformersAsObservable();
   }
 
   ngOnInit(): void {
@@ -95,6 +98,7 @@ export class PlaintextTransformersComponent implements OnInit {
 
     this.appliedTransformers$.subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
+      this.onAppliedTransformersChange({ skipUpdate: true });
     });
   }
 

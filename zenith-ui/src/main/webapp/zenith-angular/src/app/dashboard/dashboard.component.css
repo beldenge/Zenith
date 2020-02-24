@@ -34,8 +34,7 @@ select:-moz-focusring {
   text-shadow: 0 0 0 #000;
 }
 
-#version_badge {
+#import_export {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  right: 1rem;
 }

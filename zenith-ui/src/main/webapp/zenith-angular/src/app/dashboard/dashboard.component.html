@@ -1,6 +1,4 @@
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-  <span id="version_badge" class="badge badge-secondary">v2.0.0</span>
-
   <!-- Sidebar Toggle (Topbar) -->
   <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
     <i class="fa fa-bars"></i>
@@ -21,6 +19,16 @@
   </form>
   <div style="height: 38px; width: 45px; right: 45px; position: relative; background: white;"></div>
 
+  <div id="import_export" class="float-right">
+    <a href="javascript:void(0);" class="btn btn-primary btn-circle mx-2" matTooltip="Import Configuration" matTooltipPosition="below" (click)="clickInput(importInput)">
+      <i class="fas fa-upload">
+        <input #importInput class="d-none" type="file" accept=".json" (change)='importConfiguration($event)'>
+      </i>
+    </a>
+    <a [href]="exportUri" download="{{configFilename}}" class="btn btn-primary btn-circle mx-2" matTooltip="Export Configuration" matTooltipPosition="below" (mousedown)="setExportUri()">
+      <i class="fas fa-download"></i>
+    </a>
+  </div>
 </nav>
 
 <div class="container-fluid">
@@ -50,7 +58,7 @@
       <form class="user" [formGroup]="hyperparametersForm">
         <div class="form-group row">
           <label class="col-md-6 my-auto" for="epochs" matTooltip="Number of times to run the solver, the best solution of which will be displayed in the panel above" matTooltipPosition="above">Epochs</label>
-          <input id="epochs" type="text" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}">
+          <input id="epochs" type="text" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" (change)="onEpochsChange()">
         </div>
         <div class="text-center text-danger small" *ngIf="!hyperparametersForm.get('epochs').valid">Must be a number greater than 0</div>
       </form>

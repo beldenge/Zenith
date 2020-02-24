@@ -1,9 +1,8 @@
-import { FormlyForm } from "@ngx-formly/core";
-import {FormGroup} from "@angular/forms";
+import { DynamicForm } from "./DynamicForm";
 
 export class ZenithTransformer {
   name: string;
   displayName: string;
-  form: FormlyForm;
+  form: DynamicForm;
   order: number;
 }

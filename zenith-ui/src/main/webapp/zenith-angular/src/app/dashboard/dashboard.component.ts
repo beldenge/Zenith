@@ -1,10 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { FormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
-import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { SolutionRequestTransformer } from "../models/SolutionRequestTransformer";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -14,6 +13,8 @@ import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingCon
 import { SelectOption } from "../models/SelectOption";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
+import { SafeUrl } from "@angular/platform-browser";
+import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
 
 @Component({
   selector: 'app-dashboard',
@@ -21,6 +22,7 @@ import { Subscription } from "rxjs";
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+  configFilename = 'zenith-config.json';
   webSocketAPI: WebSocketAPI;
   ciphers: Cipher[];
   selectedCipher: Cipher;
@@ -29,7 +31,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isRunning: boolean = false;
   progressPercentage: number = 0;
   hyperparametersForm = this.fb.group({
-    epochs: ['1', [Validators.min(1), Validators.pattern("^[0-9]*$")]]
+    epochs: [null, [Validators.min(1), Validators.pattern("^[0-9]*$")]]
   });
   selectHasFocus: boolean = false;
   appliedPlaintextTransformers: ZenithTransformer[] = [];
@@ -37,8 +39,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   showIntroDashboardSubscription: Subscription;
+  exportUri: SafeUrl;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private plaintextTransformerService: PlaintextTransformerService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
+  constructor(private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
   }
 
   ngOnInit() {
@@ -52,8 +55,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.ciphers = ciphers
     });
 
-    this.plaintextTransformerService.getAppliedTransformersAsObservable().subscribe(appliedTransformers => {
+    this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
       this.appliedPlaintextTransformers = appliedTransformers;
+    });
+
+    this.configurationService.getEpochsAsObservable().subscribe(epochs => {
+      if (this.hyperparametersForm.get('epochs').value !== epochs) {
+        this.hyperparametersForm.patchValue({ 'epochs': epochs });
+      }
     });
 
     this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
@@ -98,6 +107,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onFocusOutSelect(element: HTMLElement) {
     this.selectHasFocus = false;
+  }
+
+  onEpochsChange() {
+    this.configurationService.updateEpochs(this.hyperparametersForm.get('epochs').value);
   }
 
   solve() {
@@ -165,5 +178,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.solution = null;
     localStorage.setItem('selected_cipher_name', this.selectedCipher.name);
     this.cipherService.updateSelectedCipher(this.selectedCipher);
+  }
+
+  setExportUri() {
+    this.exportUri = this.configurationService.getExportUri();
+  }
+
+  clickInput(input: HTMLInputElement) {
+    input.click();
+  }
+
+  importConfiguration(event) {
+    let input = event.target;
+
+    if (!input.value.endsWith(this.configFilename)) {
+      this._snackBar.open('Error: invalid filename.  Expected ' + this.configFilename + '.', '',{
+        duration: 5000,
+        verticalPosition: 'top'
+      });
+
+      return;
+    }
+
+    let reader = new FileReader();
+
+    let self = this;
+
+    reader.onload = () => {
+      let text = reader.result.toString();
+      let configuration: ApplicationConfiguration = Object.assign(new ApplicationConfiguration, JSON.parse(text));
+      self.configurationService.import(configuration);
+
+      this._snackBar.open('Configuration imported successfully.', '',{
+        duration: 2000,
+        verticalPosition: 'top'
+      });
+    };
+
+    reader.onerror = () => {
+      this._snackBar.open('Error: could not load configuration.', '',{
+        duration: 5000,
+        verticalPosition: 'top'
+      });
+    };
+
+    reader.readAsText(input.files[0]);
   }
 }

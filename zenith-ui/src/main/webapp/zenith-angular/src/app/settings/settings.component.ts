@@ -142,6 +142,6 @@ export class SettingsComponent implements OnInit {
   }
 
   restore() {
-    this.configurationService.restore();
+    this.configurationService.restoreGeneralSettings();
   }
 }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { environment } from "../../environments/environment";
 
 @Component({
   selector: 'app-side-nav',
@@ -6,10 +7,10 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./side-nav.component.css']
 })
 export class SideNavComponent implements OnInit {
+  applicationVersion: string = environment.applicationVersion;
 
   constructor() { }
 
   ngOnInit() {
   }
-
 }
