@@ -1,15 +1,29 @@
-<div class="card shadow mb-4">
-  <!-- Card Header - Dropdown -->
-  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-    <h6 class="m-0 font-weight-bold text-primary">Sample Plaintext</h6>
-    <div class="dropdown no-arrow">
-      <a class="dropdown-toggle" href="javascript:void(0);" role="button" id="dropdownMenuLink">
-        <i class="far fa-edit" matTooltip="Edit" matTooltipPosition="above" (click)="edit(sampleEditor)"></i>
-      </a>
+<div id="card_container">
+  <div class="card shadow mb-4">
+    <!-- Card Header - Dropdown -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary">Sample Plaintext</h6>
+      <span class="ml-2 mr-auto text-muted">(editable)</span>
+      <div class="dropdown no-arrow">
+        <a class="dropdown-toggle" href="javascript:void(0);" role="button" id="dropdownMenuLink">
+          <i class="fas fa-redo" matTooltip="Reset to original" matTooltipPosition="above" (click)="reset(sampleEditor)"></i>
+        </a>
+      </div>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+      <div #sampleEditor contenteditable="true" (keyup)="edit(sampleEditor)" [textContent]="originalSample"></div>
     </div>
   </div>
-  <!-- Card Body -->
-  <div class="card-body">
-    <div #sampleEditor>{{sample}}</div>
+
+  <div class="card shadow mb-4">
+    <!-- Card Header - Dropdown -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary">Output</h6>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+      <div>{{transformedSample}}</div>
+    </div>
   </div>
 </div>

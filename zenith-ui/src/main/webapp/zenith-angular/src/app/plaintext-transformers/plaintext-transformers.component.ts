@@ -22,8 +22,8 @@ import { ConfigurationService } from "../configuration.service";
 })
 export class PlaintextTransformersComponent implements OnInit {
   public hoverClasses: string[] = [];
-  originalSample: string = 'thetomatoisaplantinthenightshadefamilyxxxx';
-  transformedSample: string = this.originalSample;
+  sample: string;
+  transformedSample: string;
 
   availableTransformers: ZenithTransformer[] = [];
 
@@ -46,8 +46,13 @@ export class PlaintextTransformersComponent implements OnInit {
   };
 
   onAppliedTransformersChange = (event: any) => {
+    if (!this.appliedTransformers.length) {
+      this.transformedSample = null;
+      return;
+    }
+
     let transformationRequest: SamplePlaintextTransformationRequest = {
-      plaintext: this.originalSample,
+      plaintext: this.sample,
       plaintextTransformers: []
     };
 
@@ -99,6 +104,11 @@ export class PlaintextTransformersComponent implements OnInit {
     this.appliedTransformers$.subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
       this.onAppliedTransformersChange({ skipUpdate: true });
+    });
+
+    this.configurationService.getSamplePlaintext().subscribe(sample => {
+      this.sample = sample;
+      this.onAppliedTransformersChange(null);
     });
   }
 

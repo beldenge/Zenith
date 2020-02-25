@@ -94,6 +94,7 @@ export class ConfigurationService {
   private epochs$ = new BehaviorSubject<number>(1);
   private appliedCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private appliedPlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
+  private samplePlaintext$ = new BehaviorSubject<string>(null);
   private selectedOptimizer$ = new BehaviorSubject<SelectOption>(ConfigurationService.OPTIMIZER_NAMES[0]);
   private simulatedAnnealingConfiguration$ = new BehaviorSubject<SimulatedAnnealingConfiguration>(ConfigurationService.SIMULATED_ANNEALING_DEFAULTS);
   private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
@@ -113,7 +114,7 @@ export class ConfigurationService {
   }
 
   updateAppliedCiphertextTransformers(appliedTransformers: ZenithTransformer[]): void {
-    return this.appliedCiphertextTransformers$.next(appliedTransformers);
+    this.appliedCiphertextTransformers$.next(appliedTransformers);
   }
 
   getAppliedPlaintextTransformersAsObservable(): Observable<ZenithTransformer[]> {
@@ -121,7 +122,15 @@ export class ConfigurationService {
   }
 
   updateAppliedPlaintextTransformers(appliedTransformers: ZenithTransformer[]): void {
-    return this.appliedPlaintextTransformers$.next(appliedTransformers);
+    this.appliedPlaintextTransformers$.next(appliedTransformers);
+  }
+
+  getSamplePlaintext(): Observable<string> {
+    return this.samplePlaintext$.asObservable();
+  }
+
+  updateSamplePlaintext(appliedTransformers: string): void {
+    this.samplePlaintext$.next(appliedTransformers);
   }
 
   getSelectedOptimizerAsObservable(): Observable<SelectOption> {

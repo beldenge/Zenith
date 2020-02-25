@@ -4,7 +4,7 @@
   color: initial;
 }
 
-.card {
+#card_container {
   position: absolute;
   width: 97%;
   top: 0;

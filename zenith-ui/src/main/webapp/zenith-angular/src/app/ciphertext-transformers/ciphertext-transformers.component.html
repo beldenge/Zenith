@@ -52,7 +52,6 @@
                     <form [formGroup]="item.form.form">
                       <formly-form [form]="item.form.form" [fields]="item.form.fields" [model]="item.form.model" (modelChange)="onAppliedTransformersChange(null)"></formly-form>
                     </form>
-                    <div *ngIf="item.form.form.valid">LOL</div>
                   </div>
                   <div class="col-md-{{item.form ? 2 : 6}} text-right">
                     <i class="fas fa-times-circle fa-lg" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>
