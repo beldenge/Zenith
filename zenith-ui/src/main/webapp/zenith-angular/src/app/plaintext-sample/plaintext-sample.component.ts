@@ -7,20 +7,17 @@ import { ConfigurationService } from "../configuration.service";
   styleUrls: ['./plaintext-sample.component.css']
 })
 export class PlaintextSampleComponent implements OnInit {
-  originalSample = 'thetomatoisaplantinthenightshadefamilyxxxx';
-  // sample = this.originalSample;
+  originalSample = ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT;
   @Input() transformedSample: string;
 
   constructor(private configurationService: ConfigurationService) { }
 
   ngOnInit() {
-    // this.reset();
   }
 
   reset(sampleEditor: HTMLElement) {
-    // this.sample = this.originalSample;
-    sampleEditor.textContent = this.originalSample;
-    this.configurationService.updateSamplePlaintext(this.originalSample);
+    sampleEditor.textContent = ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT;
+    this.configurationService.updateSamplePlaintext(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
   }
 
   edit(sampleEditor: HTMLElement) {

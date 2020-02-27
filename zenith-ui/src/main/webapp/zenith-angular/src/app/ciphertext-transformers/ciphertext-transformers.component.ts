@@ -48,6 +48,10 @@ export class CiphertextTransformersComponent implements OnInit {
   };
 
   onAppliedTransformersChange = (event: any) => {
+    if (!this.cipher) {
+      return;
+    }
+
     let transformationRequest: CiphertextTransformationRequest = {
       steps: []
     };
@@ -112,8 +116,7 @@ export class CiphertextTransformersComponent implements OnInit {
     let clone = {
       name: item.name,
       displayName: item.displayName,
-      form: item.form,
-      model: item.model
+      form: JSON.parse(JSON.stringify(item.form))
     };
 
     if (clone.form) {

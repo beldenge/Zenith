@@ -106,7 +106,7 @@ export class PlaintextTransformersComponent implements OnInit {
       this.onAppliedTransformersChange({ skipUpdate: true });
     });
 
-    this.configurationService.getSamplePlaintext().subscribe(sample => {
+    this.configurationService.getSamplePlaintextAsObservable().subscribe(sample => {
       this.sample = sample;
       this.onAppliedTransformersChange(null);
     });
@@ -116,8 +116,7 @@ export class PlaintextTransformersComponent implements OnInit {
     let clone = {
       name: item.name,
       displayName: item.displayName,
-      form: item.form,
-      model: item.model
+      form: JSON.parse(JSON.stringify(item.form))
     };
 
     if (clone.form) {
