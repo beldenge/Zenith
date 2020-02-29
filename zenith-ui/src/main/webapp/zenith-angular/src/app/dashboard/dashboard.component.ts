@@ -15,6 +15,7 @@ import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
 import { SafeUrl } from "@angular/platform-browser";
 import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
+import { CiphertextTransformerService } from "../ciphertext-transformer.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -41,7 +42,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   showIntroDashboardSubscription: Subscription;
   exportUri: SafeUrl;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
+  constructor(private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService, private ciphertextTransformerService: CiphertextTransformerService) {
   }
 
   ngOnInit() {

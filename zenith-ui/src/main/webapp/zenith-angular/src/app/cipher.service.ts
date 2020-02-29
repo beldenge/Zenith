@@ -16,6 +16,8 @@ export class CipherService {
   private selectedCipher$ = new BehaviorSubject<Cipher>(null);
   private ciphers$ = new BehaviorSubject<Cipher[]>(null);
 
+  constructor(private http: HttpClient) {}
+
   getSelectedCipherAsObservable(): Observable<Cipher> {
     return this.selectedCipher$.asObservable();
   }
@@ -31,8 +33,6 @@ export class CipherService {
   updateCiphers(ciphers: Cipher[]): void {
     return this.ciphers$.next(ciphers);
   }
-
-  constructor(private http: HttpClient) {}
 
   getCiphers() {
     return this.http.get<CipherResponse>(ENDPOINT_URL);

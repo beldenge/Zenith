@@ -24,7 +24,6 @@ import { ConfigurationService } from "../configuration.service";
 })
 export class CiphertextTransformersComponent implements OnInit {
   cipher: Cipher;
-  cipher$: Observable<Cipher>;
   public hoverClasses: string[] = [];
 
   availableTransformers: ZenithTransformer[] = [];
@@ -42,45 +41,14 @@ export class CiphertextTransformersComponent implements OnInit {
 
   appliedTransformers$: Observable<ZenithTransformer[]>;
 
+  onAppliedTransformersChange = (event: any) => {
+    return this.transformerService.onAppliedTransformersChange(event);
+  };
+
   // On adding of a new item to the Sortable list, the event fires before the formly form is initialized, so we cannot rely on validation alone
   onAppliedTransformersChangeNew = (event: any) => {
     this.onAppliedTransformersChange({ isNew: true });
-  };
-
-  onAppliedTransformersChange = (event: any) => {
-    if (!this.cipher) {
-      return;
-    }
-
-    let transformationRequest: CiphertextTransformationRequest = {
-      steps: []
-    };
-
-    let satisfied = true;
-
-    this.appliedTransformers.forEach(transformer => {
-      if (transformer.form && ((event && event.isNew) || !transformer.form.form.valid)) {
-        satisfied = false;
-        return;
-      }
-
-      transformationRequest.steps.push({
-        transformerName: transformer.name,
-        data: transformer.form ? transformer.form.model : null
-      });
-    });
-
-    if (satisfied) {
-      this.cipherService.transformCipher(this.cipher.name, transformationRequest).subscribe(cipherResponse => {
-        this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
-      });
-
-      if (!event || !event.skipUpdate) {
-        this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
-      }
-    }
-
-    return true;
+    this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
   };
 
   appliedTransformersOptions: SortablejsOptions = {
@@ -91,7 +59,6 @@ export class CiphertextTransformersComponent implements OnInit {
   };
 
   constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService) {
-    this.cipher$ = cipherService.getSelectedCipherAsObservable();
     this.appliedTransformers$ = configurationService.getAppliedCiphertextTransformersAsObservable();
   }
 
@@ -102,13 +69,12 @@ export class CiphertextTransformersComponent implements OnInit {
       });
     });
 
-    this.cipher$.subscribe(cipher => {
+    this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
       this.cipher = cipher;
     });
 
     this.appliedTransformers$.subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
-      this.onAppliedTransformersChange({ skipUpdate: true });
     });
   }
 
