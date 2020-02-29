@@ -170,7 +170,9 @@ export class ConfigurationService {
 
     if (configuration.appliedCiphertextTransformers) {
       configuration.appliedCiphertextTransformers.forEach(transformer => {
-        transformer.form.form = new FormGroup({});
+        if (transformer.form) {
+          transformer.form.form = new FormGroup({});
+        }
       });
     }
 
@@ -178,7 +180,9 @@ export class ConfigurationService {
 
     if (configuration.appliedPlaintextTransformers) {
       configuration.appliedPlaintextTransformers.forEach(transformer => {
-        transformer.form.form = new FormGroup({});
+        if (transformer.form) {
+          transformer.form.form = new FormGroup({});
+        }
       });
     }
 
@@ -201,10 +205,10 @@ export class ConfigurationService {
         configuration.appliedCiphertextTransformers.push({
           name: transformer.name,
           displayName: transformer.displayName,
-          form: {
+          form: transformer.form ? {
             model: transformer.form.model,
             fields: transformer.form.fields
-          },
+          } : null,
           order: transformer.order
         });
       });
@@ -218,10 +222,10 @@ export class ConfigurationService {
         configuration.appliedPlaintextTransformers.push({
           name: transformer.name,
           displayName: transformer.displayName,
-          form: {
+          form: transformer.form ? {
             model: transformer.form.model,
             fields: transformer.form.fields
-          },
+          } : null,
           order: transformer.order
         });
       });

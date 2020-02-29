@@ -3,6 +3,6 @@ import { DynamicForm } from "./DynamicForm";
 export class ZenithTransformer {
   name: string;
   displayName: string;
-  form: DynamicForm;
+  form?: DynamicForm;
   order: number;
 }
