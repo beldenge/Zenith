@@ -97,7 +97,8 @@ export class SettingsComponent implements OnInit {
 
     this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
       if (this.generalSettingsForm.get('optimizer').value !== optimizer) {
-        this.generalSettingsForm.patchValue({ optimizer: optimizer });
+        let optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === optimizer.name);
+        this.generalSettingsForm.patchValue({ optimizer: optimizerToUse });
       }
     });
 
