@@ -116,7 +116,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   solve() {
     let request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
 
-    if (this.optimizer === ConfigurationService.OPTIMIZER_NAMES[0]) {
+    if (this.optimizer.name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
       request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration;
     } else {
       request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration;
