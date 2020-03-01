@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { animate, animateChild, group, query, style, transition, trigger } from "@angular/animations";
 import { CipherService } from "./cipher.service";
 import { IntroductionService } from "./introduction.service";
-import { Router } from "@angular/router";
+import { NavigationEnd, Router } from "@angular/router";
+import { environment } from "../environments/environment";
+
+declare let gtag: Function;
 
 @Component({
   selector: 'app-root',
@@ -40,7 +43,13 @@ import { Router } from "@angular/router";
 export class AppComponent implements OnInit {
   title = 'zenith-angular';
 
-  constructor(private cipherService: CipherService, private introductionService: IntroductionService, private router: Router) {}
+  constructor(private cipherService: CipherService, private introductionService: IntroductionService, private router: Router) {
+    this.router.events.subscribe(event => {
+      if(event instanceof NavigationEnd) {
+        gtag('config', environment.googleAnalyticsTrackingId, { 'page_path': event.urlAfterRedirects });
+      }
+    });
+  }
 
   getState(outlet) {
     return outlet.activatedRouteData.state;
