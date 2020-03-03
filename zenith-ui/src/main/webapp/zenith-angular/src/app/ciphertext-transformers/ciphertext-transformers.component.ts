@@ -1,14 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SortablejsOptions} from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { CiphertextTransformerService } from "../ciphertext-transformer.service";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
-import { Observable } from "rxjs";
-import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
+import { Observable, Subscription } from "rxjs";
 import { FormGroup } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
+import { IntroductionService } from "../introduction.service";
 
 @Component({
   selector: 'app-ciphertext-transformers',
@@ -22,7 +22,8 @@ import { ConfigurationService } from "../configuration.service";
     ])
   ]
 })
-export class CiphertextTransformersComponent implements OnInit {
+export class CiphertextTransformersComponent implements OnInit, OnDestroy {
+  showIntroCiphertextTransformersSubscription: Subscription;
   cipher: Cipher;
   public hoverClasses: string[] = [];
 
@@ -58,7 +59,7 @@ export class CiphertextTransformersComponent implements OnInit {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService) {
+  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
     this.appliedTransformers$ = configurationService.getAppliedCiphertextTransformersAsObservable();
   }
 
@@ -76,6 +77,19 @@ export class CiphertextTransformersComponent implements OnInit {
     this.appliedTransformers$.subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
     });
+
+    this.showIntroCiphertextTransformersSubscription = this.introductionService.getShowIntroCiphertextTransformersAsObservable().subscribe(showIntro => {
+      if (showIntro) {
+        setTimeout(() =>{
+        this.introductionService.startIntroCiphertextTransformers();
+        this.introductionService.updateShowIntroCiphertextTransformers(false);
+        }, 500);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.showIntroCiphertextTransformersSubscription.unsubscribe();
   }
 
   cloneTransformer = (item) => {

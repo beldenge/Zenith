@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { Validators } from '@angular/forms';
@@ -6,6 +6,8 @@ import { ConfigurationService } from "../configuration.service";
 import { SelectOption } from "../models/SelectOption";
 import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
+import { Subscription } from "rxjs";
+import { IntroductionService } from "../introduction.service";
 
 const INTEGER_PATTERN: string = "^[0-9]+$";
 const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
@@ -15,7 +17,8 @@ const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css']
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
+  showIntroSettingsSubscription: Subscription;
   optimizerNames: SelectOption[] = ConfigurationService.OPTIMIZER_NAMES;
   populationNames: SelectOption[] = ConfigurationService.POPULATION_NAMES;
   breederNames: SelectOption[] = ConfigurationService.BREEDER_NAMES;
@@ -53,7 +56,7 @@ export class SettingsComponent implements OnInit {
     geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup
   });
 
-  constructor(private fb: FormBuilder, private json: JsonPipe, private configurationService: ConfigurationService) { }
+  constructor(private fb: FormBuilder, private json: JsonPipe, private configurationService: ConfigurationService, private introductionService: IntroductionService) { }
 
   ngOnInit() {
     this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
@@ -103,6 +106,19 @@ export class SettingsComponent implements OnInit {
     });
 
     this.onFormChange();
+
+    this.showIntroSettingsSubscription = this.introductionService.getShowIntroSettingsAsObservable().subscribe(showIntro => {
+      if (showIntro) {
+        setTimeout(() => {
+          this.introductionService.startIntroSettings();
+          this.introductionService.updateShowIntroSettings(false);
+        }, 500);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.showIntroSettingsSubscription.unsubscribe();
   }
 
   onFormChange() {

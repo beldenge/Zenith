@@ -23,6 +23,7 @@ import { CiphertextTransformerService } from "../ciphertext-transformer.service"
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+  showIntroDashboardSubscription: Subscription;
   configFilename = 'zenith-config.json';
   webSocketAPI: WebSocketAPI;
   ciphers: Cipher[];
@@ -39,7 +40,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   optimizer: SelectOption;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
-  showIntroDashboardSubscription: Subscription;
   exportUri: SafeUrl;
 
   constructor(private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService, private ciphertextTransformerService: CiphertextTransformerService) {

@@ -5,21 +5,21 @@
 
   <div class="col-md-6 text-right">
     <div class="pt-4 pb-0 px-4">
-      <a href="javascript:void(0);" class="btn btn-primary btn-circle mx-2" matTooltip="Create Cipher" matTooltipPosition="below" (click)="createCipher()">
+      <a id="create_button" href="javascript:void(0);" class="btn btn-primary btn-circle mx-2" matTooltip="Create Cipher" matTooltipPosition="below" (click)="createCipher()">
         <i class="fas fa-plus"></i>
       </a>
     </div>
   </div>
 </div>
 
-<div id="filter-container">
+<div id="filter_container">
   <mat-form-field>
     <mat-label>Filter</mat-label>
     <input matInput (keyup)="applyFilter($event)">
   </mat-form-field>
 </div>
 
-<div id="table-container" class="mat-elevation-z8 mx-auto">
+<div id="table_container" class="mat-elevation-z8 mx-auto">
   <table mat-table [dataSource]="ciphersDataSource" matSort>
 
     <ng-container matColumnDef="name">

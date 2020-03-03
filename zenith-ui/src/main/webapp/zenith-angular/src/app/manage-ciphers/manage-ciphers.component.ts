@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { MatSort } from "@angular/material/sort";
@@ -13,14 +13,14 @@ import { Subscription } from "rxjs";
 @Component({
   selector: 'app-manage-ciphers',
   templateUrl: './manage-ciphers.component.html',
-  styleUrls: ['./manage-ciphers.component.css']
+  styleUrls: ['./manage-ciphers.component.css'],
 })
 export class ManageCiphersComponent implements OnInit, OnDestroy {
+  showIntroManageCiphersSubscription: Subscription;
   displayedColumns: string[] = ['name', 'rows', 'columns', 'ciphertext', 'actions'];
   ciphersDataSource: MatTableDataSource<any>;
   pageSizeOptions = [10, 20, 50];
   ciphers: Cipher[];
-  showIntroManageCiphersSubscription: Subscription;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -40,8 +40,10 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
 
     this.showIntroManageCiphersSubscription = this.introductionService.getShowIntroManageCiphersAsObservable().subscribe(showIntro => {
       if (showIntro) {
-        this.introductionService.startIntroManageCiphers();
-        this.introductionService.updateShowIntroManageCiphers(false);
+        setTimeout(() =>{
+          this.introductionService.startIntroManageCiphers();
+          this.introductionService.updateShowIntroManageCiphers(false);
+        }, 500);
       }
     });
   }

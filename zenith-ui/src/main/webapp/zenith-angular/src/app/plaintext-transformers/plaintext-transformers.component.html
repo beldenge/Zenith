@@ -9,7 +9,7 @@
 
   <div class="row">
 
-    <div class="col-xl-4">
+    <div id="available_plaintext_transformers_container" class="col-xl-4">
       <div class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -32,8 +32,8 @@
       </div>
     </div>
 
-    <div class="col-xl-4">
-      <div id="plaintext_transformer_pipeline" class="card shadow mb-4">
+    <div id="plaintext_transformer_pipeline" class="col-xl-4">
+      <div class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">Transformer Pipeline</h6>
@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <div class="col-xl-4">
+    <div id="sample_plaintext" class="col-xl-4">
       <app-plaintext-sample [transformedSample]="transformedSample"></app-plaintext-sample>
     </div>
 

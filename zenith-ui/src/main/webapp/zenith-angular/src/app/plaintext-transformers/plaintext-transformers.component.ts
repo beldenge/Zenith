@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Observable } from "rxjs";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Observable, Subscription } from "rxjs";
 import { SortablejsOptions } from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
@@ -7,6 +7,7 @@ import { ZenithTransformer } from "../models/ZenithTransformer";
 import { FormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
 import { ConfigurationService } from "../configuration.service";
+import { IntroductionService } from "../introduction.service";
 
 @Component({
   selector: 'app-plaintext-transformers',
@@ -20,7 +21,8 @@ import { ConfigurationService } from "../configuration.service";
     ])
   ]
 })
-export class PlaintextTransformersComponent implements OnInit {
+export class PlaintextTransformersComponent implements OnInit, OnDestroy {
+  showIntroPlaintextTransformersSubscription: Subscription;
   public hoverClasses: string[] = [];
   sample: string;
   transformedSample: string;
@@ -90,7 +92,7 @@ export class PlaintextTransformersComponent implements OnInit {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: PlaintextTransformerService, private configurationService: ConfigurationService) {
+  constructor(private transformerService: PlaintextTransformerService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
     this.appliedTransformers$ = configurationService.getAppliedPlaintextTransformersAsObservable();
   }
 
@@ -110,6 +112,19 @@ export class PlaintextTransformersComponent implements OnInit {
       this.sample = sample;
       this.onAppliedTransformersChange(null);
     });
+
+    this.showIntroPlaintextTransformersSubscription = this.introductionService.getShowIntroPlaintextTransformersAsObservable().subscribe(showIntro => {
+      if (showIntro) {
+        setTimeout(() => {
+          this.introductionService.startIntroPlaintextTransformers();
+          this.introductionService.updateShowIntroPlaintextTransformers(false);
+        }, 500);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.showIntroPlaintextTransformersSubscription.unsubscribe();
   }
 
   cloneTransformer = (item) => {

@@ -9,9 +9,15 @@ import { BehaviorSubject } from "rxjs";
 export class IntroductionService {
   showIntroDashboard = new BehaviorSubject(false);
   showIntroManageCiphers = new BehaviorSubject(false);
+  showIntroSettings = new BehaviorSubject(false);
+  showIntroCiphertextTransformers = new BehaviorSubject(false);
+  showIntroPlaintextTransformers = new BehaviorSubject(false);
 
-  intro: introJs = new introJs();
-  intro2: introJs = new introJs();
+  introDashboard: introJs = new introJs();
+  introManageCiphers: introJs = new introJs();
+  introSettings: introJs = new introJs();
+  introCiphertextTransformers: introJs = new introJs();
+  introPlaintextTransformers: introJs = new introJs();
 
   constructor(private router: Router) {
   }
@@ -19,93 +25,251 @@ export class IntroductionService {
   startIntro(): void {
     this.showIntroDashboard.next(true);
     this.showIntroManageCiphers.next(true);
+    this.showIntroSettings.next(true);
+    this.showIntroCiphertextTransformers.next(true);
+    this.showIntroPlaintextTransformers.next(true);
     this.router.navigate(['/dashboard']);
   }
 
   stopIntro(): void {
     this.showIntroDashboard.next(false);
     this.showIntroManageCiphers.next(false);
+    this.showIntroSettings.next(false);
+    this.showIntroCiphertextTransformers.next(false);
+    this.showIntroPlaintextTransformers.next(false);
   }
 
   startIntroDashboard(): void {
-    this.intro.setOptions({
+    this.introDashboard.setOptions({
       exitOnOverlayClick: false,
       hidePrev: true,
       hideNext: true,
       showStepNumbers: false,
       showBullets: false,
       showProgress: false,
-      doneLabel: 'Next page',
+      skipLabel: 'Quit',
+      doneLabel: 'Take me there!',
       disableInteraction: true,
       overlayOpacity: 0.5,
       steps: [{
         intro: 'Welcome to Project Zenith!  How about a tour?'
       }, {
         element: '#cipher_select',
-        intro: 'Select a Cipher here',
+        intro: 'Select the Cipher you wish to solve here.',
         position: 'right'
       }, {
         element: '#cipher_statistics_summary',
-        intro: 'See summary statistics here',
+        intro: 'See summary statistics for the ciphertext.',
         position: 'bottom'
       }, {
         element: '#solve_button',
-        intro: 'Click to solve',
+        intro: 'Run the solver here.',
         position: 'left'
       }, {
         element: '#nav_manage_ciphers',
-        intro: 'Manage ciphers here',
+        intro: 'This page lets you view, add, edit, and delete available ciphers.',
         position: 'right',
         highlightClass: 'introjs-nav-item-highlighted'
       }]
     });
 
     let self = this;
-    this.intro.oncomplete(function() {
+    this.introDashboard.oncomplete(function() {
       self.router.navigate(['/ciphers']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.intro.onexit(function() {});
+      self.introDashboard.onexit(function() {});
     });
 
-    this.intro.onexit(function() {
+    this.introDashboard.onexit(function() {
       self.stopIntro();
     });
 
-    this.intro.start();
+    this.introDashboard.start();
   }
 
   startIntroManageCiphers(): void {
-    this.intro2.setOptions({
+    this.introManageCiphers.setOptions({
       exitOnOverlayClick: false,
       hidePrev: true,
       hideNext: true,
       showStepNumbers: false,
       showBullets: false,
       showProgress: false,
-      doneLabel: 'Next page',
+      skipLabel: 'Quit',
+      doneLabel: 'Take me there!',
       disableInteraction: true,
       overlayOpacity: 0.5,
       steps: [{
-        element: '#table-container',
-        intro: 'Available ciphers display in this table',
-        position: 'top'
+        element: '#create_button',
+        intro: 'This button opens a form to create a new cipher.',
+        position: 'bottom',
+      }, {
+        element: '#table_container',
+        intro: 'You can filter, view, edit, and delete ciphers within this table.',
+        position: 'top',
+      }, {
+        element: '#nav_settings',
+        intro: 'This page lets you modify the solver configuration.',
+        position: 'right',
+        highlightClass: 'introjs-nav-item-highlighted'
       }]
     });
 
     let self = this;
-    this.intro2.oncomplete(function() {
+    this.introManageCiphers.oncomplete(function() {
       self.router.navigate(['/settings']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.intro.onexit(function() {});
+      self.introManageCiphers.onexit(function() {});
     });
 
-    this.intro2.onexit(function() {
+    this.introManageCiphers.onexit(function() {
       self.stopIntro();
     });
 
-    this.intro2.start();
+    this.introManageCiphers.start();
+  }
+
+  startIntroSettings(): void {
+    this.introSettings.setOptions({
+      exitOnOverlayClick: false,
+      hidePrev: true,
+      hideNext: true,
+      showStepNumbers: false,
+      showBullets: false,
+      showProgress: false,
+      skipLabel: 'Quit',
+      doneLabel: 'Take me there!',
+      disableInteraction: true,
+      overlayOpacity: 0.5,
+      steps: [{
+        element: '#optimizer_form_group',
+        intro: 'Choose your preferred optimizer.',
+        position: 'bottom',
+      }, {
+        element: '#optimizer_settings_form_group',
+        intro: 'Configure the available options for the chosen optimizer.',
+        position: 'top',
+      }, {
+        element: '#restore_button',
+        intro: 'Restore the original configuration at any time.',
+        position: 'top',
+      }, {
+        element: '#nav_ciphertext_transformers',
+        intro: 'This page lets you manage ciphertext transformers.',
+        position: 'right',
+        highlightClass: 'introjs-nav-item-highlighted'
+      }]
+    });
+
+    let self = this;
+    this.introSettings.oncomplete(function() {
+      self.router.navigate(['/transformers/ciphertext']);
+
+      // Prevent the intro on other pages from being halted because of the onexit function below
+      self.introSettings.onexit(function() {});
+    });
+
+    this.introSettings.onexit(function() {
+      self.stopIntro();
+    });
+
+    this.introSettings.start();
+  }
+
+  startIntroCiphertextTransformers(): void {
+    this.introCiphertextTransformers.setOptions({
+      exitOnOverlayClick: false,
+      hidePrev: true,
+      hideNext: true,
+      showStepNumbers: false,
+      showBullets: false,
+      showProgress: false,
+      skipLabel: 'Quit',
+      doneLabel: 'Take me there!',
+      disableInteraction: true,
+      overlayOpacity: 0.5,
+      steps: [{
+        element: '#available_ciphertext_transformers_container',
+        intro: 'Drag one or more transformers from here to the right to add them to the pipeline.',
+        position: 'top',
+      }, {
+        element: '#ciphertext_transformer_pipeline',
+        intro: 'Reorder and delete transformers in the pipeline.',
+        position: 'top',
+      }, {
+        element: '#transformed_ciphertext',
+        intro: 'Watch the ciphertext update in realtime.',
+        position: 'top',
+      }, {
+        element: '#nav_plaintext_transformers',
+        intro: 'This page lets you manage plaintext transformers.',
+        position: 'right',
+        highlightClass: 'introjs-nav-item-highlighted'
+      }]
+    });
+
+    let self = this;
+    this.introCiphertextTransformers.oncomplete(function() {
+      self.router.navigate(['/transformers/plaintext']);
+
+      // Prevent the intro on other pages from being halted because of the onexit function below
+      self.introCiphertextTransformers.onexit(function() {});
+    });
+
+    this.introCiphertextTransformers.onexit(function() {
+      self.stopIntro();
+    });
+
+    this.introCiphertextTransformers.start();
+  }
+
+  startIntroPlaintextTransformers(): void {
+    this.introPlaintextTransformers.setOptions({
+      exitOnOverlayClick: false,
+      hidePrev: true,
+      hideNext: true,
+      showStepNumbers: false,
+      showBullets: false,
+      showProgress: false,
+      skipLabel: 'Quit',
+      doneLabel: 'Finish tour',
+      disableInteraction: true,
+      overlayOpacity: 0.5,
+      steps: [{
+        element: '#available_plaintext_transformers_container',
+        intro: 'Drag one or more transformers from here to the right to add them to the pipeline.',
+        position: 'top',
+      }, {
+        element: '#plaintext_transformer_pipeline',
+        intro: 'Reorder and delete transformers in the pipeline.',
+        position: 'top',
+      }, {
+        element: '#sample_plaintext',
+        intro: 'Watch the sample plaintext update in realtime.',
+        position: 'top',
+      }, {
+        element: '#nav_help',
+        intro: 'If you ever get stuck or want to replay this intro, you can find help here.',
+        position: 'right',
+        highlightClass: 'introjs-nav-item-highlighted'
+      }]
+    });
+
+    let self = this;
+    this.introPlaintextTransformers.oncomplete(function() {
+      self.router.navigate(['/dashboard']);
+
+      // Prevent the intro on other pages from being halted because of the onexit function below
+      self.introPlaintextTransformers.onexit(function() {});
+    });
+
+    this.introPlaintextTransformers.onexit(function() {
+      self.stopIntro();
+    });
+
+    this.introPlaintextTransformers.start();
   }
 
   getShowIntroDashboardAsObservable() {
@@ -122,5 +286,29 @@ export class IntroductionService {
 
   updateShowIntroManageCiphers(showIntro: boolean) {
     this.showIntroManageCiphers.next(showIntro);
+  }
+
+  getShowIntroSettingsAsObservable() {
+    return this.showIntroSettings.asObservable();
+  }
+
+  updateShowIntroSettings(showIntro: boolean) {
+    this.showIntroSettings.next(showIntro);
+  }
+
+  getShowIntroCiphertextTransformersAsObservable() {
+    return this.showIntroCiphertextTransformers.asObservable();
+  }
+
+  updateShowIntroCiphertextTransformers(showIntro: boolean) {
+    this.showIntroCiphertextTransformers.next(showIntro);
+  }
+
+  getShowIntroPlaintextTransformersAsObservable() {
+    return this.showIntroPlaintextTransformers.asObservable();
+  }
+
+  updateShowIntroPlaintextTransformers(showIntro: boolean) {
+    this.showIntroPlaintextTransformers.next(showIntro);
   }
 }
