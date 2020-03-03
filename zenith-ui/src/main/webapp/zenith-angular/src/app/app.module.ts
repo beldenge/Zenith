@@ -89,9 +89,6 @@ import { HelpComponent } from './help/help.component';
       multi: true
     },
   ],
-  bootstrap: [AppComponent],
-  entryComponents: [
-    CipherModalComponent
-  ]
+  bootstrap: [AppComponent]
 })
 export class AppModule { }
