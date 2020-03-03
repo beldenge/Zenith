@@ -17,7 +17,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { SortablejsModule } from "ngx-sortablejs";
 import { CiphertextTransformersComponent } from './ciphertext-transformers/ciphertext-transformers.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { MatTooltipModule } from '@angular/material';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor";
 import { CipherModalComponent } from './cipher-modal/cipher-modal.component';
 import { MatDialogModule } from "@angular/material/dialog";
