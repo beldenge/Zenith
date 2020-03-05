@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2017-2020 George Belden
  *
  * This file is part of Zenith.
