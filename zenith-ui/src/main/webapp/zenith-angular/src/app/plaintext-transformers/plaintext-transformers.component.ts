@@ -26,6 +26,8 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   public hoverClasses: string[] = [];
   sample: string;
   transformedSample: string;
+  appliedPlaintextTransformersSubscription: Subscription;
+  samplePlaintextSubscription: Subscription;
 
   availableTransformers: ZenithTransformer[] = [];
 
@@ -39,8 +41,6 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   };
 
   appliedTransformers: ZenithTransformer[] = [];
-
-  appliedTransformers$: Observable<ZenithTransformer[]>;
 
   // On adding of a new item to the Sortable list, the event fires before the formly form is initialized, so we cannot rely on validation alone
   onAppliedTransformersChangeNew = (event: any) => {
@@ -92,9 +92,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: PlaintextTransformerService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
-    this.appliedTransformers$ = configurationService.getAppliedPlaintextTransformersAsObservable();
-  }
+  constructor(private transformerService: PlaintextTransformerService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
 
   ngOnInit(): void {
     this.transformerService.getTransformers().subscribe(transformerResponse => {
@@ -103,12 +101,12 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
       });
     });
 
-    this.appliedTransformers$.subscribe(appliedTransformers => {
+    this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
       this.onAppliedTransformersChange({ skipUpdate: true });
     });
 
-    this.configurationService.getSamplePlaintextAsObservable().subscribe(sample => {
+    this.samplePlaintextSubscription = this.configurationService.getSamplePlaintextAsObservable().subscribe(sample => {
       this.sample = sample;
       this.onAppliedTransformersChange(null);
     });
@@ -124,6 +122,8 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.appliedPlaintextTransformersSubscription.unsubscribe();
+    this.samplePlaintextSubscription.unsubscribe();
     this.showIntroPlaintextTransformersSubscription.unsubscribe();
   }
 

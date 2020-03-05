@@ -5,7 +5,7 @@ import { ZenithTransformer } from "../models/ZenithTransformer";
 import { CiphertextTransformerService } from "../ciphertext-transformer.service";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
-import { Observable, Subscription } from "rxjs";
+import { Subscription } from "rxjs";
 import { FormGroup } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
@@ -26,6 +26,8 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   showIntroCiphertextTransformersSubscription: Subscription;
   cipher: Cipher;
   public hoverClasses: string[] = [];
+  selectedCipherSubscription: Subscription;
+  appliedCiphertextTransformersSubscription: Subscription;
 
   availableTransformers: ZenithTransformer[] = [];
 
@@ -39,8 +41,6 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   };
 
   appliedTransformers: ZenithTransformer[] = [];
-
-  appliedTransformers$: Observable<ZenithTransformer[]>;
 
   onAppliedTransformersChange = (event: any) => {
     return this.transformerService.onAppliedTransformersChange(event);
@@ -59,9 +59,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {
-    this.appliedTransformers$ = configurationService.getAppliedCiphertextTransformersAsObservable();
-  }
+  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
 
   ngOnInit(): void {
     this.transformerService.getTransformers().subscribe(transformerResponse => {
@@ -70,11 +68,11 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
       });
     });
 
-    this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
+    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
       this.cipher = cipher;
     });
 
-    this.appliedTransformers$.subscribe(appliedTransformers => {
+    this.appliedCiphertextTransformersSubscription = this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
     });
 
@@ -89,6 +87,8 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.selectedCipherSubscription.unsubscribe();
+    this.appliedCiphertextTransformersSubscription.unsubscribe();
     this.showIntroCiphertextTransformersSubscription.unsubscribe();
   }
 

@@ -1,14 +1,15 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Cipher } from "../models/Cipher";
-import {CipherService} from "../cipher.service";
-import {CipherStatisticsService} from "../cipher-statistics.service";
+import { CipherService } from "../cipher.service";
+import { CipherStatisticsService } from "../cipher-statistics.service";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'app-cipher-stats-summary',
   templateUrl: './cipher-stats-summary.component.html',
   styleUrls: ['./cipher-stats-summary.component.css']
 })
-export class CipherStatsSummaryComponent implements OnInit {
+export class CipherStatsSummaryComponent implements OnInit, OnDestroy {
   uniqueSymbols: number = null;
   multiplicity: number = null;
   entropy: number = null;
@@ -16,11 +17,12 @@ export class CipherStatsSummaryComponent implements OnInit {
   bigramRepeats: number = null;
   cycleScore: number = null;
   selectedCipher: Cipher;
+  selectedCipherSubscription: Subscription;
 
   constructor(private cipherService: CipherService, private statisticsService: CipherStatisticsService) { }
 
   ngOnInit() {
-    this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
+    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
       if (selectedCipher == null) {
         return;
       }
@@ -68,5 +70,9 @@ export class CipherStatsSummaryComponent implements OnInit {
         this.cycleScore = response.value;
       });
     });
+  }
+
+  ngOnDestroy() {
+    this.selectedCipherSubscription.unsubscribe();
   }
 }

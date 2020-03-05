@@ -41,6 +41,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   exportUri: SafeUrl;
+  selectedCipherSubscription: Subscription;
+  ciphersSubscription: Subscription;
+  appliedPlaintextTransformersSubscription: Subscription;
+  epochsSubscription: Subscription;
+  selectedOptimizerSubscription: Subscription;
+  simulatedAnnealingConfigurationSubscription: Subscription;
+  geneticAlgorithmConfigurationSubscription: Subscription;
 
   constructor(private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService, private ciphertextTransformerService: CiphertextTransformerService) {
   }
@@ -48,33 +55,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.webSocketAPI = new WebSocketAPI();
 
-    this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
+    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
       this.selectedCipher = selectedCipher
     });
 
-    this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
+    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
       this.ciphers = ciphers
     });
 
-    this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
+    this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
       this.appliedPlaintextTransformers = appliedTransformers;
     });
 
-    this.configurationService.getEpochsAsObservable().subscribe(epochs => {
+    this.epochsSubscription = this.configurationService.getEpochsAsObservable().subscribe(epochs => {
       if (this.hyperparametersForm.get('epochs').value !== epochs) {
         this.hyperparametersForm.patchValue({ 'epochs': epochs });
       }
     });
 
-    this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
+    this.selectedOptimizerSubscription = this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
       this.optimizer = optimizer;
     });
 
-    this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
+    this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
       this.simulatedAnnealingConfiguration = configuration;
     });
 
-    this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
+    this.geneticAlgorithmConfigurationSubscription = this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
       this.geneticAlgorithmConfiguration = configuration;
     });
 
@@ -87,6 +94,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.selectedCipherSubscription.unsubscribe();
+    this.ciphersSubscription.unsubscribe();
+    this.appliedPlaintextTransformersSubscription.unsubscribe();
+    this.epochsSubscription.unsubscribe();
+    this.selectedOptimizerSubscription.unsubscribe();
+    this.simulatedAnnealingConfigurationSubscription.unsubscribe();
+    this.geneticAlgorithmConfigurationSubscription.unsubscribe();
     this.showIntroDashboardSubscription.unsubscribe();
   }
 

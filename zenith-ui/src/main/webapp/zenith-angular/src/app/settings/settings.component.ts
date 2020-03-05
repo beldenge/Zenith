@@ -19,6 +19,10 @@ const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   showIntroSettingsSubscription: Subscription;
+  selectedOptimizerSubscription: Subscription;
+  simulatedAnnealingConfigurationSubscription: Subscription;
+  geneticAlgorithmConfigurationSubscription: Subscription;
+  generalSettingsFormValueChangesSubscription: Subscription;
   optimizerNames: SelectOption[] = ConfigurationService.OPTIMIZER_NAMES;
   populationNames: SelectOption[] = ConfigurationService.POPULATION_NAMES;
   breederNames: SelectOption[] = ConfigurationService.BREEDER_NAMES;
@@ -59,7 +63,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder, private json: JsonPipe, private configurationService: ConfigurationService, private introductionService: IntroductionService) { }
 
   ngOnInit() {
-    this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
+    this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
       let patch = {
         samplerIterations: configuration.samplerIterations,
         annealingTemperatureMin: configuration.annealingTemperatureMin,
@@ -72,7 +76,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
+    this.geneticAlgorithmConfigurationSubscription = this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
       let patch = {
         populationSize: configuration.populationSize,
         numberOfGenerations: configuration.numberOfGenerations,
@@ -98,7 +102,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
+    this.selectedOptimizerSubscription = this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
       if (this.generalSettingsForm.get('optimizer').value !== optimizer) {
         let optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === optimizer.name);
         this.generalSettingsForm.patchValue({ optimizer: optimizerToUse });
@@ -119,10 +123,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.showIntroSettingsSubscription.unsubscribe();
+    this.simulatedAnnealingConfigurationSubscription.unsubscribe();
+    this.geneticAlgorithmConfigurationSubscription.unsubscribe();
+    this.selectedOptimizerSubscription.unsubscribe();
+    this.generalSettingsFormValueChangesSubscription.unsubscribe();
   }
 
   onFormChange() {
-    this.generalSettingsForm.valueChanges.subscribe(val => {
+    this.generalSettingsFormValueChangesSubscription = this.generalSettingsForm.valueChanges.subscribe(val => {
       this.configurationService.updateSelectedOptimizer(this.generalSettingsForm.get('optimizer').value);
 
       if (this.generalSettingsForm.get('optimizer').value === this.optimizerNames[0]) {

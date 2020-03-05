@@ -1,4 +1,4 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { TransformerResponse } from "./models/TransformerResponse";
 import { environment } from "../environments/environment";
@@ -6,7 +6,6 @@ import { CiphertextTransformationRequest } from "./models/CiphertextTransformati
 import { CipherService } from "./cipher.service";
 import { ConfigurationService } from "./configuration.service";
 import { Cipher } from "./models/Cipher";
-import { Observable } from "rxjs";
 import { ZenithTransformer } from "./models/ZenithTransformer";
 
 const ENDPOINT_URL = environment.apiUrlBase + '/transformers/ciphertext';
@@ -17,16 +16,13 @@ const ENDPOINT_URL = environment.apiUrlBase + '/transformers/ciphertext';
 export class CiphertextTransformerService {
   cipher: Cipher;
   appliedTransformers: ZenithTransformer[] = [];
-  appliedTransformers$: Observable<ZenithTransformer[]>;
 
   constructor(private http: HttpClient, private cipherService: CipherService, private configurationService: ConfigurationService) {
-    this.appliedTransformers$ = configurationService.getAppliedCiphertextTransformersAsObservable();
-
     this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
       this.cipher = cipher;
     });
 
-    this.appliedTransformers$.subscribe(appliedTransformers => {
+    this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
       this.appliedTransformers = appliedTransformers;
       this.onAppliedTransformersChange({ skipUpdate: true });
     });

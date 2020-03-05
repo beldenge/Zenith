@@ -21,6 +21,7 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   ciphersDataSource: MatTableDataSource<any>;
   pageSizeOptions = [10, 20, 50];
   ciphers: Cipher[];
+  ciphersSubscription: Subscription;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -28,7 +29,7 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   constructor(private cipherService: CipherService, private dialog: MatDialog, private _snackBar: MatSnackBar, private introductionService: IntroductionService) { }
 
   ngOnInit() {
-    this.cipherService.getCiphersAsObservable().subscribe((ciphers) => {
+    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe((ciphers) => {
       this.ciphersDataSource = new MatTableDataSource(ciphers);
       this.ciphersDataSource.sort = this.sort;
       this.ciphersDataSource.paginator = this.paginator;
@@ -49,6 +50,7 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.ciphersSubscription.unsubscribe();
     this.showIntroManageCiphersSubscription.unsubscribe();
   }
 

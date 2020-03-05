@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Cipher } from "../models/Cipher";
-import { BehaviorSubject, Observable } from "rxjs";
+import { BehaviorSubject, Observable, Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 import { CipherService } from "../cipher.service";
 import { MatTooltip } from "@angular/material/tooltip";
@@ -12,20 +12,25 @@ const originalTooltipText = 'Copy to clipboard';
   templateUrl: './ciphertext.component.html',
   styleUrls: ['./ciphertext.component.css']
 })
-export class CiphertextComponent implements OnInit {
+export class CiphertextComponent implements OnInit, OnDestroy {
   cipher: Cipher;
   cipher$: Observable<Cipher>;
   tooltipText = new BehaviorSubject<string>(originalTooltipText);
   blockifyPipe = new BlockifyPipe();
+  cipherSubscription: Subscription;
 
   constructor(private cipherService: CipherService) {
     this.cipher$ = cipherService.getSelectedCipherAsObservable();
   }
 
   ngOnInit() {
-    this.cipher$.subscribe(cipher => {
+    this.cipherSubscription = this.cipher$.subscribe(cipher => {
       this.cipher = cipher;
     });
+  }
+
+  ngOnDestroy() {
+    this.cipherSubscription.unsubscribe();
   }
 
   copyCiphertext(tooltip : MatTooltip) {

@@ -1,17 +1,18 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { AbstractControl, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { CipherService } from "../cipher.service";
 import { CipherRequest } from "../models/CipherRequest";
 import { Cipher } from "../models/Cipher";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'app-cipher-modal',
   templateUrl: './cipher-modal.component.html',
   styleUrls: ['./cipher-modal.component.css']
 })
-export class CipherModalComponent implements OnInit {
+export class CipherModalComponent implements OnInit, OnDestroy {
   ciphers: Cipher[];
   cipher: Cipher;
   mode: string;
@@ -19,11 +20,12 @@ export class CipherModalComponent implements OnInit {
   newCipherForm: FormGroup;
   dimensionsFormGroup: FormGroup;
   ciphertextFormGroup: FormGroup;
+  ciphersSubscription: Subscription;
 
   constructor(public dialogRef: MatDialogRef<CipherModalComponent>, @Inject(MAT_DIALOG_DATA) public data: any, private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar) { }
 
   ngOnInit() {
-    this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
+    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
       this.ciphers = ciphers;
     });
 
@@ -53,6 +55,10 @@ export class CipherModalComponent implements OnInit {
         this.ciphertextFormGroup
       ])
     });
+  }
+
+  ngOnDestroy() {
+    this.ciphersSubscription.unsubscribe();
   }
 
   get formArray(): AbstractControl | null {
