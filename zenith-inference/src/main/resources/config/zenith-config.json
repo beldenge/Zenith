@@ -1,0 +1,39 @@
+{
+  "epochs": 10,
+  "appliedCiphertextTransformers": [
+    {
+      "name": "RemoveLastRow",
+      "displayName": "Remove Last Row",
+      "form": null
+    }
+  ],
+  "appliedPlaintextTransformers": [
+  ],
+  "selectedOptimizer": {
+    "name": "SimulatedAnnealingSolutionOptimizer",
+    "displayName": "Simulated Annealing"
+  },
+  "simulatedAnnealingConfiguration": {
+    "samplerIterations": 5001,
+    "annealingTemperatureMin": 2.75,
+    "annealingTemperatureMax": 5
+  },
+  "geneticAlgorithmConfiguration": {
+    "populationSize": 10000,
+    "numberOfGenerations": 1000,
+    "elitism": 1,
+    "populationName": "StandardPopulation",
+    "latticeRows": 100,
+    "latticeColumns": 100,
+    "latticeWrapAround": true,
+    "latticeRadius": 1,
+    "breederName": "RandomCipherKeyBreeder",
+    "crossoverAlgorithmName": "GeneWiseCrossoverAlgorithm",
+    "mutationAlgorithmName": "StandardMutationAlgorithm",
+    "mutationRate": 0.05,
+    "maxMutationsPerIndividual": 5,
+    "selectorName": "TournamentSelector",
+    "tournamentSelectorAccuracy": 0.75,
+    "tournamentSize": 5
+  }
+}

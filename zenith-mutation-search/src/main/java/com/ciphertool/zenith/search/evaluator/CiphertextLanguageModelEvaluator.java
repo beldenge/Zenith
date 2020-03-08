@@ -22,7 +22,6 @@ package com.ciphertool.zenith.search.evaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
-import com.ciphertool.zenith.inference.optimizer.AbstractSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
@@ -39,9 +38,6 @@ import java.util.Map;
 public class CiphertextLanguageModelEvaluator {
     @Value("${decipherment.epochs:1}")
     private int epochs;
-
-    @Value("${decipherment.known-solution.correctness-threshold:0.9}")
-    private float knownSolutionCorrectnessThreshold;
 
     @Value("${simulated-annealing.sampler.iterations}")
     private int samplerIterations;
@@ -119,7 +115,6 @@ public class CiphertextLanguageModelEvaluator {
         overwriteCipher(mutatedCipher, originalCipher);
 
         Map<String, Object> configuration = new HashMap<>();
-        configuration.put(AbstractSolutionOptimizer.KNOWN_SOLUTION_CORRECTNESS_THRESHOLD, knownSolutionCorrectnessThreshold);
         configuration.put(SimulatedAnnealingSolutionOptimizer.SAMPLER_ITERATIONS, samplerIterations);
         configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MIN, annealingTemperatureMin);
         configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MAX, annealingTemperatureMax);

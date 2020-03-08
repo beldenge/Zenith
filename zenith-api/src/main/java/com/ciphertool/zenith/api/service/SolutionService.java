@@ -23,10 +23,10 @@ import com.ciphertool.zenith.api.model.*;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
-import com.ciphertool.zenith.inference.optimizer.AbstractSolutionOptimizer;
+import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
+import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
 import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -54,9 +54,6 @@ public class SolutionService {
     @Autowired
     private GeneticAlgorithmSolutionOptimizer geneticAlgorithmOptimizer;
 
-    @Autowired
-    private PlaintextTransformationManager plaintextTransformationManager;
-
     @MessageMapping("/solutions")
     public void solve(@Validated @RequestBody SolutionRequest request) {
         Cipher cipher = new Cipher(null, request.getRows(), request.getColumns());
@@ -79,7 +76,6 @@ public class SolutionService {
 
         CipherSolution cipherSolution;
         Map<String, Object> configuration = new HashMap<>();
-        configuration.put(AbstractSolutionOptimizer.KNOWN_SOLUTION_CORRECTNESS_THRESHOLD, request.getKnownSolutionCorrectnessThreshold());
 
         if (request.getSimulatedAnnealingConfiguration() != null) {
             SimulatedAnnealingConfiguration simulatedAnnealingConfiguration = request.getSimulatedAnnealingConfiguration();

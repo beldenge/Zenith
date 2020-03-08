@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.TransformerResponse;
-import com.ciphertool.zenith.api.model.TransformerResponseItem;
+import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class TransformerService {
         TransformerResponse transformerResponse = new TransformerResponse();
 
         for (CipherTransformer cipherTransformer : cipherTransformers) {
-            TransformerResponseItem responseItem = new TransformerResponseItem();
+            ZenithTransformer responseItem = new ZenithTransformer();
             responseItem.setName(cipherTransformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), ""));
             responseItem.setDisplayName(cipherTransformer.getDisplayName());
             responseItem.setForm(cipherTransformer.getForm());
@@ -67,7 +67,7 @@ public class TransformerService {
         TransformerResponse transformerResponse = new TransformerResponse();
 
         for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-            TransformerResponseItem responseItem = new TransformerResponseItem();
+            ZenithTransformer responseItem = new ZenithTransformer();
             responseItem.setName(plaintextTransformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), ""));
             responseItem.setDisplayName(plaintextTransformer.getDisplayName());
             responseItem.setForm(plaintextTransformer.getForm());

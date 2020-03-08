@@ -18,3 +18,4 @@ simulated-annealing.temperature.max | 0.1 | Annealing temperature at the beginni
 simulated-annealing.temperature.min | 0.001 | Annealing temperature at the end of each epoch
 decipherment.transposition.key-length.min | 17 | When the transposition key length is not known, this is the key length to start hill climbing with (must be greater than 1 and less than or equal to decipherment.transposition.key-length.max)
 decipherment.transposition.key-length.max | 17 | When the transposition key length is not known, this is the key length to end hill climbing with (must be greater than or equal to decipherment.transposition.key-length.min)
+application.configuration.file-path | ./config | The path to the application configuration JSON file

@@ -39,45 +39,8 @@ language-model.archive-filename | zenith-model.zip | The language model zip file
 language-model.max-ngrams-to-keep | 500000 | The maximum number of ngrams to keep.  The list of ngrams will be sorted in descending order by count and then the top number below will be kept.
 markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
 decipherment.evaluator.plaintext | MarkovModelPlaintextEvaluator | The PlaintextEvaluator implementation class name to use
-decipherment.epochs | 10 | The number of times to run the optimizer to completion
-decipherment.transposition.key-length.min | 17 | When the transposition key length is not known, this is the key length to start hill climbing with (must be greater than 1 and less than or equal to decipherment.transposition.key-length.max)
-decipherment.transposition.key-length.max | 17 | When the transposition key length is not known, this is the key length to end hill climbing with (must be greater than or equal to decipherment.transposition.key-length.min)
-decipherment.transformers.ciphertext | RemoveLastRow | A comma-separated list of names of transformers to use to mutate the cipher, in order
-decipherment.transformers.plaintext | UnwrapFourSquare | A comma-separated list of names of transformers to use to mutate the plaintext, in order
 evaluation.rest-service.url | http://localhost:5000/probabilities | The URL for the solution evaluator REST service, required only if decipherment.evaluator.plaintext is set to RestServicePlaintextEvaluator
-
-#### Simulated Annealing Hyperparameters
-These are used by the SimulatedAnnealingSolutionOptimizer only.
-
-Property Key | Default Value | Description
---- | --- | ---
-simulated-annealing.temperature.max | 5 | Annealing temperature at the beginning of each epoch
-simulated-annealing.temperature.min | 3 | Annealing temperature at the end of each epoch
-simulated-annealing.sampler.iterations | 5000 | The number of rounds of sampling to perform per epoch (A round of sampling can itself perform any number of samples depending on the algorithm)
-
-#### Genetic Algorithm Hyperparameters
-These are used by the GeneticAlgorithmSolutionOptimizer only.
-
-Property Key | Default Value | Description
---- | --- | ---
-genetic-algorithm.population.type | LatticePopulation | The population type.  Can be either StandardPopulation or LatticePopulation.
-genetic-algorithm.population.size | 10000 | The population size.  It will be populated before the first generation and will remain constant throughout each subsequent generation.
-genetic-algorithm.population.lattice.rows | 100 | The number of rows used by LatticePopulation.  The product of lattice rows and columns must exactly match the population size.
-genetic-algorithm.population.lattice.columns | 100 | The number of columns used by LatticePopulation.  The product of lattice rows and columns must exactly match the population size.
-genetic-algorithm.population.lattice.wrap-around | true | Whether to wrap around during selection if the individual sits on or near the edge of the lattice.
-genetic-algorithm.population.lattice.selection-radius | 1 | The radius for selection used by LatticePopulation. 
-genetic-algorithm.number-of-generations | 50 | The number of generations to run per epoch.
-genetic-algorithm.elitism | 0 | The number of top individuals to carry over to the next generation, excluding from crossover and mutation.
-genetic-algorithm.breeder.implementation | ProbabilisticCipherKeyBreeder | The class name of the Breeder implementation to use.
-genetic-algorithm.breeder.hill-climbing.iterations | 100 | The number of hill climbing iterations per individual if using HillClimbingCipherKeyBreeder.
-genetic-algorithm.crossover.implementation | GeneWiseCrossoverAlgorithm | The class name of the CrossoverAlgorithm implementation to use.
-genetic-algorithm.mutation.implementation | StandardMutationAlgorithm | The class name of the MutationAlgorithm implementation to use.
-genetic-algorithm.mutation.rate | 0.001 | The rate of mutation, calculated per individual.
-genetic-algorithm.mutation.max-per-individual | 5 | The maximum number of unique Genes to be mutated by MutationAlgorithms which can mutate more than one Gene per individual.
-genetic-algorithm.selection.implementation | RouletteSelector | The class name of the Selector implementation to use.
-genetic-algorithm.selection.tournament.accuracy | 0.9 | Used by the TournamentSelector only.  This is the probability that the most fit individual will be chosen.
-genetic-algorithm.selection.tournament.size | 5 | Used by the TournamentSelector only.  Determines the size of the randomly chosen subset.
-genetic-algorithm.fitness.implementation | ${decipherment.evaluator.plaintext} | It should be an implementation of PlaintextEvaluator, and it gets injected into PlaintextEvaluatorWrappingFitnessEvaluator. 
+application.configuration.file-path | ./config | The path to the application configuration JSON file 
 
 
 # Algorithm and Scoring

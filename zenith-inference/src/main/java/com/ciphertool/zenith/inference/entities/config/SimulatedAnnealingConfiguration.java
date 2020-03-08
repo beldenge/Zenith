@@ -17,17 +17,27 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.entities.config;
 
-import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
-public class TransformerResponse {
-    private List<ZenithTransformer> transformers = new ArrayList<>();
+public class SimulatedAnnealingConfiguration {
+    @NotNull
+    @Min(1)
+    private Integer samplerIterations;
+
+    @NotNull
+    @DecimalMin("0.0")
+    private Float annealingTemperatureMin;
+
+    @NotNull
+    @DecimalMin("0.0")
+    private Float annealingTemperatureMax;
 }

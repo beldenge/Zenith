@@ -60,7 +60,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
     @Override
     public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, OnEpochComplete onEpochComplete) {
-        float knownSolutionCorrectnessThreshold = (float) configuration.get(KNOWN_SOLUTION_CORRECTNESS_THRESHOLD);
         int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
         float annealingTemperatureMin = (float) configuration.get(ANNEALING_TEMPERATURE_MIN);
         float annealingTemperatureMax = (float) configuration.get(ANNEALING_TEMPERATURE_MAX);

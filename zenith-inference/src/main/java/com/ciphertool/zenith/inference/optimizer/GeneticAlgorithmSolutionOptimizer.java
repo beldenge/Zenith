@@ -207,7 +207,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     @Override
     public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, OnEpochComplete onEpochComplete) {
-        float knownSolutionCorrectnessThreshold = (float) configuration.get(KNOWN_SOLUTION_CORRECTNESS_THRESHOLD);
         int populationSize = (int) configuration.get(POPULATION_SIZE);
         int numberOfGenerations = (int) configuration.get(NUMBER_OF_GENERATIONS);
         int elitism = (int) configuration.get(ELITISM);

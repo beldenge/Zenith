@@ -23,7 +23,6 @@ import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
 import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collections;
 import java.util.Map;
@@ -32,7 +31,6 @@ import java.util.Map;
 public abstract class AbstractOneTimePadPlaintextTransformer implements PlaintextTransformer {
     public static final String KEY = "key";
 
-    @Value("${one-time-pad-transformer.key}")
     protected String key;
 
     public AbstractOneTimePadPlaintextTransformer(Map<String, Object> data) {

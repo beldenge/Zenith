@@ -22,9 +22,11 @@ package com.ciphertool.zenith.inference.optimizer;
 import com.ciphertool.zenith.inference.printer.CipherSolutionPrinter;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 public abstract class AbstractSolutionOptimizer implements SolutionOptimizer {
-    public static final String KNOWN_SOLUTION_CORRECTNESS_THRESHOLD = "knownSolutionCorrectnessThreshold";
+    @Value("${decipherment.known-solution.correctness-threshold-percentage:0.9}")
+    protected double knownSolutionCorrectnessThreshold;
 
     @Autowired
     protected PlaintextTransformationManager plaintextTransformationManager;

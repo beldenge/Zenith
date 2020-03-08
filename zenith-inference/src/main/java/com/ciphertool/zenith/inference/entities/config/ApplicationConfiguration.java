@@ -17,22 +17,21 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.entities.config;
 
-import com.ciphertool.zenith.inference.entities.FormlyForm;
-import com.ciphertool.zenith.inference.transformer.TransformerInputType;
+import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class TransformerResponseItem {
-    private String name;
-    private String displayName;
-    private String inputName;
-    private TransformerInputType inputType;
-    private FormlyForm form;
-    private int order;
+public class ApplicationConfiguration {
+    private int epochs;
+    private List<ZenithTransformer> appliedCiphertextTransformers;
+    private List<ZenithTransformer> appliedPlaintextTransformers;
+    private SelectOption selectedOptimizer;
+    private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
+    private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
 }

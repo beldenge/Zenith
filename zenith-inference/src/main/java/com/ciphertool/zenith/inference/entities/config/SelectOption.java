@@ -17,17 +17,14 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.entities.config;
 
-import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Setter
-public class TransformerResponse {
-    private List<ZenithTransformer> transformers = new ArrayList<>();
+public class SelectOption {
+    private String name;
+    private String displayName;
 }

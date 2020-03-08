@@ -26,9 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,16 +43,12 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
     public static final String KEY_BOTTOM_LEFT = "keyBottomLeft";
     public static final String KEY_BOTTOM_RIGHT = "keyBottomRight";
 
-    @Value("${four-square-transformer.key.top-left}")
     protected String keyTopLeft;
 
-    @Value("${four-square-transformer.key.top-right}")
     protected String keyTopRight;
 
-    @Value("${four-square-transformer.key.bottom-left}")
     protected String keyBottomLeft;
 
-    @Value("${four-square-transformer.key.bottom-right}")
     protected String keyBottomRight;
 
     protected Map<Character, FourSquarePlaintextTransformer.Coordinates> keyTopLeftMap;
@@ -62,7 +56,6 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
     protected Map<Character, FourSquarePlaintextTransformer.Coordinates> keyBottomLeftMap;
     protected Map<Character, FourSquarePlaintextTransformer.Coordinates> keyBottomRightMap;
 
-    @PostConstruct
     public void init() {
         if (keyTopLeft.length() != KEY_LENGTH) {
             throw new IllegalArgumentException("Key specified by four-square-transformer.key.top-left must be of length " + KEY_LENGTH + ".");

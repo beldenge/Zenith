@@ -26,7 +26,6 @@ import com.ciphertool.zenith.model.LanguageConstants;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,6 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         }
     }
 
-    @Value("${vigenere-transformer.key}")
     protected String key;
 
     public AbstractVigenerePlaintextTransformer(Map<String, Object> data) {

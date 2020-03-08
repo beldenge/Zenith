@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.api.model;
 
+import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
+import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,10 +44,6 @@ public class SolutionRequest {
 
     @Min(1)
     private int epochs = 1;
-
-    @DecimalMin("0.0")
-    @DecimalMax("100.0")
-    private float knownSolutionCorrectnessThreshold;
 
     @Valid
     private List<SolutionRequestTransformer> plaintextTransformers;
