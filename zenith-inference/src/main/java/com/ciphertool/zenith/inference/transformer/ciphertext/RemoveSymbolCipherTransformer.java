@@ -90,4 +90,9 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 15;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Removes all instances of the specified symbol and flattens the cipher to a single row as a consequence";
+    }
 }

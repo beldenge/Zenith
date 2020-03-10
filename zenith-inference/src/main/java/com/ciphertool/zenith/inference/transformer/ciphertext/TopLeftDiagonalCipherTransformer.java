@@ -76,4 +76,9 @@ public class TopLeftDiagonalCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 20;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Traverses the ciphertext diagonally as if the cipher was rotated 45 degrees to the right, with the output retaining the same number of rows and columns";
+    }
 }

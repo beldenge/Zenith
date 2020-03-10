@@ -40,8 +40,11 @@
             <div class="card border-left-primary shadow h-100 py-2 pl-3">
               <div class="card-body p-2">
                 <div class="row no-gutters align-items-center">
-                  <div class="col mr-2">
+                  <div class="col-md-10">
                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
+                  </div>
+                  <div class="col-md-2 text-right">
+                    <i class="far fa-question-circle" matTooltip="{{item.helpText}}" matTooltipPosition="right"></i>
                   </div>
                 </div>
               </div>

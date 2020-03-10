@@ -62,4 +62,9 @@ public class LowerLeftQuadrantCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 8;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Crops the cipher to only the lower left quadrant";
+    }
 }

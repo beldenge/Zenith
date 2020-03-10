@@ -58,4 +58,9 @@ public class UnwrapOneTimePadPlaintextTransformer extends AbstractOneTimePadPlai
     public int getOrder() {
         return 6;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs the inverse operation of the One Time Pad transformer";
+    }
 }

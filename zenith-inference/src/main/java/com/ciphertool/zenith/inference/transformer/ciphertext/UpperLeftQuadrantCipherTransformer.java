@@ -62,4 +62,9 @@ public class UpperLeftQuadrantCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 6;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Crops the cipher to only the upper left quadrant";
+    }
 }

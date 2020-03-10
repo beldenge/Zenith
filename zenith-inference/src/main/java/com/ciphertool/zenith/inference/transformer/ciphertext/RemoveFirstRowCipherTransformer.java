@@ -55,4 +55,9 @@ public class RemoveFirstRowCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 11;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Removes the entire topmost row";
+    }
 }

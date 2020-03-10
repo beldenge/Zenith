@@ -90,4 +90,9 @@ public class ZPatternCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 21;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Custom operation which traverses two rows at a time, outputting the symbols using a Z pattern, with the output retaining the same number of rows and columns";
+    }
 }

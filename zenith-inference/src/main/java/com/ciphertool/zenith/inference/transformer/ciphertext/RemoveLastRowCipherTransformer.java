@@ -58,4 +58,9 @@ public class RemoveLastRowCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 13;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Removes the entire bottommost row";
+    }
 }

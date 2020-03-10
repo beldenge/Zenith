@@ -55,4 +55,9 @@ public class VigenerePlaintextTransformer extends AbstractVigenerePlaintextTrans
     public int getOrder() {
         return 1;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs a standard Vigenere transformation using the standard Vigenere square and specified key";
+    }
 }

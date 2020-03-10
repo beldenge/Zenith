@@ -31,4 +31,5 @@ public class ZenithTransformer {
     private String displayName;
     private FormlyForm form;
     private int order;
+    private String helpText;
 }

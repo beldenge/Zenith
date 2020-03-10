@@ -61,4 +61,9 @@ public class FourSquarePlaintextTransformer extends AbstractFourSquarePlaintextT
     public int getOrder() {
         return 3;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs a standard four square transformation using the specified set of keys";
+    }
 }

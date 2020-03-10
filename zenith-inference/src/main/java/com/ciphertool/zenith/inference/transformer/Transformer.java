@@ -36,4 +36,6 @@ public interface Transformer {
     FormlyForm getForm();
 
     int getOrder();
+
+    String getHelpText();
 }

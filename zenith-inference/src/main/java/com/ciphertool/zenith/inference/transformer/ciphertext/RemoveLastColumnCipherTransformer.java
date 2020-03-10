@@ -55,4 +55,9 @@ public class RemoveLastColumnCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 12;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Removes the entire rightmost column";
+    }
 }

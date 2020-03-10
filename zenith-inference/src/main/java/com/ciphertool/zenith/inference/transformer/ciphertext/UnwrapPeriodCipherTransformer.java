@@ -57,4 +57,9 @@ public class UnwrapPeriodCipherTransformer extends AbstractPeriodCipherTransform
     public int getOrder() {
         return 17;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs the inverse operation of the Period transformer";
+    }
 }

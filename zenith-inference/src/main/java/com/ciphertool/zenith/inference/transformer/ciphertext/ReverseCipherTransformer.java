@@ -54,4 +54,9 @@ public class ReverseCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 1;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Reverses the ciphertext such that the last symbol becomes the first and vice versa";
+    }
 }

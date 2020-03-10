@@ -23,8 +23,8 @@
     <h6 class="m-0 font-weight-bold text-primary">Plaintext</h6>
     <span id="plaintext_score" *ngIf="solution" class="ml-2 mr-auto text-muted">(Score: {{score | number : '1.4-4'}})</span>
     <div class="dropdown no-arrow">
-      <a class="dropdown-toggle" href="javascript:void(0);" role="button" id="dropdownMenuLink">
-        <i class="far fa-copy" #tooltip="matTooltip" matTooltip="{{tooltipText | async}}" (mouseover)="resetTooltipText()" matTooltipPosition="above" (click)="copyPlaintext(tooltip)"></i>
+      <a class="dropdown-toggle" href="javascript:void(0);" role="button" #tooltip="matTooltip" matTooltip="{{tooltipText | async}}" (mouseover)="resetTooltipText()" matTooltipPosition="above" (click)="copyPlaintext(tooltip)">
+        <i class="far fa-copy"></i>
       </a>
     </div>
   </div>

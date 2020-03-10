@@ -23,7 +23,12 @@
       <div class="card-body p-2 pl-3">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Unique Symbols</div>
+            <div class="row">
+              <div class="col-md-10 text-xs font-weight-bold text-primary text-uppercase mb-1">Unique Symbols</div>
+              <div class="col-md-2 text-right">
+                <i class="far fa-question-circle" matTooltip="The number of unique ciphertext symbols" matTooltipPosition="above"></i>
+              </div>
+            </div>
             <mat-spinner *ngIf="uniqueSymbols === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
             <div *ngIf="uniqueSymbols !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{uniqueSymbols}}</div>
           </div>
@@ -40,7 +45,12 @@
       <div class="card-body p-2 pl-3">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Multiplicity</div>
+            <div class="row">
+              <div class="col-md-10 text-xs font-weight-bold text-primary text-uppercase mb-1">Multiplicity</div>
+              <div class="col-md-2 text-right">
+                <i class="far fa-question-circle" matTooltip="The number of unique ciphertext symbols divided by cipher length" matTooltipPosition="above"></i>
+              </div>
+            </div>
             <mat-spinner *ngIf="multiplicity === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
             <div *ngIf="multiplicity !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{multiplicity | number : '1.4-4'}}</div>
           </div>
@@ -57,7 +67,12 @@
       <div class="card-body p-2 pl-3">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Entropy</div>
+            <div class="row">
+              <div class="col-md-10 text-xs font-weight-bold text-primary text-uppercase mb-1">Entropy</div>
+              <div class="col-md-2 text-right">
+                <i class="far fa-question-circle" matTooltip="A measure of randomness in the ciphertext" matTooltipPosition="above"></i>
+              </div>
+            </div>
             <mat-spinner *ngIf="entropy === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
             <div *ngIf="entropy !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{entropy | number : '1.4-4'}}</div>
           </div>
@@ -74,7 +89,12 @@
       <div class="card-body p-2 pl-3">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Index Of Coincidence (IoC)</div>
+            <div class="row">
+              <div class="col-md-10 text-xs font-weight-bold text-primary text-uppercase mb-1">Index Of Coincidence (IoC)</div>
+              <div class="col-md-2 text-right">
+                <i class="far fa-question-circle" matTooltip="A measure of randomness in the ciphertext as compared with a uniform distribution" matTooltipPosition="above"></i>
+              </div>
+            </div>
             <mat-spinner *ngIf="indexOfCoincidence === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
             <div *ngIf="indexOfCoincidence !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{indexOfCoincidence | number : '1.4-4'}}</div>
           </div>
@@ -91,7 +111,12 @@
       <div class="card-body p-2 pl-3">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Bigram Repeats</div>
+            <div class="row">
+              <div class="col-md-10 text-xs font-weight-bold text-primary text-uppercase mb-1">Bigram Repeats</div>
+              <div class="col-md-2 text-right">
+                <i class="far fa-question-circle" matTooltip="The sum of all bigram counts which appear more than once" matTooltipPosition="above"></i>
+              </div>
+            </div>
             <mat-spinner *ngIf="bigramRepeats === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
             <div *ngIf="bigramRepeats !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{bigramRepeats}}</div>
           </div>
@@ -108,7 +133,12 @@
       <div class="card-body p-2 pl-3">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Cycle Score</div>
+            <div class="row">
+              <div class="col-md-10 text-xs font-weight-bold text-primary text-uppercase mb-1">Cycle Score</div>
+              <div class="col-md-2 text-right">
+                <i class="far fa-question-circle" matTooltip="A custom scoring method for pairs of symbols (not bigrams) that have a cyclic pattern in the ciphertext." matTooltipPosition="above"></i>
+              </div>
+            </div>
             <mat-spinner *ngIf="cycleScore === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
             <div *ngIf="cycleScore !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{cycleScore}}</div>
           </div>

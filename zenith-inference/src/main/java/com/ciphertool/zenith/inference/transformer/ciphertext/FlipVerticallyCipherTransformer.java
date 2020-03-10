@@ -58,4 +58,9 @@ public class FlipVerticallyCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 3;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Flips the cipher on the vertical axis";
+    }
 }

@@ -55,4 +55,9 @@ public class UnwrapVigenerePlaintextTransformer extends AbstractVigenerePlaintex
     public int getOrder() {
         return 2;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs the inverse operation of the Vigenere transformer";
+    }
 }

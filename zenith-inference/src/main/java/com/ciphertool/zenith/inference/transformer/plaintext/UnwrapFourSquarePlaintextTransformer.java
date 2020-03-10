@@ -61,4 +61,9 @@ public class UnwrapFourSquarePlaintextTransformer extends AbstractFourSquarePlai
     public int getOrder() {
         return 4;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs the inverse operation of the Four Square transformer";
+    }
 }

@@ -66,4 +66,9 @@ public class RemoveMiddleColumnCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 14;
     }
+
+    @Override
+    public String getHelpText() {
+        return "If and only if there are an odd number of columns, removes the entire middle column";
+    }
 }

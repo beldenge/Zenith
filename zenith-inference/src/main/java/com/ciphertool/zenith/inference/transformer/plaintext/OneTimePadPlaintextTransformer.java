@@ -54,4 +54,9 @@ public class OneTimePadPlaintextTransformer extends AbstractOneTimePadPlaintextT
     public int getOrder() {
         return 5;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs a One Time Pad transformation with modular addition using the specified key";
+    }
 }

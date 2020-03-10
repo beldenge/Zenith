@@ -228,7 +228,8 @@ export class ConfigurationService {
             model: transformer.form.model,
             fields: transformer.form.fields
           } : null,
-          order: transformer.order
+          order: transformer.order,
+          helpText: transformer.helpText
         });
       });
     }
@@ -245,7 +246,8 @@ export class ConfigurationService {
             model: transformer.form.model,
             fields: transformer.form.fields
           } : null,
-          order: transformer.order
+          order: transformer.order,
+          helpText: transformer.helpText
         });
       });
     }

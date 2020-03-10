@@ -65,4 +65,9 @@ public class TranspositionCipherTransformer extends AbstractTranspositionCipherT
     public int getOrder() {
         return 18;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs a keyed columnar transposition using the specified transposition key";
+    }
 }

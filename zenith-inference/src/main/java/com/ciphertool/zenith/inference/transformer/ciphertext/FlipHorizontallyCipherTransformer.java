@@ -59,4 +59,9 @@ public class FlipHorizontallyCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 2;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Flips the cipher on the horizontal axis";
+    }
 }

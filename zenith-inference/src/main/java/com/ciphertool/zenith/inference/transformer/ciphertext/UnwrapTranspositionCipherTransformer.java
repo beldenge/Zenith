@@ -65,4 +65,9 @@ public class UnwrapTranspositionCipherTransformer extends AbstractTranspositionC
     public int getOrder() {
         return 19;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Performs the inverse operation of the Transposition transformer";
+    }
 }

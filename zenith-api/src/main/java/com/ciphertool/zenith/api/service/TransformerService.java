@@ -54,6 +54,7 @@ public class TransformerService {
             responseItem.setDisplayName(cipherTransformer.getDisplayName());
             responseItem.setForm(cipherTransformer.getForm());
             responseItem.setOrder(cipherTransformer.getOrder());
+            responseItem.setHelpText(cipherTransformer.getHelpText());
 
             transformerResponse.getTransformers().add(responseItem);
         }
@@ -72,6 +73,7 @@ public class TransformerService {
             responseItem.setDisplayName(plaintextTransformer.getDisplayName());
             responseItem.setForm(plaintextTransformer.getForm());
             responseItem.setOrder(plaintextTransformer.getOrder());
+            responseItem.setHelpText(plaintextTransformer.getHelpText());
 
             transformerResponse.getTransformers().add(responseItem);
         }

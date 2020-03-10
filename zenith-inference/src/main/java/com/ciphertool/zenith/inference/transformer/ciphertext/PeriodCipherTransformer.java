@@ -57,4 +57,9 @@ public class PeriodCipherTransformer extends AbstractPeriodCipherTransformer {
     public int getOrder() {
         return 16;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Begins with the first symbol and performs a skip operation for the specified number of symbols until the entire ciphertext has been transformed";
+    }
 }

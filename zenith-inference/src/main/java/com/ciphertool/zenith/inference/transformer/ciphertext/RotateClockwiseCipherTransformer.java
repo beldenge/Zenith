@@ -59,4 +59,9 @@ public class RotateClockwiseCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 4;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Rotates the ciphertext clockwise such that the number of rows and columns are switched";
+    }
 }

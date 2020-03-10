@@ -24,4 +24,5 @@ export class ZenithTransformer {
   displayName: string;
   form?: DynamicForm;
   order: number;
+  helpText: string;
 }

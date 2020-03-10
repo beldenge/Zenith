@@ -55,4 +55,9 @@ public class RemoveFirstColumnCipherTransformer implements CipherTransformer {
     public int getOrder() {
         return 10;
     }
+
+    @Override
+    public String getHelpText() {
+        return "Removes the entire leftmost column";
+    }
 }
