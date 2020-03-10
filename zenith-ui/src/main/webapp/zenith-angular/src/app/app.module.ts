@@ -57,6 +57,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
 import { HelpComponent } from './help/help.component';
+import { MatExpansionModule } from "@angular/material/expansion";
 
 @NgModule({
   declarations: [
@@ -76,30 +77,31 @@ import { HelpComponent } from './help/help.component';
     PlaintextSampleComponent,
     HelpComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule,
-    SortablejsModule.forRoot({animation: 150}),
-    BrowserAnimationsModule,
-    MatTooltipModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatStepperModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatSnackBarModule,
-    FormlyModule.forRoot(),
-    FormlyMaterialModule,
-    MatProgressSpinnerModule,
-    MatRadioModule,
-    MatSelectModule
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        HttpClientModule,
+        FormsModule,
+        ReactiveFormsModule,
+        SortablejsModule.forRoot({animation: 150}),
+        BrowserAnimationsModule,
+        MatTooltipModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatStepperModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatTableModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatSnackBarModule,
+        FormlyModule.forRoot(),
+        FormlyMaterialModule,
+        MatProgressSpinnerModule,
+        MatRadioModule,
+        MatSelectModule,
+        MatExpansionModule
+    ],
   providers: [
     JsonPipe,
     {
