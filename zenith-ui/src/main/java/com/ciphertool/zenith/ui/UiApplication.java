@@ -30,6 +30,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.api",
@@ -42,32 +44,146 @@ public class UiApplication {
         SpringApplication.run(UiApplication.class, args);
     }
 
-    @EventListener({ApplicationReadyEvent.class})
+    @EventListener({ ApplicationReadyEvent.class })
     public void applicationReadyEvent() {
-        browse("http://localhost:8080");
+        try {
+            browse(new URI("http://localhost:8080"));
+        } catch (URISyntaxException e) {
+            log.error("Unable to open browser automatically.", e);
+        }
     }
 
     /**
-     * This works well enough for now, but it will need to be improved upon.  See the following links:
+     * This method of browsing cross-platform is derived from the following:
      * https://stackoverflow.com/questions/18004150/desktop-api-is-not-supported-on-the-current-platform?noredirect=1&lq=1
-     * https://centerkey.com/java/browser/
      */
-    public static void browse(String url) {
-        if (Desktop.isDesktopSupported()){
-            Desktop desktop = Desktop.getDesktop();
-            try {
-                desktop.browse(new URI(url));
-            } catch (IOException | URISyntaxException e) {
-                e.printStackTrace();
+    public static boolean browse(URI uri) {
+        if (openSystemSpecific(uri.toString())) {
+            return true;
+        }
+
+        return browseDesktop(uri);
+    }
+
+    private static boolean openSystemSpecific(String what) {
+        OperatingSystem os = getOs();
+
+        if (os.isLinux()) {
+            if (runCommand("kde-open", "%s", what)) {
+                return true;
             }
-        } else {
-            log.warn("Java Desktop API is not supported.  Falling back to shell command.");
-            Runtime runtime = Runtime.getRuntime();
-            try {
-                runtime.exec("rundll32 url.dll,FileProtocolHandler " + url);
-            } catch (IOException e) {
-                e.printStackTrace();
+
+            if (runCommand("gnome-open", "%s", what)) {
+                return true;
+            }
+
+            if (runCommand("xdg-open", "%s", what)) {
+                return true;
             }
         }
+
+        if (os.isMac() && runCommand("open", "%s", what)) {
+            return true;
+        }
+
+        return os.isWindows() && runCommand("explorer", "%s", what);
+    }
+
+    private static boolean browseDesktop(URI uri) {
+        log.info("Trying to use Desktop.getDesktop().browse() with {}", uri.toString());
+
+        try {
+            if (!Desktop.isDesktopSupported()) {
+                log.error("Platform is not supported.");
+                return false;
+            }
+
+            if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                log.error("BROWSE is not supported.");
+                return false;
+            }
+
+            Desktop.getDesktop().browse(uri);
+
+            return true;
+        } catch (Throwable t) {
+            log.error("Error using desktop browse.", t);
+            return false;
+        }
+    }
+
+    private static boolean runCommand(String command, String args, String file) {
+        String[] parts = prepareCommand(command, args, file);
+
+        try {
+            Process p = Runtime.getRuntime().exec(parts);
+
+            if (p == null) {
+                return false;
+            }
+
+            try {
+                int retval = p.exitValue();
+
+                if (retval == 0) {
+                    log.error("Process ended immediately.");
+                    return false;
+                }
+
+                log.error("Process crashed.");
+                return false;
+            } catch (IllegalThreadStateException itse) {
+                log.debug("Process is running.");
+                return true;
+            }
+        } catch (IOException e) {
+            log.debug("Error running command.", e);
+            return false;
+        }
+    }
+
+    private static String[] prepareCommand(String command, String args, String file) {
+        List<String> parts = new ArrayList<>();
+        parts.add(command);
+
+        if (args != null) {
+            for (String s : args.split(" ")) {
+                s = String.format(s, file);
+
+                parts.add(s.trim());
+            }
+        }
+
+        return parts.toArray(new String[parts.size()]);
+    }
+
+    public static OperatingSystem getOs() {
+        String s = System.getProperty("os.name").toLowerCase();
+
+        if (s.contains("win")) {
+            return OperatingSystem.WINDOWS;
+        }
+
+        if (s.contains("mac")) {
+            return OperatingSystem.MACOS;
+        }
+
+        if (s.contains("solaris")) {
+            return OperatingSystem.SOLARIS;
+        }
+
+        if (s.contains("sunos")) {
+            return OperatingSystem.SOLARIS;
+        }
+
+        if (s.contains("linux")) {
+            return OperatingSystem.LINUX;
+        }
+
+        if (s.contains("unix")) {
+            return OperatingSystem.LINUX;
+        }
+
+        return OperatingSystem.UNKNOWN;
     }
 }
