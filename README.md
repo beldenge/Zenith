@@ -1,6 +1,16 @@
 # Zenith
-The aim of this project is to provide a tool that is easy to use for somewhat technical people in solving homophonic substitution ciphers.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
+A cipher solver application that is:
+ - free
+ - open-source
+ - cross-platform
+ - cross-browser
+ - fast
+ - extensible
+ - flexible: can be used as a web UI, command-line app, or REST API
 
+The aim of this project is to provide a complete tool with that is easy to use for somewhat technical people in solving ciphers.  It is highly configurable but has sensible defaults.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
+
+# Benchmarks
 When using the simulated annealing optimizer, it successfully solves the Zodiac 408 cipher with varying probability and speed depending on the hyperparameters chosen.  It is especially sensitive to the annealing temperatures and number of sampler iterations.
  - when choosing 2500 sampler iterations, each epoch takes 250 ms, and 680 out of 1000 epochs (68.00%) produced the correct solution.
  - when choosing 5000 sampler iterations, each epoch takes 500 ms, and 873 out of 1000 epochs (87.30%) produced the correct solution.
@@ -11,25 +21,36 @@ The results show that with more sampler iterations, it takes more time to comple
 
 The benchmarks were carried out using JDK 8 on a Windows 10 laptop with an i7-7700HQ CPU @ 2.80GHz with 2GB memory allocated.
 
-# Building
-1. Download and install Java 8 or later
+# How-to
+First you'll need to download Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
+
+The easiest way to use Zenith is to run the web UI.  Check out [zenith-ui](zenith-ui/README.md) on how to get it up and running.
+
+For specifics on the command-line and REST API, please check out the [zenith-inference](zenith-inference/README.md) and [zenith-api](zenith-api/README.md) modules respectively.
+
+# Modules
+### [zenith-api](zenith-api/README.md)
+This is the REST API for Zenith.  It is used by the web UI and can also be used standalone.
+### [zenith-inference](zenith-inference/README.md)
+This is the command-line version of Zenith.  It is both a dependency and a runnable application on its own.  It performs hill climbing using the precomputed language model to estimate the optimal solution for a given cipher.
+### [zenith-genetic-algorithm](zenith-genetic-algorithm/README.md)
+This module is a framework for implementing genetic algorithms.  The zenith-inference module uses this for its GeneticAlgorithmSolutionOptimizer, which is currently still in Beta.
+### [zenith-language-model](zenith-language-model/README.md)
+This module is both a dependency and a runnable application on its own.  Its purpose is to build a language model by reading in a corpus of english texts, so that the language model can be used to score solution proposals.
+### [zenith-mutation-search](zenith-mutation-search/README.md)
+This module is currently not recommended for general use.  It performs hill climbing using mutations of the original cipher to try to detect what sorts of mutations were used to create the cipher.
+### [zenith-mutator](zenith-mutator/README.md)
+This module is currently not recommended for general use.  It is a simple utility to transform an existing cipher and write it to a file for testing purposes.
+### [zenith-roulette](zenith-roulette/README.md)
+This module is a dependency shared by multiple Zenith modules.  That is its only purpose.
+### [zenith-ui](zenith-ui/README.md)
+A full-featured web user interface which showcases all of Zenith's solver, transformation, and configuration capabilities, built on Angular 9.
+
+# Building from source
+1. Download and install Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
 2. Download and install [Apache Maven](https://maven.apache.org/download.cgi)
 3. On the command line, change directory to the top-level directory where you cloned the Git repository
 4. Issue the command `mvn clean install`
-
-# Modules
-### [zenith-inference](zenith-inference/README.md)
-This module is both a dependency and a runnable application on its own.  It performs hill climbing using the precomputed language model to estimate the optimal solution for a given cipher.
-### [zenith-language-model](zenith-language-model/README.md)
-This module is both a dependency and a runnable application on its own.  Its purpose is to build a language model by reading in a corpus of english texts, so that the language model can be used to score solution proposals.
-### [zenith-genetic-algorithm](zenith-genetic-algorithm/README.md)
-This module is a framework for implementing genetic algorithms.  The zenith-inference module uses this for its GeneticAlgorithmSolutionOptimizer.
-### [zenith-mutation-search](zenith-mutation-search/README.md)
-This module is a runnable application only.  It performs hill climbing using mutations of the original cipher to try to detect what sorts of mutations were used to create the cipher.
-### [zenith-mutator](zenith-mutator/README.md)
-This module is a runnable application only.  It is a simple utility to transform an existing cipher and write it to a file for testing purposes.
-### [zenith-roulette](zenith-roulette/README.md)
-This module is a dependency shared by multiple Zenith modules.  That is its only purpose.
 
 # Contributing
 Simply fork the repository and send pull requests.  The following are the areas that could be of most benefit going forward.
