@@ -33,7 +33,7 @@ const ENDPOINT_URL = environment.apiUrlBase + '/ciphers';
 })
 export class CipherService {
   private selectedCipher$ = new BehaviorSubject<Cipher>(null);
-  private ciphers$ = new BehaviorSubject<Cipher[]>(null);
+  private ciphers$ = new BehaviorSubject<Cipher[]>([]);
 
   constructor(private http: HttpClient) {}
 

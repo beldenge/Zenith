@@ -28,6 +28,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
+import { BlockifyPipe } from "../blockify.pipe";
 
 @Component({
   selector: 'app-manage-ciphers',
@@ -35,6 +36,7 @@ import { Subscription } from "rxjs";
   styleUrls: ['./manage-ciphers.component.css'],
 })
 export class ManageCiphersComponent implements OnInit, OnDestroy {
+  blockifyPipe = new BlockifyPipe();
   showIntroManageCiphersSubscription: Subscription;
   displayedColumns: string[] = ['name', 'rows', 'columns', 'ciphertext', 'actions'];
   ciphersDataSource: MatTableDataSource<any>;
@@ -80,6 +82,8 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
 
   createCipher() {
     this.dialog.open(CipherModalComponent, {
+      disableClose: true,
+      width: '50%',
       data: {
         mode: 'CREATE'
       }
@@ -87,7 +91,11 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   }
 
   editCipher(cipher: Cipher) {
+    cipher.ciphertext = this.blockifyPipe.transform(cipher.ciphertext, cipher.columns).toString();
+
     this.dialog.open(CipherModalComponent, {
+      disableClose: true,
+      width: '50%',
       data: {
         cipher: cipher,
         mode: 'EDIT'

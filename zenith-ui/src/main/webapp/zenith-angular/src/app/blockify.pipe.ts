@@ -30,7 +30,7 @@ export class BlockifyPipe implements PipeTransform {
       for (let i = 0; i < value.length; i++) {
         block += value[i];
 
-        if ((i + 1) % columns == 0) {
+        if (i != value.length - 1 && (i + 1) % columns == 0) {
           block += '\n';
         }
       }

@@ -19,12 +19,15 @@
 
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { AbstractControl, FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
 import { CipherService } from "../cipher.service";
 import { CipherRequest } from "../models/CipherRequest";
 import { Cipher } from "../models/Cipher";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Subscription } from "rxjs";
+import { BlockifyPipe } from "../blockify.pipe";
+
+const NEWLINES_REGEX = /(\r\n|\r|\n)/g;
 
 @Component({
   selector: 'app-cipher-modal',
@@ -32,6 +35,7 @@ import { Subscription } from "rxjs";
   styleUrls: ['./cipher-modal.component.css']
 })
 export class CipherModalComponent implements OnInit, OnDestroy {
+  blockifyPipe = new BlockifyPipe();
   ciphers: Cipher[];
   cipher: Cipher;
   mode: string;
@@ -67,6 +71,14 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       ciphertext: [this.cipher ? this.cipher.ciphertext : '']
     });
 
+    let cipherLengthValidator: ValidatorFn = () => {
+      let expectedLength = this.dimensionsFormGroup.get('rows').value * this.dimensionsFormGroup.get('columns').value;
+
+      return this.ciphertextFormGroup.get('ciphertext').value.replace(NEWLINES_REGEX, '').length === expectedLength ? null : { cipherLength: false };
+    };
+
+    this.ciphertextFormGroup.get('ciphertext').setValidators([cipherLengthValidator]);
+
     this.newCipherForm = this.fb.group({
       formArray: this.fb.array([
         this.nameFormGroup,
@@ -88,7 +100,8 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     let name = this.nameFormGroup.get('name').value;
     let rows = this.dimensionsFormGroup.get('rows').value;
     let columns = this.dimensionsFormGroup.get('columns').value;
-    let ciphertext = this.ciphertextFormGroup.get('ciphertext').value;
+    // Remove newlines from blockify pipe
+    let ciphertext = this.ciphertextFormGroup.get('ciphertext').value.replace(NEWLINES_REGEX, '');
     let request = new CipherRequest(name, rows, columns, ciphertext);
 
     if (this.mode === 'CREATE') {
@@ -134,5 +147,15 @@ export class CipherModalComponent implements OnInit, OnDestroy {
         verticalPosition: 'top'
       });
     });
+  }
+
+  ciphertextChange() {
+    let expectedLength = this.dimensionsFormGroup.get('rows').value * this.dimensionsFormGroup.get('columns').value;
+
+    let blockCiphertext = this.ciphertextFormGroup.get('ciphertext').value.replace(NEWLINES_REGEX, '').substr(0, expectedLength);
+
+    blockCiphertext = this.blockifyPipe.transform(blockCiphertext, this.dimensionsFormGroup.get('columns').value).toString();
+
+    this.ciphertextFormGroup.get('ciphertext').setValue(blockCiphertext);
   }
 }

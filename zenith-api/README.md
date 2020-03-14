@@ -7,3 +7,7 @@ This module exposes the functionality of Zenith as a REST API.  It is used as a 
 3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-api-2.0.0-SNAPSHOT-exec.jar`
 
 Note: You must run the *-exec.jar and not the vanilla jar file, as this module is used both as a dependency and as a runnable application on its own.
+
+# API Documentation
+After starting the application, you can view the API documentation at the following URL, which will allow you to explore the endpoints in a web UI:
+http://localhost:8080/swagger-ui.html
