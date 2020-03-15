@@ -1,0 +1,1 @@
+This module simply packages the runnable portions of the project for distribution.

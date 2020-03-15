@@ -50,6 +50,7 @@
         <module>zenith-mutator</module>
         <module>zenith-ui</module>
 		<module>zenith-api</module>
+		<module>zenith-package</module>
 	</modules>
 
 	<dependencies>

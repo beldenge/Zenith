@@ -10,6 +10,26 @@ A cipher solver application that is:
 
 The aim of this project is to provide a complete tool with that is easy to use for somewhat technical people in solving ciphers.  It is highly configurable but has sensible defaults.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
 
+# How-to
+### Prerequisites
+1. First you'll need to download Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
+
+2. You'll need approximately 500 MB free disk space, roughly half of which is for the downloaded artifacts, and half of which will be written to disk as it unzips the included language model on the first startup.  
+
+### Starting
+The easiest way to use Zenith is to run the web UI using the included run script for your system.  The distribution includes run scripts for unix-based systems as well as windows:
+ - run-ui-macos-linux.sh
+ - run-ui-windows.bat
+
+The run script should initialize the application and open the UI in your default browser.  If for some reason it does not do so after about 30 seconds, you can try manually navigating to http://localhost:8080 in your browser.
+
+Check out [zenith-ui](zenith-ui/README.md) for more information.
+
+For specifics on the command-line and REST API, please check out the [zenith-inference](zenith-inference/README.md) and [zenith-api](zenith-api/README.md) modules respectively.
+
+### Stopping
+In order to stop Zenith, you'll have to type `ctrl + z` in the terminal where zenith is running.
+
 # Benchmarks
 When using the simulated annealing optimizer, it successfully solves the Zodiac 408 cipher with varying probability and speed depending on the hyperparameters chosen.  It is especially sensitive to the annealing temperatures and number of sampler iterations.
  - when choosing 2500 sampler iterations, each epoch takes 250 ms, and 680 out of 1000 epochs (68.00%) produced the correct solution.
@@ -20,13 +40,6 @@ When using the simulated annealing optimizer, it successfully solves the Zodiac 
 The results show that with more sampler iterations, it takes more time to complete each epoch, but each epoch has a greater probability of finding the correct solution.  The default is 5000 sampler iterations, which is a good balance between accuracy and speed.
 
 The benchmarks were carried out using JDK 8 on a Windows 10 laptop with an i7-7700HQ CPU @ 2.80GHz with 2GB memory allocated.
-
-# How-to
-First you'll need to download Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
-
-The easiest way to use Zenith is to run the web UI.  Check out [zenith-ui](zenith-ui/README.md) on how to get it up and running.
-
-For specifics on the command-line and REST API, please check out the [zenith-inference](zenith-inference/README.md) and [zenith-api](zenith-api/README.md) modules respectively.
 
 # Modules
 ### [zenith-api](zenith-api/README.md)
@@ -41,6 +54,8 @@ This module is both a dependency and a runnable application on its own.  Its pur
 This module is currently not recommended for general use.  It performs hill climbing using mutations of the original cipher to try to detect what sorts of mutations were used to create the cipher.
 ### [zenith-mutator](zenith-mutator/README.md)
 This module is currently not recommended for general use.  It is a simple utility to transform an existing cipher and write it to a file for testing purposes.
+### [zenith-package](zenith-package/README.md)
+This module simply packages the runnable portions of the project for distribution.
 ### [zenith-roulette](zenith-roulette/README.md)
 This module is a dependency shared by multiple Zenith modules.  That is its only purpose.
 ### [zenith-ui](zenith-ui/README.md)
