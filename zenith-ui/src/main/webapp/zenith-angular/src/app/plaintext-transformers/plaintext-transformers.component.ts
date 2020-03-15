@@ -18,8 +18,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription } from "rxjs";
-import { SortablejsOptions } from "ngx-sortablejs";
+import { Subscription } from "rxjs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { ZenithTransformer } from "../models/ZenithTransformer";
@@ -50,7 +49,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
 
   availableTransformers: ZenithTransformer[] = [];
 
-  availableTransformersOptions: SortablejsOptions = {
+  availableTransformersOptions = {
     group: {
       name: 'clone-group',
       pull: 'clone',
@@ -102,7 +101,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     }
   };
 
-  appliedTransformersOptions: SortablejsOptions = {
+  appliedTransformersOptions = {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChangeNew,
     onRemove: this.onAppliedTransformersChange,

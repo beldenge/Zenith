@@ -18,7 +18,6 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { SortablejsOptions} from "ngx-sortablejs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { CiphertextTransformerService } from "../ciphertext-transformer.service";
@@ -50,7 +49,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
 
   availableTransformers: ZenithTransformer[] = [];
 
-  availableTransformersOptions: SortablejsOptions = {
+  availableTransformersOptions = {
     group: {
       name: 'clone-group',
       pull: 'clone',
@@ -70,7 +69,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     this.onAppliedTransformersChange({ isNew: true });
   };
 
-  appliedTransformersOptions: SortablejsOptions = {
+  appliedTransformersOptions = {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChangeNew,
     onRemove: this.onAppliedTransformersChange,
