@@ -68,6 +68,7 @@
                 <mat-form-field appearance="outline">
                   <mat-label>Sampler Iterations</mat-label>
                   <input matInput formControlName="samplerIterations">
+                  <mat-error>A number 1 or greater is required</mat-error>
                 </mat-form-field>
               </div>
               <div class="col-sm-4">
@@ -80,6 +81,7 @@
                 <mat-form-field appearance="outline">
                   <mat-label>Annealing Temperature Minimum</mat-label>
                   <input matInput formControlName="annealingTemperatureMin">
+                  <mat-error>A number is required</mat-error>
                 </mat-form-field>
               </div>
               <div class="col-sm-4">
@@ -92,6 +94,7 @@
                 <mat-form-field appearance="outline">
                   <mat-label>Annealing Temperature Maximum</mat-label>
                   <input matInput formControlName="annealingTemperatureMax">
+                  <mat-error>A number is required</mat-error>
                 </mat-form-field>
               </div>
               <div class="col-sm-4">
@@ -120,6 +123,7 @@
                       <mat-form-field appearance="outline">
                         <mat-label>Population Size</mat-label>
                         <input matInput formControlName="populationSize">
+                        <mat-error>A number 1 or greater is required</mat-error>
                       </mat-form-field>
                     </div>
                     <div class="col-sm-1">
@@ -131,6 +135,7 @@
                       <mat-form-field appearance="outline">
                         <mat-label>Number of Generations</mat-label>
                         <input matInput formControlName="numberOfGenerations">
+                        <mat-error>A number 1 or greater is required</mat-error>
                       </mat-form-field>
                     </div>
                     <div class="col-sm-1">
@@ -142,6 +147,7 @@
                       <mat-form-field appearance="outline">
                         <mat-label>Elitism</mat-label>
                         <input matInput formControlName="elitism">
+                        <mat-error>A number 1 or greater is required</mat-error>
                       </mat-form-field>
                     </div>
                     <div class="col-sm-1">
@@ -209,6 +215,7 @@
                         <mat-form-field appearance="outline">
                           <mat-label>Lattice Rows</mat-label>
                           <input matInput formControlName="latticeRows">
+                          <mat-error>A number 1 or greater is required</mat-error>
                         </mat-form-field>
                       </div>
                       <div class="col-sm-1">
@@ -220,6 +227,7 @@
                         <mat-form-field appearance="outline">
                           <mat-label>Lattice Columns</mat-label>
                           <input matInput formControlName="latticeColumns">
+                          <mat-error>A number 1 or greater is required</mat-error>
                         </mat-form-field>
                       </div>
                       <div class="col-sm-1">
@@ -242,6 +250,7 @@
                         <mat-form-field appearance="outline">
                           <mat-label>Lattice Selection Radius</mat-label>
                           <input matInput formControlName="latticeRadius">
+                          <mat-error>A number 1 or greater is required</mat-error>
                         </mat-form-field>
                       </div>
                       <div class="col-sm-1">
@@ -279,6 +288,7 @@
                       <mat-form-field appearance="outline">
                         <mat-label>Mutation Rate</mat-label>
                         <input matInput formControlName="mutationRate">
+                        <mat-error>A number between 0.0 and 1.0 is required</mat-error>
                       </mat-form-field>
                     </div>
                     <div class="col-sm-1">
@@ -290,6 +300,7 @@
                       <mat-form-field appearance="outline">
                         <mat-label>Maximum Mutations Per Individual</mat-label>
                         <input matInput formControlName="maxMutationsPerIndividual">
+                        <mat-error>A positive integer is required</mat-error>
                       </mat-form-field>
                     </div>
                     <div class="col-sm-1">
@@ -327,6 +338,7 @@
                         <mat-form-field appearance="outline">
                           <mat-label>Tournament Selector Accuracy</mat-label>
                           <input matInput formControlName="tournamentSelectorAccuracy">
+                          <mat-error>A number between 0.0 and 1.0 is required</mat-error>
                         </mat-form-field>
                       </div>
                       <div class="col-sm-1">
@@ -338,6 +350,7 @@
                         <mat-form-field appearance="outline">
                           <mat-label>Tournament Size</mat-label>
                           <input matInput formControlName="tournamentSize">
+                          <mat-error>A number 1 or greater is required</mat-error>
                         </mat-form-field>
                       </div>
                       <div class="col-sm-1">

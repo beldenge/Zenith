@@ -67,7 +67,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     crossoverAlgorithmName: [null],
     mutationAlgorithmName: [null],
     mutationRate: [null, [Validators.min(0.0), Validators.max(1.0), Validators.pattern(DECIMAL_PATTERN)]],
-    maxMutationsPerIndividual: [null, [Validators.pattern(INTEGER_PATTERN)]],
+    maxMutationsPerIndividual: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     selectorName: [null],
     tournamentSelectorAccuracy: [null, [Validators.min(0.0), Validators.max(1.0), Validators.pattern(DECIMAL_PATTERN)]],
     tournamentSize: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]]
