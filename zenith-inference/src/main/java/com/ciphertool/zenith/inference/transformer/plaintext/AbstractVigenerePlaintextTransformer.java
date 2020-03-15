@@ -35,9 +35,11 @@ import java.util.Map;
 public abstract class AbstractVigenerePlaintextTransformer implements PlaintextTransformer {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
+    public static final int VIGENERE_SQUARE_LENGTH = 26 * 26;
     public static final String VIGENERE_SQUARE = "vigenereSquare";
     public static final String KEY = "key";
 
+    protected static String defaultVigenereSquare = "";
     protected static char[][] vigenereSquare = new char[26][26];
 
     private static char[] letters = LanguageConstants.LOWERCASE_LETTERS;
@@ -45,7 +47,7 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
     static {
         for (int i = 0; i < 26; i ++) {
             for (int j = 0; j < 26; j ++) {
-                vigenereSquare[i][j] = letters[(i + j) % 26];
+                defaultVigenereSquare += letters[(i + j) % 26];
             }
         }
     }
@@ -53,7 +55,23 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
     protected String key;
 
     public AbstractVigenerePlaintextTransformer(Map<String, Object> data) {
-//        vigenereSquare = (String) data.get(VIGENERE_SQUARE);
+        String rawVigenereSquare = (String) data.get(VIGENERE_SQUARE);
+        String vignereSquareAsSingleLine = defaultVigenereSquare;
+
+        if (rawVigenereSquare != null) {
+            if (rawVigenereSquare.length() != VIGENERE_SQUARE_LENGTH){
+                throw new IllegalArgumentException("Argument " + VIGENERE_SQUARE + " must be exactly " + VIGENERE_SQUARE_LENGTH + " characters long.");
+            }
+
+            vignereSquareAsSingleLine = rawVigenereSquare;
+        }
+
+        for (int i = 0; i < 26; i ++) {
+            for (int j = 0; j < 26; j ++) {
+                vigenereSquare[i][j] = vignereSquareAsSingleLine.charAt((j * 26) + i);
+            }
+        }
+
         key = (String) data.get(KEY);
     }
 
@@ -66,17 +84,24 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         FormlyTemplateOptions vigenereSquareOptions = new FormlyTemplateOptions();
         vigenereSquareOptions.setLabel("Vigenere Square");
         vigenereSquareOptions.setRequired(true);
+        vigenereSquareOptions.setPattern("[a-z]+");
+        vigenereSquareOptions.setRows(26);
+        vigenereSquareOptions.setCols(26);
+        vigenereSquareOptions.setMinLength(VIGENERE_SQUARE_LENGTH);
+        vigenereSquareOptions.setMaxLength(VIGENERE_SQUARE_LENGTH);
 
         FormlyFormField vigenereSquare = new FormlyFormField();
         vigenereSquare.setKey(VIGENERE_SQUARE);
         vigenereSquare.setType("textarea");
         vigenereSquare.setTemplateOptions(vigenereSquareOptions);
+        vigenereSquare.setDefaultValue(defaultVigenereSquare);
 
         fields.add(vigenereSquare);
 
         FormlyTemplateOptions keyOptions = new FormlyTemplateOptions();
         keyOptions.setLabel("Key");
         keyOptions.setRequired(true);
+        keyOptions.setPattern("[a-z]+");
 
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);

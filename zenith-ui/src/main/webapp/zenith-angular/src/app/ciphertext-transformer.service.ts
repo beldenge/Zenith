@@ -83,7 +83,5 @@ export class CiphertextTransformerService {
         this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
       }
     }
-
-    return true;
   };
 }

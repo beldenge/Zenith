@@ -20,32 +20,22 @@
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import org.junit.Test;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class FourSquarePlaintextTransformerTest {
     @Test
     public void testTransform() {
-        FourSquarePlaintextTransformer transformer = new FourSquarePlaintextTransformer();
+        Map<String, Object> data = new HashMap<>();
+        data.put(AbstractFourSquarePlaintextTransformer.KEY_TOP_LEFT, "byfireacdghklmnopqstuvwxz");
+        data.put(AbstractFourSquarePlaintextTransformer.KEY_TOP_RIGHT, "bygunacdefhiklmopqrstvwxz");
+        data.put(AbstractFourSquarePlaintextTransformer.KEY_BOTTOM_LEFT, "byknifeacdghlmopqrstuvwxz");
+        data.put(AbstractFourSquarePlaintextTransformer.KEY_BOTTOM_RIGHT, "byropeacdfghiklmnqstuvwxz");
 
-        Field keyTopLeftField = ReflectionUtils.findField(FourSquarePlaintextTransformer.class, "keyTopLeft");
-        ReflectionUtils.makeAccessible(keyTopLeftField);
-        ReflectionUtils.setField(keyTopLeftField, transformer, "byfireacdghklmnopqstuvwxz");
-
-        Field keyTopRightField = ReflectionUtils.findField(FourSquarePlaintextTransformer.class, "keyTopRight");
-        ReflectionUtils.makeAccessible(keyTopRightField);
-        ReflectionUtils.setField(keyTopRightField, transformer, "bygunacdefhiklmopqrstvwxz");
-
-        Field keyBottomLeftField = ReflectionUtils.findField(FourSquarePlaintextTransformer.class, "keyBottomLeft");
-        ReflectionUtils.makeAccessible(keyBottomLeftField);
-        ReflectionUtils.setField(keyBottomLeftField, transformer, "byknifeacdghlmopqrstuvwxz");
-
-        Field keyBottomRightField = ReflectionUtils.findField(FourSquarePlaintextTransformer.class, "keyBottomRight");
-        ReflectionUtils.makeAccessible(keyBottomRightField);
-        ReflectionUtils.setField(keyBottomRightField, transformer, "byropeacdfghiklmnqstuvwxz");
+        FourSquarePlaintextTransformer transformer = new FourSquarePlaintextTransformer(data);
 
         transformer.init();
 

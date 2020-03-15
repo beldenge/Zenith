@@ -96,17 +96,28 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         FormlyTemplateOptions keyTopLeftOptions = new FormlyTemplateOptions();
         keyTopLeftOptions.setLabel("Top Left Key");
         keyTopLeftOptions.setRequired(true);
+        keyTopLeftOptions.setCols(5);
+        keyTopLeftOptions.setRows(5);
+        keyTopLeftOptions.setMinLength(25);
+        keyTopLeftOptions.setMaxLength(25);
+        keyTopLeftOptions.setPattern("[a-z]+");
 
         FormlyFormField keyTopLeft = new FormlyFormField();
         keyTopLeft.setKey(KEY_TOP_LEFT);
         keyTopLeft.setType("textarea");
         keyTopLeft.setTemplateOptions(keyTopLeftOptions);
+        keyTopLeft.setDefaultValue("abcdefghiklmnopqrstuvwxyz");
 
         fields.add(keyTopLeft);
 
         FormlyTemplateOptions keyTopRightOptions = new FormlyTemplateOptions();
         keyTopRightOptions.setLabel("Top Right Key");
         keyTopRightOptions.setRequired(true);
+        keyTopRightOptions.setCols(5);
+        keyTopRightOptions.setRows(5);
+        keyTopRightOptions.setMinLength(25);
+        keyTopRightOptions.setMaxLength(25);
+        keyTopRightOptions.setPattern("[a-z]+");
 
         FormlyFormField keyTopRight = new FormlyFormField();
         keyTopRight.setKey(KEY_TOP_RIGHT);
@@ -118,6 +129,11 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         FormlyTemplateOptions keyBottomLeftOptions = new FormlyTemplateOptions();
         keyBottomLeftOptions.setLabel("Bottom Left Key");
         keyBottomLeftOptions.setRequired(true);
+        keyBottomLeftOptions.setCols(5);
+        keyBottomLeftOptions.setRows(5);
+        keyBottomLeftOptions.setMinLength(25);
+        keyBottomLeftOptions.setMaxLength(25);
+        keyBottomLeftOptions.setPattern("[a-z]+");
 
         FormlyFormField keyBottomLeft = new FormlyFormField();
         keyBottomLeft.setKey(KEY_BOTTOM_LEFT);
@@ -129,11 +145,17 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         FormlyTemplateOptions keyBottomRightOptions = new FormlyTemplateOptions();
         keyBottomRightOptions.setLabel("Bottom Right Key");
         keyBottomRightOptions.setRequired(true);
+        keyBottomRightOptions.setCols(5);
+        keyBottomRightOptions.setRows(5);
+        keyBottomRightOptions.setMinLength(25);
+        keyBottomRightOptions.setMaxLength(25);
+        keyBottomRightOptions.setPattern("[a-z]+");
 
         FormlyFormField keyBottomRight = new FormlyFormField();
         keyBottomRight.setKey(KEY_BOTTOM_RIGHT);
         keyBottomRight.setType("textarea");
         keyBottomRight.setTemplateOptions(keyBottomRightOptions);
+        keyBottomRight.setDefaultValue("abcdefghiklmnopqrstuvwxyz");
 
         fields.add(keyBottomRight);
 

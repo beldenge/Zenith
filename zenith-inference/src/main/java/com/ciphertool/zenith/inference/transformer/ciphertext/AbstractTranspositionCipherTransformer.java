@@ -118,6 +118,8 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
         FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
         templateOptions.setLabel("Key");
         templateOptions.setRequired(true);
+        templateOptions.setType("text");
+        templateOptions.setPattern("[a-z]+");
 
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);

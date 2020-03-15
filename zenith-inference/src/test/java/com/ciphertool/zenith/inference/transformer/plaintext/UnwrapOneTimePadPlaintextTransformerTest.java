@@ -20,20 +20,19 @@
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import org.junit.Test;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class UnwrapOneTimePadPlaintextTransformerTest {
     @Test
     public void testTransform() {
-        UnwrapOneTimePadPlaintextTransformer transformer = new UnwrapOneTimePadPlaintextTransformer();
+        Map<String, Object> data = new HashMap<>();
+        data.put(AbstractVigenerePlaintextTransformer.KEY, "xmckl");
 
-        Field keyField = ReflectionUtils.findField(UnwrapOneTimePadPlaintextTransformer.class, "key");
-        ReflectionUtils.makeAccessible(keyField);
-        ReflectionUtils.setField(keyField, transformer, "xmckl");
+        UnwrapOneTimePadPlaintextTransformer transformer = new UnwrapOneTimePadPlaintextTransformer(data);
 
         String transformed = transformer.transform("eqnvz");
 
@@ -42,11 +41,10 @@ public class UnwrapOneTimePadPlaintextTransformerTest {
 
     @Test
     public void testTransform_smallKey() {
-        UnwrapOneTimePadPlaintextTransformer transformer = new UnwrapOneTimePadPlaintextTransformer();
+        Map<String, Object> data = new HashMap<>();
+        data.put(AbstractVigenerePlaintextTransformer.KEY, "xmckl");
 
-        Field keyField = ReflectionUtils.findField(UnwrapOneTimePadPlaintextTransformer.class, "key");
-        ReflectionUtils.makeAccessible(keyField);
-        ReflectionUtils.setField(keyField, transformer, "xmckl");
+        UnwrapOneTimePadPlaintextTransformer transformer = new UnwrapOneTimePadPlaintextTransformer(data);
 
         String transformed = transformer.transform("eqnvzeqnvz");
 

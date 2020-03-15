@@ -20,20 +20,19 @@
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import org.junit.Test;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class OneTimePadPlaintextTransformerTest {
     @Test
     public void testTransform() {
-        OneTimePadPlaintextTransformer transformer = new OneTimePadPlaintextTransformer();
+        Map<String, Object> data = new HashMap<>();
+        data.put(AbstractVigenerePlaintextTransformer.KEY, "xmckl");
 
-        Field keyField = ReflectionUtils.findField(OneTimePadPlaintextTransformer.class, "key");
-        ReflectionUtils.makeAccessible(keyField);
-        ReflectionUtils.setField(keyField, transformer, "xmckl");
+        OneTimePadPlaintextTransformer transformer = new OneTimePadPlaintextTransformer(data);
 
         String transformed = transformer.transform("hello");
 
@@ -42,11 +41,10 @@ public class OneTimePadPlaintextTransformerTest {
 
     @Test
     public void testTransform_smallKey() {
-        OneTimePadPlaintextTransformer transformer = new OneTimePadPlaintextTransformer();
+        Map<String, Object> data = new HashMap<>();
+        data.put(AbstractVigenerePlaintextTransformer.KEY, "xmckl");
 
-        Field keyField = ReflectionUtils.findField(OneTimePadPlaintextTransformer.class, "key");
-        ReflectionUtils.makeAccessible(keyField);
-        ReflectionUtils.setField(keyField, transformer, "xmckl");
+        OneTimePadPlaintextTransformer transformer = new OneTimePadPlaintextTransformer(data);
 
         String transformed = transformer.transform("hellohello");
 

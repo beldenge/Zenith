@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormlyForm {
     private Map<String, Object> model = new HashMap<>();
     private List<FormlyFormField> fields = new ArrayList<>();

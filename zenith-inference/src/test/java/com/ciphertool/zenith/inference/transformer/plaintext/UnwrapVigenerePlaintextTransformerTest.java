@@ -20,20 +20,19 @@
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import org.junit.Test;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class UnwrapVigenerePlaintextTransformerTest {
     @Test
     public void testTransform() {
-        UnwrapVigenerePlaintextTransformer transformer = new UnwrapVigenerePlaintextTransformer();
+        Map<String, Object> data = new HashMap<>();
+        data.put(AbstractVigenerePlaintextTransformer.KEY, "lemon");
 
-        Field keyField = ReflectionUtils.findField(UnwrapVigenerePlaintextTransformer.class, "key");
-        ReflectionUtils.makeAccessible(keyField);
-        ReflectionUtils.setField(keyField, transformer, "lemon");
+        UnwrapVigenerePlaintextTransformer transformer = new UnwrapVigenerePlaintextTransformer(data);
 
         String transformed = transformer.transform("lxfopvefrnhr");
 

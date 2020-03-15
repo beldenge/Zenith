@@ -42,7 +42,7 @@ import { CipherModalComponent } from './cipher-modal/cipher-modal.component';
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
 import { MatStepperModule } from "@angular/material/stepper";
-import { MatFormFieldModule } from "@angular/material/form-field";
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { ManageCiphersComponent } from './manage-ciphers/manage-ciphers.component';
 import { MatTableModule } from "@angular/material/table";
@@ -51,13 +51,64 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { PlaintextTransformersComponent } from './plaintext-transformers/plaintext-transformers.component';
 import { FormlyMaterialModule } from "@ngx-formly/material";
-import { FormlyModule } from "@ngx-formly/core";
+import { FORMLY_CONFIG, FormlyModule } from "@ngx-formly/core";
 import { PlaintextSampleComponent } from './plaintext-sample/plaintext-sample.component';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
 import { HelpComponent } from './help/help.component';
 import { MatExpansionModule } from "@angular/material/expansion";
+
+export function minValidationMessage(err, field) {
+  return `This field has a minimum value of ${field.templateOptions.min}`;
+}
+
+export function maxValidationMessage(err, field) {
+  return `This field has a maximum value of ${field.templateOptions.max}`;
+}
+
+export function minLengthValidationMessage(err, field) {
+  return `This field has a minimum length of ${field.templateOptions.minLength}`;
+}
+
+export function maxLengthValidationMessage(err, field) {
+  return `This field has a maximum length of ${field.templateOptions.maxLength}`;
+}
+
+export function patternValidationMessage(err, field) {
+  return `This field must match the pattern ${field.templateOptions.pattern}`;
+}
+
+export function registerValidationMessages() {
+  return {
+    validationMessages: [
+      {
+        name: 'required',
+        message: 'This field is required'
+      },
+      {
+        name: 'min',
+        message: minValidationMessage
+      },
+      {
+        name: 'max',
+        message: maxValidationMessage
+      },
+      {
+        name: 'minlength',
+        message: minLengthValidationMessage
+      },
+      {
+        name: 'maxlength',
+        message: maxLengthValidationMessage
+      },
+      {
+        name: 'pattern',
+        message: patternValidationMessage
+      }
+    ]
+  };
+}
 
 @NgModule({
   declarations: [
@@ -109,6 +160,17 @@ import { MatExpansionModule } from "@angular/material/expansion";
       useClass: DefaultHttpInterceptor,
       multi: true
     },
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        appearance: 'outline'
+      }
+    },
+    {
+      provide: FORMLY_CONFIG,
+      multi: true,
+      useFactory: registerValidationMessages
+    }
   ],
   bootstrap: [AppComponent]
 })

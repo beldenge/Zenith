@@ -100,8 +100,6 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
         this.configurationService.updateAppliedPlaintextTransformers(this.appliedTransformers);
       }
     }
-
-    return true;
   };
 
   appliedTransformersOptions: SortablejsOptions = {
@@ -150,7 +148,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     let clone = {
       name: item.name,
       displayName: item.displayName,
-      form: JSON.parse(JSON.stringify(item.form))
+      form: item.form ? JSON.parse(JSON.stringify(item.form)) : null
     };
 
     if (clone.form) {

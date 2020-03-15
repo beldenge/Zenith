@@ -19,13 +19,16 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormlyFormField {
     private String key;
     private String type;
     private FormlyTemplateOptions templateOptions;
+    private String defaultValue;
 }

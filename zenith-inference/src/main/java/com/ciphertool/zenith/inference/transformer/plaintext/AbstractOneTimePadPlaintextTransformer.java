@@ -44,6 +44,7 @@ public abstract class AbstractOneTimePadPlaintextTransformer implements Plaintex
         FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
         templateOptions.setLabel("Key");
         templateOptions.setRequired(true);
+        templateOptions.setPattern("[a-z]+");
 
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);

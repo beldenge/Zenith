@@ -68,7 +68,6 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   // On adding of a new item to the Sortable list, the event fires before the formly form is initialized, so we cannot rely on validation alone
   onAppliedTransformersChangeNew = (event: any) => {
     this.onAppliedTransformersChange({ isNew: true });
-    this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
   };
 
   appliedTransformersOptions: SortablejsOptions = {
@@ -97,9 +96,9 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
 
     this.showIntroCiphertextTransformersSubscription = this.introductionService.getShowIntroCiphertextTransformersAsObservable().subscribe(showIntro => {
       if (showIntro) {
-        setTimeout(() =>{
-        this.introductionService.startIntroCiphertextTransformers();
-        this.introductionService.updateShowIntroCiphertextTransformers(false);
+        setTimeout(() => {
+          this.introductionService.startIntroCiphertextTransformers();
+          this.introductionService.updateShowIntroCiphertextTransformers(false);
         }, 500);
       }
     });
@@ -115,7 +114,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     let clone = {
       name: item.name,
       displayName: item.displayName,
-      form: JSON.parse(JSON.stringify(item.form))
+      form: item.form ? JSON.parse(JSON.stringify(item.form)) : null
     };
 
     if (clone.form) {

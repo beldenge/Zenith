@@ -48,10 +48,11 @@ public abstract class AbstractPeriodCipherTransformer implements CipherTransform
         FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
         templateOptions.setLabel("Length");
         templateOptions.setRequired(true);
+        templateOptions.setType("number");
 
         FormlyFormField key = new FormlyFormField();
         key.setKey(LENGTH);
-        key.setType("number");
+        key.setType("input");
         key.setTemplateOptions(templateOptions);
 
         form.setFields(Collections.singletonList(key));

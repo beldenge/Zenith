@@ -19,13 +19,23 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormlyTemplateOptions {
     private String label;
     private String placeholder;
     private boolean required;
+    private String type;
+    private Integer rows;
+    private Integer cols;
+    private Double max;
+    private Double min;
+    private Integer minLength;
+    private Integer maxLength;
+    private String pattern;
 }
