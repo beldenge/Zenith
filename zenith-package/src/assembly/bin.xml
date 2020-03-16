@@ -39,20 +39,6 @@
             <lineEnding>unix</lineEnding>
         </fileSet>
         <fileSet>
-            <directory>..\zenith-api\target</directory>
-            <includes>
-                <include>*-exec.jar</include>
-            </includes>
-            <outputDirectory>.</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>..\zenith-inference\target</directory>
-            <includes>
-                <include>*-exec.jar</include>
-            </includes>
-            <outputDirectory>.</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>..\zenith-ui\target</directory>
             <includes>
                 <include>*.jar</include>
