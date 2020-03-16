@@ -35,6 +35,8 @@
                 <include>*.bat</include>
             </includes>
             <outputDirectory>.</outputDirectory>
+            <fileMode>0755</fileMode>
+            <lineEnding>unix</lineEnding>
         </fileSet>
         <fileSet>
             <directory>..\zenith-api\target</directory>
