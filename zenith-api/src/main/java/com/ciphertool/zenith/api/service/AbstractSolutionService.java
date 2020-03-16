@@ -19,21 +19,18 @@
 
 package com.ciphertool.zenith.api.service;
 
-import com.ciphertool.zenith.api.model.*;
+import com.ciphertool.zenith.api.model.SolutionRequest;
+import com.ciphertool.zenith.api.model.SolutionRequestTransformer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
 import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
 import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
+import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,21 +38,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Controller
-public class SolutionWebSocketService {
-    private static final String TYPE_HEADER_KEY = "type";
-
-    @Autowired
-    private SimpMessagingTemplate template;
-
+public abstract class AbstractSolutionService {
     @Autowired
     private SimulatedAnnealingSolutionOptimizer simulatedAnnealingOptimizer;
 
     @Autowired
     private GeneticAlgorithmSolutionOptimizer geneticAlgorithmOptimizer;
 
-    @MessageMapping("/solutions")
-    public void solve(@Validated @RequestBody SolutionRequest request) {
+    public abstract OnEpochComplete getCallback(SolutionRequest request);
+
+    protected CipherSolution doSolve(SolutionRequest request) {
         Cipher cipher = new Cipher(null, request.getRows(), request.getColumns());
 
         for (int i = 0; i < request.getCiphertext().length(); i ++) {
@@ -71,9 +63,6 @@ public class SolutionWebSocketService {
                     .collect(Collectors.toList());
         }
 
-        Map<String, Object> epochCompleteHeaders = new HashMap<>();
-        epochCompleteHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.EPOCH_COMPLETE);
-
         CipherSolution cipherSolution;
         Map<String, Object> configuration = new HashMap<>();
 
@@ -83,9 +72,7 @@ public class SolutionWebSocketService {
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MIN, simulatedAnnealingConfiguration.getAnnealingTemperatureMin());
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MAX, simulatedAnnealingConfiguration.getAnnealingTemperatureMax());
 
-            cipherSolution = simulatedAnnealingOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, (i) ->
-                    template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), epochCompleteHeaders)
-            );
+            cipherSolution = simulatedAnnealingOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, getCallback(request));
         } else if (request.getGeneticAlgorithmConfiguration() != null) {
             GeneticAlgorithmConfiguration geneticAlgorithmConfiguration = request.getGeneticAlgorithmConfiguration();
             configuration.put(GeneticAlgorithmSolutionOptimizer.POPULATION_SIZE, geneticAlgorithmConfiguration.getPopulationSize());
@@ -105,18 +92,11 @@ public class SolutionWebSocketService {
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SELECTOR_ACCURACY, geneticAlgorithmConfiguration.getTournamentSelectorAccuracy());
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, geneticAlgorithmConfiguration.getTournamentSize());
 
-            cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, (i) ->
-                    template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), epochCompleteHeaders)
-            );
+            cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, getCallback(request));
         } else {
             throw new IllegalStateException("Neither simulated annealing nor genetic algorithm was chosen as the optimization strategy.  No other strategy is currently supported.");
         }
 
-        Map<String, Object> solutionHeaders = new HashMap<>();
-        solutionHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION);
-
-        String solution = cipherSolution.asSingleLineString();
-
-        template.convertAndSend("/topic/solutions", new SolutionResponse(solution, Double.valueOf(cipherSolution.getScore())), solutionHeaders);
+        return cipherSolution;
     }
 }

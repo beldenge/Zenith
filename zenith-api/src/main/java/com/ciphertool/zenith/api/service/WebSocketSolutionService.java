@@ -19,9 +19,7 @@
 
 package com.ciphertool.zenith.api.service;
 
-import com.ciphertool.zenith.api.model.SolutionRequest;
-import com.ciphertool.zenith.api.model.SolutionRequestTransformer;
-import com.ciphertool.zenith.api.model.SolutionResponse;
+import com.ciphertool.zenith.api.model.*;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
@@ -32,9 +30,11 @@ import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,20 +42,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RestController
-@CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping(value = "/api/solutions", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-public class SolutionService extends AbstractSolutionService {
-    @Override
-    public OnEpochComplete getCallback(SolutionRequest request) {
-        return null;
+@Controller
+public class WebSocketSolutionService extends AbstractSolutionService {
+    private static final String TYPE_HEADER_KEY = "type";
+
+    private static Map<String, Object> epochCompleteHeaders = new HashMap<>();
+
+    static {
+        epochCompleteHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.EPOCH_COMPLETE);
     }
 
-    @GetMapping
-    @ResponseBody
-    public SolutionResponse solve(@Validated @RequestBody SolutionRequest request) {
+    @Autowired
+    private SimpMessagingTemplate template;
+
+    @Override
+    public OnEpochComplete getCallback(SolutionRequest request) {
+        return (i) -> template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), epochCompleteHeaders);
+    }
+
+    @MessageMapping("/solutions")
+    public void solve(@Validated @RequestBody SolutionRequest request) {
         CipherSolution cipherSolution = doSolve(request);
 
-        return new SolutionResponse(cipherSolution.asSingleLineString(), Double.valueOf(cipherSolution.getScore()));
+        Map<String, Object> solutionHeaders = new HashMap<>();
+        solutionHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION);
+
+        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString(), Double.valueOf(cipherSolution.getScore())), solutionHeaders);
     }
 }
