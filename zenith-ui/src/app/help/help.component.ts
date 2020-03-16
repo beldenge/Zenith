@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import { IntroductionService } from "../introduction.service";
 
 @Component({
@@ -25,11 +25,18 @@ import { IntroductionService } from "../introduction.service";
   templateUrl: './help.component.html',
   styleUrls: ['./help.component.css']
 })
-export class HelpComponent implements OnInit {
+export class HelpComponent implements OnInit, AfterViewInit {
+  // Workaround for angular component issue #13870
+  disableAnimation = true;
 
   constructor(private introductionService: IntroductionService) { }
 
   ngOnInit() {
+  }
+
+  ngAfterViewInit(): void {
+    // timeout required to avoid the dreaded 'ExpressionChangedAfterItHasBeenCheckedError'
+    setTimeout(() => this.disableAnimation = false);
   }
 
   replayIntroduction() {
