@@ -24,7 +24,7 @@ export class WebSocketAPI {
   stompClient: any;
 
   connectAndSend(request, successHandler, errorHandler) {
-    let socket = new SockJS('http://localhost:8080/ws');
+    let socket = new SockJS('ws'); // relative URL
     const self = this;
     self.stompClient = Stomp.over(socket);
     self.stompClient.connect({}, function (frame) {

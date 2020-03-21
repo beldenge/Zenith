@@ -21,6 +21,7 @@ package com.ciphertool.zenith.ui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -47,6 +48,9 @@ public class UiApplication {
         SpringApplication.run(UiApplication.class, args);
     }
 
+    @Value("${server.port:8080}")
+    private int serverPort;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -60,7 +64,7 @@ public class UiApplication {
     @EventListener({ ApplicationReadyEvent.class })
     public void applicationReadyEvent() {
         try {
-            browse(new URI("http://localhost:8080"));
+            browse(new URI("http://localhost:" + serverPort));
         } catch (URISyntaxException e) {
             log.error("Unable to open browser automatically.", e);
         }
