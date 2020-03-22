@@ -86,7 +86,7 @@ public class CipherService {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public void createCipher(@Validated @RequestBody CipherRequest cipherRequest) {
+    public void createCipher(@Validated @RequestBody CipherRequest cipherRequest) throws IOException {
         Cipher cipher = cipherDao.findByCipherName(cipherRequest.getName());
 
         if (cipher != null) {
@@ -98,7 +98,7 @@ public class CipherService {
 
     @PutMapping("/{cipherName}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateCipher(@PathVariable String cipherName, @Validated @RequestBody CipherRequest cipherRequest) {
+    public void updateCipher(@PathVariable String cipherName, @Validated @RequestBody CipherRequest cipherRequest) throws IOException {
         Cipher cipher = cipherDao.findByCipherName(cipherName);
 
         if (cipher == null) {

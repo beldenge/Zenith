@@ -125,6 +125,11 @@ export class CipherModalComponent implements OnInit, OnDestroy {
         duration: 2000,
         verticalPosition: 'top'
       });
+    }, () => {
+      this._snackBar.open('Unable to create "' + request.name + '"', '',{
+        duration: 2000,
+        verticalPosition: 'top'
+      });
     });
   }
 
@@ -143,6 +148,11 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       this.dialogRef.close();
 
       this._snackBar.open('Updated "' + request.name + '"', '',{
+        duration: 2000,
+        verticalPosition: 'top'
+      });
+    }, () => {
+      this._snackBar.open('Unable to update "' + request.name + '"', '',{
         duration: 2000,
         verticalPosition: 'top'
       });

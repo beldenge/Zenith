@@ -25,6 +25,8 @@ import com.ciphertool.zenith.inference.transformer.ciphertext.TranspositionCiphe
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 @Component
 public class Mutator {
     @Autowired
@@ -36,7 +38,7 @@ public class Mutator {
     @Autowired
     private TranspositionCipherTransformer transpositionCipherTransformer;
 
-    public void mutate() {
+    public void mutate() throws IOException {
         cipher.setName(cipher.getName() + "-mutated");
         cipher.clearKnownSolutionKey();
         // The injected Cipher should have been run through any configured transformers via the @Bean in the InferenceConfiguration class

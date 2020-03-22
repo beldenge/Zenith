@@ -117,9 +117,13 @@ public class CipherDao {
         return ciphers;
     }
 
-    public void writeToFile(Cipher cipher) {
+    public void writeToFile(Cipher cipher) throws IOException {
         // Write the file to the current working directory
         String outputFilename = Paths.get(CIPHERS_DIRECTORY).toAbsolutePath().toString() + File.separator + cipher.getName() + JSON_EXTENSION;
+
+        if (!Files.exists(Paths.get(CIPHERS_DIRECTORY))) {
+            Files.createDirectory(Paths.get(CIPHERS_DIRECTORY));
+        }
 
         try {
             OBJECT_MAPPER.writeValue(new File(outputFilename), new CipherJson(cipher));
