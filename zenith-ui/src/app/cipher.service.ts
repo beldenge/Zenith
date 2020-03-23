@@ -25,6 +25,7 @@ import { Cipher } from "./models/Cipher";
 import { CiphertextTransformationRequest } from "./models/CiphertextTransformationRequest";
 import { CipherRequest } from "./models/CipherRequest";
 import { environment } from "../environments/environment";
+import { LocalStorageKeys } from "./models/LocalStorageKeys";
 
 const ENDPOINT_URL = environment.apiUrlBase + '/ciphers';
 
@@ -42,6 +43,7 @@ export class CipherService {
   }
 
   updateSelectedCipher(cipher: Cipher): void {
+    localStorage.setItem(LocalStorageKeys.SELECTED_CIPHER_NAME, cipher.name);
     return this.selectedCipher$.next(cipher);
   }
 

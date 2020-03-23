@@ -58,6 +58,7 @@ import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
 import { HelpComponent } from './help/help.component';
 import { MatExpansionModule } from "@angular/material/expansion";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 export function minValidationMessage(err, field) {
   return `This field has a minimum value of ${field.templateOptions.min}`;
@@ -151,7 +152,8 @@ export function registerValidationMessages() {
         MatProgressSpinnerModule,
         MatRadioModule,
         MatSelectModule,
-        MatExpansionModule
+        MatExpansionModule,
+        MatSlideToggleModule
     ],
   providers: [
     JsonPipe,

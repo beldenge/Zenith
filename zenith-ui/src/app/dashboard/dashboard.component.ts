@@ -210,7 +210,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onCipherSelect(element: HTMLElement) {
     element.blur();
     this.solution = null;
-    localStorage.setItem('selected_cipher_name', this.selectedCipher.name);
     this.cipherService.updateSelectedCipher(this.selectedCipher);
   }
 

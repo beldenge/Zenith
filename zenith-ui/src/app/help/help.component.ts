@@ -17,21 +17,47 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { IntroductionService } from "../introduction.service";
+import { FormBuilder } from "@angular/forms";
+import { ConfigurationService } from "../configuration.service";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'app-help',
   templateUrl: './help.component.html',
   styleUrls: ['./help.component.css']
 })
-export class HelpComponent implements OnInit, AfterViewInit {
+export class HelpComponent implements OnInit, OnDestroy, AfterViewInit {
   // Workaround for angular component issue #13870
   disableAnimation = true;
+  enableTrackingSubscription: Subscription;
+  enablePageTransitionsSubscription: Subscription;
 
-  constructor(private introductionService: IntroductionService) { }
+  applicationSettingsForm = this.fb.group({
+    enableTracking: [true],
+    enablePageTransitions: [true]
+  });
+
+  constructor(private fb: FormBuilder, private introductionService: IntroductionService, private configurationService: ConfigurationService) { }
 
   ngOnInit() {
+    this.enableTrackingSubscription = this.configurationService.getEnableTrackingAsObservable().subscribe(enabled => {
+      if (this.applicationSettingsForm.get('enableTracking').value !== enabled) {
+        this.applicationSettingsForm.patchValue({ 'enableTracking': enabled });
+      }
+    });
+
+    this.enablePageTransitionsSubscription = this.configurationService.getEnablePageTransitionsAsObservable().subscribe(enabled => {
+      if (this.applicationSettingsForm.get('enablePageTransitions').value !== enabled) {
+        this.applicationSettingsForm.patchValue({ 'enablePageTransitions': enabled });
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.enableTrackingSubscription.unsubscribe();
+    this.enablePageTransitionsSubscription.unsubscribe();
   }
 
   ngAfterViewInit(): void {
@@ -41,5 +67,13 @@ export class HelpComponent implements OnInit, AfterViewInit {
 
   replayIntroduction() {
     this.introductionService.startIntro();
+  }
+
+  onTrackingToggleChange() {
+    this.configurationService.updateEnableTracking(this.applicationSettingsForm.get('enableTracking').value);
+  }
+
+  onPageTransitionToggleChange() {
+    this.configurationService.updateEnablePageTransitions(this.applicationSettingsForm.get('enablePageTransitions').value);
   }
 }

@@ -48,10 +48,10 @@ public class Cipher {
         this.columns = columns;
     }
 
-    public Cipher(String name, int columns, int rows, boolean readOnly) {
+    public Cipher(String name, int rows, int columns, boolean readOnly) {
         this.name = name;
-        this.columns = columns;
         this.rows = rows;
+        this.columns = columns;
         this.readOnly = readOnly;
     }
 

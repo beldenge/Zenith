@@ -27,7 +27,6 @@ import { ManageCiphersComponent } from "./manage-ciphers/manage-ciphers.componen
 import { PlaintextTransformersComponent } from "./plaintext-transformers/plaintext-transformers.component";
 import { HelpComponent } from "./help/help.component";
 
-
 const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent, data: { state: 'dashboard' } },

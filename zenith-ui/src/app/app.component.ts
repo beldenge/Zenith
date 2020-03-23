@@ -17,12 +17,15 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { animate, animateChild, group, query, style, transition, trigger } from "@angular/animations";
 import { CipherService } from "./cipher.service";
 import { IntroductionService } from "./introduction.service";
 import { NavigationEnd, Router } from "@angular/router";
 import { environment } from "../environments/environment";
+import { ConfigurationService } from "./configuration.service";
+import { Subscription } from "rxjs";
+import { LocalStorageKeys } from "./models/LocalStorageKeys";
 
 declare let gtag: Function;
 
@@ -59,19 +62,23 @@ declare let gtag: Function;
     ])
   ]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'zenith-angular';
+  trackingEnabled = false;
+  enableTrackingSubscription: Subscription;
+  pageTransitionsEnabled = false;
+  enablePageTransitionsSubscription: Subscription;
 
-  constructor(private cipherService: CipherService, private introductionService: IntroductionService, private router: Router) {
+  constructor(private cipherService: CipherService, private introductionService: IntroductionService, private configurationService: ConfigurationService, private router: Router) {
     this.router.events.subscribe(event => {
-      if(event instanceof NavigationEnd) {
+      if(this.trackingEnabled && event instanceof NavigationEnd) {
         gtag('config', environment.googleAnalyticsTrackingId, { 'page_path': event.urlAfterRedirects });
       }
     });
   }
 
   getState(outlet) {
-    return outlet.activatedRouteData.state;
+    return this.pageTransitionsEnabled ? outlet.activatedRouteData.state : null;
   }
 
   ngOnInit() {
@@ -81,9 +88,9 @@ export class AppComponent implements OnInit {
 
       this.cipherService.updateSelectedCipher(ciphers[0]);
 
-      if(localStorage.getItem('selected_cipher_name')) {
-        let selectedCipherName = localStorage.getItem('selected_cipher_name');
+      let selectedCipherName = localStorage.getItem(LocalStorageKeys.SELECTED_CIPHER_NAME);
 
+      if(selectedCipherName) {
         let selectedCipher = ciphers.find(cipher => {
           return cipher.name === selectedCipherName;
         });
@@ -92,9 +99,34 @@ export class AppComponent implements OnInit {
       }
     });
 
-    if (!localStorage.getItem('skip_intro')) {
-      localStorage.setItem('skip_intro', 'true');
+    if (!localStorage.getItem(LocalStorageKeys.SKIP_INTRO)) {
+      localStorage.setItem(LocalStorageKeys.SKIP_INTRO, 'true');
       this.introductionService.startIntro();
     }
+
+    this.enableTrackingSubscription = this.configurationService.getEnableTrackingAsObservable().subscribe((enabled) => {
+      this.trackingEnabled = enabled;
+    });
+
+    let enableTracking = localStorage.getItem(LocalStorageKeys.ENABLE_TRACKING);
+
+    if (enableTracking) {
+      this.configurationService.updateEnableTracking(enableTracking === 'true');
+    }
+
+    this.enablePageTransitionsSubscription = this.configurationService.getEnablePageTransitionsAsObservable().subscribe((enabled) => {
+      this.pageTransitionsEnabled = enabled;
+    });
+
+    let enablePageTransitions = localStorage.getItem(LocalStorageKeys.ENABLE_PAGE_TRANSITIONS);
+
+    if (enablePageTransitions) {
+      this.configurationService.updateEnablePageTransitions(enablePageTransitions === 'true');
+    }
+  }
+
+  ngOnDestroy() {
+    this.enableTrackingSubscription.unsubscribe();
+    this.enablePageTransitionsSubscription.unsubscribe();
   }
 }

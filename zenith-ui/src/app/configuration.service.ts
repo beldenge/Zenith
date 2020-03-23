@@ -25,7 +25,8 @@ import { SelectOption } from "./models/SelectOption";
 import { ApplicationConfiguration } from "./models/ApplicationConfiguration";
 import { ZenithTransformer } from "./models/ZenithTransformer";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
-import {FormGroup} from "@angular/forms";
+import { FormGroup } from "@angular/forms";
+import { LocalStorageKeys } from "./models/LocalStorageKeys";
 
 @Injectable({
   providedIn: 'root'
@@ -112,6 +113,8 @@ export class ConfigurationService {
     tournamentSize: 5
   };
 
+  private enableTracking$ = new BehaviorSubject<boolean>(true);
+  private enablePageTransitions$ = new BehaviorSubject<boolean>(true);
   private epochs$ = new BehaviorSubject<number>(1);
   private appliedCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private appliedPlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
@@ -121,6 +124,24 @@ export class ConfigurationService {
   private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
 
   constructor(private sanitizer: DomSanitizer) {}
+
+  getEnableTrackingAsObservable(): Observable<boolean> {
+    return this.enableTracking$.asObservable();
+  }
+
+  updateEnableTracking(enabled: boolean) {
+    localStorage.setItem(LocalStorageKeys.ENABLE_TRACKING, enabled.toString());
+    this.enableTracking$.next(enabled);
+  }
+
+  getEnablePageTransitionsAsObservable(): Observable<boolean> {
+    return this.enablePageTransitions$.asObservable();
+  }
+
+  updateEnablePageTransitions(enabled: boolean) {
+    localStorage.setItem(LocalStorageKeys.ENABLE_PAGE_TRANSITIONS, enabled.toString());
+    this.enablePageTransitions$.next(enabled);
+  }
 
   getEpochsAsObservable(): Observable<number> {
     return this.epochs$.asObservable();

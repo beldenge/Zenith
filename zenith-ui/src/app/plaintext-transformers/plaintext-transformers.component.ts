@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Subscription } from "rxjs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
@@ -37,7 +37,8 @@ import { IntroductionService } from "../introduction.service";
       transition(':leave',
         animate(300, style({ opacity: 0 })))
     ])
-  ]
+  ],
+  encapsulation : ViewEncapsulation.None
 })
 export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   showIntroPlaintextTransformersSubscription: Subscription;
