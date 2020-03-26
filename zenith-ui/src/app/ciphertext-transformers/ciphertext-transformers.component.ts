@@ -38,8 +38,7 @@ import { IntroductionService } from "../introduction.service";
       transition(':leave',
         animate(300, style({ opacity: 0 })))
     ])
-  ],
-  encapsulation : ViewEncapsulation.None
+  ]
 })
 export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   showIntroCiphertextTransformersSubscription: Subscription;
