@@ -2,4 +2,4 @@
 
 JAVA_OPTS="$JAVA_OTPS -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M"
 
-java $JAVA_OPTS -jar zenith-ui-2.0.1.jar
+java $JAVA_OPTS -jar zenith-ui-2.0.2-SNAPSHOT.jar
