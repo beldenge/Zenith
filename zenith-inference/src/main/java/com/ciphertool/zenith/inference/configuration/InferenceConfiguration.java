@@ -28,8 +28,11 @@ import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransfor
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.dao.WordNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
+import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
+import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +96,9 @@ public class InferenceConfiguration {
 
     @Value("${application.configuration.file-path}")
     private String configurationFilePath;
+
+    @Value("${language-model.word-ngram.total-token-count}")
+    private long wordGramTotalTokenCount;
 
     @Bean
     public ApplicationConfiguration configuration() {
@@ -191,6 +197,54 @@ public class InferenceConfiguration {
         letterMarkovModel.setUnknownLetterNGramLogProbability((float) Math.log(unknownLetterNGramProbability));
 
         return letterMarkovModel;
+    }
+
+    @Bean
+    public WordNGramModel wordUnigramModel(WordNGramDao wordNGramDao) {
+        WordNGramModel wordUnigramModel = new WordNGramModel();
+
+        List<WordNGram> wordUnigrams = wordNGramDao.findAllUnigrams();
+
+        for (WordNGram wordUnigram : wordUnigrams) {
+            wordUnigram.setOrder(1);
+
+            if (wordUnigramModel.contains(wordUnigram.getNGram())) {
+                log.debug("Unigram model already contains {}", wordUnigram.getNGram());
+                wordUnigram.setCount(wordUnigramModel.getCount(wordUnigram.getNGram()) + wordUnigram.getCount());
+            }
+
+            wordUnigram.setLogProbability(Math.log10((double) wordUnigram.getCount() / (double) wordGramTotalTokenCount));
+            wordUnigramModel.putWordNGram(wordUnigram.getNGram(), wordUnigram);
+        }
+
+        return wordUnigramModel;
+    }
+
+    @Bean
+    public WordNGramModel wordBigramModel(WordNGramDao wordNGramDao, WordNGramModel wordUnigramModel) {
+        WordNGramModel wordBigramModel = new WordNGramModel();
+
+        List<WordNGram> wordBigrams = wordNGramDao.findAllBigrams();
+
+        for (WordNGram wordBigram : wordBigrams) {
+            wordBigram.setOrder(2);
+
+            if (wordBigramModel.contains(wordBigram.getNGram())) {
+                log.debug("Bigram model already contains {}", wordBigram.getNGram());
+                wordBigram.setCount(wordBigramModel.getCount(wordBigram.getNGram()) + wordBigram.getCount());
+            }
+
+            String[] words = wordBigram.getNGram().split("\\s+");
+            if (wordUnigramModel.contains(words[0])) {
+                wordBigram.setLogProbability(Math.log10((double) wordBigram.getCount() / (double) wordGramTotalTokenCount) - wordUnigramModel.getLogProbability(words[0]));
+            } else {
+                wordBigram.setLogProbability(Math.log10((double) wordBigram.getCount() / (double) wordGramTotalTokenCount));
+            }
+
+            wordBigramModel.putWordNGram(wordBigram.getNGram(), wordBigram);
+        }
+
+        return wordBigramModel;
     }
 
     @Bean

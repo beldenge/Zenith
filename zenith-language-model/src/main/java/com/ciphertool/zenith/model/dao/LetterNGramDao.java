@@ -76,12 +76,10 @@ public class LetterNGramDao {
         List<TreeNGram> treeNGrams = new ArrayList<>();
 
         try (Reader reader = Files.newBufferedReader(Paths.get(modelFilename))) {
-            List<TreeNGram> records = new CsvToBeanBuilder(reader)
+            treeNGrams.addAll(new CsvToBeanBuilder(reader)
                     .withType(TreeNGram.class)
                     .build()
-                    .parse();
-
-            treeNGrams.addAll(records);
+                    .parse());
         } catch (IOException e) {
             log.error("Unable to find ngrams from file: {}.", modelFilename, e);
             throw new IllegalStateException(e);
