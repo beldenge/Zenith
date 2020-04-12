@@ -62,7 +62,6 @@ public class WordSegmenter {
 
         for (int i = 0; i < text.length(); i ++) {
             for (int j = 0; j < MAX_WORD_LENGTH; j ++) {
-                //probabilities[i][j] = -99 * Math.pow(10, 99); //TODO: we ought to be able to replace this with Double.NEGATIVE_INFINITY
                 probabilities[i][j] = Double.NEGATIVE_INFINITY;
                 strings[i][j] = new String[] { "" };
             }

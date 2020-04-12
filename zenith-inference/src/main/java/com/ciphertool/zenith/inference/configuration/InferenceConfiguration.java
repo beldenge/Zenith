@@ -234,11 +234,12 @@ public class InferenceConfiguration {
                 wordBigram.setCount(wordBigramModel.getCount(wordBigram.getNGram()) + wordBigram.getCount());
             }
 
-            String[] words = wordBigram.getNGram().split("\\s+");
-            if (wordUnigramModel.contains(words[0])) {
-                wordBigram.setLogProbability(Math.log10((double) wordBigram.getCount() / (double) wordGramTotalTokenCount) - wordUnigramModel.getLogProbability(words[0]));
+            String word1 = wordBigram.getNGram().split("\\s+")[0];
+            double bigramProbability = Math.log10((double) wordBigram.getCount() / (double) wordGramTotalTokenCount);
+            if (wordUnigramModel.contains(word1)) {
+                wordBigram.setLogProbability(bigramProbability - wordUnigramModel.getLogProbability(word1));
             } else {
-                wordBigram.setLogProbability(Math.log10((double) wordBigram.getCount() / (double) wordGramTotalTokenCount));
+                wordBigram.setLogProbability(bigramProbability);
             }
 
             wordBigramModel.putWordNGram(wordBigram.getNGram(), wordBigram);
