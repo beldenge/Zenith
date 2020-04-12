@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -99,17 +100,10 @@ public class WordSegmenter {
             }
         }
 
-        Map<Double, String[]> ends = new HashMap<>();
-        for (int i = 0; i < Math.min(text.length(), MAX_WORD_LENGTH); i ++) {
-            ends.put(probabilities[probabilities.length - i - 1][i], strings[strings.length - i - 1][i]);
-        }
-
         Map.Entry<Double, String[]> bestEnd = null;
-        double bestProbability = Double.NEGATIVE_INFINITY;
-        for (Map.Entry<Double, String[]> entry : ends.entrySet()) {
-            if (entry.getKey() > bestProbability) {
-                bestProbability = entry.getKey();
-                bestEnd = entry;
+        for (int i = 0; i < Math.min(text.length(), MAX_WORD_LENGTH); i ++) {
+            if (bestEnd == null || probabilities[probabilities.length - i - 1][i] > bestEnd.getKey()) {
+                bestEnd = new AbstractMap.SimpleEntry<>(probabilities[probabilities.length - i - 1][i], strings[strings.length - i - 1][i]);
             }
         }
 
