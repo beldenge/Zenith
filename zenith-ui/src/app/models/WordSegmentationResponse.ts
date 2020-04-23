@@ -17,12 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export class SolutionResponse {
-  plaintext: string;
-  score: number;
-
-  constructor(plaintext: string, score: number) {
-    this.plaintext = plaintext;
-    this.score = score;
-  }
+export class WordSegmentationResponse {
+  probability: number;
+  segmentedPlaintext: string[];
 }

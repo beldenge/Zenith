@@ -34,7 +34,8 @@ import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
 import { SafeUrl } from "@angular/platform-browser";
 import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
-import { CiphertextTransformerService } from "../ciphertext-transformer.service";
+import { SolutionService } from "../solution.service";
+import { SolutionResponse } from "../models/SolutionResponse";
 
 @Component({
   selector: 'app-dashboard',
@@ -47,8 +48,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   webSocketAPI: WebSocketAPI;
   ciphers: Cipher[];
   selectedCipher: Cipher;
-  solution: string;
-  score: number;
   isRunning: boolean = false;
   progressPercentage: number = 0;
   hyperparametersForm = this.fb.group({
@@ -68,7 +67,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   simulatedAnnealingConfigurationSubscription: Subscription;
   geneticAlgorithmConfigurationSubscription: Subscription;
 
-  constructor(private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar, private configurationService: ConfigurationService, private introductionService: IntroductionService, private ciphertextTransformerService: CiphertextTransformerService) {
+  constructor(private fb: FormBuilder,
+              private cipherService: CipherService,
+              private _snackBar: MatSnackBar,
+              private configurationService: ConfigurationService,
+              private introductionService: IntroductionService,
+              private solutionService: SolutionService) {
   }
 
   ngOnInit() {
@@ -183,14 +187,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.progressPercentage = 0;
     this.isRunning = true;
-    this.solution = null;
 
     let self = this;
     this.webSocketAPI.connectAndSend(request, function (response) {
       if (response.headers.type === 'SOLUTION') {
         let json = JSON.parse(response.body);
-        self.solution = json.plaintext;
-        self.score = json.score;
+
+        self.solutionService.updateSolution(new SolutionResponse(json.plaintext, json.score))
+
         self.isRunning = false;
         self.webSocketAPI.disconnect();
         self.progressPercentage = 100;
@@ -209,7 +213,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onCipherSelect(element: HTMLElement) {
     element.blur();
-    this.solution = null;
+    this.solutionService.updateSolution(null);
     this.cipherService.updateSelectedCipher(this.selectedCipher);
   }
 

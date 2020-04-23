@@ -17,12 +17,14 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Cipher } from "../models/Cipher";
 import { BehaviorSubject, Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 import { CipherService } from "../cipher.service";
 import { MatTooltip } from "@angular/material/tooltip";
+import { SolutionService } from "../solution.service";
+import { SolutionResponse } from "../models/SolutionResponse";
 
 const originalTooltipText = 'Copy to clipboard';
 
@@ -33,22 +35,27 @@ const originalTooltipText = 'Copy to clipboard';
 })
 export class PlaintextComponent implements OnInit, OnDestroy {
   cipher: Cipher;
-  @Input() solution: string;
-  @Input() score: number;
+  solution: SolutionResponse;
   tooltipText = new BehaviorSubject<string>(originalTooltipText);
   blockifyPipe = new BlockifyPipe();
   selectedCipherSubscription: Subscription;
+  solutionSubscription: Subscription;
 
-  constructor(private cipherService: CipherService) {}
+  constructor(private cipherService: CipherService, private solutionService: SolutionService) {}
 
   ngOnInit() {
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
       this.cipher = cipher;
     });
+
+    this.solutionSubscription = this.solutionService.getSolutionAsObservable().subscribe(solution => {
+      this.solution = solution;
+    });
   }
 
   ngOnDestroy() {
     this.selectedCipherSubscription.unsubscribe();
+    this.solutionSubscription.unsubscribe();
   }
 
   copyPlaintext(tooltip : MatTooltip) {
@@ -58,7 +65,7 @@ export class PlaintextComponent implements OnInit, OnDestroy {
     plaintextElement.style.top = '0';
     plaintextElement.style.left = '0';
     plaintextElement.style.opacity = '0';
-    plaintextElement.value = this.blockifyPipe.transform(this.solution, this.cipher.columns).toString();
+    plaintextElement.value = this.blockifyPipe.transform(this.solution.plaintext, this.cipher.columns).toString();
     document.body.appendChild(plaintextElement);
     plaintextElement.select();
     document.execCommand('copy');

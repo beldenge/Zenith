@@ -35,7 +35,7 @@ public class WordSegmentationService {
     @Autowired
     private WordSegmenter wordSegmenter;
 
-    @GetMapping
+    @PostMapping
     @ResponseBody
     public WordSegmentationResponse findSegments(@RequestBody WordSegmentationRequest request) {
         Map.Entry<Double, String[]> segmentedPlaintext = this.wordSegmenter.score(request.getPlaintext());

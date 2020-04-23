@@ -59,6 +59,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { HelpComponent } from './help/help.component';
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { WordSegmentationComponent } from './word-segmentation/word-segmentation.component';
 
 export function minValidationMessage(err, field) {
   return `This field has a minimum value of ${field.templateOptions.min}`;
@@ -127,7 +128,8 @@ export function registerValidationMessages() {
     ManageCiphersComponent,
     PlaintextTransformersComponent,
     PlaintextSampleComponent,
-    HelpComponent
+    HelpComponent,
+    WordSegmentationComponent
   ],
     imports: [
         BrowserModule,

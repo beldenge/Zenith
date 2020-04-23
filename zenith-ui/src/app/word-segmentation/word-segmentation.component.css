@@ -17,12 +17,18 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export class SolutionResponse {
-  plaintext: string;
-  score: number;
+.card-body div {
+  font-family: "Courier New", Courier, monospace;
+  color: initial;
+}
 
-  constructor(plaintext: string, score: number) {
-    this.plaintext = plaintext;
-    this.score = score;
-  }
+.card {
+  position: absolute;
+  width: 97%;
+  top: 0;
+  bottom: 0;
+}
+
+#segmentation_score {
+  line-height: 1.2;
 }

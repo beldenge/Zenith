@@ -17,12 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export class SolutionResponse {
+export class WordSegmentationRequest {
   plaintext: string;
-  score: number;
 
-  constructor(plaintext: string, score: number) {
+  constructor(plaintext: string) {
     this.plaintext = plaintext;
-    this.score = score;
   }
 }
