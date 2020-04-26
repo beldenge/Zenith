@@ -34,10 +34,10 @@ public class EntropyEvaluator {
     private Cipher initialized = null;
 
     private void init(Cipher cipher) {
-        precomputedEntropies = new double[cipher.length()];
+        precomputedEntropies = new double[cipher.length() + 1];
 
-        for (int i = 0; i < cipher.length(); i ++) {
-            float probability = ((float) i / 1f);
+        for (int i = 0; i <= cipher.length(); i ++) {
+            float probability = ((float) i / (float) cipher.length());
             precomputedEntropies[i] = Math.abs(MathUtils.logBase(probability, BASE) * probability);
         }
 

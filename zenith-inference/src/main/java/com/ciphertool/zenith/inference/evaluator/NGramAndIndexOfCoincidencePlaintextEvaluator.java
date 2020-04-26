@@ -24,34 +24,17 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.inference.util.MathUtils;
-import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-
 @Component
-public class NGramAndIndexOfCoincidencePlaintextEvaluator implements PlaintextEvaluator {
+public class NGramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNGramEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private ArrayMarkovModel letterMarkovModel;
-
-    @Autowired
     private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
-
-    private int order;
-    private int stepSize;
-    private int doubleStepSize;
-
-    @PostConstruct
-    public void init() {
-        order = letterMarkovModel.getOrder();
-        stepSize = order / 2;
-        doubleStepSize = stepSize * 2;
-    }
 
     @Override
     public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
@@ -63,91 +46,10 @@ public class NGramAndIndexOfCoincidencePlaintextEvaluator implements PlaintextEv
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-
-        // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
+        // Scaling down the index of coincidence by its sixth root seems to be the right amount to penalize the sum of log probabilities by
         // This has been determined through haphazard experimentation
         float score = solution.getLogProbability() * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
 
         return new SolutionScore(logProbabilitiesUpdated, score);
-    }
-
-    protected float[][] evaluateLetterNGrams(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
-        int stringLengthMinusOrder = solutionString.length() - order;
-
-        float[][] logProbabilitiesUpdated;
-        float logProbability;
-        int lastIndex = -1;
-
-        if (ciphertextKey != null) {
-            int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(ciphertextKey);
-            float[][] logProbabilitiesUpdatedOversized = new float[2][cipherSymbolIndices.length * (stepSize + 1)];
-
-            int k = 0;
-            for (int i = 0; i < cipherSymbolIndices.length; i ++) {
-                int ciphertextIndex = cipherSymbolIndices[i];
-
-                int wayBack = ciphertextIndex - (ciphertextIndex % stepSize) - doubleStepSize;
-                if (wayBack + order <= ciphertextIndex) {
-                    wayBack += stepSize;
-                }
-
-                int start = Math.max(0, wayBack);
-                int end = Math.min(stringLengthMinusOrder, ciphertextIndex + 1);
-
-                if (lastIndex >= 0 && start < lastIndex) {
-                    continue;
-                }
-
-                for (int j = start; j < end; j += stepSize) {
-                    logProbability = computeNGramLogProbability(solutionString.substring(j, j + order));
-
-                    int index = j / stepSize;
-                    logProbabilitiesUpdatedOversized[0][k] = index;
-                    logProbabilitiesUpdatedOversized[1][k] = solution.getLogProbabilities()[index];
-
-                    solution.replaceLogProbability(index, logProbability);
-                    k++;
-                }
-
-                lastIndex = end;
-            }
-
-            logProbabilitiesUpdated = new float[2][k];
-            java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[0], 0, logProbabilitiesUpdated[0], 0, k);
-            java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[1], 0, logProbabilitiesUpdated[1], 0, k);
-        } else {
-            float[] logProbabilities = solution.getLogProbabilities();
-
-            logProbabilitiesUpdated = new float[2][logProbabilities.length];
-
-            for (int i = 0; i < logProbabilities.length; i ++) {
-                logProbabilitiesUpdated[0][i] = i;
-                logProbabilitiesUpdated[1][i] = logProbabilities[i];
-            }
-
-            solution.clearLogProbabilities();
-
-            int k = 0;
-            for (int i = 0; i < solutionString.length() - order; i += stepSize) {
-                logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
-
-                solution.addLogProbability(k, logProbability);
-                k ++;
-            }
-        }
-
-        return logProbabilitiesUpdated;
-    }
-
-    protected float computeNGramLogProbability(String ngram) {
-        float match = letterMarkovModel.findExact(ngram);
-
-        if (match != -1f) {
-            log.debug("Letter N-Gram Match={}, Probability={}", ngram, match);
-            return match;
-        }
-
-        log.debug("No Letter N-Gram Match for ngram={}", ngram);
-        return letterMarkovModel.getUnknownLetterNGramLogProbability();
     }
 }

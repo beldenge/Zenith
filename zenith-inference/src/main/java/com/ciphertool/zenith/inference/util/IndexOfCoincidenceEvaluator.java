@@ -33,9 +33,9 @@ public class IndexOfCoincidenceEvaluator {
 
     public void init(Cipher cipher) {
         denominator = cipher.length() * (cipher.length() - 1);
-        precomputedNominatorValues = new int[cipher.length()];
+        precomputedNominatorValues = new int[cipher.length() + 1];
 
-        for (int i = 0; i < cipher.length(); i ++) {
+        for (int i = 0; i <= cipher.length(); i ++) {
             precomputedNominatorValues[i] = i * (i - 1);
         }
 

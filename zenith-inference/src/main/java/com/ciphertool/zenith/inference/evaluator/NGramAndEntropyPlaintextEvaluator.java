@@ -22,12 +22,31 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
+import com.ciphertool.zenith.inference.util.EntropyEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NGramAndEntropyPlaintextEvaluator implements PlaintextEvaluator {
+public class NGramAndEntropyPlaintextEvaluator extends AbstractNGramEvaluator implements PlaintextEvaluator {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private EntropyEvaluator entropyEvaluator;
+
     @Override
     public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
-        throw new UnsupportedOperationException("Implement me!");
+        long startLetter = System.currentTimeMillis();
+
+        float[][] logProbabilitiesUpdated = evaluateLetterNGrams(cipher, solution, solutionString, ciphertextKey);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
+        }
+
+        float score = solution.getLogProbability() / (entropyEvaluator.evaluate(cipher, solutionString) * 0.25f);
+
+        return new SolutionScore(logProbabilitiesUpdated, score);
     }
 }
