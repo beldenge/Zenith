@@ -17,17 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.evaluator;
+package com.ciphertool.zenith.inference.genetic.fitness;
 
-import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.util.MathUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SolutionScorer {
-    public float score(CipherSolution cipherSolution) {
-        // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
-        // This has not been determined empirically but has worked well through experimentation
-        return cipherSolution.getLogProbability() * MathUtils.powSixthRoot(cipherSolution.getIndexOfCoincidence());
-    }
+public class EntropyEvaluator {
 }

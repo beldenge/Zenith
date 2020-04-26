@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +32,14 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "MarkovModelPlaintextEvaluator")
 public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
+
+    @Autowired
+    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
 
     private int order;
     private int stepSize;
