@@ -34,9 +34,13 @@ import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -44,7 +48,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.Min;
 import java.io.File;
@@ -273,6 +279,27 @@ public class InferenceConfiguration {
         }
 
         return plaintextTransformationSteps;
+    }
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        builder.customizers((restTemplate) -> {
+            PoolingHttpClientConnectionManager connectionManager = new
+                    PoolingHttpClientConnectionManager();
+            connectionManager.setMaxTotal(10);
+            connectionManager.setDefaultMaxPerRoute(10);
+
+            CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(connectionManager).build();
+
+            HttpComponentsClientHttpRequestFactory httpReqFactory = new HttpComponentsClientHttpRequestFactory(httpclient);
+            httpReqFactory.setReadTimeout(5000);
+            httpReqFactory.setConnectionRequestTimeout(5000);
+            httpReqFactory.setConnectTimeout(5000);
+
+            restTemplate.setRequestFactory(httpReqFactory);
+        });
+
+        return builder.build();
     }
 
     @Bean

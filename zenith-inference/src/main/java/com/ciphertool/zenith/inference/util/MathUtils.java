@@ -41,4 +41,8 @@ public class MathUtils {
     public static float fastPow(float a, float b) {
         return fastExp(b * fastLog(a));
     }
+
+    public static double logBase(double num, float base) {
+        return (Math.log(num) / Math.log(base));
+    }
 }

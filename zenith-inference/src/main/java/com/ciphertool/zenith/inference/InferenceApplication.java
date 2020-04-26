@@ -27,19 +27,12 @@ import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimiz
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -116,26 +109,5 @@ public class InferenceApplication implements CommandLineRunner {
         configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, geneticAlgorithmConfiguration.getTournamentSize());
 
         solutionOptimizer.optimize(cipher, applicationConfiguration.getEpochs(), configuration, plaintextTransformationSteps, null);
-    }
-
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        builder.customizers((restTemplate) -> {
-            PoolingHttpClientConnectionManager connectionManager = new
-                    PoolingHttpClientConnectionManager();
-            connectionManager.setMaxTotal(10);
-            connectionManager.setDefaultMaxPerRoute(10);
-
-            CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(connectionManager).build();
-
-            HttpComponentsClientHttpRequestFactory httpReqFactory = new HttpComponentsClientHttpRequestFactory(httpclient);
-            httpReqFactory.setReadTimeout(5000);
-            httpReqFactory.setConnectionRequestTimeout(5000);
-            httpReqFactory.setConnectTimeout(5000);
-
-            restTemplate.setRequestFactory(httpReqFactory);
-        });
-
-        return builder.build();
     }
 }

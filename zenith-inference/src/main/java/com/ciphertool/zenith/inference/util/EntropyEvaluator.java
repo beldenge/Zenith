@@ -17,10 +17,60 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.genetic.fitness;
+package com.ciphertool.zenith.inference.util;
 
+import com.ciphertool.zenith.inference.entities.Cipher;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class EntropyEvaluator {
+    private static float BASE = 2f; // Assuming we want the unit of entropy to be 'bit'
+
+    private double[] precomputedEntropies;
+
+    private Cipher initialized = null;
+
+    private void init(Cipher cipher) {
+        precomputedEntropies = new double[cipher.length()];
+
+        for (int i = 0; i < cipher.length(); i ++) {
+            float probability = ((float) i / 1f);
+            precomputedEntropies[i] = Math.abs(MathUtils.logBase(probability, BASE) * probability);
+        }
+
+        initialized = cipher;
+    }
+
+    public float evaluate(Cipher cipher, String solutionString) {
+        if (initialized == null || initialized != cipher) {
+            init(cipher);
+        }
+
+        Map<Character, Integer> plaintextCounts = new HashMap<>(LetterUtils.NUMBER_OF_LETTERS);
+
+        for (int i = 0; i < solutionString.length(); i ++) {
+            char value = solutionString.charAt(i);
+
+            if (!plaintextCounts.containsKey(value)) {
+                plaintextCounts.put(value, 0);
+            }
+
+            plaintextCounts.put(value, plaintextCounts.get(value) + 1);
+        }
+
+        float sum = 0f;
+
+        for (Map.Entry<Character, Integer> entry : plaintextCounts.entrySet()) {
+            if (entry.getValue() == 0) {
+                continue;
+            }
+
+            sum += precomputedEntropies[entry.getValue()];
+        }
+
+        return sum;
+    }
 }

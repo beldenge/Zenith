@@ -19,7 +19,7 @@ There are four major levels of customization:
 2. Ciphertext Transformers (listed below in [Ciphertext Transformers](#ciphertext-transformers))
 2. Plaintext Transformers (listed below in [Plaintext Transformers](#plaintext-transformers))
 3. PlaintextEvaluator
-   - MarkovModelPlaintextEvaluator
+   - NGramAndIndexOfCoincidencePlaintextEvaluator
      - This evaluator is explained below in [Algorithm and Scoring](#algorithm-and-scoring)
    - RestServicePlaintextEvaluator
      - You can implement an evaluator in any technology you want, as long as it conforms to the predefined REST interface.  Just point to that service using the property ```evaluation.rest-service.url```. 
@@ -92,7 +92,7 @@ There are three main areas of configuration.
     language-model.archive-filename | zenith-model.zip | The language model zip file on the classpath which will be unzipped if language-model.filename does not exist
     language-model.max-ngrams-to-keep | 500000 | The maximum number of ngrams to keep.  The list of ngrams will be sorted in descending order by count and then the top number below will be kept.
     markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
-    decipherment.evaluator.plaintext | MarkovModelPlaintextEvaluator | The PlaintextEvaluator implementation class name to use
+    decipherment.evaluator.plaintext | NGramAndIndexOfCoincidencePlaintextEvaluator | The PlaintextEvaluator implementation class name to use
     evaluation.rest-service.url | http://localhost:5000/probabilities | The URL for the solution evaluator REST service, required only if decipherment.evaluator.plaintext is set to RestServicePlaintextEvaluator
     application.configuration.file-path | ./config | The path to the application configuration JSON file 
 

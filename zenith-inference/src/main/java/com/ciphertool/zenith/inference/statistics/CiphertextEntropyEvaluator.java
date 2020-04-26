@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.statistics;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
+import com.ciphertool.zenith.inference.util.MathUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -28,6 +29,8 @@ import java.util.Map;
 
 @Component
 public class CiphertextEntropyEvaluator {
+    private static float BASE = 2f; // Assuming we want the unit of entropy to be 'bit'
+
     public float evaluate(Cipher cipher) {
         Map<String, Integer> ciphertextCounts = new HashMap<>();
 
@@ -41,8 +44,6 @@ public class CiphertextEntropyEvaluator {
             ciphertextCounts.put(value, ciphertextCounts.get(value) + 1);
         }
 
-        float base = 2f; // Assuming we want the unit of entropy to be 'bit'
-
         float sum = 0f;
 
         for (Map.Entry<String, Integer> entry : ciphertextCounts.entrySet()) {
@@ -52,13 +53,9 @@ public class CiphertextEntropyEvaluator {
 
             float probability = (float) entry.getValue() / (float) cipher.length();
 
-            sum += probability * logBase(probability, base);
+            sum += probability * MathUtils.logBase(probability, BASE);
         }
 
         return sum * -1.0f;
-    }
-
-    private static double logBase(double num, float base) {
-        return (Math.log(num) / Math.log(base));
     }
 }

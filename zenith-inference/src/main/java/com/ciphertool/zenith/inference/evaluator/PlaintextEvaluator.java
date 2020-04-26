@@ -21,7 +21,8 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 
 public interface PlaintextEvaluator {
-   float[][] evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey);
+   SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey);
 }

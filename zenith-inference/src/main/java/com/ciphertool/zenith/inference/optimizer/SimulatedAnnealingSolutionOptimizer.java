@@ -22,10 +22,9 @@ package com.ciphertool.zenith.inference.optimizer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
+import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -45,12 +44,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     public static final String SAMPLER_ITERATIONS = "samplerIterations";
     public static final String ANNEALING_TEMPERATURE_MIN = "annealingTemperatureMin";
     public static final String ANNEALING_TEMPERATURE_MAX = "annealingTemperatureMax";
-
-    @Autowired
-    private SolutionScorer solutionScorer;
-
-    @Autowired
-    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
 
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
@@ -113,7 +106,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             log.info("Epoch completed in {}ms.", elapsed);
 
             if (log.isInfoEnabled()) {
-                cipherSolutionPrinter.print(best);
+                cipherSolutionPrinter.print(best, plaintextTransformationSteps);
             }
 
             if (cipher.hasKnownSolution() && knownSolutionCorrectnessThreshold <= best.evaluateKnownSolution()) {
@@ -159,12 +152,11 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             solutionString = plaintextTransformationManager.transform(solutionString, plaintextTransformationSteps);
         }
 
-        plaintextEvaluator.evaluate(cipher, initialSolution, solutionString, null);
-        initialSolution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
-        initialSolution.setScore(solutionScorer.score(initialSolution));
+        SolutionScore score = plaintextEvaluator.evaluate(cipher, initialSolution, solutionString, null);
+        initialSolution.setScore(score.getScore());
 
         if (log.isDebugEnabled()) {
-            cipherSolutionPrinter.print(initialSolution);
+            cipherSolutionPrinter.print(initialSolution, plaintextTransformationSteps);
         }
 
         float temperature;
@@ -188,7 +180,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             if (log.isDebugEnabled()) {
                 long now = System.currentTimeMillis();
                 log.debug("Iteration {} complete.  [elapsed={}ms, letterSampling={}ms, temp={}]", (i + 1), (now - iterationStart), (now - startLetterSampling), String.format("%1$,.4f", temperature));
-                cipherSolutionPrinter.print(next);
+                cipherSolutionPrinter.print(next, plaintextTransformationSteps);
             }
         }
 
@@ -211,7 +203,6 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             }
 
             float originalScore = solution.getScore();
-            float originalIndexOfCoincidence = solution.getIndexOfCoincidence();
             solution.replaceMapping(nextKey, letter);
 
             int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(nextKey);
@@ -225,17 +216,16 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 proposalString = plaintextTransformationManager.transform(proposalString, plaintextTransformationSteps);
             }
 
-            float[][] logProbabilitiesUpdated = plaintextEvaluator.evaluate(cipher, solution, proposalString, nextKey);
-            solution.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(cipher, proposalString));
-            solution.setScore(solutionScorer.score(solution));
+            SolutionScore score = plaintextEvaluator.evaluate(cipher, solution, proposalString, nextKey);
+            solution.setScore(score.getScore());
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {
                 solution.setScore(originalScore);
-                solution.setIndexOfCoincidence(originalIndexOfCoincidence);
                 solution.replaceMapping(nextKey, originalMapping);
 
-                for (int j = 0; j < logProbabilitiesUpdated[0].length; j ++) {
-                    solution.replaceLogProbability((int) logProbabilitiesUpdated[0][j], logProbabilitiesUpdated[1][j]);
+                float[][] ngramProbabilitiesUpdated = score.getNgramProbabilitiesUpdated();
+                for (int j = 0; j < ngramProbabilitiesUpdated[0].length; j ++) {
+                    solution.replaceLogProbability((int) ngramProbabilitiesUpdated[0][j], ngramProbabilitiesUpdated[1][j]);
                 }
 
                 for (int j = 0; j < cipherSymbolIndices.length; j ++) {

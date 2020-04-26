@@ -23,11 +23,11 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
+import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -37,7 +37,6 @@ import java.net.URI;
 import java.util.Collections;
 
 @Component
-@ConditionalOnProperty(value = "decipherment.evaluator.plaintext", havingValue = "RestServicePlaintextEvaluator")
 public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -55,7 +54,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public float[][] evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
+    public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startEvaluation = System.currentTimeMillis();
 
         RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();
@@ -81,6 +80,6 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
             solution.addLogProbability(i, response.getProbabilities().get(i).getLogProbability());
         }
 
-        return logProbabilitiesUpdated;
+        return new SolutionScore(logProbabilitiesUpdated, solution.getLogProbability());
     }
 }

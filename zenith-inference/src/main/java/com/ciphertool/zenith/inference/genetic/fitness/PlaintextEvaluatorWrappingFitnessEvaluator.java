@@ -24,28 +24,23 @@ import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
+import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 
 import java.util.List;
 
 public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
     private PlaintextEvaluator plaintextEvaluator;
     private List<PlaintextTransformationStep> plaintextTransformationSteps;
-    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
-    private SolutionScorer solutionScorer;
     private PlaintextTransformationManager plaintextTransformationManager;
 
-    public PlaintextEvaluatorWrappingFitnessEvaluator(PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<PlaintextTransformationStep> plaintextTransformationSteps, IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator, SolutionScorer solutionScorer) {
+    public PlaintextEvaluatorWrappingFitnessEvaluator(PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<PlaintextTransformationStep> plaintextTransformationSteps) {
         this.plaintextEvaluator = plaintextEvaluator;
         this.plaintextTransformationManager = plaintextTransformationManager;
         this.plaintextTransformationSteps = plaintextTransformationSteps;
-        this.indexOfCoincidenceEvaluator = indexOfCoincidenceEvaluator;
-        this.solutionScorer = solutionScorer;
     }
 
     @Override
@@ -59,9 +54,8 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
         }
 
         Cipher cipher = ((CipherKeyChromosome) chromosome).getCipher();
-        plaintextEvaluator.evaluate(cipher, proposal, solutionString, null);
-        proposal.setIndexOfCoincidence(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
-        proposal.setScore(solutionScorer.score(proposal));
+        SolutionScore score = plaintextEvaluator.evaluate(cipher, proposal, solutionString, null);
+        proposal.setScore(score.getScore());
 
         return Double.valueOf(proposal.getScore());
     }

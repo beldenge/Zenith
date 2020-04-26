@@ -21,12 +21,14 @@ package com.ciphertool.zenith.inference.printer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
+import com.ciphertool.zenith.inference.util.EntropyEvaluator;
+import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -39,22 +41,26 @@ public class CipherSolutionPrinter {
     @Autowired
     private ChiSquaredEvaluator chiSquaredEvaluator;
 
-    @Autowired(required = false)
-    @Qualifier("activePlaintextTransformers")
-    private List<PlaintextTransformer> plaintextTransformers;
+    @Autowired
+    private EntropyEvaluator entropyEvaluator;
 
-    public void print(CipherSolution solution) {
+    @Autowired
+    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
+
+    @Autowired
+    protected PlaintextTransformationManager plaintextTransformationManager;
+
+    public void print(CipherSolution solution, List<PlaintextTransformationStep> plaintextTransformationSteps) {
         String plaintext = solution.asSingleLineString();
-        if (plaintextTransformers != null) {
-            for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                plaintext = plaintextTransformer.transform(plaintext);
-            }
+        if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
+            plaintext = plaintextTransformationManager.transform(plaintext, plaintextTransformationSteps);
         }
 
         Cipher cipher = solution.getCipher();
         StringBuilder sb = new StringBuilder();
         sb.append("Solution [probability=" + solution.getProbability() + ", logProbability=" + solution.getLogProbability() + ", score=" + solution.getScore()
-                + ", indexOfCoincidence=" + solution.getIndexOfCoincidence() + ", chiSquared=" + chiSquaredEvaluator.evaluate(cipher, plaintext) + (cipher.hasKnownSolution() ? ", proximity="
+                + ", indexOfCoincidence=" + indexOfCoincidenceEvaluator.evaluate(cipher, plaintext) + ", entropy=" + entropyEvaluator.evaluate(cipher, plaintext)
+                + ", chiSquared=" + chiSquaredEvaluator.evaluate(cipher, plaintext) + (cipher.hasKnownSolution() ? ", proximity="
                 + String.format("%1$,.2f", solution.evaluateKnownSolution() * 100.0) + "%" : "") + "]\n");
 
         for (int i = 0; i < plaintext.length(); i++) {

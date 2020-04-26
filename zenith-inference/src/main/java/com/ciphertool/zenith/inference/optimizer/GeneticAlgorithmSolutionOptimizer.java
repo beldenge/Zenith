@@ -32,14 +32,12 @@ import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.evaluator.SolutionScorer;
 import com.ciphertool.zenith.inference.genetic.breeder.AbstractCipherKeyBreeder;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,12 +88,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     @Autowired
     private PlaintextEvaluator plaintextEvaluator;
-
-    @Autowired
-    private SolutionScorer solutionScorer;
-
-    @Autowired
-    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
 
     private Population population;
 
@@ -202,7 +194,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
             throw new IllegalArgumentException("The Selector with name " + selectorName + " does not exist.");
         }
 
-        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformationManager, plaintextTransformationSteps, indexOfCoincidenceEvaluator, solutionScorer);
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformationManager, plaintextTransformationSteps);
     }
 
     @Override
@@ -272,7 +264,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                     Chromosome next = individuals.get(i);
                     log.info("Chromosome {}:", (i + 1), next);
                     if (log.isInfoEnabled()) {
-                        cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(next));
+                        cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(next), plaintextTransformationSteps);
                     }
                 }
             }
@@ -282,7 +274,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
             log.info("Best probability solution:");
             CipherSolution bestSolution = ChromosomeToCipherSolutionMapper.map(last);
             if (log.isInfoEnabled()) {
-                cipherSolutionPrinter.print(bestSolution);
+                cipherSolutionPrinter.print(bestSolution, plaintextTransformationSteps);
             }
             log.info("Mappings for best probability:");
 

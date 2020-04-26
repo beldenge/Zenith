@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.evaluator;
+package com.ciphertool.zenith.inference.evaluator.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

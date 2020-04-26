@@ -21,18 +21,19 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
+import com.ciphertool.zenith.inference.util.MathUtils;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 @Component
-public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
+public class NGramAndIndexOfCoincidencePlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
@@ -53,7 +54,7 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public float[][] evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
+    public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
         float[][] logProbabilitiesUpdated = evaluateLetterNGrams(cipher, solution, solutionString, ciphertextKey);
@@ -62,7 +63,12 @@ public class MarkovModelPlaintextEvaluator implements PlaintextEvaluator {
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-        return logProbabilitiesUpdated;
+
+        // Scaling down the index of coincidence by its fifth root seems to be the right amount to penalize the sum of log probabilities by
+        // This has been determined through haphazard experimentation
+        float score = solution.getLogProbability() * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
+
+        return new SolutionScore(logProbabilitiesUpdated, score);
     }
 
     protected float[][] evaluateLetterNGrams(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {

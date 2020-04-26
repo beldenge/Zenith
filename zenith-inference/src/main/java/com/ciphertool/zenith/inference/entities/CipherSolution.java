@@ -39,8 +39,6 @@ public class CipherSolution {
 
     private float[] logProbabilities;
 
-    private float indexOfCoincidence = 1f;
-
     private float score;
 
     public CipherSolution(Cipher cipher, int numCiphertextKeys) {
@@ -69,14 +67,6 @@ public class CipherSolution {
 
     public void setProbability(float score) {
         this.probability = score;
-    }
-
-    public float getIndexOfCoincidence() {
-        return indexOfCoincidence;
-    }
-
-    public void setIndexOfCoincidence(float indexOfCoincidence) {
-        this.indexOfCoincidence = indexOfCoincidence;
     }
 
     public float getLogProbability() {
@@ -165,8 +155,6 @@ public class CipherSolution {
         for (int i = 0; i < this.logProbabilities.length; i ++) {
             copySolution.addLogProbability(i, this.logProbabilities[i]);
         }
-
-        copySolution.setIndexOfCoincidence(this.indexOfCoincidence);
 
         // We need to set these values last to maintain whether evaluation is needed on the clone
         copySolution.setProbability(this.probability);
