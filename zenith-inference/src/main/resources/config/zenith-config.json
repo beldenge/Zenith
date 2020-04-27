@@ -14,9 +14,9 @@
     "displayName": "Simulated Annealing"
   },
   "simulatedAnnealingConfiguration": {
-    "samplerIterations": 5001,
-    "annealingTemperatureMin": 2.75,
-    "annealingTemperatureMax": 5
+    "samplerIterations": 5000,
+    "annealingTemperatureMin": 0.006,
+    "annealingTemperatureMax": 0.012
   },
   "geneticAlgorithmConfiguration": {
     "populationSize": 10000,

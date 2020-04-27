@@ -45,7 +45,7 @@ public class NGramAndEntropyPlaintextEvaluator extends AbstractNGramEvaluator im
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-        float score = solution.getLogProbability() / (entropyEvaluator.evaluate(cipher, solutionString) * 0.25f);
+        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) / (entropyEvaluator.evaluate(cipher, solutionString) * 0.25f);
 
         return new SolutionScore(logProbabilitiesUpdated, score);
     }
