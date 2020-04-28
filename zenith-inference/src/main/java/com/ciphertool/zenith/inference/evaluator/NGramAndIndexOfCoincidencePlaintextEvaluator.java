@@ -46,7 +46,7 @@ public class NGramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNGramE
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-        // Scaling down the index of coincidence by its sixth root seems to be the right amount to penalize the sum of log probabilities by
+        // Scaling down the index of coincidence by its sixth root seems to be the optimal amount to penalize the sum of log probabilities by
         // This has been determined through haphazard experimentation
         float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
 

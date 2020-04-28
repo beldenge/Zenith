@@ -23,6 +23,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.util.EntropyEvaluator;
+import com.ciphertool.zenith.inference.util.MathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,9 @@ public class NGramAndEntropyPlaintextEvaluator extends AbstractNGramEvaluator im
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) / (entropyEvaluator.evaluate(cipher, solutionString) * 0.25f);
+        // Scaling down the entropy by its 2.75th root seems to be the optimal amount to penalize the sum of log probabilities by
+        // This has been determined through haphazard experimentation
+        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) / MathUtils.powRoot(entropyEvaluator.evaluate(cipher, solutionString), 2.75f);
 
         return new SolutionScore(logProbabilitiesUpdated, score);
     }

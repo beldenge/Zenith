@@ -20,10 +20,12 @@
 package com.ciphertool.zenith.inference.util;
 
 public class MathUtils {
-    private static final float SIXTH_ROOT = 1f / 6f;
+    public static float powRoot(float x, float root) {
+        return (float) Math.pow(x, 1f / root);
+    }
 
     public static float powSixthRoot(float x) {
-        return (float) Math.pow(x, SIXTH_ROOT);
+        return powRoot(x, 6f);
     }
 
     // https://martin.ankerl.com/2007/02/11/optimized-exponential-functions-for-java/
