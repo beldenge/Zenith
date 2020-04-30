@@ -49,12 +49,11 @@ public class AbstractNGramEvaluator {
         int stringLengthMinusOrder = solutionString.length() - order;
 
         float[][] logProbabilitiesUpdated;
-        float logProbability;
         int lastIndex = -1;
 
         if (ciphertextKey != null) {
             int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(ciphertextKey);
-            float[][] logProbabilitiesUpdatedOversized = new float[2][cipherSymbolIndices.length * (stepSize + 1)];
+            logProbabilitiesUpdated = new float[2][cipherSymbolIndices.length * (stepSize + 1)];
 
             int k = 0;
             for (int i = 0; i < cipherSymbolIndices.length; i ++) {
@@ -72,23 +71,18 @@ public class AbstractNGramEvaluator {
                     continue;
                 }
 
+                int index;
                 for (int j = start; j < end; j += stepSize) {
-                    logProbability = computeNGramLogProbability(solutionString.substring(j, j + order));
+                    index = j / stepSize;
+                    logProbabilitiesUpdated[0][k] = index;
+                    logProbabilitiesUpdated[1][k] = solution.getLogProbability(index);
 
-                    int index = j / stepSize;
-                    logProbabilitiesUpdatedOversized[0][k] = index;
-                    logProbabilitiesUpdatedOversized[1][k] = solution.getLogProbabilities()[index];
-
-                    solution.replaceLogProbability(index, logProbability);
+                    solution.replaceLogProbability(index, letterMarkovModel.findExact(solutionString.substring(j, j + order)));
                     k++;
                 }
 
                 lastIndex = end;
             }
-
-            logProbabilitiesUpdated = new float[2][k];
-            java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[0], 0, logProbabilitiesUpdated[0], 0, k);
-            java.lang.System.arraycopy(logProbabilitiesUpdatedOversized[1], 0, logProbabilitiesUpdated[1], 0, k);
         } else {
             float[] logProbabilities = solution.getLogProbabilities();
 
@@ -103,25 +97,11 @@ public class AbstractNGramEvaluator {
 
             int k = 0;
             for (int i = 0; i < solutionString.length() - order; i += stepSize) {
-                logProbability = computeNGramLogProbability(solutionString.substring(i, i + order));
-
-                solution.addLogProbability(k, logProbability);
+                solution.addLogProbability(k, letterMarkovModel.findExact(solutionString.substring(i, i + order)));
                 k ++;
             }
         }
 
         return logProbabilitiesUpdated;
-    }
-
-    protected float computeNGramLogProbability(String ngram) {
-        float match = letterMarkovModel.findExact(ngram);
-
-        if (match != -1f) {
-            log.debug("Letter N-Gram Match={}, Probability={}", ngram, match);
-            return match;
-        }
-
-        log.debug("No Letter N-Gram Match for ngram={}", ngram);
-        return letterMarkovModel.getUnknownLetterNGramLogProbability();
     }
 }

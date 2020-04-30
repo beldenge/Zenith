@@ -105,6 +105,10 @@ public class CipherSolution {
         return logProbabilities;
     }
 
+    public float getLogProbability(int index) {
+        return logProbabilities[index];
+    }
+
     public void clearLogProbabilities() {
         Arrays.fill(this.logProbabilities, 0f);
         this.logProbability = 0f;

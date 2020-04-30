@@ -23,10 +23,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
-import com.ciphertool.zenith.inference.probability.LetterProbability;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import com.ciphertool.zenith.math.selection.RouletteSampler;
-import com.ciphertool.zenith.model.LanguageConstants;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
@@ -34,7 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SplittableRandom;
 
 @Component
 public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimizer {
@@ -51,6 +51,8 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     @Autowired
     private PlaintextEvaluator plaintextEvaluator;
 
+    private char[] BIASED_LETTER_BUCKET;
+
     @Override
     public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, OnEpochComplete onEpochComplete) {
         int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
@@ -62,22 +64,31 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 .distinct()
                 .count();
 
-        List<LetterProbability> letterUnigramProbabilities = new ArrayList<>(LanguageConstants.LOWERCASE_LETTERS_SIZE);
-
-        double probability;
-        for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
-            probability = (double) node.getCount() / (double) letterMarkovModel.getTotalNGramCount();
-
-            letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
-
-            log.debug("{}: {}", node.getCumulativeString().charAt(0), probability);
-        }
-
         log.debug("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
 
-        Collections.sort(letterUnigramProbabilities);
-        RouletteSampler<LetterProbability> unigramRouletteSampler = new RouletteSampler<>();
-        unigramRouletteSampler.reIndex(letterUnigramProbabilities);
+        List<Character> biasedCharacterBucket = new ArrayList<>();
+
+        // Instead of using a uniform distribution or one purely based on English, we flatten out the English letter unigram probabilities by the flatMassWeight
+        // This seems to be a good balance for the letter sampler so that it slightly prefers more likely characters while still allowing for novel characters to be sampled
+        float flatMassWeight = 0.8f;
+        float flatMass = (1f / (float) letterMarkovModel.getFirstOrderNodes().size()) * flatMassWeight;
+
+        for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
+            float letterProbability = (float) node.getCount() / (float) letterMarkovModel.getTotalNGramCount();
+
+            float scaledMass = letterProbability * (1f - flatMassWeight);
+
+            int letterBias = (int) (1000f * (scaledMass + flatMass));
+
+            for (int i = 0; i < letterBias; i ++) {
+                biasedCharacterBucket.add(node.getCumulativeString().charAt(0));
+            }
+        }
+
+        BIASED_LETTER_BUCKET = new char[biasedCharacterBucket.size()];
+        for (int i = 0; i < biasedCharacterBucket.size(); i ++) {
+            BIASED_LETTER_BUCKET[i] = biasedCharacterBucket.get(i);
+        }
 
         long totalElapsed = 0;
         int correctSolutions = 0;
@@ -85,7 +96,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
         int epoch = 0;
         for (; epoch < epochs; epoch++) {
-            CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize, unigramRouletteSampler, letterUnigramProbabilities);
+            CipherSolution initialSolution = generateInitialSolutionProposal(cipher, cipherKeySize);
 
             log.info("Epoch {} of {}.  Running sampler for {} iterations.", (epoch + 1), epochs, samplerIterations);
 
@@ -129,17 +140,14 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         return overallBest;
     }
 
-    private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize, RouletteSampler<LetterProbability> unigramRouletteSampler, List<LetterProbability> letterUnigramProbabilities) {
+    private CipherSolution generateInitialSolutionProposal(Cipher cipher, int cipherKeySize) {
         CipherSolution solutionProposal = new CipherSolution(cipher, cipherKeySize);
 
         cipher.getCiphertextCharacters().stream()
                 .map(ciphertext -> ciphertext.getValue())
                 .distinct()
                 .forEach(ciphertext -> {
-                    // Pick a plaintext at random according to the language model
-                    char nextPlaintext = letterUnigramProbabilities.get(unigramRouletteSampler.getNextIndex()).getValue();
-
-                    solutionProposal.putMapping(ciphertext, nextPlaintext);
+                    solutionProposal.putMapping(ciphertext, BIASED_LETTER_BUCKET[RANDOM.nextInt(BIASED_LETTER_BUCKET.length)]);
                 });
 
         return solutionProposal;
@@ -194,7 +202,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         for (int i = 0; i < mappingKeys.length; i++) {
             nextKey = mappingKeys[i];
 
-            char letter = LanguageConstants.LOWERCASE_LETTERS[RANDOM.nextInt(LanguageConstants.LOWERCASE_LETTERS_SIZE)];
+            char letter = BIASED_LETTER_BUCKET[RANDOM.nextInt(BIASED_LETTER_BUCKET.length)];
 
             char originalMapping = solution.getMappings().get(nextKey);
 
@@ -225,6 +233,12 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
                 float[][] ngramProbabilitiesUpdated = score.getNgramProbabilitiesUpdated();
                 for (int j = 0; j < ngramProbabilitiesUpdated[0].length; j ++) {
+                    // The updated probabilities array is oversized as it's not feasible to predict the array length before building it
+                    // So, once we hit an index that is equal to zero, we are guaranteed to be at the end of the populated part of the array
+                    if (ngramProbabilitiesUpdated[1][j] == 0f) {
+                        break;
+                    }
+
                     solution.replaceLogProbability((int) ngramProbabilitiesUpdated[0][j], ngramProbabilitiesUpdated[1][j]);
                 }
 

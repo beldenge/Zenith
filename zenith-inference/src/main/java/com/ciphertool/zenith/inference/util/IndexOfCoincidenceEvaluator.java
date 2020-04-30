@@ -53,9 +53,7 @@ public class IndexOfCoincidenceEvaluator {
             letterCounts[solutionString.charAt(i)] ++;
         }
 
-        int numerator = buildNumerator();
-
-        return (float) numerator / denominator;
+        return (float) buildNumerator() / denominator;
     }
 
     private void resetLetterCounts() {

@@ -26,14 +26,12 @@ import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @Component
 public class ChiSquaredEvaluator {
-    private Map<String, Long> englishLetterCounts = new HashMap<>(LetterUtils.NUMBER_OF_LETTERS);
+    // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+    private int[] englishLetterCounts = new int[256];
+    private int[] actualLetterCounts = new int[256];
+    private float[][] precomputedChiSquareds;
 
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
@@ -42,42 +40,98 @@ public class ChiSquaredEvaluator {
 
     public void init(Cipher cipher) {
         for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
-            double letterProbability = (double) node.getCount() / (double) letterMarkovModel.getTotalNGramCount();
-            englishLetterCounts.put(node.getCumulativeString(), Math.round(letterProbability * cipher.length()));
+            float letterProbability = (float) node.getCount() / (float) letterMarkovModel.getTotalNGramCount();
+            englishLetterCounts[node.getCumulativeString().charAt(0)] = Math.round(letterProbability * cipher.length());
+        }
+
+        precomputedChiSquareds = new float[256][cipher.length() + 1];
+
+        for (int i = 0; i < LanguageConstants.LOWERCASE_LETTERS.length; i ++) {
+            for (int j = 0; j <= cipher.length(); j ++) {
+                long actualCount = j;
+                long expectedCount = englishLetterCounts[LanguageConstants.LOWERCASE_LETTERS[i]];
+                float numerator = (float) Math.pow((float) (actualCount - expectedCount), 2.0f);
+                float denominator = Math.max(1f, expectedCount); // Prevent division by zero
+                precomputedChiSquareds[LanguageConstants.LOWERCASE_LETTERS[i]][j] = numerator / denominator;
+            }
         }
 
         initialized = cipher;
     }
 
-    public double evaluate(Cipher cipher, String solutionString) {
+    public float evaluate(Cipher cipher, String solutionString) {
         if (initialized == null || initialized != cipher) {
             init(cipher);
         }
 
-        Map<String, Long> solutionLetterCounts = new HashMap<>(LetterUtils.NUMBER_OF_LETTERS);
+        resetLetterCounts();
 
-        for (int i = 0; i < LanguageConstants.LOWERCASE_LETTERS.length; i ++) {
-            solutionLetterCounts.put(String.valueOf(LanguageConstants.LOWERCASE_LETTERS[i]), 0L);
+        for (int i = 0; i < solutionString.length(); i++) {
+            actualLetterCounts[solutionString.charAt(i)] ++;
         }
 
-        for (int i = 0; i < solutionString.length(); i ++) {
-            String letter = String.valueOf(solutionString.charAt(i));
+        return computeSum();
+    }
 
-            solutionLetterCounts.put(letter, solutionLetterCounts.get(letter) + 1L);
-        }
+    private void resetLetterCounts() {
+        // TODO: see if Arrays.fill is any faster/slower
+        actualLetterCounts['a'] = 0;
+        actualLetterCounts['b'] = 0;
+        actualLetterCounts['c'] = 0;
+        actualLetterCounts['d'] = 0;
+        actualLetterCounts['e'] = 0;
+        actualLetterCounts['f'] = 0;
+        actualLetterCounts['g'] = 0;
+        actualLetterCounts['h'] = 0;
+        actualLetterCounts['i'] = 0;
+        actualLetterCounts['j'] = 0;
+        actualLetterCounts['k'] = 0;
+        actualLetterCounts['l'] = 0;
+        actualLetterCounts['m'] = 0;
+        actualLetterCounts['n'] = 0;
+        actualLetterCounts['o'] = 0;
+        actualLetterCounts['p'] = 0;
+        actualLetterCounts['q'] = 0;
+        actualLetterCounts['r'] = 0;
+        actualLetterCounts['s'] = 0;
+        actualLetterCounts['t'] = 0;
+        actualLetterCounts['u'] = 0;
+        actualLetterCounts['v'] = 0;
+        actualLetterCounts['w'] = 0;
+        actualLetterCounts['x'] = 0;
+        actualLetterCounts['y'] = 0;
+        actualLetterCounts['z'] = 0;
+    }
 
-        List<Double> chiSquaredPerLetter = new ArrayList<>(LetterUtils.NUMBER_OF_LETTERS);
+    private float computeSum() {
+        float sum = 0f;
+        sum += precomputedChiSquareds['a'][actualLetterCounts['a']];
+        sum += precomputedChiSquareds['b'][actualLetterCounts['b']];
+        sum += precomputedChiSquareds['c'][actualLetterCounts['c']];
+        sum += precomputedChiSquareds['d'][actualLetterCounts['d']];
+        sum += precomputedChiSquareds['e'][actualLetterCounts['e']];
+        sum += precomputedChiSquareds['f'][actualLetterCounts['f']];
+        sum += precomputedChiSquareds['g'][actualLetterCounts['g']];
+        sum += precomputedChiSquareds['h'][actualLetterCounts['h']];
+        sum += precomputedChiSquareds['i'][actualLetterCounts['i']];
+        sum += precomputedChiSquareds['j'][actualLetterCounts['j']];
+        sum += precomputedChiSquareds['k'][actualLetterCounts['k']];
+        sum += precomputedChiSquareds['l'][actualLetterCounts['l']];
+        sum += precomputedChiSquareds['m'][actualLetterCounts['m']];
+        sum += precomputedChiSquareds['n'][actualLetterCounts['n']];
+        sum += precomputedChiSquareds['o'][actualLetterCounts['o']];
+        sum += precomputedChiSquareds['p'][actualLetterCounts['p']];
+        sum += precomputedChiSquareds['q'][actualLetterCounts['q']];
+        sum += precomputedChiSquareds['r'][actualLetterCounts['r']];
+        sum += precomputedChiSquareds['s'][actualLetterCounts['s']];
+        sum += precomputedChiSquareds['t'][actualLetterCounts['t']];
+        sum += precomputedChiSquareds['u'][actualLetterCounts['u']];
+        sum += precomputedChiSquareds['v'][actualLetterCounts['v']];
+        sum += precomputedChiSquareds['w'][actualLetterCounts['w']];
+        sum += precomputedChiSquareds['x'][actualLetterCounts['x']];
+        sum += precomputedChiSquareds['y'][actualLetterCounts['y']];
+        sum += precomputedChiSquareds['z'][actualLetterCounts['z']];
 
-        for (String letter : englishLetterCounts.keySet()) {
-            long actualCount = solutionLetterCounts.get(letter);
-            long expectedCount = englishLetterCounts.get(letter);
-            double numerator = Math.pow((double) (actualCount - expectedCount), 2.0);
-            double denominator = Math.max(1d, expectedCount); // Prevent division by zero
-            chiSquaredPerLetter.add(numerator / denominator);
-        }
-
-        return chiSquaredPerLetter.stream()
-                .mapToDouble(perLetter -> perLetter.doubleValue())
-                .sum();
+        return sum;
     }
 }

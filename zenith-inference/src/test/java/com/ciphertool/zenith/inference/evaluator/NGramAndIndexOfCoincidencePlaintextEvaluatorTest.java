@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
+import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
 
 @Ignore
 @SpringBootTest
@@ -239,13 +242,16 @@ public class NGramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
             return;
         }
 
-        letterMarkovModel = new ArrayMarkovModel(6);
+        List<TreeNGram> nGramNodes = letterNGramDao.findAll();
 
-        letterNGramDao.findAll().stream().forEach(letterMarkovModel::addNode);
+        long totalNGramCount = nGramNodes.stream()
+                .filter(node -> node.getOrder() == 1)
+                .mapToLong(TreeNGram::getCount)
+                .sum();
 
-        Float unknownLetterNGramProbability = 1f / (float) letterMarkovModel.getTotalNGramCount();
-        letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-        letterMarkovModel.setUnknownLetterNGramLogProbability((float) Math.log(unknownLetterNGramProbability));
+        letterMarkovModel = new ArrayMarkovModel(6, 1f / (float) totalNGramCount);
+
+        nGramNodes.stream().forEach(letterMarkovModel::addNode);
     }
 
     @Test

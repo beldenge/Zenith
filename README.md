@@ -32,10 +32,10 @@ In order to stop Zenith, you'll have to type `ctrl + z` in the terminal where ze
 
 # Benchmarks
 When using the simulated annealing optimizer, it successfully solves the Zodiac 408 cipher with varying probability and speed depending on the hyperparameters chosen.  It is especially sensitive to the annealing temperatures and number of sampler iterations.
- - when choosing 2500 sampler iterations, each epoch takes 250 ms, and 680 out of 1000 epochs (68.00%) produced the correct solution.
- - when choosing 5000 sampler iterations, each epoch takes 500 ms, and 873 out of 1000 epochs (87.30%) produced the correct solution.
- - when choosing 10000 sampler iterations, each epoch takes 1 second, and 930 out of 1000 epochs (93.00%) produced the correct solution.
- - when choosing 20000 sampler iterations, each epoch takes 2 seconds, and 985 out of 1000 epochs (98.50%) produced the correct solution.
+ - when choosing 2500 sampler iterations, each epoch takes ~250 ms, and 745 out of 1000 epochs (74.50%) produced the correct solution.
+ - when choosing 5000 sampler iterations, each epoch takes ~500 ms, and 890 out of 1000 epochs (89.00%) produced the correct solution.
+ - when choosing 10000 sampler iterations, each epoch takes ~1 second, and 955 out of 1000 epochs (95.50%) produced the correct solution.
+ - when choosing 20000 sampler iterations, each epoch takes ~2 seconds, and 989 out of 1000 epochs (98.90%) produced the correct solution.
  
 The results show that with more sampler iterations, it takes more time to complete each epoch, but each epoch has a greater probability of finding the correct solution.  The default is 5000 sampler iterations, which is a good balance between accuracy and speed.
 

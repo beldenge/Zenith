@@ -181,7 +181,12 @@ public class InferenceConfiguration {
 
         log.info("Finished retrieving {} n-grams in {}ms.", nGramNodes.size(), (System.currentTimeMillis() - startFindAll));
 
-        ArrayMarkovModel letterMarkovModel = new ArrayMarkovModel(markovOrder);
+        long totalNGramCount = nGramNodes.stream()
+                .filter(node -> node.getOrder() == 1)
+                .mapToLong(TreeNGram::getCount)
+                .sum();
+
+        ArrayMarkovModel letterMarkovModel = new ArrayMarkovModel(markovOrder, 1f / (float) totalNGramCount);
 
         long startAdding = System.currentTimeMillis();
         log.info("Adding nodes to the model.");
@@ -197,10 +202,6 @@ public class InferenceConfiguration {
                 .forEach(letterMarkovModel::addNode);
 
         log.info("Finished adding {} nodes to the letter n-gram model in {}ms.", letterMarkovModel.getMapSize(), (System.currentTimeMillis() - startAdding));
-
-        float unknownLetterNGramProbability = 1f / (float) letterMarkovModel.getTotalNGramCount();
-        letterMarkovModel.setUnknownLetterNGramProbability(unknownLetterNGramProbability);
-        letterMarkovModel.setUnknownLetterNGramLogProbability((float) Math.log(unknownLetterNGramProbability));
 
         return letterMarkovModel;
     }

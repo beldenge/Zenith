@@ -36,10 +36,12 @@ public class ArrayMarkovModel {
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
     private float[] nGramLogProbabilities = new float[26 * 26 * 26 * 26 * 26];
 
-    public ArrayMarkovModel(int order) {
+    public ArrayMarkovModel(int order, float unknownLetterNGramProbability) {
         this.order = order;
 
-        Arrays.fill(nGramLogProbabilities, -1f);
+        this.unknownLetterNGramProbability = unknownLetterNGramProbability;
+        this.unknownLetterNGramLogProbability = (float) Math.log(unknownLetterNGramProbability);
+        Arrays.fill(nGramLogProbabilities, this.unknownLetterNGramLogProbability);
     }
 
     public long getTotalNGramCount() {
@@ -69,7 +71,7 @@ public class ArrayMarkovModel {
 
         int arrayIndex = computeArrayIndex(ngram);
 
-        if(nGramLogProbabilities[arrayIndex] != -1f) {
+        if(nGramLogProbabilities[arrayIndex] != unknownLetterNGramLogProbability) {
             throw new IllegalStateException("Unable to add the same ngram twice='" + ngram + "'.");
         }
 
@@ -99,15 +101,7 @@ public class ArrayMarkovModel {
         return unknownLetterNGramProbability;
     }
 
-    public void setUnknownLetterNGramProbability(float unknownLetterNGramProbability) {
-        this.unknownLetterNGramProbability = unknownLetterNGramProbability;
-    }
-
     public float getUnknownLetterNGramLogProbability() {
         return unknownLetterNGramLogProbability;
-    }
-
-    public void setUnknownLetterNGramLogProbability(float unknownLetterNGramLogProbability) {
-        this.unknownLetterNGramLogProbability = unknownLetterNGramLogProbability;
     }
 }
