@@ -23,10 +23,10 @@ import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.dao.WordNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
@@ -96,9 +96,6 @@ public class InferenceConfiguration {
     @Min(1)
     @Value("${language-model.max-ngrams-to-keep}")
     private int maxNGramsToKeep;
-
-    @Value("${decipherment.evaluator.plaintext}")
-    private String plaintextEvaluatorName;
 
     @Value("${application.configuration.file-path}")
     private String configurationFilePath;
@@ -256,26 +253,21 @@ public class InferenceConfiguration {
     }
 
     @Bean
-    public PlaintextEvaluator plaintextEvaluator(List<PlaintextEvaluator> plaintextEvaluators) {
-        for (PlaintextEvaluator evaluator : plaintextEvaluators) {
-            if (evaluator.getClass().getSimpleName().equals(plaintextEvaluatorName)) {
-                return evaluator;
-            }
-        }
-
-        List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
-                .map(evaluator -> evaluator.getClass().getSimpleName())
-                .collect(Collectors.toList());
-
-        log.error("The PlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
-        throw new IllegalArgumentException("The PlaintextEvaluator with name " + plaintextEvaluatorName + " does not exist.");
-    }
-
-    @Bean
-    public List<PlaintextTransformationStep> plaintextTransformationSteps(ApplicationConfiguration applicationConfiguration) {
+    public List<PlaintextTransformationStep> plaintextTransformationSteps(ApplicationConfiguration applicationConfiguration, List<PlaintextTransformer> plaintextTransformers) {
         List<PlaintextTransformationStep> plaintextTransformationSteps = new ArrayList<>(applicationConfiguration.getAppliedPlaintextTransformers().size());
 
+        List<String> existentPlaintextTransformers = plaintextTransformers.stream()
+                .map(transformer -> transformer.getClass().getSimpleName())
+                .collect(Collectors.toList());
+
         for (ZenithTransformer transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
+            String transformerName = transformer.getName();
+
+            if (!existentPlaintextTransformers.contains(transformer.getName())) {
+                log.error("The PlaintextTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentPlaintextTransformers);
+                throw new IllegalArgumentException("The PlaintextTransformer with name " + transformerName + " does not exist.");
+            }
+
             plaintextTransformationSteps.add(new PlaintextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
         }
 

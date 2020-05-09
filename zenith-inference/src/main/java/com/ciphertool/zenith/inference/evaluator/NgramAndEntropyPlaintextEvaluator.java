@@ -21,20 +21,32 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
-import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
+import com.ciphertool.zenith.inference.util.EntropyEvaluator;
 import com.ciphertool.zenith.inference.util.MathUtils;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
+@NoArgsConstructor
 @Component
-public class NGramAndChiSquaredPlaintextEvaluator extends AbstractNGramEvaluator implements PlaintextEvaluator {
+public class NgramAndEntropyPlaintextEvaluator extends AbstractNgramEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private ChiSquaredEvaluator chiSquaredEvaluator;
+    private EntropyEvaluator entropyEvaluator;
+
+    public NgramAndEntropyPlaintextEvaluator(ArrayMarkovModel letterMarkovModel, EntropyEvaluator entropyEvaluator, Map<String, Object> data) {
+        this.letterMarkovModel = letterMarkovModel;
+        this.entropyEvaluator = entropyEvaluator;
+        super.init();
+    }
 
     @Override
     public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
@@ -46,10 +58,30 @@ public class NGramAndChiSquaredPlaintextEvaluator extends AbstractNGramEvaluator
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-        // Scaling down the chi squared value by its eighth root seems to be the optimal amount to penalize the sum of log probabilities by
+        // Scaling down the entropy by its 2.75th root seems to be the optimal amount to penalize the sum of log probabilities by
         // This has been determined through haphazard experimentation
-        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) - MathUtils.powRoot(chiSquaredEvaluator.evaluate(cipher, solutionString), 8f);
+        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) / MathUtils.powRoot(entropyEvaluator.evaluate(cipher, solutionString), 2.75f);
 
         return new SolutionScore(logProbabilitiesUpdated, score);
+    }
+
+    @Override
+    public PlaintextEvaluator getInstance(Map<String, Object> data) {
+        return new NgramAndEntropyPlaintextEvaluator(letterMarkovModel, entropyEvaluator, data);
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return null;
+    }
+
+    @Override
+    public int getOrder() {
+        return 2;
+    }
+
+    @Override
+    public String getHelpText() {
+        return "Uses a character-level n-gram model along with calculating shannon entropy.";
     }
 }

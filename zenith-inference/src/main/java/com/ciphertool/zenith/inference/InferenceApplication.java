@@ -19,12 +19,10 @@
 
 package com.ciphertool.zenith.inference;
 
+import com.ciphertool.zenith.inference.configuration.ConfigurationResolver;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
-import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
-import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
-import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
-import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.slf4j.Logger;
@@ -34,10 +32,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class InferenceApplication implements CommandLineRunner {
@@ -55,7 +51,8 @@ public class InferenceApplication implements CommandLineRunner {
     @Autowired
     private ApplicationConfiguration applicationConfiguration;
 
-    private SolutionOptimizer solutionOptimizer;
+    @Autowired
+    private List<PlaintextEvaluator> plaintextEvaluators;
 
     public static void main(String[] args) {
         SpringApplication.run(InferenceApplication.class, args).close();
@@ -63,51 +60,10 @@ public class InferenceApplication implements CommandLineRunner {
 
     @Override
     public void run(String... arg0) {
-        List<String> existentOptimizers = optimizers.stream()
-                .map(optimizer -> optimizer.getClass().getSimpleName())
-                .collect(Collectors.toList());
+        Map<String, Object> configuration = ConfigurationResolver.resolveConfiguration(applicationConfiguration);
+        SolutionOptimizer solutionOptimizer = ConfigurationResolver.resolveSolutionOptimizer(applicationConfiguration, optimizers);
+        PlaintextEvaluator plaintextEvaluator = ConfigurationResolver.resolvePlaintextEvaluator(applicationConfiguration, plaintextEvaluators);
 
-        String optimizerName = applicationConfiguration.getSelectedOptimizer().getName();
-
-        for (SolutionOptimizer optimizer : optimizers) {
-            if (optimizer.getClass().getSimpleName().equals(optimizerName)) {
-                solutionOptimizer = optimizer;
-                break;
-            }
-        }
-
-        if (solutionOptimizer == null) {
-            log.error("The SolutionOptimizer with name {} does not exist.  Please use a name from the following: {}", optimizerName, existentOptimizers);
-            throw new IllegalArgumentException("The SolutionOptimizer with name " + optimizerName + " does not exist.");
-        }
-
-        Map<String, Object> configuration = new HashMap<>();
-
-        SimulatedAnnealingConfiguration simulatedAnnealingConfiguration = applicationConfiguration.getSimulatedAnnealingConfiguration();
-
-        configuration.put(SimulatedAnnealingSolutionOptimizer.SAMPLER_ITERATIONS, simulatedAnnealingConfiguration.getSamplerIterations());
-        configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MIN, simulatedAnnealingConfiguration.getAnnealingTemperatureMin());
-        configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MAX, simulatedAnnealingConfiguration.getAnnealingTemperatureMax());
-
-        GeneticAlgorithmConfiguration geneticAlgorithmConfiguration = applicationConfiguration.getGeneticAlgorithmConfiguration();
-
-        configuration.put(GeneticAlgorithmSolutionOptimizer.POPULATION_SIZE, geneticAlgorithmConfiguration.getPopulationSize());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.NUMBER_OF_GENERATIONS, geneticAlgorithmConfiguration.getNumberOfGenerations());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.ELITISM, geneticAlgorithmConfiguration.getElitism());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.POPULATION_NAME, geneticAlgorithmConfiguration.getPopulationName());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.LATTICE_ROWS, geneticAlgorithmConfiguration.getLatticeRows());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.LATTICE_COLUMNS, geneticAlgorithmConfiguration.getLatticeColumns());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.LATTICE_WRAP_AROUND, geneticAlgorithmConfiguration.getLatticeWrapAround());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.LATTICE_RADIUS, geneticAlgorithmConfiguration.getLatticeRadius());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.BREEDER_NAME, geneticAlgorithmConfiguration.getBreederName());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.CROSSOVER_ALGORITHM_NAME, geneticAlgorithmConfiguration.getCrossoverAlgorithmName());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.MUTATION_ALGORITHM_NAME, geneticAlgorithmConfiguration.getMutationAlgorithmName());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.MUTATION_RATE, geneticAlgorithmConfiguration.getMutationRate());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.MAX_MUTATIONS_PER_INDIVIDUAL, geneticAlgorithmConfiguration.getMaxMutationsPerIndividual());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.SELECTOR_NAME, geneticAlgorithmConfiguration.getSelectorName());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SELECTOR_ACCURACY, geneticAlgorithmConfiguration.getTournamentSelectorAccuracy());
-        configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, geneticAlgorithmConfiguration.getTournamentSize());
-
-        solutionOptimizer.optimize(cipher, applicationConfiguration.getEpochs(), configuration, plaintextTransformationSteps, null);
+        solutionOptimizer.optimize(cipher, applicationConfiguration.getEpochs(), configuration, plaintextTransformationSteps, plaintextEvaluator, null);
     }
 }

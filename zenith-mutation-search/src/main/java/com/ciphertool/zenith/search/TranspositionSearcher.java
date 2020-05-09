@@ -19,12 +19,16 @@
 
 package com.ciphertool.zenith.search;
 
+import com.ciphertool.zenith.inference.configuration.ConfigurationResolver;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.transformer.ciphertext.UnwrapTranspositionCipherTransformer;
+import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
 import com.ciphertool.zenith.inference.statistics.CiphertextCycleCountEvaluator;
-import com.ciphertool.zenith.search.evaluator.CiphertextLanguageModelEvaluator;
 import com.ciphertool.zenith.inference.statistics.CiphertextRepeatingBigramEvaluator;
+import com.ciphertool.zenith.inference.transformer.ciphertext.UnwrapTranspositionCipherTransformer;
+import com.ciphertool.zenith.search.evaluator.CiphertextLanguageModelEvaluator;
 import com.ciphertool.zenith.search.evaluator.CiphertextRowLevelEntropyEvaluator;
 import com.ciphertool.zenith.search.model.EpochResults;
 import org.slf4j.Logger;
@@ -34,7 +38,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -60,6 +67,15 @@ public class TranspositionSearcher {
 
     @Value("${decipherment.transposition.key-length.max}")
     private int keyLengthMax;
+
+    @Autowired
+    private ApplicationConfiguration applicationConfiguration;
+
+    @Autowired
+    private List<SolutionOptimizer> optimizers;
+
+    @Autowired
+    private List<PlaintextEvaluator> plaintextEvaluators;
 
     @Autowired
     private CiphertextRepeatingBigramEvaluator repeatingBigramEvaluator;
@@ -98,6 +114,10 @@ public class TranspositionSearcher {
         long start = System.currentTimeMillis();
         Map<Integer, List<EpochResults>> bestSolutionsPerKeyLength = new HashMap<>(keyLengthMax - keyLengthMin);
 
+        Map<String, Object> configuration = ConfigurationResolver.resolveConfiguration(applicationConfiguration);
+        SolutionOptimizer solutionOptimizer = ConfigurationResolver.resolveSolutionOptimizer(applicationConfiguration, optimizers);
+        PlaintextEvaluator plaintextEvaluator = ConfigurationResolver.resolvePlaintextEvaluator(applicationConfiguration, plaintextEvaluators);
+
         for (int keyLength = keyLengthMin; keyLength <= keyLengthMax; keyLength++) {
             bestSolutionsPerKeyLength.put(keyLength, new ArrayList<>(epochs));
 
@@ -118,16 +138,16 @@ public class TranspositionSearcher {
 
                 log.info("Epoch {} of {}.  Running sampler for {} iterations.", epoch, epochs, samplerIterations);
 
-                EpochResults epochResults = performEpoch(epoch, cipherProposal, transpositionKeyIndices, keyLength);
+                EpochResults epochResults = performEpoch(configuration, solutionOptimizer, plaintextEvaluator, epoch, applicationConfiguration.getEpochs(), cipherProposal, transpositionKeyIndices, keyLength);
                 bestSolutionsPerKeyLength.get(keyLength).add(epochResults);
             }
         }
 
         log.info("Total time elapsed: {}ms.", (System.currentTimeMillis() - start));
-        printSummaryResults(bestSolutionsPerKeyLength);
+        printSummaryResults(configuration, solutionOptimizer, plaintextEvaluator, applicationConfiguration.getEpochs(), bestSolutionsPerKeyLength);
     }
 
-    private EpochResults performEpoch(int epoch, CipherSolution initialCipher, List<Integer> transpositionKeyIndices, int keyLength) {
+    private EpochResults performEpoch(Map<String, Object> configuration, SolutionOptimizer optimizer, PlaintextEvaluator plaintextEvaluator, int epoch, int samplerEpochs, CipherSolution initialCipher, List<Integer> transpositionKeyIndices, int keyLength) {
         log.debug("{}", transpositionKeyIndices);
 
         Double maxTemp = annealingTemperatureMax;
@@ -136,7 +156,7 @@ public class TranspositionSearcher {
         Double temperature;
         CipherSolution next = initialCipher.clone();
         next.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, transpositionKeyIndices));
-        evaluate(next);
+        evaluate(configuration, optimizer, plaintextEvaluator, samplerEpochs, next);
         CipherSolution maxProbability = next;
         List<Integer> maxIndices = new ArrayList<>(transpositionKeyIndices);
         int maxProbabilityIteration = 0;
@@ -155,7 +175,7 @@ public class TranspositionSearcher {
             temperature = ((maxTemp - minTemp) * ((iterations - (double) i) / iterations)) + minTemp;
 
             startSampling = System.currentTimeMillis();
-            next = runSampler(temperature, next, transpositionKeyIndices);
+            next = runSampler(configuration, optimizer, plaintextEvaluator, samplerEpochs, temperature, next, transpositionKeyIndices);
             letterSamplingElapsed = (System.currentTimeMillis() - startSampling);
 
             if (maxProbability.getLogProbability() < next.getLogProbability()) {
@@ -178,7 +198,7 @@ public class TranspositionSearcher {
         return new EpochResults(epoch, maxProbabilityIteration, maxProbability, maxIndices);
     }
 
-    private CipherSolution runSampler(Double temperature, CipherSolution solution, List<Integer> transpositionKeyIndices) {
+    private CipherSolution runSampler(Map<String, Object> configuration, SolutionOptimizer optimizer, PlaintextEvaluator plaintextEvaluator, int samplerEpochs, Double temperature, CipherSolution solution, List<Integer> transpositionKeyIndices) {
         CipherSolution proposal;
         CipherSolution best = solution;
         int first = ThreadLocalRandom.current().nextInt(transpositionKeyIndices.size());
@@ -198,7 +218,7 @@ public class TranspositionSearcher {
 
         proposal.setCipher(unwrapTranspositionCipherTransformer.transform(cipher, nextTranspositionKeyIndices));
 
-        evaluate(proposal);
+        evaluate(configuration, optimizer, plaintextEvaluator, samplerEpochs, proposal);
 
         best = selectNext(temperature, best, proposal);
 
@@ -237,11 +257,11 @@ public class TranspositionSearcher {
         return solution;
     }
 
-    private double evaluate(CipherSolution cipherSolution) {
+    private double evaluate(Map<String, Object> configuration, SolutionOptimizer optimizer, PlaintextEvaluator plaintextEvaluator, int epochs, CipherSolution cipherSolution) {
 //        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipher);
         int cycleScore = cycleCountEvaluator.evaluate(cipher);
 //        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
-        float languageModelScore = languageModelEvaluator.evaluate(cipherSolution.getCipher());
+        float languageModelScore = languageModelEvaluator.evaluate(configuration, optimizer, plaintextEvaluator, epochs, cipherSolution.getCipher());
 
         float scaledScore = languageModelScore + (cycleScore / 25f);
 
@@ -251,14 +271,14 @@ public class TranspositionSearcher {
         return scaledScore;
     }
 
-    private void printSummaryResults(Map<Integer, List<EpochResults>> bestSolutionsPerKeyLength) {
+    private void printSummaryResults(Map<String, Object> configuration, SolutionOptimizer optimizer, PlaintextEvaluator plaintextEvaluator, int epochs, Map<Integer, List<EpochResults>> bestSolutionsPerKeyLength) {
         log.info("---------------------");
         log.info("---RESULTS SUMMARY---");
         log.info("---------------------");
 
         CipherSolution cipherProposal = new CipherSolution(cipher, ARBITRARY_INITIAL_LIST_SIZE);
         cipherProposal.setCipher(cipher);
-        evaluate(cipherProposal);
+        evaluate(configuration, optimizer, plaintextEvaluator, epochs, cipherProposal);
         log.info("Original solution score: {}", cipherProposal.getLogProbability());
 
         int bestAverageKeyLength = -1;

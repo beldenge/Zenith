@@ -19,38 +19,40 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
-import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.*;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Collections;
+import java.util.Map;
 
+@NoArgsConstructor
 @Component
 public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    public static final String REST_SERVICE_URL = "restServiceUrl";
+
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${evaluation.rest-service.url}")
-    private String evaluationRestServiceUrl;
+    private String restServiceUrl;
 
     private URI evaluationRestServiceEndpoint;
 
-    @PostConstruct
-    public void init() {
-        evaluationRestServiceEndpoint = UriComponentsBuilder.fromHttpUrl(evaluationRestServiceUrl).build().encode().toUri();
+    public RestServicePlaintextEvaluator(RestTemplate restTemplate, Map<String, Object> data) {
+        this.restTemplate = restTemplate;
+        this.restServiceUrl = (String) data.get(REST_SERVICE_URL);
+        this.evaluationRestServiceEndpoint = UriComponentsBuilder.fromHttpUrl(restServiceUrl).build().encode().toUri();
     }
 
     @Override
@@ -81,5 +83,39 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
         }
 
         return new SolutionScore(logProbabilitiesUpdated, solution.getLogProbability());
+    }
+
+    @Override
+    public PlaintextEvaluator getInstance(Map<String, Object> data) {
+        return new RestServicePlaintextEvaluator(restTemplate, data);
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        FormlyForm form = new FormlyForm();
+
+        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        templateOptions.setLabel("REST Service URL");
+        templateOptions.setRequired(true);
+        templateOptions.setType("url");
+
+        FormlyFormField restServiceUrl = new FormlyFormField();
+        restServiceUrl.setKey(REST_SERVICE_URL);
+        restServiceUrl.setType("input");
+        restServiceUrl.setTemplateOptions(templateOptions);
+
+        form.setFields(Collections.singletonList(restServiceUrl));
+
+        return form;
+    }
+
+    @Override
+    public int getOrder() {
+        return 4;
+    }
+
+    @Override
+    public String getHelpText() {
+        return "Uses a REST service to calculate fitness of each solution proposal.";
     }
 }

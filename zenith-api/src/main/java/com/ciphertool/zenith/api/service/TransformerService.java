@@ -23,8 +23,6 @@ import com.ciphertool.zenith.api.model.TransformerResponse;
 import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +33,6 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/api/transformers", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class TransformerService {
-    private Logger log = LoggerFactory.getLogger(getClass());
-
     @Autowired
     private List<CipherTransformer> cipherTransformers;
 

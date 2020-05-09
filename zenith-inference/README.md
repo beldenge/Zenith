@@ -53,6 +53,10 @@ There are three main areas of configuration.
         "name": "SimulatedAnnealingSolutionOptimizer",
         "displayName": "Simulated Annealing"
       },
+      "selectedFitnessFunction": {
+        "name": "NgramAndIndexOfCoincidencePlaintextEvaluator",
+        "displayName": "Ngram and Index of Coincidence"
+      },
       "simulatedAnnealingConfiguration": {
         "samplerIterations": 5001,
         "annealingTemperatureMin": 2.75,
@@ -92,8 +96,6 @@ There are three main areas of configuration.
     language-model.archive-filename | zenith-model.zip | The language model zip file on the classpath which will be unzipped if language-model.filename does not exist
     language-model.max-ngrams-to-keep | 500000 | The maximum number of ngrams to keep.  The list of ngrams will be sorted in descending order by count and then the top number below will be kept.
     markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
-    decipherment.evaluator.plaintext | NGramAndIndexOfCoincidencePlaintextEvaluator | The PlaintextEvaluator implementation class name to use
-    evaluation.rest-service.url | http://localhost:5000/probabilities | The URL for the solution evaluator REST service, required only if decipherment.evaluator.plaintext is set to RestServicePlaintextEvaluator
     application.configuration.file-path | ./config | The path to the application configuration JSON file 
 
 # Algorithm and Scoring

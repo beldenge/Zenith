@@ -27,6 +27,7 @@ import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingCon
 import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
 import { Subscription } from "rxjs";
 import { IntroductionService } from "../introduction.service";
+import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 
 const INTEGER_PATTERN: string = "^[0-9]+$";
 const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
@@ -39,15 +40,19 @@ const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
 export class SettingsComponent implements OnInit, OnDestroy {
   showIntroSettingsSubscription: Subscription;
   selectedOptimizerSubscription: Subscription;
+  selectedFitnessFunctionSubscription: Subscription;
   simulatedAnnealingConfigurationSubscription: Subscription;
   geneticAlgorithmConfigurationSubscription: Subscription;
   generalSettingsFormValueChangesSubscription: Subscription;
   optimizerNames: SelectOption[] = ConfigurationService.OPTIMIZER_NAMES;
+  availableFitnessFunctions: ZenithFitnessFunction[] = [];
   populationNames: SelectOption[] = ConfigurationService.POPULATION_NAMES;
   breederNames: SelectOption[] = ConfigurationService.BREEDER_NAMES;
   crossoverAlgorithmNames: SelectOption[] = ConfigurationService.CROSSOVER_ALGORITHM_NAMES;
   mutationAlgorithmNames: SelectOption[] = ConfigurationService.MUTATION_ALGORITHM_NAMES;
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
+  selectedFitnessFunction: ZenithFitnessFunction;
+
   simulatedAnnealingFormGroup = this.fb.group({
     samplerIterations: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
     annealingTemperatureMin: [null, [Validators.pattern(DECIMAL_PATTERN)]],
@@ -75,6 +80,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   generalSettingsForm = this.fb.group({
     optimizer: [this.optimizerNames[0], [Validators.required]],
+    fitnessFunction: [null, [Validators.required]],
     simulatedAnnealingConfiguration: this.simulatedAnnealingFormGroup,
     geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup
   });
@@ -82,6 +88,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder, private json: JsonPipe, private configurationService: ConfigurationService, private introductionService: IntroductionService) { }
 
   ngOnInit() {
+    this.configurationService.getAvailableFitnessFunctionsAsObservable().subscribe(fitnessFunctions => {
+      this.availableFitnessFunctions = fitnessFunctions;
+    });
+
     this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
       let patch = {
         samplerIterations: configuration.samplerIterations,
@@ -117,7 +127,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
       if (JSON.stringify(this.geneticAlgorithmFormGroup.value) !== JSON.stringify(patch)) {
         this.geneticAlgorithmFormGroup.patchValue(patch);
-        this.generalSettingsForm.patchValue({geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup});
+        this.generalSettingsForm.patchValue({ geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup });
       }
     });
 
@@ -125,6 +135,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if (this.generalSettingsForm.get('optimizer').value !== optimizer) {
         let optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === optimizer.name);
         this.generalSettingsForm.patchValue({ optimizer: optimizerToUse });
+      }
+    });
+
+    this.selectedFitnessFunctionSubscription = this.configurationService.getSelectedFitnessFunctionAsObservable().subscribe(fitnessFunction => {
+      if (fitnessFunction && (!this.selectedFitnessFunction || this.selectedFitnessFunction !== fitnessFunction)) {
+        this.selectedFitnessFunction = fitnessFunction;
+        this.generalSettingsForm.patchValue({ fitnessFunction: fitnessFunction });
       }
     });
 
@@ -145,12 +162,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.simulatedAnnealingConfigurationSubscription.unsubscribe();
     this.geneticAlgorithmConfigurationSubscription.unsubscribe();
     this.selectedOptimizerSubscription.unsubscribe();
+    this.selectedFitnessFunctionSubscription.unsubscribe();
     this.generalSettingsFormValueChangesSubscription.unsubscribe();
+  }
+
+  // For some reason this doesn't even get called if we don't specify the event parameter
+  onFitnessFunctionChange(event) {
+    this.configurationService.updateSelectedFitnessFunction(this.generalSettingsForm.get('fitnessFunction').value);
   }
 
   onFormChange() {
     this.generalSettingsFormValueChangesSubscription = this.generalSettingsForm.valueChanges.subscribe(val => {
       this.configurationService.updateSelectedOptimizer(this.generalSettingsForm.get('optimizer').value);
+      this.configurationService.updateSelectedFitnessFunction(this.generalSettingsForm.get('fitnessFunction').value);
 
       if (this.generalSettingsForm.get('optimizer').value === this.optimizerNames[0]) {
         let configuration: SimulatedAnnealingConfiguration = {

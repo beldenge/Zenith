@@ -20,16 +20,20 @@
 package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.SolutionRequest;
+import com.ciphertool.zenith.api.model.SolutionRequestFitnessFunction;
 import com.ciphertool.zenith.api.model.SolutionRequestTransformer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
 import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -39,11 +43,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class AbstractSolutionService {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private SimulatedAnnealingSolutionOptimizer simulatedAnnealingOptimizer;
 
     @Autowired
     private GeneticAlgorithmSolutionOptimizer geneticAlgorithmOptimizer;
+
+    @Autowired
+    private List<PlaintextEvaluator> plaintextEvaluators;
 
     public abstract OnEpochComplete getCallback(SolutionRequest request);
 
@@ -63,6 +72,8 @@ public abstract class AbstractSolutionService {
                     .collect(Collectors.toList());
         }
 
+        PlaintextEvaluator plaintextEvaluator = resolvePlaintextEvaluator(request.getFitnessFunction());
+
         CipherSolution cipherSolution;
         Map<String, Object> configuration = new HashMap<>();
 
@@ -72,7 +83,7 @@ public abstract class AbstractSolutionService {
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MIN, simulatedAnnealingConfiguration.getAnnealingTemperatureMin());
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MAX, simulatedAnnealingConfiguration.getAnnealingTemperatureMax());
 
-            cipherSolution = simulatedAnnealingOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, getCallback(request));
+            cipherSolution = simulatedAnnealingOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, plaintextEvaluator, getCallback(request));
         } else if (request.getGeneticAlgorithmConfiguration() != null) {
             GeneticAlgorithmConfiguration geneticAlgorithmConfiguration = request.getGeneticAlgorithmConfiguration();
             configuration.put(GeneticAlgorithmSolutionOptimizer.POPULATION_SIZE, geneticAlgorithmConfiguration.getPopulationSize());
@@ -92,11 +103,35 @@ public abstract class AbstractSolutionService {
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SELECTOR_ACCURACY, geneticAlgorithmConfiguration.getTournamentSelectorAccuracy());
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, geneticAlgorithmConfiguration.getTournamentSize());
 
-            cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, getCallback(request));
+            cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, plaintextEvaluator, getCallback(request));
         } else {
             throw new IllegalStateException("Neither simulated annealing nor genetic algorithm was chosen as the optimization strategy.  No other strategy is currently supported.");
         }
 
         return cipherSolution;
+    }
+
+    private PlaintextEvaluator resolvePlaintextEvaluator(SolutionRequestFitnessFunction requestFitnessFunction) {
+        List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
+                .map(evaluator -> evaluator.getClass().getSimpleName())
+                .collect(Collectors.toList());
+
+        String plaintextEvaluatorName = requestFitnessFunction.getFitnessFunctionName();
+
+        PlaintextEvaluator plaintextEvaluator = null;
+
+        for (PlaintextEvaluator evaluator : plaintextEvaluators) {
+            if (evaluator.getClass().getSimpleName().replace(PlaintextEvaluator.class.getSimpleName(), "").equals(plaintextEvaluatorName)) {
+                plaintextEvaluator = evaluator.getInstance(requestFitnessFunction.getData());
+                break;
+            }
+        }
+
+        if (plaintextEvaluator == null) {
+            log.error("The PlaintextEvaluator with name {} does not exist.  Please use a name from the following: {}", plaintextEvaluatorName, existentPlaintextEvaluators);
+            throw new IllegalArgumentException("The PlaintextEvaluator with name " + plaintextEvaluatorName + " does not exist.");
+        }
+
+        return plaintextEvaluator;
     }
 }

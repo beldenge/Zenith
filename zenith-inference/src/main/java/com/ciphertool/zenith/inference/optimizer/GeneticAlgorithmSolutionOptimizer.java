@@ -86,9 +86,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     @Autowired
     private List<Selector> selectors;
 
-    @Autowired
-    private PlaintextEvaluator plaintextEvaluator;
-
     private Population population;
 
     private Breeder breeder;
@@ -101,7 +98,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
     private FitnessEvaluator fitnessEvaluator;
 
-    public void init(Cipher cipher, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps) {
+    public void init(Cipher cipher, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         String populationName = (String) configuration.get(POPULATION_NAME);
         String breederName = (String) configuration.get(BREEDER_NAME);
         String crossoverAlgorithmName = (String) configuration.get(CROSSOVER_ALGORITHM_NAME);
@@ -198,7 +195,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
         int populationSize = (int) configuration.get(POPULATION_SIZE);
         int numberOfGenerations = (int) configuration.get(NUMBER_OF_GENERATIONS);
         int elitism = (int) configuration.get(ELITISM);
@@ -211,7 +208,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Double tournamentSelectorAccuracy = (Double) configuration.get(TOURNAMENT_SELECTOR_ACCURACY);
         Integer tournamentSize = (Integer) configuration.get(TOURNAMENT_SIZE);
 
-        init(cipher, configuration, plaintextTransformationSteps);
+        init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
 
         GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
                 .populationSize(populationSize)

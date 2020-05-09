@@ -27,6 +27,8 @@ import { ZenithTransformer } from "./models/ZenithTransformer";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { FormGroup } from "@angular/forms";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
+import { ZenithFitnessFunction } from "./models/ZenithFitnessFunction";
+import { FitnessFunctionService } from "./fitness-function.service";
 
 @Injectable({
   providedIn: 'root'
@@ -90,8 +92,8 @@ export class ConfigurationService {
 
   static readonly SIMULATED_ANNEALING_DEFAULTS: SimulatedAnnealingConfiguration = {
     samplerIterations: 5000,
-    annealingTemperatureMin: 2.75,
-    annealingTemperatureMax: 5
+    annealingTemperatureMin: 0.006,
+    annealingTemperatureMax: 0.012
   };
 
   static readonly GENETIC_ALGORITHM_DEFAULTS: GeneticAlgorithmConfiguration = {
@@ -120,10 +122,27 @@ export class ConfigurationService {
   private appliedPlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private samplePlaintext$ = new BehaviorSubject<string>(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
   private selectedOptimizer$ = new BehaviorSubject<SelectOption>(ConfigurationService.OPTIMIZER_NAMES[0]);
+  private availableFitnessFunctions$ = new BehaviorSubject<ZenithFitnessFunction[]>([]);
+  private selectedFitnessFunction$ = new BehaviorSubject<ZenithFitnessFunction>(null);
   private simulatedAnnealingConfiguration$ = new BehaviorSubject<SimulatedAnnealingConfiguration>(ConfigurationService.SIMULATED_ANNEALING_DEFAULTS);
   private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(private sanitizer: DomSanitizer, private fitnessFunctionService: FitnessFunctionService) {
+    fitnessFunctionService.getFitnessFunctions().subscribe(fitnessFunctionResponse => {
+      let availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
+        return t1.order - t2.order;
+      });
+
+      for (let i = 0; i < availableFitnessFunctions.length; i ++) {
+        if (availableFitnessFunctions[i].form) {
+          availableFitnessFunctions[i].form.form = new FormGroup({});
+        }
+      }
+
+      this.updateAvailableFitnessFunctions(availableFitnessFunctions);
+      this.updateSelectedFitnessFunction(availableFitnessFunctions[0]);
+    });
+  }
 
   getEnableTrackingAsObservable(): Observable<boolean> {
     return this.enableTracking$.asObservable();
@@ -183,6 +202,22 @@ export class ConfigurationService {
     this.selectedOptimizer$.next(optimizer);
   }
 
+  getAvailableFitnessFunctionsAsObservable(): Observable<ZenithFitnessFunction[]> {
+    return this.availableFitnessFunctions$.asObservable();
+  }
+
+  updateAvailableFitnessFunctions(fitnessFunctions: ZenithFitnessFunction[]) {
+    this.availableFitnessFunctions$.next(fitnessFunctions);
+  }
+
+  getSelectedFitnessFunctionAsObservable(): Observable<ZenithFitnessFunction> {
+    return this.selectedFitnessFunction$.asObservable();
+  }
+
+  updateSelectedFitnessFunction(fitnessFunction: ZenithFitnessFunction) {
+    this.selectedFitnessFunction$.next(fitnessFunction);
+  }
+
   getSimulatedAnnealingConfigurationAsObservable(): Observable<SimulatedAnnealingConfiguration> {
     return this.simulatedAnnealingConfiguration$.asObservable();
   }
@@ -201,6 +236,7 @@ export class ConfigurationService {
 
   restoreGeneralSettings() {
     this.updateSelectedOptimizer(ConfigurationService.OPTIMIZER_NAMES[0]);
+    this.updateSelectedFitnessFunction(this.availableFitnessFunctions$.getValue()[0]);
     this.updateSimulatedAnnealingConfiguration(ConfigurationService.SIMULATED_ANNEALING_DEFAULTS);
     this.updateGeneticAlgorithmConfiguration(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
   }
@@ -228,6 +264,17 @@ export class ConfigurationService {
 
     this.updateAppliedPlaintextTransformers(configuration.appliedPlaintextTransformers);
     this.updateSelectedOptimizer(configuration.selectedOptimizer);
+
+    let selectedFitnessFunction = this.availableFitnessFunctions$.getValue().find(fitnessFunction =>
+      fitnessFunction.name === configuration.selectedFitnessFunction.name
+    );
+
+    if (selectedFitnessFunction.form) {
+      selectedFitnessFunction.form.model = configuration.selectedFitnessFunction.form.model;
+      selectedFitnessFunction.form.fields = configuration.selectedFitnessFunction.form.fields;
+    }
+
+    this.updateSelectedFitnessFunction(selectedFitnessFunction);
     this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration);
     this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration);
   }
@@ -272,6 +319,19 @@ export class ConfigurationService {
         });
       });
     }
+
+    let fitnessFunction = this.selectedFitnessFunction$.getValue();
+
+    configuration.selectedFitnessFunction = {
+      name: fitnessFunction.name,
+      displayName: fitnessFunction.displayName,
+      form: fitnessFunction.form ? {
+        model: fitnessFunction.form.model,
+        fields: fitnessFunction.form.fields
+      } : null,
+      order: fitnessFunction.order,
+      helpText: fitnessFunction.helpText
+    };
 
     configuration.selectedOptimizer = this.selectedOptimizer$.getValue();
     configuration.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration$.getValue();

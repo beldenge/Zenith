@@ -20,14 +20,15 @@
 import { SolutionRequestTransformer } from "./SolutionRequestTransformer";
 import { SimulatedAnnealingConfiguration } from "./SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./GeneticAlgorithmConfiguration";
+import { SolutionRequestFitnessFunction } from "./SolutionRequestFitnessFunction";
 
 export class SolutionRequest {
   rows: number;
   columns: number;
   ciphertext: string;
   epochs: number;
-  knownSolutionCorrectnessThreshold: number;
   plaintextTransformers: SolutionRequestTransformer[] = [];
+  fitnessFunction: SolutionRequestFitnessFunction;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
 

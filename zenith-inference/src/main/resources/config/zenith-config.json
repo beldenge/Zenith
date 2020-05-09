@@ -13,6 +13,10 @@
     "name": "SimulatedAnnealingSolutionOptimizer",
     "displayName": "Simulated Annealing"
   },
+  "selectedFitnessFunction": {
+    "name": "NgramAndIndexOfCoincidencePlaintextEvaluator",
+    "displayName": "Ngram and Index of Coincidence"
+  },
   "simulatedAnnealingConfiguration": {
     "samplerIterations": 5000,
     "annealingTemperatureMin": 0.006,

@@ -36,6 +36,8 @@ import { SafeUrl } from "@angular/platform-browser";
 import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
 import { SolutionService } from "../solution.service";
 import { SolutionResponse } from "../models/SolutionResponse";
+import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
+import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 
 @Component({
   selector: 'app-dashboard',
@@ -56,6 +58,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectHasFocus: boolean = false;
   appliedPlaintextTransformers: ZenithTransformer[] = [];
   optimizer: SelectOption;
+  fitnessFunction: ZenithFitnessFunction;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   exportUri: SafeUrl;
@@ -64,6 +67,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   appliedPlaintextTransformersSubscription: Subscription;
   epochsSubscription: Subscription;
   selectedOptimizerSubscription: Subscription;
+  selectedFitnessFunctionSubscription: Subscription;
   simulatedAnnealingConfigurationSubscription: Subscription;
   geneticAlgorithmConfigurationSubscription: Subscription;
 
@@ -100,6 +104,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.optimizer = optimizer;
     });
 
+    this.selectedFitnessFunctionSubscription = this.configurationService.getSelectedFitnessFunctionAsObservable().subscribe(fitnessFunction => {
+      this.fitnessFunction = fitnessFunction;
+    });
+
     this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
       this.simulatedAnnealingConfiguration = configuration;
     });
@@ -122,6 +130,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.appliedPlaintextTransformersSubscription.unsubscribe();
     this.epochsSubscription.unsubscribe();
     this.selectedOptimizerSubscription.unsubscribe();
+    this.selectedFitnessFunctionSubscription.unsubscribe();
     this.simulatedAnnealingConfigurationSubscription.unsubscribe();
     this.geneticAlgorithmConfigurationSubscription.unsubscribe();
     this.showIntroDashboardSubscription.unsubscribe();
@@ -159,6 +168,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration;
     }
+
+    request.fitnessFunction = new SolutionRequestFitnessFunction(this.fitnessFunction.name, this.fitnessFunction.form ? this.fitnessFunction.form.model : null);
 
     let allValid = true;
 

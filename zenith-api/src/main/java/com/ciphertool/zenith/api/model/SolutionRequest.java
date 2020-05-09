@@ -49,6 +49,9 @@ public class SolutionRequest {
     private List<SolutionRequestTransformer> plaintextTransformers;
 
     @Valid
+    private SolutionRequestFitnessFunction fitnessFunction;
+
+    @Valid
     private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
 
     @Valid

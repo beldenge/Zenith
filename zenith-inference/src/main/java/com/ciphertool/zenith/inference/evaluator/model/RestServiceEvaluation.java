@@ -32,4 +32,5 @@ import java.util.List;
 @ToString
 public class RestServiceEvaluation {
     private List<EvaluationProbability> probabilities;
+    private Float score;
 }

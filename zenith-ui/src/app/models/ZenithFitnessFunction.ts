@@ -17,16 +17,12 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.optimizer;
+import { DynamicForm } from "./DynamicForm";
 
-import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-
-import java.util.List;
-import java.util.Map;
-
-public interface SolutionOptimizer {
-    CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete);
+export class ZenithFitnessFunction {
+  name: string;
+  displayName: string;
+  form?: DynamicForm;
+  order: number;
+  helpText: string;
 }

@@ -21,12 +21,14 @@ import { ZenithTransformer } from "./ZenithTransformer";
 import { SelectOption } from "./SelectOption";
 import { SimulatedAnnealingConfiguration } from "./SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./GeneticAlgorithmConfiguration";
+import { ZenithFitnessFunction } from "./ZenithFitnessFunction";
 
 export class ApplicationConfiguration {
   epochs: number;
   appliedCiphertextTransformers: ZenithTransformer[];
   appliedPlaintextTransformers: ZenithTransformer[];
   selectedOptimizer: SelectOption;
+  selectedFitnessFunction: ZenithFitnessFunction;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
 }

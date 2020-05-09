@@ -17,23 +17,20 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.entities.config;
+package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.inference.entities.ZenithFitnessFunction;
-import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import javax.validation.constraints.NotBlank;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
-public class ApplicationConfiguration {
-    private int epochs;
-    private List<ZenithTransformer> appliedCiphertextTransformers;
-    private List<ZenithTransformer> appliedPlaintextTransformers;
-    private SelectOption selectedOptimizer;
-    private ZenithFitnessFunction selectedFitnessFunction;
-    private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
-    private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
+public class SolutionRequestFitnessFunction {
+    @NotBlank
+    private String fitnessFunctionName;
+
+    private Map<String, Object> data = new HashMap<>();
 }

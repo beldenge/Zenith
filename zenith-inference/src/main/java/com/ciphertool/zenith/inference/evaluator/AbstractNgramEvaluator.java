@@ -22,21 +22,17 @@ package com.ciphertool.zenith.inference.evaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
-public class AbstractNGramEvaluator {
-    private Logger log = LoggerFactory.getLogger(getClass());
-
+public class AbstractNgramEvaluator {
     private int order;
     private int stepSize;
     private int doubleStepSize;
 
     @Autowired
-    private ArrayMarkovModel letterMarkovModel;
+    protected ArrayMarkovModel letterMarkovModel;
 
     @PostConstruct
     public void init() {

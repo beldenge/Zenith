@@ -21,20 +21,32 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
 import com.ciphertool.zenith.inference.util.MathUtils;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
+@NoArgsConstructor
 @Component
-public class NGramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNGramEvaluator implements PlaintextEvaluator {
+public class NgramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNgramEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
+
+    public NgramAndIndexOfCoincidencePlaintextEvaluator(ArrayMarkovModel letterMarkovModel, IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator, Map<String, Object> data) {
+        this.letterMarkovModel = letterMarkovModel;
+        this.indexOfCoincidenceEvaluator = indexOfCoincidenceEvaluator;
+        super.init();
+    }
 
     @Override
     public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
@@ -51,5 +63,25 @@ public class NGramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNGramE
         float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
 
         return new SolutionScore(logProbabilitiesUpdated, score);
+    }
+
+    @Override
+    public PlaintextEvaluator getInstance(Map<String, Object> data) {
+        return new NgramAndIndexOfCoincidencePlaintextEvaluator(letterMarkovModel, indexOfCoincidenceEvaluator, data);
+    }
+
+    @Override
+    public FormlyForm getForm() {
+        return null;
+    }
+
+    @Override
+    public int getOrder() {
+        return 1;
+    }
+
+    @Override
+    public String getHelpText() {
+        return "Uses a character-level n-gram model along with calculating the index of coincidence.";
     }
 }

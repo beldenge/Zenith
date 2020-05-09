@@ -38,8 +38,8 @@ import java.util.List;
 @Ignore
 @SpringBootTest
 @RunWith(SpringRunner.class)
-public class NGramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
-    private static Logger log = LoggerFactory.getLogger(NGramAndIndexOfCoincidencePlaintextEvaluatorTest.class);
+public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
+    private static Logger log = LoggerFactory.getLogger(NgramAndIndexOfCoincidencePlaintextEvaluatorTest.class);
 
     private static final int ARBITRARY_INITIAL_LIST_SIZE = 20;
 
@@ -53,7 +53,7 @@ public class NGramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
     private LetterNGramDao letterNGramDao;
 
     @Autowired
-    private NGramAndIndexOfCoincidencePlaintextEvaluator NGramAndIndexOfCoincidencePlaintextEvaluator;
+    private NgramAndIndexOfCoincidencePlaintextEvaluator NGramAndIndexOfCoincidencePlaintextEvaluator;
 
     static {
         int lastRowBegin = (zodiac408.getColumns() * (zodiac408.getRows() - 1));

@@ -21,8 +21,27 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
 
 public interface PlaintextEvaluator {
    SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey);
+
+   PlaintextEvaluator getInstance(Map<String, Object> data);
+
+   default String getDisplayName() {
+      String displayName = getClass().getSimpleName()
+              .replace(PlaintextEvaluator.class.getSimpleName(), "");
+
+      return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(displayName), ' ');
+   }
+
+   FormlyForm getForm();
+
+   int getOrder();
+
+   String getHelpText();
 }
