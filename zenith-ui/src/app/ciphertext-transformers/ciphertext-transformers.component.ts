@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { animate, style, transition, trigger } from "@angular/animations";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { CiphertextTransformerService } from "../ciphertext-transformer.service";
@@ -27,6 +27,7 @@ import { Subscription } from "rxjs";
 import { FormGroup } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
+import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
 
 @Component({
   selector: 'app-ciphertext-transformers',
@@ -61,7 +62,37 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   appliedTransformers: ZenithTransformer[] = [];
 
   onAppliedTransformersChange = (event: any) => {
-    return this.transformerService.onAppliedTransformersChange(event);
+    if (!this.cipher) {
+      return;
+    }
+
+    let transformationRequest: CiphertextTransformationRequest = {
+      steps: []
+    };
+
+    let satisfied = true;
+
+    this.appliedTransformers.forEach(transformer => {
+      if (transformer.form && ((event && event.isNew) || !transformer.form.form.valid)) {
+        satisfied = false;
+        return;
+      }
+
+      transformationRequest.steps.push({
+        transformerName: transformer.name,
+        data: transformer.form ? transformer.form.model : null
+      });
+    });
+
+    if (satisfied) {
+      this.cipherService.transformCipher(this.cipher.name, transformationRequest).subscribe(cipherResponse => {
+        this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
+      });
+
+      if (!event || !event.skipUpdate) {
+        this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
+      }
+    }
   };
 
   // On adding of a new item to the Sortable list, the event fires before the formly form is initialized, so we cannot rely on validation alone
@@ -79,10 +110,13 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
 
   ngOnInit(): void {
-    this.transformerService.getTransformers().subscribe(transformerResponse => {
-      this.availableTransformers = transformerResponse.transformers.sort((t1, t2) => {
-        return t1.order - t2.order;
-      });
+    this.configurationService.getAvailableCiphertextTransformersAsObservable().subscribe(transformerResponse => {
+      this.availableTransformers = transformerResponse;
+    });
+
+    this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
+      this.appliedTransformers = appliedTransformers;
+      this.onAppliedTransformersChange({ skipUpdate: true });
     });
 
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {

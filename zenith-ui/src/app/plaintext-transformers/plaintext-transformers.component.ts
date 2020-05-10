@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from "rxjs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
@@ -111,10 +111,8 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   constructor(private transformerService: PlaintextTransformerService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
 
   ngOnInit(): void {
-    this.transformerService.getTransformers().subscribe(transformerResponse => {
-      this.availableTransformers = transformerResponse.transformers.sort((t1, t2) => {
-        return t1.order - t2.order;
-      });
+    this.configurationService.getAvailablePlaintextTransformersAsObservable().subscribe(transformerResponse => {
+      this.availableTransformers = transformerResponse;
     });
 
     this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {

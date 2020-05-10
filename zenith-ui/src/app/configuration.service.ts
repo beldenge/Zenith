@@ -29,6 +29,8 @@ import { FormGroup } from "@angular/forms";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
 import { ZenithFitnessFunction } from "./models/ZenithFitnessFunction";
 import { FitnessFunctionService } from "./fitness-function.service";
+import { PlaintextTransformerService } from "./plaintext-transformer.service";
+import { CiphertextTransformerService } from "./ciphertext-transformer.service";
 
 @Injectable({
   providedIn: 'root'
@@ -118,7 +120,9 @@ export class ConfigurationService {
   private enableTracking$ = new BehaviorSubject<boolean>(true);
   private enablePageTransitions$ = new BehaviorSubject<boolean>(true);
   private epochs$ = new BehaviorSubject<number>(1);
+  private availableCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private appliedCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
+  private availablePlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private appliedPlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private samplePlaintext$ = new BehaviorSubject<string>(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
   private selectedOptimizer$ = new BehaviorSubject<SelectOption>(ConfigurationService.OPTIMIZER_NAMES[0]);
@@ -127,7 +131,7 @@ export class ConfigurationService {
   private simulatedAnnealingConfiguration$ = new BehaviorSubject<SimulatedAnnealingConfiguration>(ConfigurationService.SIMULATED_ANNEALING_DEFAULTS);
   private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
 
-  constructor(private sanitizer: DomSanitizer, private fitnessFunctionService: FitnessFunctionService) {
+  constructor(private sanitizer: DomSanitizer, private fitnessFunctionService: FitnessFunctionService, private plaintextTransformerService: PlaintextTransformerService, private ciphertextTransformerService: CiphertextTransformerService) {
     fitnessFunctionService.getFitnessFunctions().subscribe(fitnessFunctionResponse => {
       let availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
         return t1.order - t2.order;
@@ -141,6 +145,22 @@ export class ConfigurationService {
 
       this.updateAvailableFitnessFunctions(availableFitnessFunctions);
       this.updateSelectedFitnessFunction(availableFitnessFunctions[0]);
+    });
+
+    this.plaintextTransformerService.getTransformers().subscribe(transformerResponse => {
+      let availablePlaintextTransformers = transformerResponse.transformers.sort((t1, t2) => {
+        return t1.order - t2.order;
+      });
+
+      this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
+    });
+
+    this.ciphertextTransformerService.getTransformers().subscribe(transformerResponse => {
+      let availableCiphertextTransformers = transformerResponse.transformers.sort((t1, t2) => {
+        return t1.order - t2.order;
+      });
+
+      this.updateAvailableCiphertextTransformers(availableCiphertextTransformers);
     });
   }
 
@@ -170,12 +190,28 @@ export class ConfigurationService {
     this.epochs$.next(epochs);
   }
 
+  getAvailableCiphertextTransformersAsObservable(): Observable<ZenithTransformer[]> {
+    return this.availableCiphertextTransformers$.asObservable();
+  }
+
+  updateAvailableCiphertextTransformers(appliedTransformers: ZenithTransformer[]): void {
+    this.availableCiphertextTransformers$.next(appliedTransformers);
+  }
+
   getAppliedCiphertextTransformersAsObservable(): Observable<ZenithTransformer[]> {
     return this.appliedCiphertextTransformers$.asObservable();
   }
 
   updateAppliedCiphertextTransformers(appliedTransformers: ZenithTransformer[]): void {
     this.appliedCiphertextTransformers$.next(appliedTransformers);
+  }
+
+  getAvailablePlaintextTransformersAsObservable(): Observable<ZenithTransformer[]> {
+    return this.availablePlaintextTransformers$.asObservable();
+  }
+
+  updateAvailablePlaintextTransformers(appliedTransformers: ZenithTransformer[]): void {
+    this.availablePlaintextTransformers$.next(appliedTransformers);
   }
 
   getAppliedPlaintextTransformersAsObservable(): Observable<ZenithTransformer[]> {
