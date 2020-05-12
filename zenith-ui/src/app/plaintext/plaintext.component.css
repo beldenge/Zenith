@@ -18,7 +18,7 @@
  */
 
 .card-body div {
-  white-space: pre;
+  white-space: pre-wrap;
   font-family: "Courier New", Courier, monospace;
   color: initial;
 }

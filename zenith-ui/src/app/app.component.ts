@@ -87,7 +87,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
       let ciphers = cipherResponse.ciphers;
       this.cipherService.updateCiphers(ciphers);
 
-      this.cipherService.updateSelectedCipher(ciphers[0]);
+      this.cipherService.updateSelectedCipher(ciphers.find(cipher => cipher.name === 'zodiac408'));
 
       let selectedCipherName = localStorage.getItem(LocalStorageKeys.SELECTED_CIPHER_NAME);
 
