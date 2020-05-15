@@ -60,6 +60,7 @@ import { HelpComponent } from './help/help.component';
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { WordSegmentationComponent } from './word-segmentation/word-segmentation.component';
+import { FormlyFieldInput } from "@ngx-formly/material/input";
 
 export function minValidationMessage(err, field) {
   return `This field has a minimum value of ${field.templateOptions.min}`;
@@ -149,7 +150,21 @@ export function registerValidationMessages() {
         MatSortModule,
         MatPaginatorModule,
         MatSnackBarModule,
-        FormlyModule.forRoot(),
+        FormlyModule.forRoot({
+          types: [
+            {
+              name: 'input',
+              component: FormlyFieldInput,
+              defaultOptions: {
+                modelOptions: {
+                  debounce: {
+                    default: 500
+                  }
+                }
+              }
+            }
+          ]
+        }),
         FormlyMaterialModule,
         MatProgressSpinnerModule,
         MatRadioModule,
