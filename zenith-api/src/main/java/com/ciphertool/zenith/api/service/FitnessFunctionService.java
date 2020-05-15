@@ -23,6 +23,7 @@ import com.ciphertool.zenith.api.model.FitnessFunctionResponse;
 import com.ciphertool.zenith.inference.entities.ZenithFitnessFunction;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,8 @@ public class FitnessFunctionService {
 
     @GetMapping
     @ResponseBody
-    public FitnessFunctionResponse findCiphertextTransformers() {
+    @Cacheable("fitnessFunctions")
+    public FitnessFunctionResponse findFitnessFunctions() {
         FitnessFunctionResponse fitnessFunctionResponse = new FitnessFunctionResponse();
 
         for (PlaintextEvaluator plaintextEvaluator : plaintextEvaluators) {

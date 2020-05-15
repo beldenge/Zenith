@@ -25,6 +25,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -46,6 +47,7 @@ public class CipherService {
 
     @GetMapping
     @ResponseBody
+    @Cacheable("ciphers")
     public CipherResponse findCiphers() {
         CipherResponse cipherResponse = new CipherResponse();
 

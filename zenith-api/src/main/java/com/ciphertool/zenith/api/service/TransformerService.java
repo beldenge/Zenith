@@ -24,6 +24,7 @@ import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,7 @@ public class TransformerService {
 
     @GetMapping("/ciphertext")
     @ResponseBody
+    @Cacheable("ciphertextTransformers")
     public TransformerResponse findCiphertextTransformers() {
         TransformerResponse transformerResponse = new TransformerResponse();
 
@@ -60,6 +62,7 @@ public class TransformerService {
 
     @GetMapping("/plaintext")
     @ResponseBody
+    @Cacheable("plaintextTransformers")
     public TransformerResponse findPlaintextTransformers() {
         TransformerResponse transformerResponse = new TransformerResponse();
 

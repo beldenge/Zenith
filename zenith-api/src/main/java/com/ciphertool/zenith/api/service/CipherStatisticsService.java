@@ -25,6 +25,7 @@ import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,36 +66,42 @@ public class CipherStatisticsService {
 
     @GetMapping("/uniqueSymbols")
     @ResponseBody
+    @Cacheable("chiSquareds")
     public DoubleResponse getChiSquared(@PathVariable String cipherName) {
         return new DoubleResponse(uniqueSymbolsEvaluator.evaluate(getCipher(cipherName)));
     }
 
     @GetMapping("/multiplicity")
     @ResponseBody
+    @Cacheable("multiplicities")
     public DoubleResponse getMultiplicity(@PathVariable String cipherName) {
         return new DoubleResponse(multiplicityEvaluator.evaluate(getCipher(cipherName)));
     }
 
     @GetMapping("/entropy")
     @ResponseBody
+    @Cacheable("entropies")
     public DoubleResponse getEntropy(@PathVariable String cipherName) {
         return new DoubleResponse(entropyEvaluator.evaluate(getCipher(cipherName)));
     }
 
     @GetMapping("/indexOfCoincidence")
     @ResponseBody
+    @Cacheable("indexesOfCoincidence")
     public DoubleResponse getIndexOfCoincidence(@PathVariable String cipherName) {
         return new DoubleResponse(indexOfCoincidenceEvaluator.evaluate(getCipher(cipherName)));
     }
 
     @GetMapping("/bigramRepeats")
     @ResponseBody
+    @Cacheable("bigramRepeats")
     public IntResponse getBigramRepeats(@PathVariable String cipherName) {
         return new IntResponse(bigramEvaluator.evaluate(getCipher(cipherName)));
     }
 
     @GetMapping("/cycleScore")
     @ResponseBody
+    @Cacheable("cycleScores")
     public IntResponse getCycleScore(@PathVariable String cipherName) {
         return new IntResponse(cycleCountEvaluator.evaluateThreadSafe(getCipher(cipherName)));
     }
