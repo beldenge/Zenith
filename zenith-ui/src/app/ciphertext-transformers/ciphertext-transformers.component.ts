@@ -85,9 +85,15 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     });
 
     if (satisfied) {
-      this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
-        this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
-      });
+      if (!this.appliedTransformers.length) {
+        delete this.cipher.transformed;
+        this.cipherService.updateSelectedCipher(this.cipher);
+      } else {
+        this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
+          this.cipher.transformed = cipherResponse.ciphers[0];
+          this.cipherService.updateSelectedCipher(this.cipher);
+        });
+      }
 
       if (!event || !event.skipUpdate) {
         this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);

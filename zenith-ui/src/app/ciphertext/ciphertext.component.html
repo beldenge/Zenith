@@ -29,6 +29,7 @@
   </div>
   <!-- Card Body -->
   <div class="card-body">
-    <div>{{(cipher$ | async)?.ciphertext | blockify : (cipher$ | async)?.columns}}</div>
+    <div *ngIf="!(cipher$ | async)?.transformed">{{(cipher$ | async)?.ciphertext | blockify : (cipher$ | async)?.columns}}</div>
+    <div *ngIf="(cipher$ | async)?.transformed">{{(cipher$ | async)?.transformed.ciphertext | blockify : (cipher$ | async)?.transformed.columns}}</div>
   </div>
 </div>
