@@ -104,17 +104,15 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   }
 
   deleteCipher(cipher: Cipher) {
-    this.cipherService.deleteCipher(cipher.name).subscribe(() => {
-      let filteredCiphers = this.ciphers.filter((next) => {
-        return next.name !== cipher.name;
-      });
+    let filteredCiphers = this.ciphers.filter((next) => {
+      return next.name !== cipher.name;
+    });
 
-      this.cipherService.updateCiphers(filteredCiphers);
+    this.cipherService.updateCiphers(filteredCiphers);
 
-      this._snackBar.open('Deleted "' + cipher.name + '"', '',{
-        duration: 2000,
-        verticalPosition: 'top'
-      });
+    this._snackBar.open('Deleted "' + cipher.name + '"', '',{
+      duration: 2000,
+      verticalPosition: 'top'
     });
   }
 }

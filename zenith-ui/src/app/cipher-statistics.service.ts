@@ -22,6 +22,7 @@ import { environment } from "../environments/environment";
 import { HttpClient } from "@angular/common/http";
 import { NumberResponse } from "./models/NumberResponse";
 import { shareReplay } from "rxjs/operators";
+import { Cipher } from "./models/Cipher";
 
 const ENDPOINT_URL = environment.apiUrlBase + '/statistics';
 
@@ -37,51 +38,51 @@ export class CipherStatisticsService {
   cycleScoreObservables = {};
   constructor(private http: HttpClient) { }
 
-  getUniqueSymbols(cipherName: string) {
-    if (!this.uniqueSymbolsObservables.hasOwnProperty(cipherName)) {
-      this.uniqueSymbolsObservables[cipherName] = this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/uniqueSymbols').pipe(shareReplay(1));
+  getUniqueSymbols(cipher: Cipher) {
+    if (!this.uniqueSymbolsObservables.hasOwnProperty(cipher.ciphertext)) {
+      this.uniqueSymbolsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/uniqueSymbols', cipher).pipe(shareReplay(1));
     }
 
-    return this.uniqueSymbolsObservables[cipherName];
+    return this.uniqueSymbolsObservables[cipher.ciphertext];
   }
 
-  getMultiplicity(cipherName: string) {
-    if (!this.multiplicityObservables.hasOwnProperty(cipherName)) {
-      this.multiplicityObservables[cipherName] = this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/multiplicity').pipe(shareReplay(1));
+  getMultiplicity(cipher: Cipher) {
+    if (!this.multiplicityObservables.hasOwnProperty(cipher.ciphertext)) {
+      this.multiplicityObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/multiplicity', cipher).pipe(shareReplay(1));
     }
 
-    return this.multiplicityObservables[cipherName];
+    return this.multiplicityObservables[cipher.ciphertext];
   }
 
-  getEntropy(cipherName: string) {
-    if (!this.entropyObservables.hasOwnProperty(cipherName)) {
-      this.entropyObservables[cipherName] = this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/entropy').pipe(shareReplay(1));
+  getEntropy(cipher: Cipher) {
+    if (!this.entropyObservables.hasOwnProperty(cipher.ciphertext)) {
+      this.entropyObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/entropy', cipher).pipe(shareReplay(1));
     }
 
-    return this.entropyObservables[cipherName];
+    return this.entropyObservables[cipher.ciphertext];
   }
 
-  getIndexOfCoincidence(cipherName: string) {
-    if (!this.indexOfCoincidenceObservables.hasOwnProperty(cipherName)) {
-      this.indexOfCoincidenceObservables[cipherName] = this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/indexOfCoincidence').pipe(shareReplay(1));
+  getIndexOfCoincidence(cipher: Cipher) {
+    if (!this.indexOfCoincidenceObservables.hasOwnProperty(cipher.ciphertext)) {
+      this.indexOfCoincidenceObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/indexOfCoincidence', cipher).pipe(shareReplay(1));
     }
 
-    return this.indexOfCoincidenceObservables[cipherName];
+    return this.indexOfCoincidenceObservables[cipher.ciphertext];
   }
 
-  getBigramRepeats(cipherName: string) {
-    if (!this.bigramRepeatsObservables.hasOwnProperty(cipherName)) {
-      this.bigramRepeatsObservables[cipherName] = this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/bigramRepeats').pipe(shareReplay(1));
+  getBigramRepeats(cipher: Cipher) {
+    if (!this.bigramRepeatsObservables.hasOwnProperty(cipher.ciphertext)) {
+      this.bigramRepeatsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/bigramRepeats', cipher).pipe(shareReplay(1));
     }
 
-    return this.bigramRepeatsObservables[cipherName];
+    return this.bigramRepeatsObservables[cipher.ciphertext];
   }
 
-  getCycleScore(cipherName: string) {
-    if (!this.cycleScoreObservables.hasOwnProperty(cipherName)) {
-      this.cycleScoreObservables[cipherName] = this.http.get<NumberResponse>(ENDPOINT_URL + '/' + cipherName + '/cycleScore').pipe(shareReplay(1));
+  getCycleScore(cipher: Cipher) {
+    if (!this.cycleScoreObservables.hasOwnProperty(cipher.ciphertext)) {
+      this.cycleScoreObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/cycleScore', cipher).pipe(shareReplay(1));
     }
 
-    return this.cycleScoreObservables[cipherName];
+    return this.cycleScoreObservables[cipher.ciphertext];
   }
 }

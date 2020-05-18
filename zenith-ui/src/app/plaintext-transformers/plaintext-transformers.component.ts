@@ -66,7 +66,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   };
 
   onAppliedTransformersChange = (event: any) => {
-    if (!this.appliedTransformers.length) {
+    if (!this.appliedTransformers || !this.appliedTransformers.length) {
       this.transformedSample = null;
       return;
     }

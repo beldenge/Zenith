@@ -20,7 +20,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { animate, style, transition, trigger } from "@angular/animations";
 import { ZenithTransformer } from "../models/ZenithTransformer";
-import { CiphertextTransformerService } from "../ciphertext-transformer.service";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { Subscription } from "rxjs";
@@ -67,6 +66,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     }
 
     let transformationRequest: CiphertextTransformationRequest = {
+      cipher: this.cipher,
       steps: []
     };
 
@@ -85,7 +85,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     });
 
     if (satisfied) {
-      this.cipherService.transformCipher(this.cipher.name, transformationRequest).subscribe(cipherResponse => {
+      this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
         this.cipherService.updateSelectedCipher(cipherResponse.ciphers[0]);
       });
 
@@ -107,7 +107,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: CiphertextTransformerService, private cipherService: CipherService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
+  constructor(private cipherService: CipherService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
 
   ngOnInit(): void {
     this.configurationService.getAvailableCiphertextTransformersAsObservable().subscribe(transformerResponse => {

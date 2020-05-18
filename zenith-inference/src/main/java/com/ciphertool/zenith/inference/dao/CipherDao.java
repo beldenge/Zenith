@@ -21,19 +21,16 @@ package com.ciphertool.zenith.inference.dao;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherJson;
+import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +42,9 @@ public class CipherDao {
     private static final String CIPHERS_DIRECTORY = "ciphers";
     private static final String JSON_EXTENSION = ".json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    @Autowired
+    private ApplicationConfiguration applicationConfiguration;
 
     public Cipher findByCipherName(String name) {
         if (name == null || name.isEmpty()) {
@@ -60,58 +60,16 @@ public class CipherDao {
     }
 
     public List<Cipher> findAll() {
-        // First read ciphers from the classpath
-        ClassLoader cl = this.getClass().getClassLoader();
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
-        Resource[] resources;
-        try {
-            resources = resolver.getResources("classpath*:/" + CIPHERS_DIRECTORY + "/*" + JSON_EXTENSION);
-        } catch (IOException ioe) {
-            throw new IllegalStateException("Unable to read ciphers from classpath directory=" + CIPHERS_DIRECTORY, ioe);
-        }
-
         List<Cipher> ciphers = new ArrayList<>();
 
-        for (Resource resource : resources){
-            try (InputStream inputStream = resource.getInputStream()) {
-                Cipher nextCipher = new Cipher(OBJECT_MAPPER.readValue(inputStream, CipherJson.class));
+        for (CipherJson cipherJson : applicationConfiguration.getCiphers()){
+            Cipher nextCipher = new Cipher(cipherJson);
 
-                if (containsCipher(ciphers, nextCipher)) {
-                    throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
-                }
-
-                ciphers.add(nextCipher);
-            } catch (IOException e) {
-                log.error("Unable to read Ciphers from file: {}.", resource.getFilename(), e);
-                throw new IllegalStateException(e);
-            }
-        }
-
-        // Secondly, attempt to read ciphers from the local directory on the filesystem
-        File localCiphersDirectory = new File(Paths.get(CIPHERS_DIRECTORY).toAbsolutePath().toString());
-
-        if (!localCiphersDirectory.exists() || !localCiphersDirectory.isDirectory()) {
-            return ciphers;
-        }
-
-        for (File file : localCiphersDirectory.listFiles()) {
-            if (!file.getName().endsWith(JSON_EXTENSION)) {
-                log.info("Skipping file in ciphers directory due to invalid file extension.  File={}", file.getName());
-                continue;
+            if (containsCipher(ciphers, nextCipher)) {
+                throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
             }
 
-            try {
-                Cipher nextCipher = new Cipher(OBJECT_MAPPER.readValue(file, CipherJson.class));
-
-                if (containsCipher(ciphers, nextCipher)) {
-                    throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
-                }
-
-                ciphers.add(nextCipher);
-            } catch (IOException e) {
-                log.error("Unable to read Ciphers from file: {}.", file.getPath(), e);
-                throw new IllegalStateException(e);
-            }
+            ciphers.add(nextCipher);
         }
 
         return ciphers;
@@ -130,26 +88,6 @@ public class CipherDao {
         } catch (IOException e) {
             throw new IllegalStateException("Unable to write Cipher with name=" + cipher.getName() + " to file=" + outputFilename + ".");
         }
-    }
-
-    public void delete(String name) throws IOException {
-        File localCiphersDirectory = new File(Paths.get(CIPHERS_DIRECTORY).toAbsolutePath().toString());
-
-        if (!localCiphersDirectory.exists() || !localCiphersDirectory.isDirectory()) {
-            return;
-        }
-
-        Path cipherPath = localCiphersDirectory.toPath().resolve(name + JSON_EXTENSION);
-
-        if (!Files.exists(cipherPath)) {
-            return;
-        }
-
-        if (Files.isDirectory(cipherPath)) {
-            throw new IllegalArgumentException("Deletion path resolved to a directory: " + cipherPath.toString() + ".");
-        }
-
-        Files.delete(localCiphersDirectory.toPath().resolve(name + JSON_EXTENSION));
     }
 
     private boolean containsCipher(List<Cipher> ciphers, Cipher newCipher) {

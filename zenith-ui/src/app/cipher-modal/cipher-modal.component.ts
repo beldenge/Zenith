@@ -45,7 +45,11 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   ciphertextFormGroup: FormGroup;
   ciphersSubscription: Subscription;
 
-  constructor(public dialogRef: MatDialogRef<CipherModalComponent>, @Inject(MAT_DIALOG_DATA) public data: any, private fb: FormBuilder, private cipherService: CipherService, private _snackBar: MatSnackBar) { }
+  constructor(public dialogRef: MatDialogRef<CipherModalComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: any,
+              private fb: FormBuilder,
+              private cipherService: CipherService,
+              private _snackBar: MatSnackBar) { }
 
   ngOnInit() {
     this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
@@ -112,50 +116,36 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   }
 
   create(request: CipherRequest) {
-    this.cipherService.createCipher(request).subscribe(() => {
-      let cipher = new Cipher(request.name, request.rows, request.columns, request.ciphertext);
+    let cipher = new Cipher(request.name, request.rows, request.columns, request.ciphertext);
 
-      this.ciphers.push(cipher);
+    this.ciphers.push(cipher);
 
-      this.cipherService.updateCiphers(this.ciphers);
+    this.cipherService.updateCiphers(this.ciphers);
 
-      this.dialogRef.close();
+    this.dialogRef.close();
 
-      this._snackBar.open('Created "' + cipher.name + '"', '',{
-        duration: 2000,
-        verticalPosition: 'top'
-      });
-    }, () => {
-      this._snackBar.open('Unable to create "' + request.name + '"', '',{
-        duration: 2000,
-        verticalPosition: 'top'
-      });
+    this._snackBar.open('Created "' + cipher.name + '"', '',{
+      duration: 2000,
+      verticalPosition: 'top'
     });
   }
 
   update(request: CipherRequest) {
-    this.cipherService.updateCipher(request.name, request).subscribe(() => {
-      this.ciphers.forEach((next) => {
-        if(next.name === request.name) {
-          next.rows = request.rows;
-          next.columns = request.columns;
-          next.ciphertext = request.ciphertext;
-        }
-      });
+    this.ciphers.forEach((next) => {
+      if(next.name === request.name) {
+        next.rows = request.rows;
+        next.columns = request.columns;
+        next.ciphertext = request.ciphertext;
+      }
+    });
 
-      this.cipherService.updateCiphers(this.ciphers);
+    this.cipherService.updateCiphers(this.ciphers);
 
-      this.dialogRef.close();
+    this.dialogRef.close();
 
-      this._snackBar.open('Updated "' + request.name + '"', '',{
-        duration: 2000,
-        verticalPosition: 'top'
-      });
-    }, () => {
-      this._snackBar.open('Unable to update "' + request.name + '"', '',{
-        duration: 2000,
-        verticalPosition: 'top'
-      });
+    this._snackBar.open('Updated "' + request.name + '"', '',{
+      duration: 2000,
+      verticalPosition: 'top'
     });
   }
 

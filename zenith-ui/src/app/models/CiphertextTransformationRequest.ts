@@ -18,7 +18,9 @@
  */
 
 import { CiphertextTransformationRequestStep } from "./CiphertextTransformationRequestStep";
+import { Cipher } from "./Cipher";
 
 export class CiphertextTransformationRequest {
+  cipher: Cipher;
   steps: CiphertextTransformationRequestStep[];
 }

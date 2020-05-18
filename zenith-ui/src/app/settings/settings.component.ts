@@ -88,11 +88,23 @@ export class SettingsComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder, private json: JsonPipe, private configurationService: ConfigurationService, private introductionService: IntroductionService) { }
 
   ngOnInit() {
+    this.configurationService.getConfigurationLoadedNotification().subscribe((loaded) => {
+      if (loaded) {
+        this.init();
+      }
+    });
+  }
+
+  init() {
     this.configurationService.getAvailableFitnessFunctionsAsObservable().subscribe(fitnessFunctions => {
       this.availableFitnessFunctions = fitnessFunctions;
     });
 
     this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
+      if (!configuration) {
+        return;
+      }
+
       let patch = {
         samplerIterations: configuration.samplerIterations,
         annealingTemperatureMin: configuration.annealingTemperatureMin,
@@ -106,6 +118,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
 
     this.geneticAlgorithmConfigurationSubscription = this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
+      if (!configuration) {
+        return;
+      }
+
       let patch = {
         populationSize: configuration.populationSize,
         numberOfGenerations: configuration.numberOfGenerations,
@@ -132,6 +148,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
 
     this.selectedOptimizerSubscription = this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
+      if (!optimizer) {
+        return;
+      }
+
       if (this.generalSettingsForm.get('optimizer').value !== optimizer) {
         let optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === optimizer.name);
         this.generalSettingsForm.patchValue({ optimizer: optimizerToUse });
@@ -173,6 +193,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   onFormChange() {
     this.generalSettingsFormValueChangesSubscription = this.generalSettingsForm.valueChanges.subscribe(val => {
+      if (!this.generalSettingsForm.valid) {
+        return;
+      }
+
       this.configurationService.updateSelectedOptimizer(this.generalSettingsForm.get('optimizer').value);
       this.configurationService.updateSelectedFitnessFunction(this.generalSettingsForm.get('fitnessFunction').value);
 

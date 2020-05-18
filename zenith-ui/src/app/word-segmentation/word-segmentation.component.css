@@ -24,9 +24,10 @@
 
 .card {
   position: absolute;
-  width: 97%;
   top: 0;
   bottom: 0;
+  left: 12px;
+  right: 12px;
 }
 
 #segmentation_score {

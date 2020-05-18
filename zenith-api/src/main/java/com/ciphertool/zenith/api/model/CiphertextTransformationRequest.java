@@ -29,5 +29,8 @@ import java.util.List;
 @Setter
 public class CiphertextTransformationRequest {
     @Valid
+    private CipherRequest cipher;
+
+    @Valid
     private List<CiphertextTransformationRequestStep> steps;
 }

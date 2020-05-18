@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.entities.config;
 
+import com.ciphertool.zenith.inference.entities.CipherJson;
 import com.ciphertool.zenith.inference.entities.ZenithFitnessFunction;
 import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import lombok.Getter;
@@ -29,6 +30,7 @@ import java.util.List;
 @Getter
 @Setter
 public class ApplicationConfiguration {
+    private String selectedCipher;
     private int epochs;
     private List<ZenithTransformer> appliedCiphertextTransformers;
     private List<ZenithTransformer> appliedPlaintextTransformers;
@@ -36,4 +38,5 @@ public class ApplicationConfiguration {
     private ZenithFitnessFunction selectedFitnessFunction;
     private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
     private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
+    private List<CipherJson> ciphers;
 }

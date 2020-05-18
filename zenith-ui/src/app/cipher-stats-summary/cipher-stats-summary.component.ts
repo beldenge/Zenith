@@ -65,27 +65,27 @@ export class CipherStatsSummaryComponent implements OnInit, OnDestroy {
       this.bigramRepeats = null;
       this.cycleScore = null;
 
-      this.statisticsService.getUniqueSymbols(selectedCipher.name).subscribe((response) => {
+      this.statisticsService.getUniqueSymbols(selectedCipher).subscribe((response) => {
         this.uniqueSymbols = response.value;
       });
 
-      this.statisticsService.getMultiplicity(selectedCipher.name).subscribe((response) => {
+      this.statisticsService.getMultiplicity(selectedCipher).subscribe((response) => {
         this.multiplicity = response.value;
       });
 
-      this.statisticsService.getEntropy(selectedCipher.name).subscribe((response) => {
+      this.statisticsService.getEntropy(selectedCipher).subscribe((response) => {
         this.entropy = response.value;
       });
 
-      this.statisticsService.getIndexOfCoincidence(selectedCipher.name).subscribe((response) => {
+      this.statisticsService.getIndexOfCoincidence(selectedCipher).subscribe((response) => {
         this.indexOfCoincidence = response.value;
       });
 
-      this.statisticsService.getBigramRepeats(selectedCipher.name).subscribe((response) => {
+      this.statisticsService.getBigramRepeats(selectedCipher).subscribe((response) => {
         this.bigramRepeats = response.value;
       });
 
-      this.statisticsService.getCycleScore(selectedCipher.name).subscribe((response) => {
+      this.statisticsService.getCycleScore(selectedCipher).subscribe((response) => {
         this.cycleScore = response.value;
       });
     });

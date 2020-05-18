@@ -34,6 +34,7 @@ import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -86,9 +87,6 @@ public class InferenceConfiguration {
 
     @Value("${task-executor.queue-capacity}")
     private int queueCapacity;
-
-    @Value("${cipher.name}")
-    private String cipherName;
 
     @Value("${markov.letter.order}")
     private int markovOrder;
@@ -155,15 +153,19 @@ public class InferenceConfiguration {
 
     @Bean
     public Cipher cipher(CipherDao cipherDao, CiphertextTransformationManager ciphertextTransformationManager, ApplicationConfiguration applicationConfiguration) {
-        Cipher cipher = cipherDao.findByCipherName(cipherName);
+        Cipher cipher = cipherDao.findByCipherName(applicationConfiguration.getSelectedCipher());
 
-        List<CiphertextTransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
+        if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedCiphertextTransformers())) {
+            List<CiphertextTransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
 
-        for (ZenithTransformer transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
-            transformationSteps.add(new CiphertextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
+            for (ZenithTransformer transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
+                transformationSteps.add(new CiphertextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
+            }
+
+            cipher = ciphertextTransformationManager.transform(cipher, transformationSteps);
         }
 
-        return ciphertextTransformationManager.transform(cipher, transformationSteps);
+        return cipher;
     }
 
     @Bean
@@ -254,21 +256,23 @@ public class InferenceConfiguration {
 
     @Bean
     public List<PlaintextTransformationStep> plaintextTransformationSteps(ApplicationConfiguration applicationConfiguration, List<PlaintextTransformer> plaintextTransformers) {
-        List<PlaintextTransformationStep> plaintextTransformationSteps = new ArrayList<>(applicationConfiguration.getAppliedPlaintextTransformers().size());
+        List<PlaintextTransformationStep> plaintextTransformationSteps = new ArrayList<>();
 
         List<String> existentPlaintextTransformers = plaintextTransformers.stream()
                 .map(transformer -> transformer.getClass().getSimpleName())
                 .collect(Collectors.toList());
 
-        for (ZenithTransformer transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
-            String transformerName = transformer.getName();
+        if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedPlaintextTransformers())) {
+            for (ZenithTransformer transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
+                String transformerName = transformer.getName();
 
-            if (!existentPlaintextTransformers.contains(transformer.getName())) {
-                log.error("The PlaintextTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentPlaintextTransformers);
-                throw new IllegalArgumentException("The PlaintextTransformer with name " + transformerName + " does not exist.");
+                if (!existentPlaintextTransformers.contains(transformer.getName())) {
+                    log.error("The PlaintextTransformer with name {} does not exist.  Please use a name from the following: {}", transformerName, existentPlaintextTransformers);
+                    throw new IllegalArgumentException("The PlaintextTransformer with name " + transformerName + " does not exist.");
+                }
+
+                plaintextTransformationSteps.add(new PlaintextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
             }
-
-            plaintextTransformationSteps.add(new PlaintextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
         }
 
         return plaintextTransformationSteps;

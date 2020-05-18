@@ -12,6 +12,6 @@ export class FitnessFunctionService {
   constructor(private http: HttpClient) {}
 
   getFitnessFunctions() {
-    return this.http.get<FitnessFunctionResponse>(ENDPOINT_URL);
+    return this.http.get<FitnessFunctionResponse>(ENDPOINT_URL).toPromise();
   }
 }

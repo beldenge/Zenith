@@ -83,23 +83,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
-    this.cipherService.getCiphers().subscribe(cipherResponse => {
-      let ciphers = cipherResponse.ciphers;
-      this.cipherService.updateCiphers(ciphers);
-
-      this.cipherService.updateSelectedCipher(ciphers.find(cipher => cipher.name === 'zodiac408'));
-
-      let selectedCipherName = localStorage.getItem(LocalStorageKeys.SELECTED_CIPHER_NAME);
-
-      if(selectedCipherName) {
-        let selectedCipher = ciphers.find(cipher => {
-          return cipher.name === selectedCipherName;
-        });
-
-        this.cipherService.updateSelectedCipher(selectedCipher);
-      }
-    });
-
     if (!localStorage.getItem(LocalStorageKeys.SKIP_INTRO)) {
       localStorage.setItem(LocalStorageKeys.SKIP_INTRO, 'true');
       this.introductionService.startIntro();

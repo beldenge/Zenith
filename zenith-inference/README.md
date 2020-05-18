@@ -40,6 +40,7 @@ There are three main areas of configuration.
     ```json
     {
       "epochs": 10,
+      "selectedCipher": "zodiac408",
       "appliedCiphertextTransformers": [
         {
           "name": "RemoveLastRow",
@@ -47,15 +48,11 @@ There are three main areas of configuration.
           "form": null
         }
       ],
-      "appliedPlaintextTransformers": [
-      ],
       "selectedOptimizer": {
-        "name": "SimulatedAnnealingSolutionOptimizer",
-        "displayName": "Simulated Annealing"
+        "name": "SimulatedAnnealing"
       },
       "selectedFitnessFunction": {
-        "name": "NgramAndIndexOfCoincidencePlaintextEvaluator",
-        "displayName": "Ngram and Index of Coincidence"
+        "name": "NgramAndIndexOfCoincidence"
       },
       "simulatedAnnealingConfiguration": {
         "samplerIterations": 5001,
@@ -91,7 +88,6 @@ There are three main areas of configuration.
     --- | --- | ---
     task-executor.pool-size | Number of available cores on host | The number of threads to use for parallel tasks
     task-executor.queue-capacity | 100000 | The number of tasks which can be queued at any given time when performing multi-threaded operations
-    cipher.name | zodiac408 | The name of a particular cipher within the ciphers.json file (zodiac408 and zodiac340 are provided)
     language-model.filename | zenith-model.csv | The language model file to use (CSV only) which should exist in the same directory where the application is run from
     language-model.archive-filename | zenith-model.zip | The language model zip file on the classpath which will be unzipped if language-model.filename does not exist
     language-model.max-ngrams-to-keep | 500000 | The maximum number of ngrams to keep.  The list of ngrams will be sorted in descending order by count and then the top number below will be kept.

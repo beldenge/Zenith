@@ -31,6 +31,11 @@ import { ZenithFitnessFunction } from "./models/ZenithFitnessFunction";
 import { FitnessFunctionService } from "./fitness-function.service";
 import { PlaintextTransformerService } from "./plaintext-transformer.service";
 import { CiphertextTransformerService } from "./ciphertext-transformer.service";
+import { HttpClient } from "@angular/common/http";
+import { Cipher } from "./models/Cipher";
+import { environment } from "../environments/environment";
+
+const ENDPOINT_URL = environment.apiUrlBase + '/configurations';
 
 @Injectable({
   providedIn: 'root'
@@ -39,10 +44,10 @@ export class ConfigurationService {
   static readonly DEFAULT_SAMPLE_PLAINTEXT = 'thetomatoisaplantinthenightshadefamilyxxxx';
 
   static readonly OPTIMIZER_NAMES: SelectOption[] = [{
-    name: 'SimulatedAnnealingSolutionOptimizer',
+    name: 'SimulatedAnnealing',
     displayName: 'Simulated Annealing'
   }, {
-    name: 'GeneticAlgorithmSolutionOptimizer',
+    name: 'GeneticAlgorithmSolution',
     displayName: 'Genetic Algorithm'
   }];
 
@@ -92,31 +97,6 @@ export class ConfigurationService {
     displayName: 'Random'
   }];
 
-  static readonly SIMULATED_ANNEALING_DEFAULTS: SimulatedAnnealingConfiguration = {
-    samplerIterations: 5000,
-    annealingTemperatureMin: 0.006,
-    annealingTemperatureMax: 0.012
-  };
-
-  static readonly GENETIC_ALGORITHM_DEFAULTS: GeneticAlgorithmConfiguration = {
-    populationSize: 10000,
-    numberOfGenerations: 1000,
-    elitism: 1,
-    populationName: ConfigurationService.POPULATION_NAMES[0].name,
-    latticeRows: 100,
-    latticeColumns: 100,
-    latticeWrapAround: true,
-    latticeRadius: 1,
-    breederName: ConfigurationService.BREEDER_NAMES[0].name,
-    crossoverAlgorithmName: ConfigurationService.CROSSOVER_ALGORITHM_NAMES[0].name,
-    mutationAlgorithmName: ConfigurationService.MUTATION_ALGORITHM_NAMES[0].name,
-    mutationRate: 0.05,
-    maxMutationsPerIndividual: 5,
-    selectorName: ConfigurationService.SELECTOR_NAMES[0].name,
-    tournamentSelectorAccuracy: 0.75,
-    tournamentSize: 5
-  };
-
   private enableTracking$ = new BehaviorSubject<boolean>(true);
   private enablePageTransitions$ = new BehaviorSubject<boolean>(true);
   private epochs$ = new BehaviorSubject<number>(1);
@@ -125,14 +105,21 @@ export class ConfigurationService {
   private availablePlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private appliedPlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private samplePlaintext$ = new BehaviorSubject<string>(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
-  private selectedOptimizer$ = new BehaviorSubject<SelectOption>(ConfigurationService.OPTIMIZER_NAMES[0]);
+  private selectedOptimizer$ = new BehaviorSubject<SelectOption>(null);
   private availableFitnessFunctions$ = new BehaviorSubject<ZenithFitnessFunction[]>([]);
   private selectedFitnessFunction$ = new BehaviorSubject<ZenithFitnessFunction>(null);
-  private simulatedAnnealingConfiguration$ = new BehaviorSubject<SimulatedAnnealingConfiguration>(ConfigurationService.SIMULATED_ANNEALING_DEFAULTS);
-  private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
+  private simulatedAnnealingConfiguration$ = new BehaviorSubject<SimulatedAnnealingConfiguration>(null);
+  private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(null);
+  private ciphers$ = new BehaviorSubject<Cipher[]>([]);
+  private selectedCipher$ = new BehaviorSubject<Cipher>(null);
+  private configurationLoadedNotification$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private sanitizer: DomSanitizer, private fitnessFunctionService: FitnessFunctionService, private plaintextTransformerService: PlaintextTransformerService, private ciphertextTransformerService: CiphertextTransformerService) {
-    fitnessFunctionService.getFitnessFunctions().subscribe(fitnessFunctionResponse => {
+  constructor(private http: HttpClient,
+              private sanitizer: DomSanitizer,
+              private fitnessFunctionService: FitnessFunctionService,
+              private plaintextTransformerService: PlaintextTransformerService,
+              private ciphertextTransformerService: CiphertextTransformerService) {
+    let fitnessFunctionsPromise = fitnessFunctionService.getFitnessFunctions().then(fitnessFunctionResponse => {
       let availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
         return t1.order - t2.order;
       });
@@ -144,10 +131,9 @@ export class ConfigurationService {
       }
 
       this.updateAvailableFitnessFunctions(availableFitnessFunctions);
-      this.updateSelectedFitnessFunction(availableFitnessFunctions[0]);
     });
 
-    this.plaintextTransformerService.getTransformers().subscribe(transformerResponse => {
+    let plaintextTransformerPromise = plaintextTransformerService.getTransformers().then(transformerResponse => {
       let availablePlaintextTransformers = transformerResponse.transformers.sort((t1, t2) => {
         return t1.order - t2.order;
       });
@@ -155,13 +141,31 @@ export class ConfigurationService {
       this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
     });
 
-    this.ciphertextTransformerService.getTransformers().subscribe(transformerResponse => {
+    let ciphertextTransformerPromise = ciphertextTransformerService.getTransformers().then(transformerResponse => {
       let availableCiphertextTransformers = transformerResponse.transformers.sort((t1, t2) => {
         return t1.order - t2.order;
       });
 
       this.updateAvailableCiphertextTransformers(availableCiphertextTransformers);
     });
+
+    Promise.all([fitnessFunctionsPromise, plaintextTransformerPromise, ciphertextTransformerPromise]).then(() => {
+      if (!localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)) {
+        this.http.get<ApplicationConfiguration>(ENDPOINT_URL).subscribe(configurationResponse => {
+          localStorage.setItem(LocalStorageKeys.APPLICATION_CONFIGURATION, JSON.stringify(configurationResponse));
+
+          this.import(configurationResponse);
+        });
+      } else {
+        this.import(JSON.parse(localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)));
+      }
+
+      this.configurationLoadedNotification$.next(true);
+    });
+  }
+
+  getConfigurationLoadedNotification() {
+    return this.configurationLoadedNotification$.asObservable();
   }
 
   getEnableTrackingAsObservable(): Observable<boolean> {
@@ -182,12 +186,28 @@ export class ConfigurationService {
     this.enablePageTransitions$.next(enabled);
   }
 
+  getSelectedCipherAsObservable(): Observable<Cipher> {
+    return this.selectedCipher$.asObservable();
+  }
+
+  updateSelectedCipher(selectedCipher: Cipher, skipSave?: boolean) {
+    this.selectedCipher$.next(selectedCipher);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
+  }
+
   getEpochsAsObservable(): Observable<number> {
     return this.epochs$.asObservable();
   }
 
-  updateEpochs(epochs: number) {
+  updateEpochs(epochs: number, skipSave?: boolean) {
     this.epochs$.next(epochs);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
   }
 
   getAvailableCiphertextTransformersAsObservable(): Observable<ZenithTransformer[]> {
@@ -202,8 +222,12 @@ export class ConfigurationService {
     return this.appliedCiphertextTransformers$.asObservable();
   }
 
-  updateAppliedCiphertextTransformers(appliedTransformers: ZenithTransformer[]): void {
+  updateAppliedCiphertextTransformers(appliedTransformers: ZenithTransformer[], skipSave?: boolean): void {
     this.appliedCiphertextTransformers$.next(appliedTransformers);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
   }
 
   getAvailablePlaintextTransformersAsObservable(): Observable<ZenithTransformer[]> {
@@ -218,8 +242,12 @@ export class ConfigurationService {
     return this.appliedPlaintextTransformers$.asObservable();
   }
 
-  updateAppliedPlaintextTransformers(appliedTransformers: ZenithTransformer[]): void {
+  updateAppliedPlaintextTransformers(appliedTransformers: ZenithTransformer[], skipSave?: boolean): void {
     this.appliedPlaintextTransformers$.next(appliedTransformers);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
   }
 
   getSamplePlaintextAsObservable(): Observable<string> {
@@ -234,8 +262,12 @@ export class ConfigurationService {
     return this.selectedOptimizer$.asObservable();
   }
 
-  updateSelectedOptimizer(optimizer: SelectOption) {
+  updateSelectedOptimizer(optimizer: SelectOption, skipSave?: boolean) {
     this.selectedOptimizer$.next(optimizer);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
   }
 
   getAvailableFitnessFunctionsAsObservable(): Observable<ZenithFitnessFunction[]> {
@@ -250,35 +282,62 @@ export class ConfigurationService {
     return this.selectedFitnessFunction$.asObservable();
   }
 
-  updateSelectedFitnessFunction(fitnessFunction: ZenithFitnessFunction) {
+  updateSelectedFitnessFunction(fitnessFunction: ZenithFitnessFunction, skipSave?: boolean) {
     this.selectedFitnessFunction$.next(fitnessFunction);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
   }
 
   getSimulatedAnnealingConfigurationAsObservable(): Observable<SimulatedAnnealingConfiguration> {
     return this.simulatedAnnealingConfiguration$.asObservable();
   }
 
-  updateSimulatedAnnealingConfiguration(configuration: SimulatedAnnealingConfiguration) {
+  updateSimulatedAnnealingConfiguration(configuration: SimulatedAnnealingConfiguration, skipSave?: boolean) {
     this.simulatedAnnealingConfiguration$.next(configuration);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
   }
 
   getGeneticAlgorithmConfigurationAsObservable(): Observable<GeneticAlgorithmConfiguration> {
     return this.geneticAlgorithmConfiguration$.asObservable();
   }
 
-  updateGeneticAlgorithmConfiguration(configuration: GeneticAlgorithmConfiguration) {
+  updateGeneticAlgorithmConfiguration(configuration: GeneticAlgorithmConfiguration, skipSave?: boolean) {
     this.geneticAlgorithmConfiguration$.next(configuration);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
+  }
+
+  getCiphersAsObservable(): Observable<Cipher[]> {
+    return this.ciphers$.asObservable();
+  }
+
+  updateCiphers(ciphers: Cipher[], skipSave?: boolean) {
+    this.ciphers$.next(ciphers);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
   }
 
   restoreGeneralSettings() {
-    this.updateSelectedOptimizer(ConfigurationService.OPTIMIZER_NAMES[0]);
-    this.updateSelectedFitnessFunction(this.availableFitnessFunctions$.getValue()[0]);
-    this.updateSimulatedAnnealingConfiguration(ConfigurationService.SIMULATED_ANNEALING_DEFAULTS);
-    this.updateGeneticAlgorithmConfiguration(ConfigurationService.GENETIC_ALGORITHM_DEFAULTS);
+    this.http.get<ApplicationConfiguration>(ENDPOINT_URL).subscribe(configurationResponse => {
+      this.updateSelectedOptimizer(configurationResponse.selectedOptimizer, true);
+      this.updateSelectedFitnessFunction(configurationResponse.selectedFitnessFunction, true);
+      this.updateSimulatedAnnealingConfiguration(configurationResponse.simulatedAnnealingConfiguration, true);
+      this.updateGeneticAlgorithmConfiguration(configurationResponse.geneticAlgorithmConfiguration, true);
+      this.saveConfigurationToLocalStorage();
+    });
   }
 
   import(configuration: ApplicationConfiguration) {
-    this.updateEpochs(configuration.epochs);
+    this.updateEpochs(configuration.epochs, true);
 
     if (configuration.appliedCiphertextTransformers) {
       configuration.appliedCiphertextTransformers.forEach(transformer => {
@@ -286,9 +345,11 @@ export class ConfigurationService {
           transformer.form.form = new FormGroup({});
         }
       });
+    } else {
+      configuration.appliedCiphertextTransformers = [];
     }
 
-    this.updateAppliedCiphertextTransformers(configuration.appliedCiphertextTransformers);
+    this.updateAppliedCiphertextTransformers(configuration.appliedCiphertextTransformers, true);
 
     if (configuration.appliedPlaintextTransformers) {
       configuration.appliedPlaintextTransformers.forEach(transformer => {
@@ -296,10 +357,12 @@ export class ConfigurationService {
           transformer.form.form = new FormGroup({});
         }
       });
+    } else {
+      configuration.appliedPlaintextTransformers = [];
     }
 
-    this.updateAppliedPlaintextTransformers(configuration.appliedPlaintextTransformers);
-    this.updateSelectedOptimizer(configuration.selectedOptimizer);
+    this.updateAppliedPlaintextTransformers(configuration.appliedPlaintextTransformers, true);
+    this.updateSelectedOptimizer(configuration.selectedOptimizer, true);
 
     let selectedFitnessFunction = this.availableFitnessFunctions$.getValue().find(fitnessFunction =>
       fitnessFunction.name === configuration.selectedFitnessFunction.name
@@ -310,12 +373,19 @@ export class ConfigurationService {
       selectedFitnessFunction.form.fields = configuration.selectedFitnessFunction.form.fields;
     }
 
-    this.updateSelectedFitnessFunction(selectedFitnessFunction);
-    this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration);
-    this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration);
+    this.updateSelectedFitnessFunction(selectedFitnessFunction, true);
+    this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration, true);
+    this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration, true);
+
+    // FIXME: This is a hack to handle the fact that we store ciphertext as space-delimited -- it would be cleaner to store it as an array of chars/strings
+    configuration.ciphers.forEach(cipher => cipher.ciphertext = cipher.ciphertext.replace(/ /g , ''));
+
+    this.updateCiphers(configuration.ciphers, true);
+    this.updateSelectedCipher(configuration.ciphers.find(cipher => cipher.name === configuration.selectedCipher), true);
+    this.saveConfigurationToLocalStorage();
   }
 
-  getExportUri(): SafeUrl {
+  buildConfigurationAsString(): string {
     let configuration = new ApplicationConfiguration();
 
     configuration.epochs = this.epochs$.getValue();
@@ -372,8 +442,17 @@ export class ConfigurationService {
     configuration.selectedOptimizer = this.selectedOptimizer$.getValue();
     configuration.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration$.getValue();
     configuration.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration$.getValue();
+    configuration.ciphers = this.ciphers$.getValue();
+    configuration.selectedCipher = this.selectedCipher$.getValue().name;
 
-    let configAsPrettyString = JSON.stringify(configuration, null, 2);
-    return this.sanitizer.bypassSecurityTrustUrl('data:text/json;charset=UTF-8,' + encodeURIComponent(configAsPrettyString));
+    return JSON.stringify(configuration, null, 2);
+  }
+
+  saveConfigurationToLocalStorage() {
+    localStorage.setItem(LocalStorageKeys.APPLICATION_CONFIGURATION, this.buildConfigurationAsString());
+  }
+
+  getExportUri(): SafeUrl {
+    return this.sanitizer.bypassSecurityTrustUrl('data:text/json;charset=UTF-8,' + encodeURIComponent(this.buildConfigurationAsString()));
   }
 }

@@ -19,29 +19,36 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class CipherJson {
     private String name;
-
     private int columns;
-
     private int rows;
-
     private String ciphertext;
-
     private boolean readOnly;
-
     private Map<String, String> knownSolutionKey = new HashMap<>();
-
-    public CipherJson() {
-    }
 
     public CipherJson(String name, int rows, int columns) {
         this.name = name;
         this.rows = rows;
         this.columns = columns;
+    }
+
+    public CipherJson(String name, int rows, int columns, String ciphertext, boolean readOnly) {
+        this.name = name;
+        this.rows = rows;
+        this.columns = columns;
+        this.ciphertext = ciphertext;
+        this.readOnly = readOnly;
     }
 
     public CipherJson(Cipher cipher) {

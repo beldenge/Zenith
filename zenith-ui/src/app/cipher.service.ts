@@ -20,12 +20,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CipherResponse } from "./models/CipherResponse";
-import { BehaviorSubject, Observable } from "rxjs";
+import { Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
 import { CiphertextTransformationRequest } from "./models/CiphertextTransformationRequest";
-import { CipherRequest } from "./models/CipherRequest";
 import { environment } from "../environments/environment";
-import { LocalStorageKeys } from "./models/LocalStorageKeys";
+import { ConfigurationService } from "./configuration.service";
 
 const ENDPOINT_URL = environment.apiUrlBase + '/ciphers';
 
@@ -33,45 +32,33 @@ const ENDPOINT_URL = environment.apiUrlBase + '/ciphers';
   providedIn: 'root'
 })
 export class CipherService {
-  private selectedCipher$ = new BehaviorSubject<Cipher>(null);
-  private ciphers$ = new BehaviorSubject<Cipher[]>([]);
+  constructor(private http: HttpClient, private configurationService: ConfigurationService) {}
 
-  constructor(private http: HttpClient) {}
+  selected: Cipher;
 
   getSelectedCipherAsObservable(): Observable<Cipher> {
-    return this.selectedCipher$.asObservable();
+    return this.configurationService.getSelectedCipherAsObservable();
   }
 
   updateSelectedCipher(cipher: Cipher): void {
-    localStorage.setItem(LocalStorageKeys.SELECTED_CIPHER_NAME, cipher.name);
-    return this.selectedCipher$.next(cipher);
+    this.selected = cipher;
+    this.configurationService.updateSelectedCipher(cipher);
   }
 
   getCiphersAsObservable(): Observable<Cipher[]> {
-    return this.ciphers$.asObservable();
+    return this.configurationService.getCiphersAsObservable();
   }
 
   updateCiphers(ciphers: Cipher[]): void {
-    return this.ciphers$.next(ciphers);
+    if (this.selected !== undefined && !ciphers.find(cipher => cipher.name === this.selected.name)) {
+      // If the selected cipher has been deleted, pick a different one
+      this.updateSelectedCipher(ciphers[0]);
+    }
+
+    return this.configurationService.updateCiphers(ciphers);
   }
 
-  getCiphers() {
-    return this.http.get<CipherResponse>(ENDPOINT_URL);
-  }
-
-  transformCipher(cipherName: string, transformationRequest: CiphertextTransformationRequest) {
-    return this.http.post<CipherResponse>(ENDPOINT_URL + '/' + cipherName, transformationRequest);
-  }
-
-  createCipher(cipherRequest: CipherRequest) {
-    return this.http.post<void>(ENDPOINT_URL, cipherRequest);
-  }
-
-  updateCipher(cipherName: string, cipherRequest: CipherRequest) {
-    return this.http.put<void>(ENDPOINT_URL + '/' + cipherName, cipherRequest);
-  }
-
-  deleteCipher(cipherName: string) {
-    return this.http.delete<void>(ENDPOINT_URL + '/' + cipherName);
+  transformCipher(transformationRequest: CiphertextTransformationRequest) {
+    return this.http.post<CipherResponse>(ENDPOINT_URL, transformationRequest);
   }
 }

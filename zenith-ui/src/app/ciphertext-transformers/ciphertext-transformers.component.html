@@ -62,7 +62,7 @@
         </div>
         <!-- Card Body -->
         <div class="card-body" [sortablejs]="appliedTransformers" [sortablejsOptions]="appliedTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
-          <div *ngIf="!appliedTransformers.length">Drop transformers here</div>
+          <div *ngIf="!appliedTransformers || !appliedTransformers.length">Drop transformers here</div>
           <div class="col-xl-12 mb-4 transformer" *ngFor="let item of appliedTransformers; let i = index" [@simpleFadeAnimation]>
             <div class="card border-left-primary shadow h-100 py-2 pl-3">
               <div class="card-body p-2">

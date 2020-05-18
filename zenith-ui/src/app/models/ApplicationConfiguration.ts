@@ -22,8 +22,10 @@ import { SelectOption } from "./SelectOption";
 import { SimulatedAnnealingConfiguration } from "./SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./GeneticAlgorithmConfiguration";
 import { ZenithFitnessFunction } from "./ZenithFitnessFunction";
+import { Cipher } from "./Cipher";
 
 export class ApplicationConfiguration {
+  selectedCipher: string;
   epochs: number;
   appliedCiphertextTransformers: ZenithTransformer[];
   appliedPlaintextTransformers: ZenithTransformer[];
@@ -31,4 +33,5 @@ export class ApplicationConfiguration {
   selectedFitnessFunction: ZenithFitnessFunction;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
+  ciphers: Cipher[];
 }

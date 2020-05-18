@@ -71,13 +71,13 @@ public class ConfigurationResolver {
 
     public static SolutionOptimizer resolveSolutionOptimizer(ApplicationConfiguration applicationConfiguration, List<SolutionOptimizer> optimizers) {
         List<String> existentOptimizers = optimizers.stream()
-                .map(optimizer -> optimizer.getClass().getSimpleName())
+                .map(optimizer -> optimizer.getClass().getSimpleName().replace(SolutionOptimizer.class.getSimpleName(), ""))
                 .collect(Collectors.toList());
 
         String optimizerName = applicationConfiguration.getSelectedOptimizer().getName();
 
         for (SolutionOptimizer optimizer : optimizers) {
-            if (optimizer.getClass().getSimpleName().equals(optimizerName)) {
+            if (optimizer.getClass().getSimpleName().replace(SolutionOptimizer.class.getSimpleName(), "").equals(optimizerName)) {
                 return optimizer;
             }
         }
@@ -88,7 +88,7 @@ public class ConfigurationResolver {
 
     public static PlaintextEvaluator resolvePlaintextEvaluator(ApplicationConfiguration applicationConfiguration, List<PlaintextEvaluator> plaintextEvaluators) {
         List<String> existentPlaintextEvaluators = plaintextEvaluators.stream()
-                .map(evaluator -> evaluator.getClass().getSimpleName())
+                .map(evaluator -> evaluator.getClass().getSimpleName().replace(PlaintextEvaluator.class.getSimpleName(), ""))
                 .collect(Collectors.toList());
 
         String plaintextEvaluatorName = applicationConfiguration.getSelectedFitnessFunction().getName();

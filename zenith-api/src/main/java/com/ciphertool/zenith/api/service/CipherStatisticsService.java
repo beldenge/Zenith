@@ -19,10 +19,9 @@
 
 package com.ciphertool.zenith.api.service;
 
+import com.ciphertool.zenith.api.model.CipherRequest;
 import com.ciphertool.zenith.api.model.DoubleResponse;
 import com.ciphertool.zenith.api.model.IntResponse;
-import com.ciphertool.zenith.inference.dao.CipherDao;
-import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -31,11 +30,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping(value = "/api/statistics/{cipherName}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/statistics", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class CipherStatisticsService {
-    @Autowired
-    private CipherDao cipherDao;
-
     @Autowired
     private CiphertextUniqueSymbolsEvaluator uniqueSymbolsEvaluator;
 
@@ -54,55 +50,45 @@ public class CipherStatisticsService {
     @Autowired
     private CiphertextCycleCountEvaluator cycleCountEvaluator;
 
-    private Cipher getCipher(String cipherName) {
-        Cipher cipher = cipherDao.findByCipherName(cipherName);
-
-        if (cipher == null) {
-            throw new IllegalArgumentException("No cipher found for name " + cipherName + ".");
-        }
-
-        return cipher;
+    @PostMapping("/uniqueSymbols")
+    @ResponseBody
+    @Cacheable(value = "uniqueSymbols", key = "#cipher.ciphertext")
+    public DoubleResponse getUniqueSymbols(@RequestBody CipherRequest cipher) {
+        return new DoubleResponse(uniqueSymbolsEvaluator.evaluate(cipher.asCipher()));
     }
 
-    @GetMapping("/uniqueSymbols")
+    @PostMapping("/multiplicity")
     @ResponseBody
-    @Cacheable("chiSquareds")
-    public DoubleResponse getChiSquared(@PathVariable String cipherName) {
-        return new DoubleResponse(uniqueSymbolsEvaluator.evaluate(getCipher(cipherName)));
+    @Cacheable(value = "multiplicities", key = "#cipher.ciphertext")
+    public DoubleResponse getMultiplicity(@RequestBody CipherRequest cipher) {
+        return new DoubleResponse(multiplicityEvaluator.evaluate(cipher.asCipher()));
     }
 
-    @GetMapping("/multiplicity")
+    @PostMapping("/entropy")
     @ResponseBody
-    @Cacheable("multiplicities")
-    public DoubleResponse getMultiplicity(@PathVariable String cipherName) {
-        return new DoubleResponse(multiplicityEvaluator.evaluate(getCipher(cipherName)));
+    @Cacheable(value = "entropies", key = "#cipher.ciphertext")
+    public DoubleResponse getEntropy(@RequestBody CipherRequest cipher) {
+        return new DoubleResponse(entropyEvaluator.evaluate(cipher.asCipher()));
     }
 
-    @GetMapping("/entropy")
+    @PostMapping("/indexOfCoincidence")
     @ResponseBody
-    @Cacheable("entropies")
-    public DoubleResponse getEntropy(@PathVariable String cipherName) {
-        return new DoubleResponse(entropyEvaluator.evaluate(getCipher(cipherName)));
+    @Cacheable(value = "indexesOfCoincidence", key = "#cipher.ciphertext")
+    public DoubleResponse getIndexOfCoincidence(@RequestBody CipherRequest cipher) {
+        return new DoubleResponse(indexOfCoincidenceEvaluator.evaluate(cipher.asCipher()));
     }
 
-    @GetMapping("/indexOfCoincidence")
+    @PostMapping("/bigramRepeats")
     @ResponseBody
-    @Cacheable("indexesOfCoincidence")
-    public DoubleResponse getIndexOfCoincidence(@PathVariable String cipherName) {
-        return new DoubleResponse(indexOfCoincidenceEvaluator.evaluate(getCipher(cipherName)));
+    @Cacheable(value = "bigramRepeats", key = "#cipher.ciphertext")
+    public IntResponse getBigramRepeats(@RequestBody CipherRequest cipher) {
+        return new IntResponse(bigramEvaluator.evaluate(cipher.asCipher()));
     }
 
-    @GetMapping("/bigramRepeats")
+    @PostMapping("/cycleScore")
     @ResponseBody
-    @Cacheable("bigramRepeats")
-    public IntResponse getBigramRepeats(@PathVariable String cipherName) {
-        return new IntResponse(bigramEvaluator.evaluate(getCipher(cipherName)));
-    }
-
-    @GetMapping("/cycleScore")
-    @ResponseBody
-    @Cacheable("cycleScores")
-    public IntResponse getCycleScore(@PathVariable String cipherName) {
-        return new IntResponse(cycleCountEvaluator.evaluateThreadSafe(getCipher(cipherName)));
+    @Cacheable(value = "cycleScores", key = "#cipher.ciphertext")
+    public IntResponse getCycleScore(@RequestBody CipherRequest cipher) {
+        return new IntResponse(cycleCountEvaluator.evaluateThreadSafe(cipher.asCipher()));
     }
 }

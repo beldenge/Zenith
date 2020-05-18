@@ -31,6 +31,6 @@ export class CiphertextTransformerService {
   constructor(private http: HttpClient) {}
 
   getTransformers() {
-    return this.http.get<TransformerResponse>(ENDPOINT_URL);
+    return this.http.get<TransformerResponse>(ENDPOINT_URL).toPromise();
   }
 }

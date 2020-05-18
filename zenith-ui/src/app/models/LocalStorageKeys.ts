@@ -18,7 +18,7 @@
  */
 
 export enum LocalStorageKeys {
-  SELECTED_CIPHER_NAME = "selected_cipher_name",
+  APPLICATION_CONFIGURATION = "application_configuration",
   SKIP_INTRO = "skip_intro",
   ENABLE_TRACKING = "enable_tracking",
   ENABLE_PAGE_TRANSITIONS = "enable_page_transitions"

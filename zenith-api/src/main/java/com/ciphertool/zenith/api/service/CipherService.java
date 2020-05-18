@@ -19,19 +19,18 @@
 
 package com.ciphertool.zenith.api.service;
 
-import com.ciphertool.zenith.api.model.*;
-import com.ciphertool.zenith.inference.dao.CipherDao;
+import com.ciphertool.zenith.api.model.CipherResponse;
+import com.ciphertool.zenith.api.model.CiphertextTransformationRequest;
+import com.ciphertool.zenith.api.model.CiphertextTransformationRequestStep;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.entities.CipherJson;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,37 +39,17 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/api/ciphers", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class CipherService {
     @Autowired
-    private CipherDao cipherDao;
-
-    @Autowired
     private CiphertextTransformationManager ciphertextTransformationManager;
 
-    @GetMapping
+    @PostMapping
     @ResponseBody
-    @Cacheable("ciphers")
-    public CipherResponse findCiphers() {
+    public CipherResponse transformCipher(@Validated @RequestBody CiphertextTransformationRequest transformationRequest) {
         CipherResponse cipherResponse = new CipherResponse();
 
-        List<Cipher> ciphers = cipherDao.findAll();
-
-        for (Cipher cipher : ciphers) {
-            CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString(), cipher.isReadOnly());
-
-            cipherResponse.getCiphers().add(cipherResponseItem);
-        }
-
-        return cipherResponse;
-    }
-
-    @PostMapping("/{cipherName}")
-    @ResponseBody
-    public CipherResponse transformCipher(@PathVariable String cipherName, @Validated @RequestBody CiphertextTransformationRequest transformationRequest) {
-        CipherResponse cipherResponse = new CipherResponse();
-
-        Cipher cipher = cipherDao.findByCipherName(cipherName);
+        Cipher cipher = transformationRequest.getCipher().asCipher();
 
         if (cipher == null) {
-            throw new IllegalArgumentException("No cipher found for name " + cipherName + ".");
+            throw new IllegalArgumentException("No cipher found for name " + cipher.getName() + ".");
         }
 
         List<CiphertextTransformationStep> steps = transformationRequest.getSteps().stream()
@@ -79,49 +58,10 @@ public class CipherService {
 
         cipher = ciphertextTransformationManager.transform(cipher, steps);
 
-        CipherResponseItem cipherResponseItem = new CipherResponseItem(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString(), cipher.isReadOnly());
+        CipherJson cipherResponseItem = new CipherJson(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString(), cipher.isReadOnly());
 
         cipherResponse.getCiphers().add(cipherResponseItem);
 
         return cipherResponse;
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.OK)
-    public void createCipher(@Validated @RequestBody CipherRequest cipherRequest) throws IOException {
-        Cipher cipher = cipherDao.findByCipherName(cipherRequest.getName());
-
-        if (cipher != null) {
-            throw new IllegalArgumentException("Cipher " + cipher.getName() + " already exists.");
-        }
-
-        cipherDao.writeToFile(cipherRequest.asCipher());
-    }
-
-    @PutMapping("/{cipherName}")
-    @ResponseStatus(HttpStatus.OK)
-    public void updateCipher(@PathVariable String cipherName, @Validated @RequestBody CipherRequest cipherRequest) throws IOException {
-        Cipher cipher = cipherDao.findByCipherName(cipherName);
-
-        if (cipher == null) {
-            throw new IllegalArgumentException("Cipher " + cipher.getName() + " does not exist.");
-        }
-
-        if (!cipherName.equals(cipherRequest.getName())) {
-            throw new IllegalArgumentException("The cipherName parameter '" + cipherName + "' does not match the name '" + cipherRequest.getName() + "' in the CipherRequest.");
-        }
-
-        cipherDao.writeToFile(cipherRequest.asCipher());
-    }
-
-    @DeleteMapping("/{cipherName}")
-    public void deleteCipher(@PathVariable String cipherName) throws IOException {
-        Cipher cipher = cipherDao.findByCipherName(cipherName);
-
-        if (cipher == null) {
-            throw new IllegalArgumentException("Cipher " + cipher.getName() + " does not exist.");
-        }
-
-        cipherDao.delete(cipherName);
     }
 }

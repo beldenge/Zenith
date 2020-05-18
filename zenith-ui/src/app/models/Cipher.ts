@@ -22,6 +22,7 @@ export class Cipher {
   rows: number;
   columns: number;
   ciphertext: string;
+  readOnly: boolean;
 
   constructor(name: string, rows: number, columns: number, ciphertext: string) {
     this.name = name;
