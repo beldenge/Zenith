@@ -330,7 +330,7 @@ export class ConfigurationService {
   restoreGeneralSettings() {
     this.http.get<ApplicationConfiguration>(ENDPOINT_URL).subscribe(configurationResponse => {
       this.updateSelectedOptimizer(configurationResponse.selectedOptimizer, true);
-      this.updateSelectedFitnessFunction(configurationResponse.selectedFitnessFunction, true);
+      this.updateSelectedFitnessFunction(this.availableFitnessFunctions$.getValue().find(fitnessFunction => fitnessFunction.name === configurationResponse.selectedFitnessFunction.name), true);
       this.updateSimulatedAnnealingConfiguration(configurationResponse.simulatedAnnealingConfiguration, true);
       this.updateGeneticAlgorithmConfiguration(configurationResponse.geneticAlgorithmConfiguration, true);
       this.saveConfigurationToLocalStorage();
