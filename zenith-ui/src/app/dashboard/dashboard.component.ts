@@ -161,7 +161,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   solve() {
-    let request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
+    let request;
+
+    if (!this.selectedCipher.transformed) {
+      request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
+    } else {
+      request = new SolutionRequest(this.selectedCipher.transformed.rows, this.selectedCipher.transformed.columns, this.selectedCipher.transformed.ciphertext, this.hyperparametersForm.get('epochs').value);
+    }
 
     if (this.optimizer.name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
       request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration;
@@ -225,6 +231,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onCipherSelect(element: HTMLElement) {
     element.blur();
     this.solutionService.updateSolution(null);
+    delete this.selectedCipher.transformed;
+    this.configurationService.updateAppliedCiphertextTransformers([]);
+    this.configurationService.updateAppliedPlaintextTransformers([])
     this.cipherService.updateSelectedCipher(this.selectedCipher);
   }
 

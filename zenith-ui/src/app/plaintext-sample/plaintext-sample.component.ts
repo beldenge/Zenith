@@ -28,7 +28,7 @@ import { Subscription } from "rxjs";
 })
 export class PlaintextSampleComponent implements OnInit, AfterContentInit  {
   @Input() transformedSample: string;
-  sample: string;
+  sample: string = ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT;
   samplePlaintextSubscription: Subscription;
 
   constructor(private configurationService: ConfigurationService) { }

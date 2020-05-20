@@ -26,6 +26,8 @@ import { FormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
+import { SolutionService } from "../solution.service";
+import { TransformerUtil } from "../util/transformer-util";
 
 @Component({
   selector: 'app-plaintext-transformers',
@@ -66,17 +68,14 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   };
 
   onAppliedTransformersChange = (event: any) => {
-    if (!this.appliedTransformers || !this.appliedTransformers.length) {
-      this.transformedSample = null;
-      return;
-    }
+    this.solutionService.updateSolution(null);
 
     let transformationRequest: SamplePlaintextTransformationRequest = {
       plaintext: this.sample,
       plaintextTransformers: []
     };
 
-    let satisfied = true;
+    let satisfied = !!this.sample;
 
     this.appliedTransformers.forEach(transformer => {
       if (transformer.form && ((event && event.isNew) || !transformer.form.form.valid)) {
@@ -91,9 +90,13 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     });
 
     if (satisfied) {
-      this.transformerService.transformSample(transformationRequest).subscribe(response => {
-        this.transformedSample = response.plaintext;
-      });
+      if (!this.appliedTransformers || !this.appliedTransformers.length) {
+        this.transformedSample = null;
+      } else {
+        this.transformerService.transformSample(transformationRequest).subscribe(response => {
+          this.transformedSample = response.plaintext;
+        });
+      }
 
       if (!event || !event.skipUpdate) {
         this.configurationService.updateAppliedPlaintextTransformers(this.appliedTransformers);
@@ -108,7 +111,10 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: PlaintextTransformerService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
+  constructor(private transformerService: PlaintextTransformerService,
+              private configurationService: ConfigurationService,
+              private introductionService: IntroductionService,
+              private solutionService: SolutionService) {}
 
   ngOnInit(): void {
     this.configurationService.getAvailablePlaintextTransformersAsObservable().subscribe(transformerResponse => {
@@ -116,13 +122,17 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     });
 
     this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
-      this.appliedTransformers = appliedTransformers;
-      this.onAppliedTransformersChange({ skipUpdate: true });
+      if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
+        this.appliedTransformers = appliedTransformers;
+        this.onAppliedTransformersChange({skipUpdate: true});
+      }
     });
 
     this.samplePlaintextSubscription = this.configurationService.getSamplePlaintextAsObservable().subscribe(sample => {
-      this.sample = sample;
-      this.onAppliedTransformersChange(null);
+      if (!this.sample || this.sample !== sample) {
+        this.sample = sample;
+        this.onAppliedTransformersChange(null);
+      }
     });
 
     this.showIntroPlaintextTransformersSubscription = this.introductionService.getShowIntroPlaintextTransformersAsObservable().subscribe(showIntro => {

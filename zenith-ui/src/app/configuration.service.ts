@@ -34,6 +34,7 @@ import { CiphertextTransformerService } from "./ciphertext-transformer.service";
 import { HttpClient } from "@angular/common/http";
 import { Cipher } from "./models/Cipher";
 import { environment } from "../environments/environment";
+import { debounceTime } from "rxjs/operators";
 
 const ENDPOINT_URL = environment.apiUrlBase + '/configurations';
 
@@ -251,7 +252,7 @@ export class ConfigurationService {
   }
 
   getSamplePlaintextAsObservable(): Observable<string> {
-    return this.samplePlaintext$.asObservable();
+    return this.samplePlaintext$.pipe(debounceTime(500));
   }
 
   updateSamplePlaintext(appliedTransformers: string): void {

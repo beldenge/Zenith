@@ -162,6 +162,17 @@ export function registerValidationMessages() {
                   }
                 }
               }
+            },
+            {
+              name: 'textarea',
+              component: FormlyFieldInput,
+              defaultOptions: {
+                modelOptions: {
+                  debounce: {
+                    default: 500
+                  }
+                }
+              }
             }
           ]
         }),

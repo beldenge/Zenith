@@ -27,6 +27,8 @@ import { FormGroup } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
 import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
+import { SolutionService } from "../solution.service";
+import { TransformerUtil } from "../util/transformer-util";
 
 @Component({
   selector: 'app-ciphertext-transformers',
@@ -61,6 +63,8 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   appliedTransformers: ZenithTransformer[] = [];
 
   onAppliedTransformersChange = (event: any) => {
+    this.solutionService.updateSolution(null);
+
     if (!this.cipher) {
       return;
     }
@@ -87,13 +91,13 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     if (satisfied) {
       if (!this.appliedTransformers.length) {
         delete this.cipher.transformed;
-        this.cipherService.updateSelectedCipher(this.cipher);
       } else {
         this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
           this.cipher.transformed = cipherResponse.ciphers[0];
-          this.cipherService.updateSelectedCipher(this.cipher);
         });
       }
+
+      this.cipherService.updateSelectedCipher(this.cipher);
 
       if (!event || !event.skipUpdate) {
         this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
@@ -113,24 +117,25 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     onMove: this.onAppliedTransformersChange
   };
 
-  constructor(private cipherService: CipherService, private configurationService: ConfigurationService, private introductionService: IntroductionService) {}
+  constructor(private cipherService: CipherService,
+              private configurationService: ConfigurationService,
+              private introductionService: IntroductionService,
+              private solutionService: SolutionService) {}
 
   ngOnInit(): void {
     this.configurationService.getAvailableCiphertextTransformersAsObservable().subscribe(transformerResponse => {
       this.availableTransformers = transformerResponse;
     });
 
-    this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
-      this.appliedTransformers = appliedTransformers;
-      this.onAppliedTransformersChange({ skipUpdate: true });
+    this.appliedCiphertextTransformersSubscription = this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
+      if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
+        this.appliedTransformers = appliedTransformers;
+        this.onAppliedTransformersChange({skipUpdate: true});
+      }
     });
 
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
-      this.cipher = cipher;
-    });
-
-    this.appliedCiphertextTransformersSubscription = this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
-      this.appliedTransformers = appliedTransformers;
+        this.cipher = cipher;
     });
 
     this.showIntroCiphertextTransformersSubscription = this.introductionService.getShowIntroCiphertextTransformersAsObservable().subscribe(showIntro => {
