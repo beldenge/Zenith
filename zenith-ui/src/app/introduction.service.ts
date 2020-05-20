@@ -85,6 +85,10 @@ export class IntroductionService {
         intro: 'Run the solver here.',
         position: 'left'
       }, {
+        element: '#import_export',
+        intro: 'Export your settings to share them or to import them on a different browser or device.',
+        position: 'left'
+      }, {
         element: '#nav_manage_ciphers',
         intro: 'This page lets you view, add, edit, and delete available ciphers.',
         position: 'right',
@@ -164,7 +168,7 @@ export class IntroductionService {
       overlayOpacity: 0.5,
       steps: [{
         element: '#optimizer_form_group',
-        intro: 'Choose your preferred optimizer.',
+        intro: 'Choose your preferred optimizer and fitness function.',
         position: 'bottom',
       }, {
         element: '#optimizer_settings_form_group',
