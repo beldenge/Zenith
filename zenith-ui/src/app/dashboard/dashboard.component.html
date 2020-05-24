@@ -81,9 +81,9 @@
       <form class="user" [formGroup]="hyperparametersForm">
         <div class="form-group row">
           <label class="col-md-6 my-auto" for="epochs" matTooltip="Number of times to run the solver, the best solution of which will be displayed in the panel above" matTooltipPosition="above">Epochs</label>
-          <input id="epochs" type="text" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" (change)="onEpochsChange()">
+          <input id="epochs" type="text" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" (keyup)="onEpochsChange()">
         </div>
-        <div class="text-center text-danger small" *ngIf="!hyperparametersForm.get('epochs').valid">Must be a number greater than 0</div>
+        <div class="text-center text-danger small" *ngIf="!hyperparametersForm.get('epochs').valid">{{epochsValidationMessage}}</div>
       </form>
     </div>
     <div class="col-xl-1">

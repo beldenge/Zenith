@@ -35,6 +35,7 @@ import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransforma
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +45,12 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractSolutionService {
     private Logger log = LoggerFactory.getLogger(getClass());
+
+    @Value("${features.genetic-algorithm.enabled:true}")
+    private boolean geneticAlgorithmEnabled;
+
+    @Value("${features.epochs.max:-1}")
+    private int maxEpochs;
 
     @Autowired
     private SimulatedAnnealingSolutionOptimizer simulatedAnnealingOptimizer;
@@ -57,6 +64,10 @@ public abstract class AbstractSolutionService {
     public abstract OnEpochComplete getCallback(SolutionRequest request);
 
     protected CipherSolution doSolve(SolutionRequest request) {
+        if (maxEpochs > 0 && request.getEpochs() > maxEpochs) {
+            throw new IllegalArgumentException("The requested number of epochs=" + request.getEpochs() + " exceeds the maximum supported=" + maxEpochs + ".");
+        }
+
         Cipher cipher = new Cipher(null, request.getRows(), request.getColumns());
 
         for (int i = 0; i < request.getCiphertext().length(); i ++) {
@@ -85,6 +96,10 @@ public abstract class AbstractSolutionService {
 
             cipherSolution = simulatedAnnealingOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, plaintextEvaluator, getCallback(request));
         } else if (request.getGeneticAlgorithmConfiguration() != null) {
+            if (!geneticAlgorithmEnabled) {
+                throw new IllegalArgumentException("Genetic Algorithm Optimizer is currently disabled.");
+            }
+
             GeneticAlgorithmConfiguration geneticAlgorithmConfiguration = request.getGeneticAlgorithmConfiguration();
             configuration.put(GeneticAlgorithmSolutionOptimizer.POPULATION_SIZE, geneticAlgorithmConfiguration.getPopulationSize());
             configuration.put(GeneticAlgorithmSolutionOptimizer.NUMBER_OF_GENERATIONS, geneticAlgorithmConfiguration.getNumberOfGenerations());

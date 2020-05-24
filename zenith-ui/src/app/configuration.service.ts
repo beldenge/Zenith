@@ -35,6 +35,8 @@ import { HttpClient } from "@angular/common/http";
 import { Cipher } from "./models/Cipher";
 import { environment } from "../environments/environment";
 import { debounceTime } from "rxjs/operators";
+import { FeatureService } from "./feature.service";
+import { FeatureResponse } from "./models/FeatureResponse";
 
 const ENDPOINT_URL = environment.apiUrlBase + '/configurations';
 
@@ -114,12 +116,18 @@ export class ConfigurationService {
   private ciphers$ = new BehaviorSubject<Cipher[]>([]);
   private selectedCipher$ = new BehaviorSubject<Cipher>(null);
   private configurationLoadedNotification$ = new BehaviorSubject<boolean>(false);
+  private features$ = new BehaviorSubject<FeatureResponse>(new FeatureResponse(false, 100));
 
   constructor(private http: HttpClient,
               private sanitizer: DomSanitizer,
               private fitnessFunctionService: FitnessFunctionService,
               private plaintextTransformerService: PlaintextTransformerService,
-              private ciphertextTransformerService: CiphertextTransformerService) {
+              private ciphertextTransformerService: CiphertextTransformerService,
+              private featureService: FeatureService) {
+    featureService.getFeatures().subscribe(featureResponse => {
+      this.features$.next(featureResponse);
+    });
+
     let fitnessFunctionsPromise = fitnessFunctionService.getFitnessFunctions().then(fitnessFunctionResponse => {
       let availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
         return t1.order - t2.order;
@@ -325,6 +333,14 @@ export class ConfigurationService {
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
+  }
+
+  getFeaturesAsObservable(): Observable<FeatureResponse> {
+    return this.features$.asObservable();
+  }
+
+  updateFeatures(featureResponse: FeatureResponse) {
+    this.features$.next(featureResponse);
   }
 
   restoreGeneralSettings() {

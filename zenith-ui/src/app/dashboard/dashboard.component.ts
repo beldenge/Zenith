@@ -52,8 +52,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedCipher: Cipher;
   isRunning: boolean = false;
   progressPercentage: number = 0;
+  epochsValidationMessageDefault: string = 'Must be a number greater than zero';
+  epochsValidationMessage: string = this.epochsValidationMessageDefault;
+  epochsValidationDefault = [Validators.min(1), Validators.pattern("^[0-9]*$")];
   hyperparametersForm = this.fb.group({
-    epochs: [null, [Validators.min(1), Validators.pattern("^[0-9]*$")]]
+    epochs: [null, this.epochsValidationDefault]
   });
   selectHasFocus: boolean = false;
   appliedPlaintextTransformers: ZenithTransformer[] = [];
@@ -70,6 +73,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedFitnessFunctionSubscription: Subscription;
   simulatedAnnealingConfigurationSubscription: Subscription;
   geneticAlgorithmConfigurationSubscription: Subscription;
+  featuresSubscription: Subscription;
 
   constructor(private fb: FormBuilder,
               private cipherService: CipherService,
@@ -122,6 +126,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.introductionService.updateShowIntroDashboard(false);
       }
     });
+
+    this.featuresSubscription = this.configurationService.getFeaturesAsObservable().subscribe(featureResponse => {
+      if (featureResponse.maxEpochs > 0) {
+        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidationDefault.concat([Validators.max(featureResponse.maxEpochs)]));
+        this.epochsValidationMessage = 'Must be a number between 1 and ' + featureResponse.maxEpochs;
+      } else {
+        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidationDefault);
+        this.epochsValidationMessage = this.epochsValidationMessageDefault;
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -134,6 +148,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.simulatedAnnealingConfigurationSubscription.unsubscribe();
     this.geneticAlgorithmConfigurationSubscription.unsubscribe();
     this.showIntroDashboardSubscription.unsubscribe();
+    this.featuresSubscription.unsubscribe();
   }
 
   onMouseDownSelect(element: HTMLElement) {
@@ -157,10 +172,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onEpochsChange() {
-    this.configurationService.updateEpochs(this.hyperparametersForm.get('epochs').value);
+    if (this.hyperparametersForm.valid) {
+      this.progressPercentage = 0;
+      this.configurationService.updateEpochs(this.hyperparametersForm.get('epochs').value);
+    }
   }
 
   solve() {
+    if (!this.hyperparametersForm.valid) {
+      return;
+    }
+
     let request;
 
     if (!this.selectedCipher.transformed) {
@@ -202,6 +224,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.solutionService.updateSolution(null);
     this.progressPercentage = 0;
     this.isRunning = true;
 

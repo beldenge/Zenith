@@ -52,6 +52,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   mutationAlgorithmNames: SelectOption[] = ConfigurationService.MUTATION_ALGORITHM_NAMES;
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
   selectedFitnessFunction: ZenithFitnessFunction;
+  featuresSubscription: Subscription;
 
   simulatedAnnealingFormGroup = this.fb.group({
     samplerIterations: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
@@ -175,6 +176,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
         }, 500);
       }
     });
+
+    this.featuresSubscription = this.configurationService.getFeaturesAsObservable().subscribe(featureResponse => {
+      if (!featureResponse.geneticAlgorithmEnabled) {
+        this.geneticAlgorithmFormGroup.disable();
+        this.geneticAlgorithmConfigurationSubscription.unsubscribe();
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -184,6 +192,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.selectedOptimizerSubscription.unsubscribe();
     this.selectedFitnessFunctionSubscription.unsubscribe();
     this.generalSettingsFormValueChangesSubscription.unsubscribe();
+    this.featuresSubscription.unsubscribe();
   }
 
   // For some reason this doesn't even get called if we don't specify the event parameter

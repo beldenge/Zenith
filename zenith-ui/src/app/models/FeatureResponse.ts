@@ -17,16 +17,12 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+export class FeatureResponse {
+  geneticAlgorithmEnabled: boolean;
+  maxEpochs: number;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-@AllArgsConstructor
-public class FeatureResponse {
-    private boolean geneticAlgorithmEnabled;
-    private int maxEpochs;
+  constructor(geneticAlgorithmEnabled: boolean, maxEpochs: number) {
+    this.geneticAlgorithmEnabled = geneticAlgorithmEnabled;
+    this.maxEpochs = maxEpochs;
+  }
 }
