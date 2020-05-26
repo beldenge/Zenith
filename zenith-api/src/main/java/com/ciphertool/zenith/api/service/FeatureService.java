@@ -35,10 +35,13 @@ public class FeatureService {
     @Value("${features.epochs.max:-1}")
     private int maxEpochs;
 
+    @Value("${features.simulated-annealing.max-iterations:-1}")
+    private int simulatedAnnealingMaxIterations;
+
     @GetMapping
     @ResponseBody
     @Cacheable("features")
     public FeatureResponse findFitnessFunctions() {
-        return new FeatureResponse(geneticAlgorithmEnabled, maxEpochs);
+        return new FeatureResponse(geneticAlgorithmEnabled, maxEpochs, simulatedAnnealingMaxIterations);
     }
 }

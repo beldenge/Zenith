@@ -20,9 +20,11 @@
 export class FeatureResponse {
   geneticAlgorithmEnabled: boolean;
   maxEpochs: number;
+  simulatedAnnealingMaxIterations: number;
 
-  constructor(geneticAlgorithmEnabled: boolean, maxEpochs: number) {
+  constructor(geneticAlgorithmEnabled: boolean, maxEpochs: number, simulatedAnnealingMaxIterations: number) {
     this.geneticAlgorithmEnabled = geneticAlgorithmEnabled;
     this.maxEpochs = maxEpochs;
+    this.simulatedAnnealingMaxIterations = simulatedAnnealingMaxIterations;
   }
 }

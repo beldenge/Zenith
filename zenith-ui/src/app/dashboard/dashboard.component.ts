@@ -54,9 +54,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   progressPercentage: number = 0;
   epochsValidationMessageDefault: string = 'Must be a number greater than zero';
   epochsValidationMessage: string = this.epochsValidationMessageDefault;
-  epochsValidationDefault = [Validators.min(1), Validators.pattern("^[0-9]*$")];
+  epochsValidatorsDefault = [Validators.min(1), Validators.pattern("^[0-9]*$")];
   hyperparametersForm = this.fb.group({
-    epochs: [null, this.epochsValidationDefault]
+    epochs: [null, this.epochsValidatorsDefault]
   });
   selectHasFocus: boolean = false;
   appliedPlaintextTransformers: ZenithTransformer[] = [];
@@ -129,10 +129,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.featuresSubscription = this.configurationService.getFeaturesAsObservable().subscribe(featureResponse => {
       if (featureResponse.maxEpochs > 0) {
-        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidationDefault.concat([Validators.max(featureResponse.maxEpochs)]));
+        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidatorsDefault.concat([Validators.max(featureResponse.maxEpochs)]));
         this.epochsValidationMessage = 'Must be a number between 1 and ' + featureResponse.maxEpochs;
       } else {
-        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidationDefault);
+        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidatorsDefault);
         this.epochsValidationMessage = this.epochsValidationMessageDefault;
       }
     });

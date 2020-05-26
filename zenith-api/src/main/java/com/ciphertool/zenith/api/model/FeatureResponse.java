@@ -29,4 +29,5 @@ import lombok.Setter;
 public class FeatureResponse {
     private boolean geneticAlgorithmEnabled;
     private int maxEpochs;
+    private int simulatedAnnealingMaxIterations;
 }

@@ -52,6 +52,9 @@ public abstract class AbstractSolutionService {
     @Value("${features.epochs.max:-1}")
     private int maxEpochs;
 
+    @Value("${features.simulated-annealing.max-iterations:-1}")
+    private int simulatedAnnealingMaxIterations;
+
     @Autowired
     private SimulatedAnnealingSolutionOptimizer simulatedAnnealingOptimizer;
 
@@ -90,6 +93,11 @@ public abstract class AbstractSolutionService {
 
         if (request.getSimulatedAnnealingConfiguration() != null) {
             SimulatedAnnealingConfiguration simulatedAnnealingConfiguration = request.getSimulatedAnnealingConfiguration();
+
+            if (simulatedAnnealingMaxIterations > 0 && simulatedAnnealingConfiguration.getSamplerIterations() > simulatedAnnealingMaxIterations) {
+                throw new IllegalArgumentException("The requested number of sampler iterations=" + simulatedAnnealingConfiguration.getSamplerIterations() + " exceeds the maximum supported=" + simulatedAnnealingMaxIterations + ".");
+            }
+
             configuration.put(SimulatedAnnealingSolutionOptimizer.SAMPLER_ITERATIONS, simulatedAnnealingConfiguration.getSamplerIterations());
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MIN, simulatedAnnealingConfiguration.getAnnealingTemperatureMin());
             configuration.put(SimulatedAnnealingSolutionOptimizer.ANNEALING_TEMPERATURE_MAX, simulatedAnnealingConfiguration.getAnnealingTemperatureMax());

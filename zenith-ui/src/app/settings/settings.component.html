@@ -87,7 +87,7 @@
                 <mat-form-field appearance="outline">
                   <mat-label>Sampler Iterations</mat-label>
                   <input matInput formControlName="samplerIterations">
-                  <mat-error>A number 1 or greater is required</mat-error>
+                  <mat-error>{{samplerIterationsValidationMessage}}</mat-error>
                 </mat-form-field>
               </div>
               <div class="col-sm-4">

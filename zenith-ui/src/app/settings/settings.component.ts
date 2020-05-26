@@ -53,9 +53,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
   selectedFitnessFunction: ZenithFitnessFunction;
   featuresSubscription: Subscription;
+  samplerIterationsValidatorsDefault = [Validators.min(1), Validators.pattern(INTEGER_PATTERN)];
+  samplerIterationsValidationMessageDefault: string = "A number 1 or greater is required";
+  samplerIterationsValidationMessage: string = this.samplerIterationsValidationMessageDefault;
 
   simulatedAnnealingFormGroup = this.fb.group({
-    samplerIterations: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    samplerIterations: [null, this.samplerIterationsValidatorsDefault],
     annealingTemperatureMin: [null, [Validators.pattern(DECIMAL_PATTERN)]],
     annealingTemperatureMax: [null, [Validators.pattern(DECIMAL_PATTERN)]],
   });
@@ -181,6 +184,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if (!featureResponse.geneticAlgorithmEnabled) {
         this.geneticAlgorithmFormGroup.disable();
         this.geneticAlgorithmConfigurationSubscription.unsubscribe();
+      }
+
+      if (featureResponse.simulatedAnnealingMaxIterations > 0) {
+        this.simulatedAnnealingFormGroup.get("samplerIterations").setValidators(this.samplerIterationsValidatorsDefault.concat([Validators.max(featureResponse.simulatedAnnealingMaxIterations)]));
+        this.samplerIterationsValidationMessage = 'Must be a number between 1 and ' + featureResponse.simulatedAnnealingMaxIterations;
+      } else {
+        this.simulatedAnnealingFormGroup.get("samplerIterations").setValidators(this.samplerIterationsValidatorsDefault);
+        this.samplerIterationsValidationMessage = this.samplerIterationsValidationMessageDefault;
       }
     });
   }

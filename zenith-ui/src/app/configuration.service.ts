@@ -116,7 +116,7 @@ export class ConfigurationService {
   private ciphers$ = new BehaviorSubject<Cipher[]>([]);
   private selectedCipher$ = new BehaviorSubject<Cipher>(null);
   private configurationLoadedNotification$ = new BehaviorSubject<boolean>(false);
-  private features$ = new BehaviorSubject<FeatureResponse>(new FeatureResponse(false, 100));
+  private features$ = new BehaviorSubject<FeatureResponse>(new FeatureResponse(false, 100, 100000));
 
   constructor(private http: HttpClient,
               private sanitizer: DomSanitizer,
