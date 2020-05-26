@@ -22,42 +22,53 @@ package com.ciphertool.zenith.inference.util;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
-public class IndexOfCoincidenceEvaluator {
-    // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
-    private int[] letterCounts = new int[256];
-    private int[] precomputedNominatorValues;
-    private float denominator;
+public class IndexOfCoincidenceEvaluator implements CounterweightEvaluator {
+    private static final String LETTER_COUNTS_KEY = "letterCounts";
+    private static final String PRECOMPUTED_NOMINATOR_VALUES_KEY = "precomputedNominatorValues";
+    private static final String DENOMINATOR_KEY = "denominator";
 
-    private Cipher initialized = null;
+    @Override
+    public Map<String, Object> precompute(Cipher cipher) {
+        Map<String, Object> precomputedData = new HashMap<>(3);
 
-    public void init(Cipher cipher) {
-        denominator = cipher.length() * (cipher.length() - 1);
-        precomputedNominatorValues = new int[cipher.length() + 1];
+        int[] precomputedNominatorValues = new int[cipher.length() + 1];
 
         for (int i = 0; i <= cipher.length(); i ++) {
             precomputedNominatorValues[i] = i * (i - 1);
         }
 
-        initialized = cipher;
+        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+        precomputedData.put(LETTER_COUNTS_KEY, new int[256]);
+        precomputedData.put(DENOMINATOR_KEY, (float) cipher.length() * (cipher.length() - 1));
+        precomputedData.put(PRECOMPUTED_NOMINATOR_VALUES_KEY, precomputedNominatorValues);
+
+        return precomputedData;
     }
 
-    public float evaluate(Cipher cipher, String solutionString) {
-        if (initialized == null || initialized != cipher) {
-            init(cipher);
+    @Override
+    public float evaluate(Map<String, Object> precomputedData, Cipher cipher, String solutionString) {
+        if (precomputedData == null) {
+            precomputedData = precompute(cipher);
         }
 
-        resetLetterCounts();
+        int[] letterCounts = (int[]) precomputedData.get(LETTER_COUNTS_KEY);
+        int[] precomputedNominatorValues = (int[]) precomputedData.get(PRECOMPUTED_NOMINATOR_VALUES_KEY);
+        float denominator = (float) precomputedData.get(DENOMINATOR_KEY);
+
+        resetLetterCounts(letterCounts);
 
         for (int i = 0; i < solutionString.length(); i++) {
             letterCounts[solutionString.charAt(i)] ++;
         }
 
-        return (float) buildNumerator() / denominator;
+        return (float) buildNumerator(precomputedNominatorValues, letterCounts) / denominator;
     }
 
-    private void resetLetterCounts() {
-        // TODO: see if Arrays.fill is any faster/slower
+    private void resetLetterCounts(int[] letterCounts) {
         letterCounts['a'] = 0;
         letterCounts['b'] = 0;
         letterCounts['c'] = 0;
@@ -86,7 +97,7 @@ public class IndexOfCoincidenceEvaluator {
         letterCounts['z'] = 0;
     }
 
-    private int buildNumerator() {
+    private int buildNumerator(int[] precomputedNominatorValues, int[] letterCounts) {
         int numerator = 0;
         numerator += precomputedNominatorValues[letterCounts['a']];
         numerator += precomputedNominatorValues[letterCounts['b']];

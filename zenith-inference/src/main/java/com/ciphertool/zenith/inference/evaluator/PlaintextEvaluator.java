@@ -28,7 +28,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Map;
 
 public interface PlaintextEvaluator {
-   SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey);
+   SolutionScore evaluate(Map<String, Object> precomputedData, Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey);
+
+   Map<String, Object> getPrecomputedCounterweightData(Cipher cipher);
 
    PlaintextEvaluator getInstance(Map<String, Object> data);
 

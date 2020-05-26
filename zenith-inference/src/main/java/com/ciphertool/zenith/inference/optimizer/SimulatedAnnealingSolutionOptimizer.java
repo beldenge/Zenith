@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,21 +49,10 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
 
-    private char[] BIASED_LETTER_BUCKET;
+    private char[] biasedLetterBucket;
 
-    @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
-        int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
-        float annealingTemperatureMin = (float) configuration.get(ANNEALING_TEMPERATURE_MIN);
-        float annealingTemperatureMax = (float) configuration.get(ANNEALING_TEMPERATURE_MAX);
-
-        int cipherKeySize = (int) cipher.getCiphertextCharacters().stream()
-                .map(c -> c.getValue())
-                .distinct()
-                .count();
-
-        log.debug("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
-
+    @PostConstruct
+    public void init() {
         List<Character> biasedCharacterBucket = new ArrayList<>();
 
         // Instead of using a uniform distribution or one purely based on English, we flatten out the English letter unigram probabilities by the flatMassWeight
@@ -82,10 +72,26 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             }
         }
 
-        BIASED_LETTER_BUCKET = new char[biasedCharacterBucket.size()];
+        biasedLetterBucket = new char[biasedCharacterBucket.size()];
         for (int i = 0; i < biasedCharacterBucket.size(); i ++) {
-            BIASED_LETTER_BUCKET[i] = biasedCharacterBucket.get(i);
+            biasedLetterBucket[i] = biasedCharacterBucket.get(i);
         }
+    }
+
+    @Override
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
+        int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
+        float annealingTemperatureMin = (float) configuration.get(ANNEALING_TEMPERATURE_MIN);
+        float annealingTemperatureMax = (float) configuration.get(ANNEALING_TEMPERATURE_MAX);
+
+        int cipherKeySize = (int) cipher.getCiphertextCharacters().stream()
+                .map(c -> c.getValue())
+                .distinct()
+                .count();
+
+        log.debug("unknownLetterNGramProbability: {}", letterMarkovModel.getUnknownLetterNGramProbability());
+
+        Map<String, Object> precomputedCounterweightData = plaintextEvaluator.getPrecomputedCounterweightData(cipher);
 
         long totalElapsed = 0;
         int correctSolutions = 0;
@@ -107,7 +113,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
             long start = System.currentTimeMillis();
 
-            CipherSolution best = performEpoch(cipher, initialSolution, mappingKeys, samplerIterations, annealingTemperatureMin, annealingTemperatureMax, plaintextTransformationSteps, plaintextEvaluator);
+            CipherSolution best = performEpoch(precomputedCounterweightData, cipher, initialSolution, mappingKeys, samplerIterations, annealingTemperatureMin, annealingTemperatureMax, plaintextTransformationSteps, plaintextEvaluator);
 
             long elapsed = System.currentTimeMillis() - start;
             totalElapsed += elapsed;
@@ -144,20 +150,20 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 .map(ciphertext -> ciphertext.getValue())
                 .distinct()
                 .forEach(ciphertext -> {
-                    solutionProposal.putMapping(ciphertext, BIASED_LETTER_BUCKET[RANDOM.nextInt(BIASED_LETTER_BUCKET.length)]);
+                    solutionProposal.putMapping(ciphertext, biasedLetterBucket[RANDOM.nextInt(biasedLetterBucket.length)]);
                 });
 
         return solutionProposal;
     }
 
-    private CipherSolution performEpoch(Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+    private CipherSolution performEpoch(Map<String, Object> precomputedCounterweightData, Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         String solutionString = initialSolution.asSingleLineString();
 
         if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
             solutionString = plaintextTransformationManager.transform(solutionString, plaintextTransformationSteps);
         }
 
-        SolutionScore score = plaintextEvaluator.evaluate(cipher, initialSolution, solutionString, null);
+        SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, initialSolution, solutionString, null);
         initialSolution.setScore(score.getScore());
 
         if (log.isDebugEnabled()) {
@@ -180,7 +186,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (float) i) / samplerIterations)) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
-            next = runLetterSampler(cipher, temperature, next, solutionCharArray, mappingKeys, plaintextTransformationSteps, plaintextEvaluator);
+            next = runLetterSampler(precomputedCounterweightData, cipher, temperature, next, solutionCharArray, mappingKeys, plaintextTransformationSteps, plaintextEvaluator);
 
             if (log.isDebugEnabled()) {
                 long now = System.currentTimeMillis();
@@ -192,14 +198,21 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         return next;
     }
 
-    private CipherSolution runLetterSampler(Cipher cipher, float temperature, CipherSolution solution, char[] solutionCharArray, String[] mappingKeys, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+    private CipherSolution runLetterSampler(Map<String, Object> precomputedCounterweightData,
+                                            Cipher cipher,
+                                            float temperature,
+                                            CipherSolution solution,
+                                            char[] solutionCharArray,
+                                            String[] mappingKeys,
+                                            List<PlaintextTransformationStep> plaintextTransformationSteps,
+                                            PlaintextEvaluator plaintextEvaluator) {
         String nextKey;
 
         // For each cipher symbol type, run the letter sampling
         for (int i = 0; i < mappingKeys.length; i++) {
             nextKey = mappingKeys[i];
 
-            char letter = BIASED_LETTER_BUCKET[RANDOM.nextInt(BIASED_LETTER_BUCKET.length)];
+            char letter = biasedLetterBucket[RANDOM.nextInt(biasedLetterBucket.length)];
 
             char originalMapping = solution.getMappings().get(nextKey);
 
@@ -221,7 +234,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 proposalString = plaintextTransformationManager.transform(proposalString, plaintextTransformationSteps);
             }
 
-            SolutionScore score = plaintextEvaluator.evaluate(cipher, solution, proposalString, nextKey);
+            SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, solution, proposalString, nextKey);
             solution.setScore(score.getScore());
 
             if (!selectNext(temperature, originalScore, solution.getScore())) {

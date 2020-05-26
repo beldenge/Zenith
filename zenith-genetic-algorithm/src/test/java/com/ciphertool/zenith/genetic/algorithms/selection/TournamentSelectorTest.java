@@ -90,7 +90,7 @@ public class TournamentSelectorTest {
         int selectedIndex = tournamentSelector.getNextIndex(individuals, strategy);
 
         assertTrue(selectedIndex > -1);
-        verifyZeroInteractions(logMock);
+        verifyNoInteractions(logMock);
     }
 
     @Test

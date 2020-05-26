@@ -256,15 +256,15 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
 
     @Test
     public void testEvaluate() {
-        NGramAndIndexOfCoincidencePlaintextEvaluator.evaluate(zodiac408, actualSolution, actualSolution.asSingleLineString(), null);
+        NGramAndIndexOfCoincidencePlaintextEvaluator .evaluate(null, zodiac408, actualSolution, actualSolution.asSingleLineString(), null);
         log.info("fitness1: " + actualSolution.getLogProbability());
         log.info("solution1: " + actualSolution);
 
-        NGramAndIndexOfCoincidencePlaintextEvaluator.evaluate(zodiac408 ,solution2, solution2.asSingleLineString(), null);
+        NGramAndIndexOfCoincidencePlaintextEvaluator.evaluate(null, zodiac408 ,solution2, solution2.asSingleLineString(), null);
         log.info("fitness2: " + solution2.getLogProbability());
         log.info("solution2: " + solution2);
 
-        NGramAndIndexOfCoincidencePlaintextEvaluator.evaluate(zodiac408, solution3, solution3.asSingleLineString(), null);
+        NGramAndIndexOfCoincidencePlaintextEvaluator.evaluate(null, zodiac408, solution3, solution3.asSingleLineString(), null);
         log.info("fitness3: " + solution3.getLogProbability());
         log.info("solution3: " + solution3);
     }
@@ -275,7 +275,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
         long evaluations = 10000;
 
         for (int i = 0; i < evaluations; i++) {
-            NGramAndIndexOfCoincidencePlaintextEvaluator.evaluate(zodiac408, actualSolution, actualSolution.asSingleLineString(), null);
+            NGramAndIndexOfCoincidencePlaintextEvaluator.evaluate(null, zodiac408, actualSolution, actualSolution.asSingleLineString(), null);
         }
 
         log.info(evaluations + " evaluations took: " + (System.currentTimeMillis() - start) + "ms.");

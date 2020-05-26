@@ -31,13 +31,16 @@ import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransforma
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 
 import java.util.List;
+import java.util.Map;
 
 public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
     private PlaintextEvaluator plaintextEvaluator;
     private List<PlaintextTransformationStep> plaintextTransformationSteps;
     private PlaintextTransformationManager plaintextTransformationManager;
+    private Map<String, Object> precomputedCounterweightData;
 
-    public PlaintextEvaluatorWrappingFitnessEvaluator(PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<PlaintextTransformationStep> plaintextTransformationSteps) {
+    public PlaintextEvaluatorWrappingFitnessEvaluator(Map<String, Object> precomputedCounterweightData, PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<PlaintextTransformationStep> plaintextTransformationSteps) {
+        this.precomputedCounterweightData = precomputedCounterweightData;
         this.plaintextEvaluator = plaintextEvaluator;
         this.plaintextTransformationManager = plaintextTransformationManager;
         this.plaintextTransformationSteps = plaintextTransformationSteps;
@@ -54,7 +57,7 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
         }
 
         Cipher cipher = ((CipherKeyChromosome) chromosome).getCipher();
-        SolutionScore score = plaintextEvaluator.evaluate(cipher, proposal, solutionString, null);
+        SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, proposal, solutionString, null);
         proposal.setScore(score.getScore());
 
         return Double.valueOf(proposal.getScore());

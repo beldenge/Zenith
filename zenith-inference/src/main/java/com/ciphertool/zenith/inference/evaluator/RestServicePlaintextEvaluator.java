@@ -56,7 +56,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     }
 
     @Override
-    public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
+    public SolutionScore evaluate(Map<String, Object> precomputedData, Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startEvaluation = System.currentTimeMillis();
 
         RestServiceEvaluationRequest request = new RestServiceEvaluationRequest();
@@ -83,6 +83,11 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
         }
 
         return new SolutionScore(logProbabilitiesUpdated, solution.getLogProbability());
+    }
+
+    @Override
+    public Map<String, Object> getPrecomputedCounterweightData(Cipher cipher) {
+        return null;
     }
 
     @Override

@@ -38,6 +38,8 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import lombok.Builder;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,10 +71,10 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String TOURNAMENT_SIZE = "tournamentSize";
 
     @Autowired
-    private List<Population> populations;
+    private StandardGeneticAlgorithm geneticAlgorithm;
 
     @Autowired
-    private StandardGeneticAlgorithm geneticAlgorithm;
+    private List<Population> populations;
 
     @Autowired
     private List<Breeder> breeders;
@@ -86,19 +88,14 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     @Autowired
     private List<Selector> selectors;
 
-    private Population population;
+    public GeneticAlgorithmInitialization init(Cipher cipher, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+        Population population = null;
+        Breeder breeder = null;
+        CrossoverAlgorithm crossoverAlgorithm = null;
+        MutationAlgorithm mutationAlgorithm = null;
+        Selector selector = null;
+        FitnessEvaluator fitnessEvaluator = null;
 
-    private Breeder breeder;
-
-    private CrossoverAlgorithm crossoverAlgorithm;
-
-    private MutationAlgorithm mutationAlgorithm;
-
-    private Selector selector;
-
-    private FitnessEvaluator fitnessEvaluator;
-
-    public void init(Cipher cipher, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         String populationName = (String) configuration.get(POPULATION_NAME);
         String breederName = (String) configuration.get(BREEDER_NAME);
         String crossoverAlgorithmName = (String) configuration.get(CROSSOVER_ALGORITHM_NAME);
@@ -106,16 +103,16 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         String selectorName = (String) configuration.get(SELECTOR_NAME);
 
         // Set the proper Population
-        for (Population population : populations) {
-            if (population.getClass().getSimpleName().equals(populationName)) {
-                this.population = population;
+        for (Population nextPopulation : populations) {
+            if (nextPopulation.getClass().getSimpleName().equals(populationName)) {
+                population = nextPopulation;
                 break;
             }
         }
 
         if (population == null) {
             List<String> existentPopulations = populations.stream()
-                    .map(population -> population.getClass().getSimpleName())
+                    .map(nextPopulation -> nextPopulation.getClass().getSimpleName())
                     .collect(Collectors.toList());
 
             log.error("The Population with name {} does not exist.  Please use a name from the following: {}", populationName, existentPopulations);
@@ -123,9 +120,9 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         }
 
         // Set the proper Breeder
-        for (Breeder breeder : breeders) {
-            if (breeder.getClass().getSimpleName().equals(breederName)) {
-                this.breeder = breeder;
+        for (Breeder nextBreeder : breeders) {
+            if (nextBreeder.getClass().getSimpleName().equals(breederName)) {
+                breeder = nextBreeder;
                 ((AbstractCipherKeyBreeder) breeder).init(cipher);
                 break;
             }
@@ -133,7 +130,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
         if (breeder == null) {
             List<String> existentBreeders = breeders.stream()
-                    .map(breeder -> breeder.getClass().getSimpleName())
+                    .map(nextBreeder -> nextBreeder.getClass().getSimpleName())
                     .collect(Collectors.toList());
 
             log.error("The Breeder with name {} does not exist.  Please use a name from the following: {}", breederName, existentBreeders);
@@ -141,16 +138,16 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         }
 
         // Set the proper CrossoverAlgorithm
-        for (CrossoverAlgorithm crossoverAlgorithm : crossoverAlgorithms) {
-            if (crossoverAlgorithm.getClass().getSimpleName().equals(crossoverAlgorithmName)) {
-                this.crossoverAlgorithm = crossoverAlgorithm;
+        for (CrossoverAlgorithm nextCrossoverAlgorithm : crossoverAlgorithms) {
+            if (nextCrossoverAlgorithm.getClass().getSimpleName().equals(crossoverAlgorithmName)) {
+                crossoverAlgorithm = nextCrossoverAlgorithm;
                 break;
             }
         }
 
         if (crossoverAlgorithm == null) {
             List<String> existentCrossoverAlgorithms = crossoverAlgorithms.stream()
-                    .map(crossoverAlgorithm -> crossoverAlgorithm.getClass().getSimpleName())
+                    .map(nextCrossoverAlgorithm -> nextCrossoverAlgorithm.getClass().getSimpleName())
                     .collect(Collectors.toList());
 
             log.error("The CrossoverAlgorithm with name {} does not exist.  Please use a name from the following: {}", crossoverAlgorithmName, existentCrossoverAlgorithms);
@@ -158,16 +155,16 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         }
 
         // Set the proper MutationAlgorithm
-        for (MutationAlgorithm mutationAlgorithm : mutationAlgorithms) {
-            if (mutationAlgorithm.getClass().getSimpleName().equals(mutationAlgorithmName)) {
-                this.mutationAlgorithm = mutationAlgorithm;
+        for (MutationAlgorithm nextMutationAlgorithm : mutationAlgorithms) {
+            if (nextMutationAlgorithm.getClass().getSimpleName().equals(mutationAlgorithmName)) {
+                mutationAlgorithm = nextMutationAlgorithm;
                 break;
             }
         }
 
         if (mutationAlgorithm == null) {
             List<String> existentMutationAlgorithms = mutationAlgorithms.stream()
-                    .map(mutationAlgorithm -> mutationAlgorithm.getClass().getSimpleName())
+                    .map(nextMutationAlgorithm -> nextMutationAlgorithm.getClass().getSimpleName())
                     .collect(Collectors.toList());
 
             log.error("The MutationAlgorithm with name {} does not exist.  Please use a name from the following: {}", mutationAlgorithmName, existentMutationAlgorithms);
@@ -175,23 +172,32 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         }
 
         // Set the proper Selector
-        for (Selector selector : selectors) {
-            if (selector.getClass().getSimpleName().equals(selectorName)) {
-                this.selector = selector;
+        for (Selector nextSelector : selectors) {
+            if (nextSelector.getClass().getSimpleName().equals(selectorName)) {
+                selector = nextSelector;
                 break;
             }
         }
 
         if (selector == null) {
             List<String> existentSelectors = selectors.stream()
-                    .map(selector -> selector.getClass().getSimpleName())
+                    .map(nextSelector -> nextSelector.getClass().getSimpleName())
                     .collect(Collectors.toList());
 
             log.error("The Selector with name {} does not exist.  Please use a name from the following: {}", selectorName, existentSelectors);
             throw new IllegalArgumentException("The Selector with name " + selectorName + " does not exist.");
         }
 
-        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator, plaintextTransformationManager, plaintextTransformationSteps);
+        fitnessEvaluator = new PlaintextEvaluatorWrappingFitnessEvaluator(plaintextEvaluator.getPrecomputedCounterweightData(cipher), plaintextEvaluator, plaintextTransformationManager, plaintextTransformationSteps);
+
+        return GeneticAlgorithmInitialization.builder()
+                .population(population)
+                .breeder(breeder)
+                .crossoverAlgorithm(crossoverAlgorithm)
+                .mutationAlgorithm(mutationAlgorithm)
+                .selector(selector)
+                .fitnessEvaluator(fitnessEvaluator)
+                .build();
     }
 
     @Override
@@ -208,29 +214,35 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Double tournamentSelectorAccuracy = (Double) configuration.get(TOURNAMENT_SELECTOR_ACCURACY);
         Integer tournamentSize = (Integer) configuration.get(TOURNAMENT_SIZE);
 
-        init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
+        GeneticAlgorithmInitialization initialization = init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
 
         GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
                 .populationSize(populationSize)
                 .numberOfGenerations(numberOfGenerations)
                 .elitism(elitism)
-                .population(population)
+                .population(initialization.getPopulation())
                 .latticeRows(latticeRows)
                 .latticeColumns(latticeColumns)
                 .latticeWrapAround(latticeWrapAround)
                 .latticeRadius(latticeRadius)
-                .fitnessEvaluator(fitnessEvaluator)
-                .breeder(breeder)
-                .crossoverAlgorithm(crossoverAlgorithm)
-                .mutationAlgorithm(mutationAlgorithm)
+                .fitnessEvaluator(initialization.getFitnessEvaluator())
+                .breeder(initialization.getBreeder())
+                .crossoverAlgorithm(initialization.getCrossoverAlgorithm())
+                .mutationAlgorithm(initialization.getMutationAlgorithm())
                 .mutationRate(mutationRate)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
-                .selector(selector)
+                .selector(initialization.getSelector())
                 .tournamentSelectorAccuracy(tournamentSelectorAccuracy)
                 .tournamentSize(tournamentSize)
                 .build();
 
-        geneticAlgorithm.setStrategy(geneticAlgorithmStrategy);
+        Population population = geneticAlgorithmStrategy.getPopulation();
+        population.setElitism(geneticAlgorithmStrategy.getElitism());
+        population.setFitnessEvaluator(geneticAlgorithmStrategy.getFitnessEvaluator());
+        population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
+        population.setSelector(geneticAlgorithmStrategy.getSelector());
+        population.setBreeder(geneticAlgorithmStrategy.getBreeder());
+        population.init(geneticAlgorithmStrategy);
 
         CipherSolution overallBest = null;
         CipherKeyChromosome last = null;
@@ -243,18 +255,16 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
 
             long start = System.currentTimeMillis();
 
-            geneticAlgorithm.evolve();
+            geneticAlgorithm.evolve(geneticAlgorithmStrategy);
 
             long elapsed = System.currentTimeMillis() - start;
             totalElapsed += elapsed;
             log.info("Epoch completed in {}ms.", elapsed);
 
-            this.geneticAlgorithm.getPopulation().sortIndividuals();
+            initialization.getPopulation().sortIndividuals();
 
             if (log.isDebugEnabled()) {
-                this.geneticAlgorithm.getPopulation().sortIndividuals();
-
-                List<Chromosome> individuals = this.geneticAlgorithm.getPopulation().getIndividuals();
+                List<Chromosome> individuals = initialization.getPopulation().getIndividuals();
                 int size = individuals.size();
 
                 for (int i = 0; i < size; i++) {
@@ -266,7 +276,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 }
             }
 
-            last = (CipherKeyChromosome) this.geneticAlgorithm.getPopulation().getIndividuals().get(this.geneticAlgorithm.getPopulation().getIndividuals().size() - 1);
+            last = (CipherKeyChromosome) initialization.getPopulation().getIndividuals().get(initialization.getPopulation().getIndividuals().size() - 1);
 
             log.info("Best probability solution:");
             CipherSolution bestSolution = ChromosomeToCipherSolutionMapper.map(last);
@@ -297,5 +307,16 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         log.info("Average epoch time={}ms", ((float) totalElapsed / (float) epoch));
 
         return overallBest;
+    }
+
+    @Getter
+    @Builder
+    private static class GeneticAlgorithmInitialization {
+        private Population population;
+        private Breeder breeder;
+        private CrossoverAlgorithm crossoverAlgorithm;
+        private MutationAlgorithm mutationAlgorithm;
+        private Selector selector;
+        private FitnessEvaluator fitnessEvaluator;
     }
 }

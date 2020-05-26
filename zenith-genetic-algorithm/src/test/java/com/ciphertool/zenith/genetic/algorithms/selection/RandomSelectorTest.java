@@ -75,7 +75,7 @@ public class RandomSelectorTest {
         int selectedIndex = randomSelector.getNextIndex(individuals, null);
 
         assertTrue(selectedIndex > -1);
-        verifyZeroInteractions(logMock);
+        verifyNoInteractions(logMock);
     }
 
     @Test

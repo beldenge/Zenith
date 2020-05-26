@@ -89,6 +89,6 @@ public class CipherStatisticsService {
     @ResponseBody
     @Cacheable(value = "cycleScores", key = "#cipher.ciphertext")
     public IntResponse getCycleScore(@RequestBody CipherRequest cipher) {
-        return new IntResponse(cycleCountEvaluator.evaluateThreadSafe(cipher.asCipher()));
+        return new IntResponse(cycleCountEvaluator.evaluate(cipher.asCipher()));
     }
 }

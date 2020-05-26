@@ -17,19 +17,13 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.statistics;
+package com.ciphertool.zenith.inference.util;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import org.springframework.stereotype.Component;
 
-@Component
-public class CiphertextMultiplicityEvaluator {
-    public float evaluate(Cipher cipher) {
-        long uniqueCiphertextCharacters = cipher.getCiphertextCharacters().stream()
-                .map(ciphertext -> ciphertext.getValue())
-                .distinct()
-                .count();
+import java.util.Map;
 
-        return ((float) uniqueCiphertextCharacters / (float) cipher.length()) * 100f;
-    }
+public interface CounterweightEvaluator {
+    Map<String, Object> precompute(Cipher cipher);
+    float evaluate(Map<String, Object> precomputedData, Cipher cipher, String solutionString);
 }

@@ -49,59 +49,59 @@ public class StandardGeneticAlgorithm {
     @Autowired
     private TaskExecutor taskExecutor;
 
-    private GeneticAlgorithmStrategy strategy;
-    private Population population;
     private Integer generationCount = 0;
     private ExecutionStatistics executionStatistics;
     private AtomicInteger mutations = new AtomicInteger(0);
 
-    public void initialize() {
-        validateParameters();
+    public void initialize(GeneticAlgorithmStrategy strategy) {
+        validateParameters(strategy);
 
         this.generationCount = 0;
 
-        this.executionStatistics = new ExecutionStatistics(LocalDateTime.now(), this.strategy);
+        this.executionStatistics = new ExecutionStatistics(LocalDateTime.now(), strategy);
 
-        this.spawnInitialPopulation();
+        this.spawnInitialPopulation(strategy);
     }
 
-    public void spawnInitialPopulation() {
+    public void spawnInitialPopulation(GeneticAlgorithmStrategy strategy) {
         GenerationStatistics generationStatistics = new GenerationStatistics(this.generationCount);
 
         long start = System.currentTimeMillis();
 
-        this.population.clearIndividuals();
+        Population population = strategy.getPopulation();
 
-        this.population.breed();
+        population.clearIndividuals();
+
+        population.breed();
 
         long startEntropyCalculation = System.currentTimeMillis();
-        BigDecimal entropy = this.population.calculateEntropy();
+        BigDecimal entropy = population.calculateEntropy();
         generationStatistics.setEntropy(entropy);
         generationStatistics.getPerformanceStatistics().setEntropyMillis(System.currentTimeMillis() - startEntropyCalculation);
 
         long startEvaluation = System.currentTimeMillis();
-        this.population.evaluateFitness(generationStatistics);
+        population.evaluateFitness(generationStatistics);
         generationStatistics.getPerformanceStatistics().setEvaluationMillis(System.currentTimeMillis() - startEvaluation);
 
         long executionTime = System.currentTimeMillis() - start;
         generationStatistics.getPerformanceStatistics().setTotalMillis(executionTime);
 
-        log.info("Took {}ms to spawn initial population of size {}", executionTime, this.population.size());
+        log.info("Took {}ms to spawn initial population of size {}", executionTime, population.size());
 
         log.info(generationStatistics.toString());
     }
 
-    public void evolve() {
-        initialize();
+    public void evolve(GeneticAlgorithmStrategy strategy) {
+        initialize(strategy);
 
         do {
-            proceedWithNextGeneration();
-        } while ((this.strategy.getNumberOfGenerations() < 0 || this.generationCount < this.strategy.getNumberOfGenerations()));
+            proceedWithNextGeneration(strategy);
+        } while ((strategy.getNumberOfGenerations() < 0 || this.generationCount < strategy.getNumberOfGenerations()));
 
         finish();
     }
 
-    protected void validateParameters() {
+    protected void validateParameters(GeneticAlgorithmStrategy strategy) {
         List<String> validationErrors = new ArrayList<>();
 
         if (strategy.getPopulationSize() == null || strategy.getPopulationSize() <= 0) {
@@ -148,7 +148,7 @@ public class StandardGeneticAlgorithm {
         }
     }
 
-    public void proceedWithNextGeneration() {
+    public void proceedWithNextGeneration(GeneticAlgorithmStrategy strategy) {
         this.generationCount++;
 
         GenerationStatistics generationStatistics = new GenerationStatistics(this.generationCount);
@@ -157,28 +157,30 @@ public class StandardGeneticAlgorithm {
 
         PerformanceStatistics performanceStats = new PerformanceStatistics();
 
+        Population population = strategy.getPopulation();
+
         long startSelection = System.currentTimeMillis();
-        List<Parents> allParents = this.population.select();
+        List<Parents> allParents = population.select();
         performanceStats.setSelectionMillis(System.currentTimeMillis() - startSelection);
 
         long startCrossover = System.currentTimeMillis();
-        List<Chromosome> children = crossover(allParents);
+        List<Chromosome> children = crossover(strategy, allParents);
         generationStatistics.setNumberOfCrossovers(children.size());
         performanceStats.setCrossoverMillis(System.currentTimeMillis() - startCrossover);
 
         long startMutation = System.currentTimeMillis();
-        generationStatistics.setNumberOfMutations(mutate(children));
+        generationStatistics.setNumberOfMutations(mutate(strategy, children));
         performanceStats.setMutationMillis(System.currentTimeMillis() - startMutation);
 
-        replacePopulation(children);
+        replacePopulation(strategy, children);
 
         long startEntropyCalculation = System.currentTimeMillis();
-        BigDecimal entropy = this.population.calculateEntropy();
+        BigDecimal entropy = population.calculateEntropy();
         generationStatistics.setEntropy(entropy);
         performanceStats.setEntropyMillis(System.currentTimeMillis() - startEntropyCalculation);
 
         long startEvaluation = System.currentTimeMillis();
-        this.population.evaluateFitness(generationStatistics);
+        population.evaluateFitness(generationStatistics);
         performanceStats.setEvaluationMillis(System.currentTimeMillis() - startEvaluation);
 
         performanceStats.setTotalMillis(System.currentTimeMillis() - generationStart);
@@ -189,8 +191,8 @@ public class StandardGeneticAlgorithm {
         this.executionStatistics.addGenerationStatistics(generationStatistics);
     }
 
-    public List<Chromosome> crossover(List<Parents> allParents) {
-        if (this.population.size() < 2) {
+    public List<Chromosome> crossover(GeneticAlgorithmStrategy strategy, List<Parents> allParents) {
+        if (strategy.getPopulation().size() < 2) {
             log.info("Unable to perform crossover because there is only 1 individual in the population. Returning.");
 
             return Collections.emptyList();
@@ -198,7 +200,7 @@ public class StandardGeneticAlgorithm {
 
         log.debug("Pairs to crossover: {}", allParents.size());
 
-        List<Chromosome> crossoverResults = doConcurrentCrossovers(allParents);
+        List<Chromosome> crossoverResults = doConcurrentCrossovers(strategy, allParents);
         List<Chromosome> childrenToAdd = new ArrayList<>();
 
         if (crossoverResults != null && !crossoverResults.isEmpty()) {
@@ -213,7 +215,7 @@ public class StandardGeneticAlgorithm {
         return childrenToAdd;
     }
 
-    protected List<Chromosome> doConcurrentCrossovers(List<Parents> allParents) {
+    protected List<Chromosome> doConcurrentCrossovers(GeneticAlgorithmStrategy strategy, List<Parents> allParents) {
         List<FutureTask<Chromosome>> futureTasks = new ArrayList<>();
         FutureTask<Chromosome> futureTask;
 
@@ -222,7 +224,7 @@ public class StandardGeneticAlgorithm {
          * guaranteed.
          */
         for (Parents nextParents : allParents) {
-            futureTask = new FutureTask<>(new CrossoverTask(nextParents));
+            futureTask = new FutureTask<>(new CrossoverTask(strategy, nextParents));
             futureTasks.add(futureTask);
             this.taskExecutor.execute(futureTask);
         }
@@ -247,19 +249,19 @@ public class StandardGeneticAlgorithm {
         return childrenToAdd;
     }
 
-    public int mutate(List<Chromosome> children) {
+    public int mutate(GeneticAlgorithmStrategy strategy, List<Chromosome> children) {
         List<FutureTask<Void>> futureTasks = new ArrayList<>();
         FutureTask<Void> futureTask;
 
         mutations.set(0);
 
-        this.population.sortIndividuals();
+        strategy.getPopulation().sortIndividuals();
 
         /*
          * Execute each mutation concurrently.
          */
         for (Chromosome child : children) {
-            futureTask = new FutureTask<>(new MutationTask(child));
+            futureTask = new FutureTask<>(new MutationTask(strategy, child));
             futureTasks.add(futureTask);
             this.taskExecutor.execute(futureTask);
         }
@@ -277,25 +279,27 @@ public class StandardGeneticAlgorithm {
         return mutations.get();
     }
 
-    protected void replacePopulation(List<Chromosome> children) {
+    protected void replacePopulation(GeneticAlgorithmStrategy strategy, List<Chromosome> children) {
         List<Chromosome> eliteIndividuals = new ArrayList<>();
 
-        if (strategy.getElitism() > 0) {
-            this.population.sortIndividuals();
+        Population population = strategy.getPopulation();
 
-            for (int i = this.population.size() - 1; i >= this.population.size() - strategy.getElitism(); i--) {
-                eliteIndividuals.add(this.population.getIndividuals().get(i));
+        if (strategy.getElitism() > 0) {
+            population.sortIndividuals();
+
+            for (int i = population.size() - 1; i >= population.size() - strategy.getElitism(); i--) {
+                eliteIndividuals.add(population.getIndividuals().get(i));
             }
         }
 
-        this.population.clearIndividuals();
+        population.clearIndividuals();
 
         for (Chromosome elite : eliteIndividuals) {
-            this.population.addIndividual(elite);
+            population.addIndividual(elite);
         }
 
         for (Chromosome child : children) {
-            this.population.addIndividual(child);
+            population.addIndividual(child);
         }
     }
 
@@ -332,29 +336,15 @@ public class StandardGeneticAlgorithm {
         this.executionStatistics = null;
     }
 
-    public Population getPopulation() {
-        return population;
-    }
-
-    public void setStrategy(GeneticAlgorithmStrategy geneticAlgorithmStrategy) {
-        this.population = geneticAlgorithmStrategy.getPopulation();
-        this.population.setElitism(geneticAlgorithmStrategy.getElitism());
-        this.population.setFitnessEvaluator(geneticAlgorithmStrategy.getFitnessEvaluator());
-        this.population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
-        this.population.setSelector(geneticAlgorithmStrategy.getSelector());
-        this.population.setBreeder(geneticAlgorithmStrategy.getBreeder());
-        this.population.init(geneticAlgorithmStrategy);
-
-        this.strategy = geneticAlgorithmStrategy;
-    }
-
     /**
      * A concurrent task for performing a crossover of two parent Chromosomes, producing one child Chromosome.
      */
     protected class CrossoverTask implements Callable<Chromosome> {
+        private GeneticAlgorithmStrategy strategy;
         private Parents parents;
 
-        public CrossoverTask(Parents parents) {
+        public CrossoverTask(GeneticAlgorithmStrategy strategy, Parents parents) {
+            this.strategy = strategy;
             this.parents = parents;
         }
 
@@ -369,9 +359,11 @@ public class StandardGeneticAlgorithm {
      * A concurrent task for performing a crossover of two parent Chromosomes, producing one child Chromosome.
      */
     protected class MutationTask implements Callable<Void> {
+        private GeneticAlgorithmStrategy strategy;
         private Chromosome chromosome;
 
-        public MutationTask(Chromosome chromosome) {
+        public MutationTask(GeneticAlgorithmStrategy strategy, Chromosome chromosome) {
+            this.strategy = strategy;
             this.chromosome = chromosome;
         }
 

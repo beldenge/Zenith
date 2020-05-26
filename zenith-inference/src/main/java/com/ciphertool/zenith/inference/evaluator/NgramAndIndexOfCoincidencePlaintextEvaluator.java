@@ -49,7 +49,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNgramE
     }
 
     @Override
-    public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
+    public SolutionScore evaluate(Map<String, Object> precomputedData, Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
         float[][] logProbabilitiesUpdated = evaluateLetterNGrams(cipher, solution, solutionString, ciphertextKey);
@@ -60,9 +60,14 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNgramE
 
         // Scaling down the index of coincidence by its sixth root seems to be the optimal amount to penalize the sum of log probabilities by
         // This has been determined through haphazard experimentation
-        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(cipher, solutionString));
+        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(precomputedData, cipher, solutionString));
 
         return new SolutionScore(logProbabilitiesUpdated, score);
+    }
+
+    @Override
+    public Map<String, Object> getPrecomputedCounterweightData(Cipher cipher) {
+        return indexOfCoincidenceEvaluator.precompute(cipher);
     }
 
     @Override

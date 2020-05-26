@@ -22,18 +22,21 @@ package com.ciphertool.zenith.inference.util;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
-public class EntropyEvaluator {
+public class EntropyEvaluator implements CounterweightEvaluator {
+    private static final String LETTER_COUNTS_KEY = "letterCounts";
+    private static final String PRECOMPUTED_ENTROPIES_KEY = "precomputedEntropies";
+
     private static float BASE = 2f; // Assuming we want the unit of entropy to be 'bit'
 
-    // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
-    private int[] letterCounts = new int[256];
-    private double[] precomputedEntropies;
+    @Override
+    public Map<String, Object> precompute(Cipher cipher) {
+        Map<String, Object> precomputedData = new HashMap<>(2);
 
-    private Cipher initialized = null;
-
-    private void init(Cipher cipher) {
-        precomputedEntropies = new double[cipher.length() + 1];
+        double[] precomputedEntropies = new double[cipher.length() + 1];
         precomputedEntropies[0] = 0f;
 
         for (int i = 1; i <= cipher.length(); i ++) {
@@ -41,25 +44,32 @@ public class EntropyEvaluator {
             precomputedEntropies[i] = Math.abs(MathUtils.logBase(probability, BASE) * probability);
         }
 
-        initialized = cipher;
+        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+        precomputedData.put(LETTER_COUNTS_KEY, new int[256]);
+        precomputedData.put(PRECOMPUTED_ENTROPIES_KEY, precomputedEntropies);
+
+        return precomputedData;
     }
 
-    public float evaluate(Cipher cipher, String solutionString) {
-        if (initialized == null || initialized != cipher) {
-            init(cipher);
+    @Override
+    public float evaluate(Map<String, Object> precomputedData, Cipher cipher, String solutionString) {
+        if (precomputedData == null) {
+            precomputedData = precompute(cipher);
         }
 
-        resetLetterCounts();
+        int[] letterCounts = (int[]) precomputedData.get(LETTER_COUNTS_KEY);
+        double[] precomputedEntropies = (double[]) precomputedData.get(PRECOMPUTED_ENTROPIES_KEY);
+
+        resetLetterCounts(letterCounts);
 
         for (int i = 0; i < solutionString.length(); i++) {
             letterCounts[solutionString.charAt(i)] ++;
         }
 
-        return computeSum();
+        return computeSum(precomputedEntropies, letterCounts);
     }
 
-    private void resetLetterCounts() {
-        // TODO: see if Arrays.fill is any faster/slower
+    private void resetLetterCounts(int[] letterCounts) {
         letterCounts['a'] = 0;
         letterCounts['b'] = 0;
         letterCounts['c'] = 0;
@@ -88,7 +98,7 @@ public class EntropyEvaluator {
         letterCounts['z'] = 0;
     }
 
-    private float computeSum() {
+    private float computeSum(double[] precomputedEntropies, int[] letterCounts) {
         float sum = 0f;
         sum += precomputedEntropies[letterCounts['a']];
         sum += precomputedEntropies[letterCounts['b']];

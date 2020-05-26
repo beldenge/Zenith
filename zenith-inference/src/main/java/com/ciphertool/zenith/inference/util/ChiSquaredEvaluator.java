@@ -26,25 +26,29 @@ import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
-public class ChiSquaredEvaluator {
-    // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
-    private int[] englishLetterCounts = new int[256];
-    private int[] actualLetterCounts = new int[256];
-    private float[][] precomputedChiSquareds;
+public class ChiSquaredEvaluator implements CounterweightEvaluator {
+    private static final String PRECOMPUTED_CHI_SQUAREDS_KEY = "precomputedChiSquareds";
 
     @Autowired
     private ArrayMarkovModel letterMarkovModel;
 
-    private Cipher initialized = null;
+    @Override
+    public Map<String, Object> precompute(Cipher cipher) {
+        Map<String, Object> precomputedData = new HashMap<>(3);
 
-    public void init(Cipher cipher) {
+        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+        int[] englishLetterCounts = new int[256];
+
         for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
             float letterProbability = (float) node.getCount() / (float) letterMarkovModel.getTotalNGramCount();
             englishLetterCounts[node.getCumulativeString().charAt(0)] = Math.round(letterProbability * cipher.length());
         }
 
-        precomputedChiSquareds = new float[256][cipher.length() + 1];
+        float[][] precomputedChiSquareds = new float[256][cipher.length() + 1];
 
         for (int i = 0; i < LanguageConstants.LOWERCASE_LETTERS.length; i ++) {
             for (int j = 0; j <= cipher.length(); j ++) {
@@ -56,25 +60,31 @@ public class ChiSquaredEvaluator {
             }
         }
 
-        initialized = cipher;
+        precomputedData.put(PRECOMPUTED_CHI_SQUAREDS_KEY, precomputedChiSquareds);
+
+        return precomputedData;
     }
 
-    public float evaluate(Cipher cipher, String solutionString) {
-        if (initialized == null || initialized != cipher) {
-            init(cipher);
+    @Override
+    public float evaluate(Map<String, Object> precomputedData, Cipher cipher, String solutionString) {
+        if (precomputedData == null) {
+            precomputedData = precompute(cipher);
         }
 
-        resetLetterCounts();
+        float[][] precomputedChiSquareds = (float[][]) precomputedData.get(PRECOMPUTED_CHI_SQUAREDS_KEY);
+
+        int[] actualLetterCounts = new int[256];
+
+        resetLetterCounts(actualLetterCounts);
 
         for (int i = 0; i < solutionString.length(); i++) {
             actualLetterCounts[solutionString.charAt(i)] ++;
         }
 
-        return computeSum();
+        return computeSum(precomputedChiSquareds, actualLetterCounts);
     }
 
-    private void resetLetterCounts() {
-        // TODO: see if Arrays.fill is any faster/slower
+    private void resetLetterCounts(int[] actualLetterCounts) {
         actualLetterCounts['a'] = 0;
         actualLetterCounts['b'] = 0;
         actualLetterCounts['c'] = 0;
@@ -103,7 +113,7 @@ public class ChiSquaredEvaluator {
         actualLetterCounts['z'] = 0;
     }
 
-    private float computeSum() {
+    private float computeSum(float[][] precomputedChiSquareds, int[] actualLetterCounts) {
         float sum = 0f;
         sum += precomputedChiSquareds['a'][actualLetterCounts['a']];
         sum += precomputedChiSquareds['b'][actualLetterCounts['b']];

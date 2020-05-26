@@ -32,19 +32,71 @@ import java.util.stream.Collectors;
 public class CiphertextCycleCountEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private List<String> uniqueCiphertextCharacters;
-
-    private List<CyclePair> uniqueCyclePairs;
-
-    private Cipher initialized = null;
-
-    public void init(Cipher cipher) {
-        uniqueCiphertextCharacters = cipher.getCiphertextCharacters().stream()
+    public int evaluate(Cipher cipher) {
+        List<String> uniqueCiphertextCharacters = cipher.getCiphertextCharacters().stream()
                 .map(ciphertext -> ciphertext.getValue())
                 .distinct()
                 .collect(Collectors.toList());
 
-        uniqueCyclePairs = new ArrayList<>((uniqueCiphertextCharacters.size() * (uniqueCiphertextCharacters.size() - 1)) / 2);
+        long startEvaluation = System.currentTimeMillis();
+
+        int end = cipher.length();
+
+        Map<String, List<Integer>> ciphertextIndices = new HashMap<>();
+        for (int i = 0; i < end; i++) {
+            String ciphertext = cipher.getCiphertextCharacters().get(i).getValue();
+
+            if (!ciphertextIndices.containsKey(ciphertext)) {
+                ciphertextIndices.put(ciphertext, new ArrayList<>());
+            }
+
+            ciphertextIndices.get(ciphertext).add(i);
+        }
+
+        List<CyclePair> cyclePairs = new ArrayList<>((uniqueCiphertextCharacters.size() * (uniqueCiphertextCharacters.size() - 1)) / 2);
+        for (CyclePair cyclePair : calculateUniqueCyclePairs(cipher, uniqueCiphertextCharacters)) {
+            cyclePairs.add((CyclePair) cyclePair.clone());
+        }
+
+        int score = 0;
+        for (CyclePair cyclePair : cyclePairs) {
+            List<Integer> firstIndices = ciphertextIndices.get(cyclePair.getFirst());
+            List<Integer> secondIndices = ciphertextIndices.get(cyclePair.getSecond());
+
+            if (firstIndices == null || secondIndices == null) {
+                continue;
+            }
+
+            int firstListIndex = 0;
+            int secondListIndex = 0;
+            for (int i = 0; i < firstIndices.size() + secondIndices.size(); i ++) {
+                Integer nextFirst = (firstListIndex < firstIndices.size()) ? firstIndices.get(firstListIndex) : null;
+                Integer nextSecond = (secondListIndex < secondIndices.size()) ? secondIndices.get(secondListIndex) : null;
+
+                if (nextFirst != null && (nextSecond == null || nextFirst < nextSecond)) {
+                    cyclePair.addCiphertext(cyclePair.getFirst());
+                    firstListIndex ++;
+                } else {
+                    cyclePair.addCiphertext(cyclePair.getSecond());
+                    secondListIndex ++;
+                }
+            }
+
+            int longestSequenceLength = cyclePair.getLongestSequenceLength();
+
+            // Cycles of less than four in length are insignificant
+            if (longestSequenceLength > 3) {
+                score += (int) Math.pow(longestSequenceLength, 2);
+            }
+        }
+
+        log.debug("Cipher evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
+
+        return score;
+    }
+
+    private List<CyclePair> calculateUniqueCyclePairs(Cipher cipher, List<String> uniqueCiphertextCharacters) {
+        List<CyclePair> uniqueCyclePairs = new ArrayList<>((uniqueCiphertextCharacters.size() * (uniqueCiphertextCharacters.size() - 1)) / 2);
         for (String first : uniqueCiphertextCharacters) {
             for (String second : uniqueCiphertextCharacters) {
                 if (first == second) {
@@ -93,74 +145,7 @@ public class CiphertextCycleCountEvaluator {
             uniqueCyclePairs.remove(insignificantCyclePair);
         }
 
-        initialized = cipher;
-    }
-
-    public synchronized int evaluateThreadSafe(Cipher cipher) {
-        return evaluate(cipher);
-    }
-
-    public int evaluate(Cipher cipher) {
-        if (initialized == null || initialized != cipher) {
-            init(cipher);
-        }
-
-        long startEvaluation = System.currentTimeMillis();
-
-        int end = cipher.length();
-
-        Map<String, List<Integer>> ciphertextIndices = new HashMap<>();
-        for (int i = 0; i < end; i++) {
-            String ciphertext = cipher.getCiphertextCharacters().get(i).getValue();
-
-            if (!ciphertextIndices.containsKey(ciphertext)) {
-                ciphertextIndices.put(ciphertext, new ArrayList<>());
-            }
-
-            ciphertextIndices.get(ciphertext).add(i);
-        }
-
-        List<CyclePair> cyclePairs = new ArrayList<>((uniqueCiphertextCharacters.size() * (uniqueCiphertextCharacters.size() - 1)) / 2);
-        for (CyclePair cyclePair : uniqueCyclePairs) {
-            cyclePairs.add((CyclePair) cyclePair.clone());
-        }
-
-        // TODO: This is a potential area for parallelization, although I don't like the idea of multithreading inside of an evaluator
-        int score = 0;
-        for (CyclePair cyclePair : cyclePairs) {
-            List<Integer> firstIndices = ciphertextIndices.get(cyclePair.getFirst());
-            List<Integer> secondIndices = ciphertextIndices.get(cyclePair.getSecond());
-
-            if (firstIndices == null || secondIndices == null) {
-                continue;
-            }
-
-            int firstListIndex = 0;
-            int secondListIndex = 0;
-            for (int i = 0; i < firstIndices.size() + secondIndices.size(); i ++) {
-                Integer nextFirst = (firstListIndex < firstIndices.size()) ? firstIndices.get(firstListIndex) : null;
-                Integer nextSecond = (secondListIndex < secondIndices.size()) ? secondIndices.get(secondListIndex) : null;
-
-                if (nextFirst != null && (nextSecond == null || nextFirst < nextSecond)) {
-                    cyclePair.addCiphertext(cyclePair.getFirst());
-                    firstListIndex ++;
-                } else {
-                    cyclePair.addCiphertext(cyclePair.getSecond());
-                    secondListIndex ++;
-                }
-            }
-
-            int longestSequenceLength = cyclePair.getLongestSequenceLength();
-
-            // Cycles of less than four in length are insignificant
-            if (longestSequenceLength > 3) {
-                score += (int) Math.pow(longestSequenceLength, 2);
-            }
-        }
-
-        log.debug("Cipher evaluation took {}ms.", (System.currentTimeMillis() - startEvaluation));
-
-        return score;
+        return uniqueCyclePairs;
     }
 
     @Getter

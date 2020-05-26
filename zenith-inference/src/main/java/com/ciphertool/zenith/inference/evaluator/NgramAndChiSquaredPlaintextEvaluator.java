@@ -49,7 +49,7 @@ public class NgramAndChiSquaredPlaintextEvaluator extends AbstractNgramEvaluator
     }
 
     @Override
-    public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
+    public SolutionScore evaluate(Map<String, Object> precomputedData, Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
         float[][] logProbabilitiesUpdated = evaluateLetterNGrams(cipher, solution, solutionString, ciphertextKey);
@@ -60,9 +60,14 @@ public class NgramAndChiSquaredPlaintextEvaluator extends AbstractNgramEvaluator
 
         // Scaling down the chi squared value by its eighth root seems to be the optimal amount to penalize the sum of log probabilities by
         // This has been determined through haphazard experimentation
-        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) - MathUtils.powRoot(chiSquaredEvaluator.evaluate(cipher, solutionString), 8f);
+        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) - MathUtils.powRoot(chiSquaredEvaluator.evaluate(precomputedData, cipher, solutionString), 8f);
 
         return new SolutionScore(logProbabilitiesUpdated, score);
+    }
+
+    @Override
+    public Map<String, Object> getPrecomputedCounterweightData(Cipher cipher) {
+        return chiSquaredEvaluator.precompute(cipher);
     }
 
     @Override

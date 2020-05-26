@@ -49,7 +49,7 @@ public class NgramAndEntropyPlaintextEvaluator extends AbstractNgramEvaluator im
     }
 
     @Override
-    public SolutionScore evaluate(Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
+    public SolutionScore evaluate(Map<String, Object> precomputedData, Cipher cipher, CipherSolution solution, String solutionString, String ciphertextKey) {
         long startLetter = System.currentTimeMillis();
 
         float[][] logProbabilitiesUpdated = evaluateLetterNGrams(cipher, solution, solutionString, ciphertextKey);
@@ -60,9 +60,14 @@ public class NgramAndEntropyPlaintextEvaluator extends AbstractNgramEvaluator im
 
         // Scaling down the entropy by its 2.75th root seems to be the optimal amount to penalize the sum of log probabilities by
         // This has been determined through haphazard experimentation
-        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) / MathUtils.powRoot(entropyEvaluator.evaluate(cipher, solutionString), 2.75f);
+        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) / MathUtils.powRoot(entropyEvaluator.evaluate(precomputedData, cipher, solutionString), 2.75f);
 
         return new SolutionScore(logProbabilitiesUpdated, score);
+    }
+
+    @Override
+    public Map<String, Object> getPrecomputedCounterweightData(Cipher cipher) {
+        return entropyEvaluator.precompute(cipher);
     }
 
     @Override
