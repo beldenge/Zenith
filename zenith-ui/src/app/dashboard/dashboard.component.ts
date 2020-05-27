@@ -158,11 +158,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.progressPercentage = progress;
     });
 
-    if (environment.showApplicationDownloadInfo === true) {
-      let showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
+    let showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
 
-      this.showApplicationDownloadInfo = !showApplicationDownloadInfoLocal || showApplicationDownloadInfoLocal === 'true';
-    }
+    this.showApplicationDownloadInfo = !showApplicationDownloadInfoLocal || showApplicationDownloadInfoLocal === 'true';
   }
 
   ngOnDestroy() {
