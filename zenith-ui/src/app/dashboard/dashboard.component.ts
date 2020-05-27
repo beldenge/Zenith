@@ -38,13 +38,24 @@ import { SolutionService } from "../solution.service";
 import { SolutionResponse } from "../models/SolutionResponse";
 import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
 import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
+import { LocalStorageKeys } from "../models/LocalStorageKeys";
+import { environment } from "../../environments/environment";
+import { animate, style, transition, trigger } from "@angular/animations";
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.css'],
+  animations: [
+    // the fade-in/fade-out animation.
+    trigger('simpleFadeAnimation', [
+      transition(':leave',
+        animate(300, style({ opacity: 0 })))
+    ])
+  ]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+  showApplicationDownloadInfo: boolean = false;
   showIntroDashboardSubscription: Subscription;
   configFilename = 'zenith-config.json';
   webSocketAPI: WebSocketAPI;
@@ -52,6 +63,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedCipher: Cipher;
   isRunning: boolean = false;
   progressPercentage: number = 0;
+  isRunningSubscription: Subscription;
+  progressPercentageSubscription: Subscription;
   epochsValidationMessageDefault: string = 'Must be a number greater than zero';
   epochsValidationMessage: string = this.epochsValidationMessageDefault;
   epochsValidatorsDefault = [Validators.min(1), Validators.pattern("^[0-9]*$")];
@@ -136,6 +149,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.epochsValidationMessage = this.epochsValidationMessageDefault;
       }
     });
+
+    this.isRunningSubscription = this.solutionService.getRunStateAsObservable().subscribe(runState => {
+      this.isRunning = runState;
+    });
+
+    this.progressPercentageSubscription = this.solutionService.getProgressPercentageAsObservable().subscribe(progress => {
+      this.progressPercentage = progress;
+    });
+
+    if (environment.showApplicationDownloadInfo === true) {
+      let showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
+
+      this.showApplicationDownloadInfo = !showApplicationDownloadInfoLocal || showApplicationDownloadInfoLocal === 'true';
+    }
   }
 
   ngOnDestroy() {
@@ -149,6 +176,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.geneticAlgorithmConfigurationSubscription.unsubscribe();
     this.showIntroDashboardSubscription.unsubscribe();
     this.featuresSubscription.unsubscribe();
+    this.isRunningSubscription.unsubscribe();
+    this.progressPercentageSubscription.unsubscribe();
   }
 
   onMouseDownSelect(element: HTMLElement) {
@@ -173,13 +202,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onEpochsChange() {
     if (this.hyperparametersForm.valid) {
-      this.progressPercentage = 0;
+      this.solutionService.updateProgressPercentage(0);
       this.configurationService.updateEpochs(this.hyperparametersForm.get('epochs').value);
     }
   }
 
   solve() {
     if (!this.hyperparametersForm.valid) {
+      return;
+    }
+
+    if (this.isRunning) {
       return;
     }
 
@@ -225,8 +258,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     this.solutionService.updateSolution(null);
-    this.progressPercentage = 0;
-    this.isRunning = true;
+    this.solutionService.updateRunState(true);
+    this.solutionService.updateProgressPercentage(0);
 
     let self = this;
     this.webSocketAPI.connectAndSend(request, function (response) {
@@ -235,16 +268,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         self.solutionService.updateSolution(new SolutionResponse(json.plaintext, json.score))
 
-        self.isRunning = false;
+        self.solutionService.updateRunState(false);
+        self.solutionService.updateProgressPercentage(100);
         self.webSocketAPI.disconnect();
-        self.progressPercentage = 100;
       } else if (response.headers.type === 'EPOCH_COMPLETE') {
         let responseBody = JSON.parse(response.body);
-        self.progressPercentage = (responseBody.epochsCompleted / responseBody.epochsTotal) * 100;
+        self.solutionService.updateProgressPercentage((responseBody.epochsCompleted / responseBody.epochsTotal) * 100);
+      } else if (response.headers.type === 'ERROR') {
+        self.solverError();
       }
     }, function(error) {
-      self.isRunning = false;
+      self.solverError();
     });
+  }
+
+  solverError() {
+    this.solutionService.updateRunState(false);
+    this.solutionService.updateProgressPercentage(0);
+
+    this._snackBar.open('Error: unable to complete solve due to server error.', '',{
+      duration: 5000,
+      verticalPosition: 'top'
+    });
+
+    this.webSocketAPI.disconnect();
   }
 
   byName(c1: Cipher, c2: Cipher): boolean {
@@ -254,6 +301,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onCipherSelect(element: HTMLElement) {
     element.blur();
     this.solutionService.updateSolution(null);
+    this.solutionService.updateProgressPercentage(0);
     delete this.selectedCipher.transformed;
     this.configurationService.updateAppliedCiphertextTransformers([]);
     this.configurationService.updateAppliedPlaintextTransformers([])
@@ -303,5 +351,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
 
     reader.readAsText(input.files[0]);
+  }
+
+  disableApplicationDownloadInfo() {
+    this.showApplicationDownloadInfo = false;
+    localStorage.setItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO, "false");
   }
 }

@@ -19,16 +19,12 @@
 
 package com.ciphertool.zenith.api.service;
 
-import com.ciphertool.zenith.api.model.*;
-import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.api.model.EpochCompleteResponse;
+import com.ciphertool.zenith.api.model.SolutionRequest;
+import com.ciphertool.zenith.api.model.SolutionResponse;
+import com.ciphertool.zenith.api.model.WebSocketResponseType;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Ciphertext;
-import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
-import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
-import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
-import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -36,37 +32,31 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Controller
 public class WebSocketSolutionService extends AbstractSolutionService {
     private static final String TYPE_HEADER_KEY = "type";
-
-    private static Map<String, Object> epochCompleteHeaders = new HashMap<>();
-
-    static {
-        epochCompleteHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.EPOCH_COMPLETE);
-    }
 
     @Autowired
     private SimpMessagingTemplate template;
 
     @Override
     public OnEpochComplete getCallback(SolutionRequest request) {
-        return (i) -> template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), epochCompleteHeaders);
+        return (i) -> template.convertAndSend("/topic/solutions", new EpochCompleteResponse(i, request.getEpochs()), Collections.singletonMap(TYPE_HEADER_KEY, WebSocketResponseType.EPOCH_COMPLETE));
     }
 
     @MessageMapping("/solutions")
     public void solve(@Validated @RequestBody SolutionRequest request) {
-        CipherSolution cipherSolution = doSolve(request);
+        CipherSolution cipherSolution;
 
-        Map<String, Object> solutionHeaders = new HashMap<>();
-        solutionHeaders.put(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION);
+        try {
+            cipherSolution = doSolve(request);
+        } catch (Exception e) {
+            template.convertAndSend("/topic/solutions", new SolutionResponse(null, null), Collections.singletonMap(TYPE_HEADER_KEY, WebSocketResponseType.ERROR));
+            return;
+        }
 
-        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString(), Double.valueOf(cipherSolution.getScore())), solutionHeaders);
+        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString(), Double.valueOf(cipherSolution.getScore())), Collections.singletonMap(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION));
     }
 }

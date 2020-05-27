@@ -60,6 +60,34 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "web": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.web.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
             }
           }
         },
@@ -72,6 +100,9 @@
           "configurations": {
             "production": {
               "browserTarget": "zenith-angular:build:production"
+            },
+            "web": {
+              "browserTarget": "zenith-angular:build:web"
             }
           }
         },
@@ -121,6 +152,9 @@
           "configurations": {
             "production": {
               "devServerTarget": "zenith-angular:serve:production"
+            },
+            "web": {
+              "browserTarget": "zenith-angular:build:web"
             }
           }
         }

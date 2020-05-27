@@ -26,11 +26,20 @@
   <!-- Topbar Search -->
   <form id="cipher_select" class="d-none d-sm-inline-block form-inline mr-0 ml-md-3 my-2 my-md-0 mw-100 navbar-search">
     <div class="input-group rounded bg-light">
-      <select #cipherSelect name="search" class="form-control bg-transparent border-0 small" [(ngModel)]="selectedCipher" [compareWith]="byName" (change)="onCipherSelect(cipherSelect)" (mousedown)="onMouseDownSelect(cipherSelect)" (mouseover)="onMouseOverSelect(cipherSelect)" (mouseout)="onMouseOutSelect(cipherSelect)" (focusout)="onFocusOutSelect(cipherSelect)">
+      <select #cipherSelect name="search"
+              [ngClass]="{'form-control': true, 'bg-transparent': true, 'border-0': true, 'small': true, 'cursor-wait': isRunning}"
+              [(ngModel)]="selectedCipher"
+              [compareWith]="byName"
+              (change)="onCipherSelect(cipherSelect)"
+              (mousedown)="onMouseDownSelect(cipherSelect)"
+              (mouseover)="onMouseOverSelect(cipherSelect)"
+              (mouseout)="onMouseOutSelect(cipherSelect)"
+              (focusout)="onFocusOutSelect(cipherSelect)"
+              [disabled]="isRunning">
         <option [ngValue]="cipher" *ngFor="let cipher of ciphers">{{cipher.name}} ({{cipher.rows}} x {{cipher.columns}})</option>
       </select>
       <div id="cipher_select_button" class="input-group-append" (mouseover)="onMouseOverSelect(cipherSelect)">
-        <button class="btn btn-primary cursor-default">
+        <button [ngClass]="{'btn': true, 'btn-primary': true, 'cursor-default': !isRunning, 'cursor-wait': isRunning}">
           <i class="fas fa-chevron-down fa-sm"></i>
         </button>
       </div>
@@ -51,6 +60,13 @@
 </nav>
 
 <div class="container-fluid">
+
+  <div *ngIf="showApplicationDownloadInfo" class="w-100 mb-4 alert alert-warning d-inline-block" role="alert" [@simpleFadeAnimation]>
+    <i class="fas fa-info-circle mr-2"></i>Zenith is free and open source, and it can easily be run on your local machine.  If so desired, please visit the <a href="https://github.com/beldenge/Zenith/releases" target="_blank">releases page</a> to download the latest version.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="disableApplicationDownloadInfo()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
 
   <app-cipher-stats-summary></app-cipher-stats-summary>
 
@@ -87,7 +103,7 @@
       </form>
     </div>
     <div class="col-xl-1">
-      <a id="solve_button" href="javascript:void(0);" class="btn btn-success btn-icon-split float-right" (click)="solve()">
+      <a id="solve_button" href="javascript:void(0);" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true, 'disabled': isRunning}" (click)="solve()">
         <span class="icon text-white-50">
           <i [ngClass]="{'fas': true, 'fa-play' : !isRunning, 'fa-spinner' : isRunning, 'fa-spin': isRunning}"></i>
         </span>
