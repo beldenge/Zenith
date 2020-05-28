@@ -27,11 +27,22 @@ export class BlockifyPipe implements PipeTransform {
     let block: String = '';
 
     if (value) {
-      for (let i = 0; i < value.length; i++) {
-        block += value[i];
+      let split = value.split(' ');
 
-        if (i != value.length - 1 && (i + 1) % columns == 0) {
+      let first = true;
+
+      for (let i = 0; i < split.length; i++) {
+        if (!first) {
+          block += ' ';
+        }
+
+        first = false;
+
+        block += split[i];
+
+        if (i != split.length - 1 && (i + 1) % columns == 0) {
           block += '\n';
+          first = true;
         }
       }
     }

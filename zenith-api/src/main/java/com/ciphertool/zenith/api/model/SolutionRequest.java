@@ -57,6 +57,16 @@ public class SolutionRequest {
     @Valid
     private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
 
+    @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
+    public boolean isLengthValid() {
+        return (rows * columns) == ciphertext.split(" ").length;
+    }
+
+    @AssertTrue(message = "One and only one of simulatedAnnealingConfiguration or geneticAlgorithmConfiguration must be set")
+    public boolean isAnyOptimizerConfigured() {
+        return simulatedAnnealingConfiguration != null || geneticAlgorithmConfiguration != null;
+    }
+
     @AssertTrue(message = "One and only one of simulatedAnnealingConfiguration or geneticAlgorithmConfiguration must be set")
     public boolean isOnlyOneOptimizerConfigured() {
         return (simulatedAnnealingConfiguration != null && geneticAlgorithmConfiguration == null) || (simulatedAnnealingConfiguration == null && geneticAlgorithmConfiguration != null);

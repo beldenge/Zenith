@@ -73,8 +73,10 @@ public abstract class AbstractSolutionService {
 
         Cipher cipher = new Cipher(null, request.getRows(), request.getColumns());
 
-        for (int i = 0; i < request.getCiphertext().length(); i ++) {
-            cipher.addCiphertextCharacter(new Ciphertext(i, String.valueOf(request.getCiphertext().charAt(i))));
+        String[] split = request.getCiphertext().split(" ");
+
+        for (int i = 0; i < split.length; i ++) {
+            cipher.addCiphertextCharacter(new Ciphertext(i, split[i]));
         }
 
         List<SolutionRequestTransformer> transformers = request.getPlaintextTransformers();

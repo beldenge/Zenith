@@ -254,7 +254,15 @@ public class Cipher {
     public String asSingleLineString() {
         StringBuilder sb = new StringBuilder();
 
+        boolean first = true;
+
         for (Ciphertext ciphertext : ciphertextCharacters) {
+            if (!first) {
+                sb.append(" ");
+            }
+
+            first = false;
+
             sb.append(ciphertext.getValue());
         }
 

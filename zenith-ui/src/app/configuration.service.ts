@@ -393,10 +393,6 @@ export class ConfigurationService {
     this.updateSelectedFitnessFunction(selectedFitnessFunction, true);
     this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration, true);
     this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration, true);
-
-    // FIXME: This is a hack to handle the fact that we store ciphertext as space-delimited -- it would be cleaner to store it as an array of chars/strings
-    configuration.ciphers.forEach(cipher => cipher.ciphertext = cipher.ciphertext.replace(/ /g , ''));
-
     this.updateCiphers(configuration.ciphers, true);
     this.updateSelectedCipher(configuration.ciphers.find(cipher => cipher.name === configuration.selectedCipher), true);
     this.saveConfigurationToLocalStorage();

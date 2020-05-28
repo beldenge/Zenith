@@ -27,7 +27,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 
-const NEWLINES_REGEX = /(\r\n|\r|\n)/g;
+const WHITESPACE_REGEX = /\s+/g;
 
 @Component({
   selector: 'app-cipher-modal',
@@ -78,7 +78,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     let cipherLengthValidator: ValidatorFn = () => {
       let expectedLength = this.dimensionsFormGroup.get('rows').value * this.dimensionsFormGroup.get('columns').value;
 
-      return this.ciphertextFormGroup.get('ciphertext').value.replace(NEWLINES_REGEX, '').length === expectedLength ? null : { cipherLength: false };
+      return this.ciphertextFormGroup.get('ciphertext').value.replace(WHITESPACE_REGEX, ' ').trim().split(' ').length === expectedLength ? null : { cipherLength: false };
     };
 
     this.ciphertextFormGroup.get('ciphertext').setValidators([cipherLengthValidator]);
@@ -105,7 +105,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     let rows = this.dimensionsFormGroup.get('rows').value;
     let columns = this.dimensionsFormGroup.get('columns').value;
     // Remove newlines from blockify pipe
-    let ciphertext = this.ciphertextFormGroup.get('ciphertext').value.replace(NEWLINES_REGEX, '');
+    let ciphertext = this.ciphertextFormGroup.get('ciphertext').value.replace(WHITESPACE_REGEX, ' ');
     let request = new CipherRequest(name, rows, columns, ciphertext);
 
     if (this.mode === 'CREATE') {
@@ -150,9 +150,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   }
 
   ciphertextChange() {
-    let expectedLength = this.dimensionsFormGroup.get('rows').value * this.dimensionsFormGroup.get('columns').value;
-
-    let blockCiphertext = this.ciphertextFormGroup.get('ciphertext').value.replace(NEWLINES_REGEX, '').substr(0, expectedLength);
+    let blockCiphertext = this.ciphertextFormGroup.get('ciphertext').value.replace(WHITESPACE_REGEX, ' ');
 
     blockCiphertext = this.blockifyPipe.transform(blockCiphertext, this.dimensionsFormGroup.get('columns').value).toString();
 

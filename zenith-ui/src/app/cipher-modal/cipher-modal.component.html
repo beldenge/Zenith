@@ -51,7 +51,7 @@
       <mat-step formGroupName="2" [stepControl]="formArray?.get([2])">
         <ng-template matStepLabel>Ciphertext</ng-template>
         <mat-form-field appearance="outline" [ngClass]="'w-100'">
-          <mat-label>Ciphertext</mat-label>
+          <mat-label>Ciphertext (must be delimited by spaces)</mat-label>
           <textarea matInput formControlName="ciphertext" required rows="5" class="w-100" (keyup)="ciphertextChange()" (change)="ciphertextChange()"></textarea>
           <mat-error>Ciphertext is required and the length must match the product of rows and columns</mat-error>
         </mat-form-field>

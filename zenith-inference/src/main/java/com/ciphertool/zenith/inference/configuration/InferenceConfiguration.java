@@ -103,7 +103,7 @@ public class InferenceConfiguration {
 
     @Bean
     public ApplicationConfiguration configuration() {
-        // First read ciphers from the classpath
+        // First read configuration from the classpath
         ClassLoader cl = this.getClass().getClassLoader();
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
         Resource[] resources;
@@ -126,7 +126,7 @@ public class InferenceConfiguration {
             }
         }
 
-        // Secondly, attempt to read ciphers from the local directory on the filesystem
+        // Secondly, attempt to read configuration from the local directory on the filesystem
         File localConfigDirectory = new File(Paths.get(configurationFilePath).toAbsolutePath().toString());
 
         if (!localConfigDirectory.exists() || !localConfigDirectory.isDirectory()) {

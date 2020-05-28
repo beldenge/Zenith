@@ -45,14 +45,16 @@ public class CipherRequest {
 
     @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
     public boolean isLengthValid() {
-        return (rows * columns) == ciphertext.length();
+        return (rows * columns) == ciphertext.split(" ").length;
     }
 
     public Cipher asCipher() {
         Cipher cipher = new Cipher(this.name, this.rows, this.columns);
 
-        for (int i = 0; i < this.ciphertext.length(); i ++) {
-            cipher.addCiphertextCharacter(new Ciphertext(i, String.valueOf(this.ciphertext.charAt(i))));
+        String[] split = this.ciphertext.split(" ");
+
+        for (int i = 0; i < split.length; i ++) {
+            cipher.addCiphertextCharacter(new Ciphertext(i, split[i]));
         }
 
         return cipher;

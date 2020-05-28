@@ -48,10 +48,6 @@ public class CipherService {
 
         Cipher cipher = transformationRequest.getCipher().asCipher();
 
-        if (cipher == null) {
-            throw new IllegalArgumentException("No cipher found for name " + cipher.getName() + ".");
-        }
-
         List<CiphertextTransformationStep> steps = transformationRequest.getSteps().stream()
                 .map(CiphertextTransformationRequestStep::asStep)
                 .collect(Collectors.toList());
