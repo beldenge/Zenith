@@ -76,7 +76,6 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
         templateOptions.setLabel("Symbol");
         templateOptions.setRequired(true);
         templateOptions.setType("text");
-        templateOptions.setMaxLength(1);
 
         FormlyFormField key = new FormlyFormField();
         key.setKey(SYMBOL);

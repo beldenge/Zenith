@@ -76,8 +76,10 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
 
     let satisfied = true;
 
-    this.appliedTransformers.forEach(transformer => {
-      if (transformer.form && ((event && event.isNew) || !transformer.form.form.valid)) {
+    for (let i = 0; i < this.appliedTransformers.length; i ++) {
+      let transformer = this.appliedTransformers[i];
+
+      if (transformer.form && ((event && event.type === 'add' && event.newIndex === i) || !transformer.form.form.valid)) {
         satisfied = false;
         return;
       }
@@ -86,7 +88,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
         transformerName: transformer.name,
         data: transformer.form ? transformer.form.model : null
       });
-    });
+    }
 
     if (satisfied) {
       if (!this.appliedTransformers.length) {
@@ -105,14 +107,9 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     }
   };
 
-  // On adding of a new item to the Sortable list, the event fires before the formly form is initialized, so we cannot rely on validation alone
-  onAppliedTransformersChangeNew = (event: any) => {
-    this.onAppliedTransformersChange({ isNew: true });
-  };
-
   appliedTransformersOptions = {
     group: 'clone-group',
-    onAdd: this.onAppliedTransformersChangeNew,
+    onAdd: this.onAppliedTransformersChange,
     onRemove: this.onAppliedTransformersChange,
     onMove: this.onAppliedTransformersChange
   };
@@ -130,7 +127,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     this.appliedCiphertextTransformersSubscription = this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
       if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
         this.appliedTransformers = appliedTransformers;
-        this.onAppliedTransformersChange({skipUpdate: true});
+        this.onAppliedTransformersChange({ skipUpdate: true });
       }
     });
 
