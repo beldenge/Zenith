@@ -66,6 +66,23 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       }
     });
 
+    let self = this;
+    let cipherNameValidator: ValidatorFn = (control: AbstractControl): {[key: string]: any} | null => {
+      let proposedName = control.value;
+
+      let error = null;
+
+      self.ciphers.forEach(cipher => {
+        if (cipher.name === proposedName) {
+          error = { name: false };
+        }
+      });
+
+      return error;
+    };
+
+    this.nameFormGroup.get('name').setValidators([cipherNameValidator]);
+
     this.dimensionsFormGroup = this.fb.group({
       rows: [this.cipher ? this.cipher.rows : '', [Validators.min(0), Validators.pattern('^[0-9]+$')]],
       columns: [this.cipher ? this.cipher.columns : '', [Validators.min(0), Validators.pattern('^[0-9]+$')]]

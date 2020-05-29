@@ -42,7 +42,9 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   ciphersDataSource: MatTableDataSource<any>;
   pageSizeOptions = [10, 20, 50];
   ciphers: Cipher[];
+  selectedCipher: Cipher;
   ciphersSubscription: Subscription;
+  selectedCipherSubscription: Subscription;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -68,11 +70,17 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
         }, 500);
       }
     });
+
+    // This is used to check and handled when the selected cipher is deleted
+    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
+      this.selectedCipher = selectedCipher
+    });
   }
 
   ngOnDestroy() {
     this.ciphersSubscription.unsubscribe();
     this.showIntroManageCiphersSubscription.unsubscribe();
+    this.selectedCipherSubscription.unsubscribe();
   }
 
   applyFilter(event: Event) {
@@ -107,6 +115,11 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
     let filteredCiphers = this.ciphers.filter((next) => {
       return next.name !== cipher.name;
     });
+
+    // If the selected cipher is the one that is deleted, change the selected cipher to the first in the array
+    if (this.selectedCipher.name === cipher.name) {
+      this.cipherService.updateSelectedCipher(filteredCiphers[0]);
+    }
 
     this.cipherService.updateCiphers(filteredCiphers);
 
