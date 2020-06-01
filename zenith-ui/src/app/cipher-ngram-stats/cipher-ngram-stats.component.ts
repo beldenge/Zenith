@@ -17,13 +17,14 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { Subscription } from "rxjs";
 import { CipherStatisticsService } from "../cipher-statistics.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { NgramStatisticsResponse } from "../models/NgramStatisticsResponse";
+import { MatExpansionPanel } from "@angular/material/expansion";
 
 @Component({
   selector: 'app-cipher-ngram-stats',
@@ -43,12 +44,14 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewIn
   headerText = this.headerTextClosed;
   shown: boolean = false;
 
+  @ViewChild(MatExpansionPanel, { static: true }) matExpansionPanelElement: MatExpansionPanel;
+
   constructor(private cipherService: CipherService, private cipherStatisticsService: CipherStatisticsService) { }
 
   ngOnInit(): void {
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
       this.selectedCipher = selectedCipher;
-      this.onCollapse();
+      this.matExpansionPanelElement.close();
     });
   }
 

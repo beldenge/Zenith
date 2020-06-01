@@ -28,10 +28,9 @@ import { MatPaginator } from "@angular/material/paginator";
   styleUrls: ['./ngrams-table.component.css']
 })
 export class NgramsTableComponent implements OnInit {
-  @Input()
-  ngramsDataSource: MatTableDataSource<any>;
+  @Input() ngramsDataSource: MatTableDataSource<any>;
+
   displayedColumns: string[] = ['ngram', 'count'];
-  pageSizeOptions = [10, 20, 50];
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
