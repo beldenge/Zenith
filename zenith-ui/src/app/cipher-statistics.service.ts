@@ -36,9 +36,13 @@ export class CipherStatisticsService {
   indexOfCoincidenceObservables = {};
   bigramRepeatsObservables = {};
   cycleScoreObservables = {};
+  ngramStatisticsObservables = {};
+
   constructor(private http: HttpClient) { }
 
   getUniqueSymbols(cipher: Cipher) {
+    cipher = cipher.transformed ? cipher.transformed : cipher;
+
     if (!this.uniqueSymbolsObservables.hasOwnProperty(cipher.ciphertext)) {
       this.uniqueSymbolsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/uniqueSymbols', cipher).pipe(shareReplay(1));
     }
@@ -47,6 +51,8 @@ export class CipherStatisticsService {
   }
 
   getMultiplicity(cipher: Cipher) {
+    cipher = cipher.transformed ? cipher.transformed : cipher;
+
     if (!this.multiplicityObservables.hasOwnProperty(cipher.ciphertext)) {
       this.multiplicityObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/multiplicity', cipher).pipe(shareReplay(1));
     }
@@ -55,6 +61,8 @@ export class CipherStatisticsService {
   }
 
   getEntropy(cipher: Cipher) {
+    cipher = cipher.transformed ? cipher.transformed : cipher;
+
     if (!this.entropyObservables.hasOwnProperty(cipher.ciphertext)) {
       this.entropyObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/entropy', cipher).pipe(shareReplay(1));
     }
@@ -63,6 +71,8 @@ export class CipherStatisticsService {
   }
 
   getIndexOfCoincidence(cipher: Cipher) {
+    cipher = cipher.transformed ? cipher.transformed : cipher;
+
     if (!this.indexOfCoincidenceObservables.hasOwnProperty(cipher.ciphertext)) {
       this.indexOfCoincidenceObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/indexOfCoincidence', cipher).pipe(shareReplay(1));
     }
@@ -71,6 +81,8 @@ export class CipherStatisticsService {
   }
 
   getBigramRepeats(cipher: Cipher) {
+    cipher = cipher.transformed ? cipher.transformed : cipher;
+
     if (!this.bigramRepeatsObservables.hasOwnProperty(cipher.ciphertext)) {
       this.bigramRepeatsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/bigramRepeats', cipher).pipe(shareReplay(1));
     }
@@ -79,10 +91,22 @@ export class CipherStatisticsService {
   }
 
   getCycleScore(cipher: Cipher) {
+    cipher = cipher.transformed ? cipher.transformed : cipher;
+
     if (!this.cycleScoreObservables.hasOwnProperty(cipher.ciphertext)) {
       this.cycleScoreObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/cycleScore', cipher).pipe(shareReplay(1));
     }
 
     return this.cycleScoreObservables[cipher.ciphertext];
+  }
+
+  getNgramStatistics(cipher: Cipher) {
+    cipher = cipher.transformed ? cipher.transformed : cipher;
+
+    if (!this.ngramStatisticsObservables.hasOwnProperty(cipher.ciphertext)) {
+      this.ngramStatisticsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/ngrams', cipher).pipe(shareReplay(1));
+    }
+
+    return this.ngramStatisticsObservables[cipher.ciphertext];
   }
 }

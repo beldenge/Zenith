@@ -19,14 +19,17 @@
 
 package com.ciphertool.zenith.api.service;
 
-import com.ciphertool.zenith.api.model.CipherRequest;
-import com.ciphertool.zenith.api.model.DoubleResponse;
-import com.ciphertool.zenith.api.model.IntResponse;
+import com.ciphertool.zenith.api.model.*;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -50,45 +53,78 @@ public class CipherStatisticsService {
     @Autowired
     private CiphertextCycleCountEvaluator cycleCountEvaluator;
 
+    @Autowired
+    private CiphertextNgramEvaluator ciphertextNgramEvaluator;
+
     @PostMapping("/uniqueSymbols")
     @ResponseBody
-    @Cacheable(value = "uniqueSymbols", key = "#cipher.ciphertext")
-    public DoubleResponse getUniqueSymbols(@RequestBody CipherRequest cipher) {
-        return new DoubleResponse(uniqueSymbolsEvaluator.evaluate(cipher.asCipher()));
+    @Cacheable(value = "uniqueSymbols", key = "#request.ciphertext")
+    public DoubleResponse getUniqueSymbols(@RequestBody CipherRequest request) {
+        return new DoubleResponse(uniqueSymbolsEvaluator.evaluate(request.asCipher()));
     }
 
     @PostMapping("/multiplicity")
     @ResponseBody
-    @Cacheable(value = "multiplicities", key = "#cipher.ciphertext")
-    public DoubleResponse getMultiplicity(@RequestBody CipherRequest cipher) {
-        return new DoubleResponse(multiplicityEvaluator.evaluate(cipher.asCipher()));
+    @Cacheable(value = "multiplicities", key = "#request.ciphertext")
+    public DoubleResponse getMultiplicity(@RequestBody CipherRequest request) {
+        return new DoubleResponse(multiplicityEvaluator.evaluate(request.asCipher()));
     }
 
     @PostMapping("/entropy")
     @ResponseBody
-    @Cacheable(value = "entropies", key = "#cipher.ciphertext")
-    public DoubleResponse getEntropy(@RequestBody CipherRequest cipher) {
-        return new DoubleResponse(entropyEvaluator.evaluate(cipher.asCipher()));
+    @Cacheable(value = "entropies", key = "#request.ciphertext")
+    public DoubleResponse getEntropy(@RequestBody CipherRequest request) {
+        return new DoubleResponse(entropyEvaluator.evaluate(request.asCipher()));
     }
 
     @PostMapping("/indexOfCoincidence")
     @ResponseBody
-    @Cacheable(value = "indexesOfCoincidence", key = "#cipher.ciphertext")
-    public DoubleResponse getIndexOfCoincidence(@RequestBody CipherRequest cipher) {
-        return new DoubleResponse(indexOfCoincidenceEvaluator.evaluate(cipher.asCipher()));
+    @Cacheable(value = "indexesOfCoincidence", key = "#request.ciphertext")
+    public DoubleResponse getIndexOfCoincidence(@RequestBody CipherRequest request) {
+        return new DoubleResponse(indexOfCoincidenceEvaluator.evaluate(request.asCipher()));
     }
 
     @PostMapping("/bigramRepeats")
     @ResponseBody
-    @Cacheable(value = "bigramRepeats", key = "#cipher.ciphertext")
-    public IntResponse getBigramRepeats(@RequestBody CipherRequest cipher) {
-        return new IntResponse(bigramEvaluator.evaluate(cipher.asCipher()));
+    @Cacheable(value = "bigramRepeats", key = "#request.ciphertext")
+    public IntResponse getBigramRepeats(@RequestBody CipherRequest request) {
+        return new IntResponse(bigramEvaluator.evaluate(request.asCipher()));
     }
 
     @PostMapping("/cycleScore")
     @ResponseBody
-    @Cacheable(value = "cycleScores", key = "#cipher.ciphertext")
-    public IntResponse getCycleScore(@RequestBody CipherRequest cipher) {
-        return new IntResponse(cycleCountEvaluator.evaluate(cipher.asCipher()));
+    @Cacheable(value = "cycleScores", key = "#request.ciphertext")
+    public IntResponse getCycleScore(@RequestBody CipherRequest request) {
+        return new IntResponse(cycleCountEvaluator.evaluate(request.asCipher()));
+    }
+
+    @PostMapping("/ngrams")
+    @ResponseBody
+    @Cacheable(value = "ngrams", key = "#request.ciphertext")
+    public NgramStatisticsResponse getNGramStatistics(@RequestBody CipherRequest request) {
+        Cipher cipher = request.asCipher();
+
+        Map<String, Integer> unigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 1);
+        List<NgramCount> unigramCounts = new ArrayList<>(unigramCountMap.size());
+
+        for (Map.Entry<String, Integer> entry : unigramCountMap.entrySet()) {
+            unigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
+        }
+
+        Map<String, Integer> bigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 2);
+        List<NgramCount> bigramCounts = new ArrayList<>(bigramCountMap.size());
+
+        for (Map.Entry<String, Integer> entry : bigramCountMap.entrySet()) {
+            bigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
+        }
+
+        Map<String, Integer> trigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 3);
+        List<NgramCount> trigramCounts = new ArrayList<>(trigramCountMap.size());
+
+        for (Map.Entry<String, Integer> entry : trigramCountMap.entrySet()) {
+            trigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
+        }
+
+        return new NgramStatisticsResponse(unigramCounts, bigramCounts, trigramCounts);
     }
 }
