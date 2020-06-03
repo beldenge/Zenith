@@ -1,6 +1,6 @@
 {
   "selectedCipher" : "zodiac408",
-  "epochs": 10,
+  "epochs": 1,
   "selectedOptimizer": {
     "name": "SimulatedAnnealing"
   },

@@ -33,27 +33,11 @@
         </div>
       </mat-step>
       <mat-step formGroupName="1" [stepControl]="formArray?.get([1])">
-        <ng-template matStepLabel>Dimensions</ng-template>
-        <mat-form-field appearance="outline" [ngClass]="'mr-2'">
-          <mat-label>Rows</mat-label>
-          <input matInput formControlName="rows" type="text" required>
-          <mat-error>A number 0 or greater is required</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" [ngClass]="'ml-2'">
-          <mat-label>Columns</mat-label>
-          <input matInput formControlName="columns" type="text" required (change)="ciphertextChange()">
-          <mat-error>A number 0 or greater is required</mat-error>
-        </mat-form-field>
-        <div>
-          <button type="button" mat-button matStepperNext>Next</button>
-        </div>
-      </mat-step>
-      <mat-step formGroupName="2" [stepControl]="formArray?.get([2])">
         <ng-template matStepLabel>Ciphertext</ng-template>
         <mat-form-field appearance="outline" [ngClass]="'w-100'">
           <mat-label>Ciphertext (must be delimited by spaces)</mat-label>
-          <textarea matInput formControlName="ciphertext" required rows="5" class="w-100" (keyup)="ciphertextChange()" (change)="ciphertextChange()"></textarea>
-          <mat-error>Ciphertext is required and the length must match the product of rows and columns</mat-error>
+          <textarea matInput formControlName="ciphertext" required rows="5" class="w-100"></textarea>
+          <mat-error>Ciphertext is required and the row lengths must all be the same</mat-error>
         </mat-form-field>
       </mat-step>
     </mat-vertical-stepper>
@@ -61,5 +45,5 @@
 </div>
 <div mat-dialog-actions>
   <button type="button" mat-button mat-dialog-close>Cancel</button>
-  <button mat-button *ngIf="ciphertextFormGroup.valid" (click)="save()">Save</button>
+  <button mat-button *ngIf="newCipherForm.valid" (click)="save()">Save</button>
 </div>

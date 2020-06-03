@@ -99,8 +99,6 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   }
 
   editCipher(cipher: Cipher) {
-    cipher.ciphertext = this.blockifyPipe.transform(cipher.ciphertext, cipher.columns).toString();
-
     this.dialog.open(CipherModalComponent, {
       disableClose: true,
       width: '50%',
@@ -124,6 +122,34 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
     this.cipherService.updateCiphers(filteredCiphers);
 
     this._snackBar.open('Deleted "' + cipher.name + '"', '',{
+      duration: 2000,
+      verticalPosition: 'top'
+    });
+  }
+
+  cloneCipher(cipher: Cipher) {
+    let suffix = '-copy';
+    let name = cipher.name + suffix;
+    let isUnique = false;
+
+    while (!isUnique) {
+      isUnique = true;
+
+      for (let i = 0; i < this.ciphers.length; i++) {
+        if (name === this.ciphers[i].name) {
+          name = name + suffix;
+          isUnique = false;
+          break;
+        }
+      }
+    }
+
+    let clone = new Cipher(name, cipher.rows, cipher.columns, cipher.ciphertext);
+
+    this.ciphers.push(clone);
+    this.cipherService.updateCiphers(this.ciphers);
+
+    this._snackBar.open('Cloned "' + cipher.name + '"', '',{
       duration: 2000,
       verticalPosition: 'top'
     });
