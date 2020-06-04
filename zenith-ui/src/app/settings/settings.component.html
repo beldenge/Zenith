@@ -77,7 +77,7 @@
       <div *ngIf="generalSettingsForm.get('optimizer').value === optimizerNames[0]" class="card o-hidden border-0 shadow-lg h-100 mt-5">
         <div class="card-body p-0" formGroupName="simulatedAnnealingConfiguration">
           <!-- Nested Row within Card Body -->
-          <div class="p-5">
+          <div class="py-5 px-2">
             <div class="text-center">
               <h1 class="h4 text-gray-900 mb-4">Simulated Annealing Settings</h1>
             </div>
@@ -126,7 +126,7 @@
       <div *ngIf="!geneticAlgorithmFormGroup.disabled && generalSettingsForm.get('optimizer').value === optimizerNames[1]" class="card o-hidden border-0 shadow-lg h-100 mt-5">
         <div class="card-body p-0 beta" formGroupName="geneticAlgorithmConfiguration">
           <!-- Nested Row within Card Body -->
-          <div class="p-5">
+          <div class="py-5">
             <div class="text-center">
               <h1 class="h4 text-gray-900 mb-4">Genetic Algorithm Settings</h1>
             </div>

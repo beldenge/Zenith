@@ -20,27 +20,17 @@
 <h1 mat-dialog-title>{{mode === 'CREATE' ? 'Create a new cipher' : 'Update "' + cipher.name + '"'}}</h1>
 <div mat-dialog-content>
   <form [formGroup]="newCipherForm">
-    <mat-vertical-stepper #stepper [linear]="true" formArrayName="formArray">
-      <mat-step formGroupName="0" [stepControl]="formArray?.get([0])">
-        <ng-template matStepLabel>Name</ng-template>
-        <mat-form-field appearance="outline">
-          <mat-label>Name</mat-label>
-          <input matInput formControlName="name" type="text" required>
-          <mat-error>A unique name is required</mat-error>
-        </mat-form-field>
-        <div>
-          <button type="button" mat-button matStepperNext>Next</button>
-        </div>
-      </mat-step>
-      <mat-step formGroupName="1" [stepControl]="formArray?.get([1])">
-        <ng-template matStepLabel>Ciphertext</ng-template>
-        <mat-form-field appearance="outline" [ngClass]="'w-100'">
-          <mat-label>Ciphertext (must be delimited by spaces)</mat-label>
-          <textarea matInput formControlName="ciphertext" required rows="5" class="w-100"></textarea>
-          <mat-error>Ciphertext is required and the row lengths must all be the same</mat-error>
-        </mat-form-field>
-      </mat-step>
-    </mat-vertical-stepper>
+    <mat-form-field appearance="outline" class="mb-3">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" type="text" required>
+      <mat-error>A unique name is required</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline" [ngClass]="'w-100'">
+      <mat-label>Ciphertext (must be delimited by spaces)</mat-label>
+      <textarea matInput formControlName="ciphertext" required rows="5" class="w-100"></textarea>
+      <mat-error>Ciphertext is required and the row lengths must all be the same</mat-error>
+      <small class="float-right mr-4" *ngIf="rows > 0">rows: {{rows}}<span class="mx-2"></span>columns: {{columns ? columns : 'N/A'}}</small>
+    </mat-form-field>
   </form>
 </div>
 <div mat-dialog-actions>
