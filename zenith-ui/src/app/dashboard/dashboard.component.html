@@ -17,55 +17,7 @@
   ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-  <div class="row w-100">
-    <!-- Topbar Search -->
-    <div class="col-md-11 d-flex">
-      <!-- Sidebar Toggle (Topbar) -->
-      <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3" (click)="onSidebarToggleClick()">
-        <i class="fa fa-bars"></i>
-      </button>
-
-      <form id="cipher_select" class="d-none d-inline form-inline mr-0 ml-md-3 mw-100 navbar-search">
-        <div class="input-group rounded bg-light">
-          <select #cipherSelect name="search"
-                  [ngClass]="{'form-control': true, 'bg-transparent': true, 'border-0': true, 'small': true, 'cursor-wait': isRunning}"
-                  [(ngModel)]="selectedCipher"
-                  [compareWith]="byName"
-                  (change)="onCipherSelect(cipherSelect)"
-                  (mousedown)="onMouseDownSelect(cipherSelect)"
-                  (mouseover)="onMouseOverSelect(cipherSelect)"
-                  (mouseout)="onMouseOutSelect(cipherSelect)"
-                  (focusout)="onFocusOutSelect(cipherSelect)"
-                  [disabled]="isRunning">
-            <option [ngValue]="cipher" *ngFor="let cipher of ciphers">{{cipher.name}} ({{cipher.rows}} x {{cipher.columns}})</option>
-          </select>
-          <div id="cipher_select_button" class="input-group-append" (mouseover)="onMouseOverSelect(cipherSelect)">
-            <button [ngClass]="{'btn': true, 'btn-primary': true, 'cursor-default': !isRunning, 'cursor-wait': isRunning}">
-              <i class="fas fa-chevron-down fa-sm"></i>
-            </button>
-          </div>
-        </div>
-      </form>
-      <div style="height: 38px; width: 175px; right: 45px; position: relative; background: white;"></div>
-    </div>
-
-    <div class="col-md-1">
-      <div id="import_export" class="float-right d-flex">
-        <a href="javascript:void(0);" class="btn btn-primary btn-circle mx-2" matTooltip="Import Configuration" matTooltipPosition="below" (click)="clickInput(importInput)">
-          <i class="fas fa-upload">
-            <input #importInput class="d-none" type="file" accept=".json" (change)='importConfiguration($event)'>
-          </i>
-        </a>
-        <a [href]="exportUri" download="{{configFilename}}" class="btn btn-primary btn-circle mx-2" matTooltip="Export Configuration" matTooltipPosition="below" (mousedown)="setExportUri()">
-          <i class="fas fa-download"></i>
-        </a>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<div class="container-fluid">
+<div class="container-fluid mt-4">
 
   <div *ngIf="showApplicationDownloadInfo" class="w-100 mb-4 alert alert-warning d-inline-block" role="alert" [@simpleFadeAnimation]>
     <i class="fas fa-info-circle mr-2"></i>Thank you for using Project Zenith!   It is free and open source, and it can be run locally or hosted.  Please check out the <a href="https://github.com/beldenge/Zenith/releases" target="_blank">releases page</a> to download the latest version.

@@ -41,7 +41,7 @@ declare let gtag: Function;
         query(':enter, :leave', [
           style({
             position: 'absolute',
-            top: 0,
+            top: '4.375rem',
             left: 0,
             width: '100%'
           })

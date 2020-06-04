@@ -57,9 +57,7 @@ import { SidebarService } from "../sidebar.service";
 export class DashboardComponent implements OnInit, OnDestroy {
   showApplicationDownloadInfo: boolean = false;
   showIntroDashboardSubscription: Subscription;
-  configFilename = 'zenith-config.json';
   webSocketAPI: WebSocketAPI;
-  ciphers: Cipher[];
   selectedCipher: Cipher;
   isRunning: boolean = false;
   progressPercentage: number = 0;
@@ -71,15 +69,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   hyperparametersForm = this.fb.group({
     epochs: [null, this.epochsValidatorsDefault]
   });
-  selectHasFocus: boolean = false;
   appliedPlaintextTransformers: ZenithTransformer[] = [];
   optimizer: SelectOption;
   fitnessFunction: ZenithFitnessFunction;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
-  exportUri: SafeUrl;
   selectedCipherSubscription: Subscription;
-  ciphersSubscription: Subscription;
   appliedPlaintextTransformersSubscription: Subscription;
   epochsSubscription: Subscription;
   selectedOptimizerSubscription: Subscription;
@@ -93,8 +88,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
               private _snackBar: MatSnackBar,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService,
-              private sidebarService: SidebarService) {
+              private solutionService: SolutionService) {
   }
 
   ngOnInit() {
@@ -102,10 +96,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
       this.selectedCipher = selectedCipher
-    });
-
-    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
-      this.ciphers = ciphers
     });
 
     this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
@@ -166,7 +156,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.selectedCipherSubscription.unsubscribe();
-    this.ciphersSubscription.unsubscribe();
     this.appliedPlaintextTransformersSubscription.unsubscribe();
     this.epochsSubscription.unsubscribe();
     this.selectedOptimizerSubscription.unsubscribe();
@@ -179,38 +168,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.progressPercentageSubscription.unsubscribe();
   }
 
-  onMouseDownSelect(element: HTMLElement) {
-    this.selectHasFocus = true;
-  }
-
-  onMouseOverSelect(element: HTMLElement) {
-    if (!this.selectHasFocus) {
-      element.focus();
-    }
-  }
-
-  onMouseOutSelect(element: HTMLElement) {
-    if (!this.selectHasFocus) {
-      element.blur();
-    }
-  }
-
-  onFocusOutSelect(element: HTMLElement) {
-    this.selectHasFocus = false;
-  }
-
   onEpochsChange() {
     if (this.hyperparametersForm.valid) {
       this.solutionService.updateProgressPercentage(0);
       this.configurationService.updateEpochs(this.hyperparametersForm.get('epochs').value);
-    }
-  }
-
-  onSidebarToggleClick() {
-    if (document.body.classList.contains('sidebar-toggled')) {
-      this.sidebarService.updateSidebarToggle(false);
-    } else {
-      this.sidebarService.updateSidebarToggle(true);
     }
   }
 
@@ -299,65 +260,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
 
     this.webSocketAPI.disconnect();
-  }
-
-  byName(c1: Cipher, c2: Cipher): boolean {
-    return c1 && c2 ? c1.name === c2.name : c1 === c2;
-  }
-
-  onCipherSelect(element: HTMLElement) {
-    element.blur();
-    this.solutionService.updateSolution(null);
-    this.solutionService.updateProgressPercentage(0);
-    delete this.selectedCipher.transformed;
-    this.configurationService.updateAppliedCiphertextTransformers([]);
-    this.configurationService.updateAppliedPlaintextTransformers([])
-    this.cipherService.updateSelectedCipher(this.selectedCipher);
-  }
-
-  setExportUri() {
-    this.exportUri = this.configurationService.getExportUri();
-  }
-
-  clickInput(input: HTMLInputElement) {
-    input.click();
-  }
-
-  importConfiguration(event) {
-    let input = event.target;
-
-    if (!input.value.endsWith(this.configFilename)) {
-      this._snackBar.open('Error: invalid filename.  Expected ' + this.configFilename + '.', '',{
-        duration: 5000,
-        verticalPosition: 'top'
-      });
-
-      return;
-    }
-
-    let reader = new FileReader();
-
-    let self = this;
-
-    reader.onload = () => {
-      let text = reader.result.toString();
-      let configuration: ApplicationConfiguration = Object.assign(new ApplicationConfiguration, JSON.parse(text));
-      self.configurationService.import(configuration);
-
-      this._snackBar.open('Configuration imported successfully.', '',{
-        duration: 2000,
-        verticalPosition: 'top'
-      });
-    };
-
-    reader.onerror = () => {
-      this._snackBar.open('Error: could not load configuration.', '',{
-        duration: 5000,
-        verticalPosition: 'top'
-      });
-    };
-
-    reader.readAsText(input.files[0]);
   }
 
   disableApplicationDownloadInfo() {

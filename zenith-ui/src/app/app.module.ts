@@ -64,6 +64,7 @@ import { FormlyFieldInput } from "@ngx-formly/material/input";
 import { SpacifyPipe } from './spacify.pipe';
 import { CipherNgramStatsComponent } from './cipher-ngram-stats/cipher-ngram-stats.component';
 import { NgramsTableComponent } from './ngrams-table/ngrams-table.component';
+import { TopNavComponent } from './top-nav/top-nav.component';
 
 export function minValidationMessage(err, field) {
   return `This field has a minimum value of ${field.templateOptions.min}`;
@@ -136,7 +137,8 @@ export function registerValidationMessages() {
     WordSegmentationComponent,
     SpacifyPipe,
     CipherNgramStatsComponent,
-    NgramsTableComponent
+    NgramsTableComponent,
+    TopNavComponent
   ],
     imports: [
         BrowserModule,

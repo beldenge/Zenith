@@ -28,6 +28,8 @@
     <!-- Main Content -->
     <div id="content" [@routeAnimations]="getState(outlet)">
 
+      <app-top-nav></app-top-nav>
+
       <router-outlet #outlet="outlet"></router-outlet>
 
     </div>

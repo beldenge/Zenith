@@ -17,9 +17,28 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-.card-body div {
-  white-space: pre-wrap;
-  font-family: "Courier New", Courier, monospace;
-  color: initial;
-}
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { TopNavComponent } from './top-nav.component';
+
+describe('TopNavComponent', () => {
+  let component: TopNavComponent;
+  let fixture: ComponentFixture<TopNavComponent>;
+
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [ TopNavComponent ]
+    })
+    .compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(TopNavComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
