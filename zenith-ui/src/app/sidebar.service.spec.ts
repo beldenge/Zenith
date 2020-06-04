@@ -17,16 +17,19 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-.card-body div {
-  white-space: pre-wrap;
-  font-family: "Courier New", Courier, monospace;
-  color: initial;
-}
+import { TestBed } from '@angular/core/testing';
 
-.card {
-  height: calc(100% - 1.5rem);
-}
+import { SidebarService } from './sidebar.service';
 
-#plaintext_score {
-  line-height: 1.2;
-}
+describe('SidebarService', () => {
+  let service: SidebarService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(SidebarService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+});

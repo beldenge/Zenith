@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { animate, animateChild, group, query, style, transition, trigger } from "@angular/animations";
 import { CipherService } from "./cipher.service";
 import { IntroductionService } from "./introduction.service";
@@ -26,6 +26,7 @@ import { environment } from "../environments/environment";
 import { ConfigurationService } from "./configuration.service";
 import { Subscription } from "rxjs";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
+import { SidebarService } from "./sidebar.service";
 
 declare let gtag: Function;
 
@@ -70,7 +71,12 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   enablePageTransitionsSubscription: Subscription;
   googleAnalyticsInitialized = false;
 
-  constructor(private elementRef: ElementRef, private cipherService: CipherService, private introductionService: IntroductionService, private configurationService: ConfigurationService, private router: Router) {
+  constructor(private elementRef: ElementRef,
+              private cipherService: CipherService,
+              private introductionService: IntroductionService,
+              private configurationService: ConfigurationService,
+              private router: Router,
+              private sidebarService: SidebarService) {
     this.router.events.subscribe(event => {
       if(this.trackingEnabled && event instanceof NavigationEnd) {
         gtag('config', environment.googleAnalyticsTrackingId, { 'page_path': event.urlAfterRedirects });
@@ -133,6 +139,13 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
       s.src = "https://www.googletagmanager.com/gtag/js?id=UA-159370258-1";
       this.elementRef.nativeElement.appendChild(s);
       this.googleAnalyticsInitialized = true;
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    if (event.target.innerWidth >= 768) {
+      this.sidebarService.updateSidebarToggle(true);
     }
   }
 }

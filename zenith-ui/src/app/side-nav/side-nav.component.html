@@ -17,7 +17,7 @@
   ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled" id="accordionSidebar">
+<ul [ngClass]="{'navbar-nav': true, 'bg-gradient-primary' : true, 'sidebar' : true, 'sidebar-dark': true, 'accordion': true, 'toggled': toggled}" id="accordionSidebar">
 
   <!-- Sidebar - Brand -->
   <div class="sidebar-brand d-block align-items-center justify-content-center">

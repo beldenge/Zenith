@@ -3,7 +3,6 @@ import { BehaviorSubject, Subscription } from "rxjs";
 import { MatTooltip } from "@angular/material/tooltip";
 import { SolutionService } from "../solution.service";
 import { WordSegmentationService } from "../word-segmentation.service";
-import { WordSegmentationResponse } from "../models/WordSegmentationResponse";
 import { SolutionResponse } from "../models/SolutionResponse";
 
 const originalTooltipText = 'Copy to clipboard';

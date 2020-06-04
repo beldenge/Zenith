@@ -49,7 +49,7 @@ select:-moz-focusring {
   text-shadow: 0 0 0 #000;
 }
 
-#import_export {
-  position: absolute;
-  right: 1rem;
+.topbar {
+  height: unset;
+  min-height: 4.375rem;
 }

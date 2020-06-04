@@ -63,3 +63,10 @@ th, td {
 .mat-column-actions {
   width: 10%;
 }
+
+.mat-elevation-z8 {
+  overflow-x: auto;
+}
+.mat-table {
+  min-width: 600px;
+}

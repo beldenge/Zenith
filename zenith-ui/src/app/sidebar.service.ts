@@ -17,16 +17,22 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-.card-body div {
-  white-space: pre-wrap;
-  font-family: "Courier New", Courier, monospace;
-  color: initial;
-}
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from "rxjs";
 
-.card {
-  height: calc(100% - 1.5rem);
-}
+@Injectable({
+  providedIn: 'root'
+})
+export class SidebarService {
+  private sidebarToggle$ = new BehaviorSubject<boolean>(true);
 
-#plaintext_score {
-  line-height: 1.2;
+  constructor() {}
+
+  getSidebarToggleAsObservable(): Observable<boolean> {
+    return this.sidebarToggle$.asObservable();
+  }
+
+  updateSidebarToggle(toggled: boolean) {
+    this.sidebarToggle$.next(toggled);
+  }
 }

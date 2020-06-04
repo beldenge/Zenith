@@ -39,8 +39,8 @@ import { SolutionResponse } from "../models/SolutionResponse";
 import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
 import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 import { LocalStorageKeys } from "../models/LocalStorageKeys";
-import { environment } from "../../environments/environment";
 import { animate, style, transition, trigger } from "@angular/animations";
+import { SidebarService } from "../sidebar.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -93,7 +93,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
               private _snackBar: MatSnackBar,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {
+              private solutionService: SolutionService,
+              private sidebarService: SidebarService) {
   }
 
   ngOnInit() {
@@ -202,6 +203,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.hyperparametersForm.valid) {
       this.solutionService.updateProgressPercentage(0);
       this.configurationService.updateEpochs(this.hyperparametersForm.get('epochs').value);
+    }
+  }
+
+  onSidebarToggleClick() {
+    if (document.body.classList.contains('sidebar-toggled')) {
+      this.sidebarService.updateSidebarToggle(false);
+    } else {
+      this.sidebarService.updateSidebarToggle(true);
     }
   }
 

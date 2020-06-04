@@ -23,11 +23,7 @@
 }
 
 .card {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 12px;
-  right: 12px;
+  height: calc(100% - 1.5rem);
 }
 
 #segmentation_score {

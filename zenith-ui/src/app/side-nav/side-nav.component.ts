@@ -17,19 +17,38 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { environment } from "../../environments/environment";
+import { SidebarService } from "../sidebar.service";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',
   styleUrls: ['./side-nav.component.css']
 })
-export class SideNavComponent implements OnInit {
+export class SideNavComponent implements OnInit, OnDestroy {
   applicationVersion: string = environment.applicationVersion;
+  sidebarToggleSubscription: Subscription;
+  toggled: boolean = true;
 
-  constructor() { }
+  constructor(private sidebarService: SidebarService, private renderer: Renderer2) {}
 
   ngOnInit() {
+    this.sidebarToggleSubscription = this.sidebarService.getSidebarToggleAsObservable().subscribe(toggled => {
+      this.toggled = toggled;
+
+      if (toggled) {
+        if (!document.body.classList.contains('sidebar-toggled')) {
+          this.renderer.addClass(document.body, 'sidebar-toggled');
+        }
+      } else {
+        this.renderer.removeClass(document.body, 'sidebar-toggled');
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.sidebarToggleSubscription.unsubscribe();
   }
 }
