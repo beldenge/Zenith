@@ -17,3 +17,8 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#inject_spaces_button {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

@@ -27,9 +27,12 @@
     </mat-form-field>
     <mat-form-field appearance="outline" [ngClass]="'w-100'">
       <mat-label>Ciphertext (must be delimited by spaces)</mat-label>
+      <a id="inject_spaces_button" href="javascript:void(0);" class="btn btn-primary btn-circle btn-sm" matTooltip="Inject spaces" matTooltipPosition="above" (click)="injectSpaces()">
+        <i class="fas fa-syringe"></i>
+      </a>
       <textarea matInput formControlName="ciphertext" required rows="5" class="w-100"></textarea>
       <mat-error>Ciphertext is required and the row lengths must all be the same</mat-error>
-      <small class="float-right mr-4" *ngIf="rows > 0">rows: {{rows}}<span class="mx-2"></span>columns: {{columns ? columns : 'N/A'}}</small>
+      <small class="float-right mr-4" *ngIf="rows > 0">rows: {{rows}}<span class="mx-1"></span>columns: {{columns ? columns : 'N/A'}}</small>
     </mat-form-field>
   </form>
 </div>

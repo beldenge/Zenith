@@ -27,8 +27,9 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 
+const SPACES_TABS_REGEX = /\t| /g;
 const WHITESPACE_REGEX = /\s+/g;
-const NEWLINE_REGEX = /\n+/g;
+const NEWLINE_REGEX = /\r?\n/g;
 
 @Component({
   selector: 'app-cipher-modal',
@@ -108,10 +109,6 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     this.ciphersSubscription.unsubscribe();
   }
 
-  get formArray(): AbstractControl | null {
-    return this.newCipherForm.get('formArray');
-  }
-
   save() {
     let name = this.newCipherForm.get('name').value;
     let rawCiphertext = this.newCipherForm.get('ciphertext').value;
@@ -176,5 +173,33 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       duration: 2000,
       verticalPosition: 'top'
     });
+  }
+
+  injectSpaces() {
+    let rawCiphertext = this.newCipherForm.get('ciphertext').value.replace(SPACES_TABS_REGEX, '');
+    let rawRows = rawCiphertext.split(NEWLINE_REGEX);
+    let newCiphertext = '';
+
+    let firstRow = true;
+    for (let i = 0; i < rawRows.length; i ++) {
+      if (!firstRow) {
+        newCiphertext += '\n';
+      }
+
+      firstRow = false;
+
+      let first = true;
+      for (let j = 0; j < rawRows[i].length; j ++) {
+        if (!first) {
+          newCiphertext += ' ';
+        }
+
+        first = false;
+
+        newCiphertext += rawRows[i].charAt(j);
+      }
+    }
+
+    this.newCipherForm.get('ciphertext').setValue(newCiphertext);
   }
 }
