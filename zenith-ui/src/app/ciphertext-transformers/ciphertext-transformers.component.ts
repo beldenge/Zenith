@@ -93,13 +93,13 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     if (satisfied) {
       if (!this.appliedTransformers.length) {
         delete this.cipher.transformed;
+        this.cipherService.updateSelectedCipher(this.cipher);
       } else {
         this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
           this.cipher.transformed = cipherResponse.ciphers[0];
+          this.cipherService.updateSelectedCipher(this.cipher);
         });
       }
-
-      this.cipherService.updateSelectedCipher(this.cipher);
 
       if (!event || !event.skipUpdate) {
         this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
@@ -111,7 +111,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChange,
     onRemove: this.onAppliedTransformersChange,
-    onMove: this.onAppliedTransformersChange
+    onEnd: this.onAppliedTransformersChange
   };
 
   constructor(private cipherService: CipherService,

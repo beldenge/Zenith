@@ -105,7 +105,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChange,
     onRemove: this.onAppliedTransformersChange,
-    onMove: this.onAppliedTransformersChange
+    onEnd: this.onAppliedTransformersChange
   };
 
   constructor(private transformerService: PlaintextTransformerService,

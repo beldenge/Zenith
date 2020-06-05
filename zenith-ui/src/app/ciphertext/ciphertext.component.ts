@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Cipher } from "../models/Cipher";
 import { BehaviorSubject, Observable, Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
@@ -33,18 +33,17 @@ const originalTooltipText = 'Copy to clipboard';
 })
 export class CiphertextComponent implements OnInit, OnDestroy {
   cipher: Cipher;
-  cipher$: Observable<Cipher>;
   tooltipText = new BehaviorSubject<string>(originalTooltipText);
   blockifyPipe = new BlockifyPipe();
   cipherSubscription: Subscription;
 
-  constructor(private cipherService: CipherService) {
-    this.cipher$ = cipherService.getSelectedCipherAsObservable();
-  }
+  constructor(private cipherService: CipherService, private cdRef: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.cipherSubscription = this.cipher$.subscribe(cipher => {
+    this.cipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
       this.cipher = cipher;
+      // I don't understand why, but change detection is not occurring here in some odd scenarios
+      this.cdRef.detectChanges();
     });
   }
 
