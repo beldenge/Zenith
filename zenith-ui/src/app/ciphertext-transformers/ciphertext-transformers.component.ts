@@ -127,7 +127,10 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     this.appliedCiphertextTransformersSubscription = this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
       if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
         this.appliedTransformers = appliedTransformers;
-        this.onAppliedTransformersChange({ skipUpdate: true });
+
+        if (this.appliedTransformers.length) {
+          this.onAppliedTransformersChange({ skipUpdate: true });
+        }
       }
     });
 
