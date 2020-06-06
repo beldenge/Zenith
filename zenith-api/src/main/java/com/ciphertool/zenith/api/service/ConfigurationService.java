@@ -21,6 +21,7 @@ package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -35,9 +36,16 @@ public class ConfigurationService {
     @Autowired
     private ApplicationConfiguration applicationConfiguration;
 
+    @Value("${features.show-hidden-ciphers:true}")
+    private boolean showHiddenCiphers;
+
     @GetMapping
     @Cacheable("configurations")
     public ApplicationConfiguration getConfiguration() {
+        if (!showHiddenCiphers) {
+            applicationConfiguration.getCiphers().removeIf(cipher -> cipher.isHidden());
+        }
+
         return applicationConfiguration;
     }
 }

@@ -35,6 +35,7 @@ public class CipherJson {
     private int rows;
     private String ciphertext;
     private boolean readOnly;
+    private boolean hidden;
     private Map<String, String> knownSolutionKey = new HashMap<>();
 
     public CipherJson(String name, int rows, int columns) {
@@ -114,6 +115,14 @@ public class CipherJson {
 
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 
     public Map<String, String> getKnownSolutionKey() {
