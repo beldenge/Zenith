@@ -65,6 +65,7 @@ public class GeneticAlgorithmConfiguration {
     @DecimalMax("1.0")
     private Double mutationRate;
 
+    @Min(0)
     private Integer maxMutationsPerIndividual;
 
     @NotBlank

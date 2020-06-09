@@ -44,8 +44,6 @@ public class EntropyEvaluator implements CounterweightEvaluator {
             precomputedEntropies[i] = Math.abs(MathUtils.logBase(probability, BASE) * probability);
         }
 
-        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
-        precomputedData.put(LETTER_COUNTS_KEY, new int[256]);
         precomputedData.put(PRECOMPUTED_ENTROPIES_KEY, precomputedEntropies);
 
         return precomputedData;
@@ -57,7 +55,8 @@ public class EntropyEvaluator implements CounterweightEvaluator {
             precomputedData = precompute(cipher);
         }
 
-        int[] letterCounts = (int[]) precomputedData.get(LETTER_COUNTS_KEY);
+        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+        int[] letterCounts = new int[256];
         double[] precomputedEntropies = (double[]) precomputedData.get(PRECOMPUTED_ENTROPIES_KEY);
 
         resetLetterCounts(letterCounts);

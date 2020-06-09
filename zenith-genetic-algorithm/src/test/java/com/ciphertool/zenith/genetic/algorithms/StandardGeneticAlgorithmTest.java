@@ -27,7 +27,6 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.mocks.MockChromosome;
-import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
@@ -223,73 +222,9 @@ public class StandardGeneticAlgorithmTest {
         verifyNoMoreInteractions(crossoverAlgorithmMock);
     }
 
-    @Test
-    public void testValidateParameters_NoErrors() {
-        StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-
-        GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .fitnessEvaluator(mock(FitnessEvaluator.class))
-                .crossoverAlgorithm(mock(CrossoverAlgorithm.class))
-                .mutationAlgorithm(mock(MutationAlgorithm.class))
-                .maxMutationsPerIndividual(0)
-                .population(mock(Population.class))
-                .populationSize(1)
-                .selector(mock(Selector.class))
-                .mutationRate(0.0)
-                .numberOfGenerations(-1)
-                .build();
-
-        standardGeneticAlgorithm.validateParameters(strategyToSet);
-    }
-
-    @Test
-    public void testValidateParameters_AllErrors() {
-        StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
-
-        GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .fitnessEvaluator(null)
-                .crossoverAlgorithm(null)
-                .mutationAlgorithm(null)
-                .maxMutationsPerIndividual(-1)
-                .populationSize(0)
-                .selector(null)
-                .numberOfGenerations(0)
-                .build();
-
-        /*
-         * This must be set via reflection because the setter method does its own validation
-         */
-        Field mutationRateField = ReflectionUtils.findField(GeneticAlgorithmStrategy.class, "mutationRate");
-        ReflectionUtils.makeAccessible(mutationRateField);
-        ReflectionUtils.setField(mutationRateField, strategyToSet, -0.1);
-
-        boolean exceptionCaught = false;
-
-        try {
-            standardGeneticAlgorithm.validateParameters(strategyToSet);
-        } catch (IllegalStateException ise) {
-            String expectedMessage = "Unable to execute genetic algorithm because one or more of the required parameters are missing.  The validation errors are:";
-            expectedMessage += "\n\t-Parameter 'populationSize' must be greater than zero.";
-            expectedMessage += "\n\t-Parameter 'mutationRate' must be greater than or equal to zero.";
-            expectedMessage += "\n\t-Parameter 'maxMutationsPerIndividual' must be greater than or equal to zero.";
-            expectedMessage += "\n\t-Parameter 'maxGenerations' cannot be null and must not equal zero.";
-            expectedMessage += "\n\t-Parameter 'crossoverAlgorithm' cannot be null.";
-            expectedMessage += "\n\t-Parameter 'fitnessEvaluator' cannot be null.";
-            expectedMessage += "\n\t-Parameter 'mutationAlgorithm' cannot be null.";
-            expectedMessage += "\n\t-Parameter 'selectorMethod' cannot be null.";
-
-            assertEquals(expectedMessage, ise.getMessage());
-
-            exceptionCaught = true;
-        }
-
-        assertTrue(exceptionCaught);
-    }
-
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     public void testCrossover() {
-        int index = 0;
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         int initialPopulationSize = 50;
@@ -380,7 +315,6 @@ public class StandardGeneticAlgorithmTest {
     @Test
     public void testMutate() {
         int initialPopulationSize = 100;
-        int index = 0;
 
         List<Chromosome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {

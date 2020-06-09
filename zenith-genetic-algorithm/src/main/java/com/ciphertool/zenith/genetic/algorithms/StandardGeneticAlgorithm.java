@@ -54,8 +54,6 @@ public class StandardGeneticAlgorithm {
     private AtomicInteger mutations = new AtomicInteger(0);
 
     public void initialize(GeneticAlgorithmStrategy strategy) {
-        validateParameters(strategy);
-
         this.generationCount = 0;
 
         this.executionStatistics = new ExecutionStatistics(LocalDateTime.now(), strategy);
@@ -101,53 +99,6 @@ public class StandardGeneticAlgorithm {
         finish();
     }
 
-    protected void validateParameters(GeneticAlgorithmStrategy strategy) {
-        List<String> validationErrors = new ArrayList<>();
-
-        if (strategy.getPopulationSize() == null || strategy.getPopulationSize() <= 0) {
-            validationErrors.add("Parameter 'populationSize' must be greater than zero.");
-        }
-
-        if (strategy.getMutationRate() == null || strategy.getMutationRate() < 0) {
-            validationErrors.add("Parameter 'mutationRate' must be greater than or equal to zero.");
-        }
-
-        if (strategy.getMaxMutationsPerIndividual() == null || strategy.getMaxMutationsPerIndividual() < 0) {
-            validationErrors.add("Parameter 'maxMutationsPerIndividual' must be greater than or equal to zero.");
-        }
-
-        if (strategy.getNumberOfGenerations() == null || strategy.getNumberOfGenerations() == 0) {
-            validationErrors.add("Parameter 'maxGenerations' cannot be null and must not equal zero.");
-        }
-
-        if (strategy.getCrossoverAlgorithm() == null) {
-            validationErrors.add("Parameter 'crossoverAlgorithm' cannot be null.");
-        }
-
-        if (strategy.getFitnessEvaluator() == null) {
-            validationErrors.add("Parameter 'fitnessEvaluator' cannot be null.");
-        }
-
-        if (strategy.getMutationAlgorithm() == null) {
-            validationErrors.add("Parameter 'mutationAlgorithm' cannot be null.");
-        }
-
-        if (strategy.getSelector() == null) {
-            validationErrors.add("Parameter 'selectorMethod' cannot be null.");
-        }
-
-        if (validationErrors.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Unable to execute genetic algorithm because one or more of the required parameters are missing.  The validation errors are:");
-
-            for (String validationError : validationErrors) {
-                sb.append("\n\t-" + validationError);
-            }
-
-            throw new IllegalStateException(sb.toString());
-        }
-    }
-
     public void proceedWithNextGeneration(GeneticAlgorithmStrategy strategy) {
         this.generationCount++;
 
@@ -156,6 +107,7 @@ public class StandardGeneticAlgorithm {
         long generationStart = System.currentTimeMillis();
 
         PerformanceStatistics performanceStats = new PerformanceStatistics();
+        generationStatistics.setPerformanceStatistics(performanceStats);
 
         Population population = strategy.getPopulation();
 
@@ -184,7 +136,6 @@ public class StandardGeneticAlgorithm {
         performanceStats.setEvaluationMillis(System.currentTimeMillis() - startEvaluation);
 
         performanceStats.setTotalMillis(System.currentTimeMillis() - generationStart);
-        generationStatistics.setPerformanceStatistics(performanceStats);
 
         log.info(generationStatistics.toString());
 

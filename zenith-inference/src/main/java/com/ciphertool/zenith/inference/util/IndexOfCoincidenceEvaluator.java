@@ -41,8 +41,6 @@ public class IndexOfCoincidenceEvaluator implements CounterweightEvaluator {
             precomputedNominatorValues[i] = i * (i - 1);
         }
 
-        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
-        precomputedData.put(LETTER_COUNTS_KEY, new int[256]);
         precomputedData.put(DENOMINATOR_KEY, (float) cipher.length() * (cipher.length() - 1));
         precomputedData.put(PRECOMPUTED_NOMINATOR_VALUES_KEY, precomputedNominatorValues);
 
@@ -55,7 +53,8 @@ public class IndexOfCoincidenceEvaluator implements CounterweightEvaluator {
             precomputedData = precompute(cipher);
         }
 
-        int[] letterCounts = (int[]) precomputedData.get(LETTER_COUNTS_KEY);
+        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+        int[] letterCounts = new int[256];
         int[] precomputedNominatorValues = (int[]) precomputedData.get(PRECOMPUTED_NOMINATOR_VALUES_KEY);
         float denominator = (float) precomputedData.get(DENOMINATOR_KEY);
 

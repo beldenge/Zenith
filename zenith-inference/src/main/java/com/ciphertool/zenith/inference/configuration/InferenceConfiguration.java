@@ -40,6 +40,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -53,6 +54,9 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import javax.validation.constraints.Min;
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +65,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -78,6 +83,9 @@ public class InferenceConfiguration {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String CONFIG_FILE_NAME = "zenith-config.json";
+
+    @Autowired
+    private Validator validator;
 
     @Value("${task-executor.pool-size:#{T(java.lang.Runtime).getRuntime().availableProcessors()}}")
     private int corePoolSize;
@@ -119,6 +127,7 @@ public class InferenceConfiguration {
         for (Resource resource : resources) {
             try (InputStream inputStream = resource.getInputStream()) {
                 applicationConfiguration = OBJECT_MAPPER.readValue(inputStream, ApplicationConfiguration.class);
+                validateInputWithInjectedValidator(applicationConfiguration);
                 break;
             } catch (IOException e) {
                 log.error("Unable to read application configuration from file: {}.", resource.getFilename(), e);
@@ -140,7 +149,9 @@ public class InferenceConfiguration {
             }
 
             try {
-                return OBJECT_MAPPER.readValue(file, ApplicationConfiguration.class);
+                applicationConfiguration = OBJECT_MAPPER.readValue(file, ApplicationConfiguration.class);
+                validateInputWithInjectedValidator(applicationConfiguration);
+                return applicationConfiguration;
             } catch (IOException e) {
                 log.error("Unable to read application configuration from file: {}.", file.getPath(), e);
                 throw new IllegalStateException(e);
@@ -149,6 +160,14 @@ public class InferenceConfiguration {
 
         // We should only reach this point in the case where the configurationFilePath points to a directory which doesn't actually contain a configuration
         return applicationConfiguration;
+    }
+
+    private void validateInputWithInjectedValidator(ApplicationConfiguration configuration) {
+        Set<ConstraintViolation<ApplicationConfiguration>> violations = validator.validate(configuration);
+
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
     }
 
     @Bean
