@@ -33,11 +33,23 @@ public class LowerRightQuadrantCipherTransformer implements CipherTransformer {
         int halfOfRows = cipher.getRows() / 2;
         int halfOfColumns = cipher.getColumns() / 2;
 
+        int columnOffset = halfOfColumns;
+
+        if ((cipher.getColumns() % 2) != 0) {
+            columnOffset += 1;
+        }
+
+        int rowOffset = halfOfRows;
+
+        if ((cipher.getRows() % 2) != 0) {
+            rowOffset += 1;
+        }
+
         Cipher quadrant = new Cipher(cipher.getName(), halfOfRows, halfOfColumns, cipher.isReadOnly());
 
         int id = 0;
-        for (int i = halfOfRows; i < cipher.getRows(); i++) {
-            for (int j = halfOfColumns + 1; j < cipher.getColumns(); j++) {
+        for (int i = rowOffset; i < cipher.getRows(); i++) {
+            for (int j = columnOffset; j < cipher.getColumns(); j++) {
                 Ciphertext toAdd = cipher.getCiphertextCharacters().get((i * cipher.getColumns()) + j).clone();
                 toAdd.setCiphertextId(id);
                 quadrant.addCiphertextCharacter(toAdd);
