@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
-import com.ciphertool.zenith.inference.util.LetterUtils;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -30,20 +29,26 @@ import java.util.Map;
 public class VigenerePlaintextTransformer extends AbstractVigenerePlaintextTransformer {
     public VigenerePlaintextTransformer(Map<String, Object> data) {
         super(data);
-    }
 
-    @Override
-    public String transform(String plaintext) {
-        StringBuilder sb = new StringBuilder();
+        String rawVigenereSquare = (String) data.get(VIGENERE_SQUARE);
+        String vignereSquareAsSingleLine = defaultVigenereSquare;
 
-        for (int i = 0; i < plaintext.length(); i ++) {
-            int plaintextIndex = LetterUtils.charToOrdinal(plaintext.charAt(i));
-            int mappedKeyIndex = LetterUtils.charToOrdinal(key.charAt(i % key.length()));
+        if (rawVigenereSquare != null) {
+            if (rawVigenereSquare.length() != VIGENERE_SQUARE_LENGTH){
+                throw new IllegalArgumentException("Argument " + VIGENERE_SQUARE + " must be exactly " + VIGENERE_SQUARE_LENGTH + " characters long.");
+            }
 
-            sb.append(vigenereSquare[mappedKeyIndex][plaintextIndex]);
+            vignereSquareAsSingleLine = rawVigenereSquare.toLowerCase();
         }
 
-        return sb.toString();
+        for (int i = 0; i < 26; i ++) {
+            for (int j = 0; j < 26; j ++) {
+                char rowIndex = vignereSquareAsSingleLine.charAt(j * 26);
+                char columnIndex = vignereSquareAsSingleLine.charAt(i);
+
+                vigenereSquare[rowIndex][columnIndex] = vignereSquareAsSingleLine.charAt((j * 26) + i);
+            }
+        }
     }
 
     @Override

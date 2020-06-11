@@ -100,7 +100,7 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyTopLeftOptions.setRows(5);
         keyTopLeftOptions.setMinLength(25);
         keyTopLeftOptions.setMaxLength(25);
-        keyTopLeftOptions.setPattern("[a-z]+");
+        keyTopLeftOptions.setPattern("[A-Za-z]+");
 
         FormlyFormField keyTopLeft = new FormlyFormField();
         keyTopLeft.setKey(KEY_TOP_LEFT);
@@ -117,7 +117,7 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyTopRightOptions.setRows(5);
         keyTopRightOptions.setMinLength(25);
         keyTopRightOptions.setMaxLength(25);
-        keyTopRightOptions.setPattern("[a-z]+");
+        keyTopRightOptions.setPattern("[A-Za-z]+");
 
         FormlyFormField keyTopRight = new FormlyFormField();
         keyTopRight.setKey(KEY_TOP_RIGHT);
@@ -133,7 +133,7 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyBottomLeftOptions.setRows(5);
         keyBottomLeftOptions.setMinLength(25);
         keyBottomLeftOptions.setMaxLength(25);
-        keyBottomLeftOptions.setPattern("[a-z]+");
+        keyBottomLeftOptions.setPattern("[A-Za-z]+");
 
         FormlyFormField keyBottomLeft = new FormlyFormField();
         keyBottomLeft.setKey(KEY_BOTTOM_LEFT);
@@ -149,7 +149,7 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         keyBottomRightOptions.setRows(5);
         keyBottomRightOptions.setMinLength(25);
         keyBottomRightOptions.setMaxLength(25);
-        keyBottomRightOptions.setPattern("[a-z]+");
+        keyBottomRightOptions.setPattern("[A-Za-z]+");
 
         FormlyFormField keyBottomRight = new FormlyFormField();
         keyBottomRight.setKey(KEY_BOTTOM_RIGHT);
@@ -171,6 +171,8 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
     }
 
     protected Map<Character, Coordinates> getKeyMapFromKeyString(String key) {
+        key = key.toLowerCase();
+
         Map<Character, Coordinates> keyMap = new HashMap<>();
 
         for (int i = 0; i < SQUARE_SIZE; i++) {

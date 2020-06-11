@@ -65,6 +65,7 @@ import { SpacifyPipe } from './spacify.pipe';
 import { CipherNgramStatsComponent } from './cipher-ngram-stats/cipher-ngram-stats.component';
 import { NgramsTableComponent } from './ngrams-table/ngrams-table.component';
 import { TopNavComponent } from './top-nav/top-nav.component';
+import { FormlyFieldTextArea } from "@ngx-formly/material/textarea";
 
 export function minValidationMessage(err, field) {
   return `This field has a minimum value of ${field.templateOptions.min}`;
@@ -173,7 +174,7 @@ export function registerValidationMessages() {
             },
             {
               name: 'textarea',
-              component: FormlyFieldInput,
+              component: FormlyFieldTextArea,
               defaultOptions: {
                 modelOptions: {
                   debounce: {

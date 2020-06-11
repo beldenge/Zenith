@@ -22,7 +22,7 @@ package com.ciphertool.zenith.inference.util;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LetterUtils {
-    private static final int ASCII_OFFSET = 97;
+    public static final int ASCII_OFFSET = 97;
     public static final int NUMBER_OF_LETTERS = 26;
 
     /**

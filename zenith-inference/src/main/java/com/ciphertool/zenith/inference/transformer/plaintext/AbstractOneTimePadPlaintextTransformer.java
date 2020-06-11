@@ -34,7 +34,7 @@ public abstract class AbstractOneTimePadPlaintextTransformer implements Plaintex
     protected String key;
 
     public AbstractOneTimePadPlaintextTransformer(Map<String, Object> data) {
-        key = (String) data.get(KEY);
+        key = ((String) data.get(KEY)).toLowerCase();
     }
 
     @Override
@@ -44,7 +44,7 @@ public abstract class AbstractOneTimePadPlaintextTransformer implements Plaintex
         FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
         templateOptions.setLabel("Key");
         templateOptions.setRequired(true);
-        templateOptions.setPattern("[a-z]+");
+        templateOptions.setPattern("[A-Za-z]+");
 
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);

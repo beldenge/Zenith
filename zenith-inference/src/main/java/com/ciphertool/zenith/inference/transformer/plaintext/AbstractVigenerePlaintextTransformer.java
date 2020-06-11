@@ -40,7 +40,9 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
     public static final String KEY = "key";
 
     protected static String defaultVigenereSquare = "";
-    protected static char[][] vigenereSquare = new char[26][26];
+
+    // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+    protected static char[][] vigenereSquare = new char[256][256];
 
     private static char[] letters = LanguageConstants.LOWERCASE_LETTERS;
 
@@ -55,24 +57,21 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
     protected String key;
 
     public AbstractVigenerePlaintextTransformer(Map<String, Object> data) {
-        String rawVigenereSquare = (String) data.get(VIGENERE_SQUARE);
-        String vignereSquareAsSingleLine = defaultVigenereSquare;
+        key = ((String) data.get(KEY)).toLowerCase();
+    }
 
-        if (rawVigenereSquare != null) {
-            if (rawVigenereSquare.length() != VIGENERE_SQUARE_LENGTH){
-                throw new IllegalArgumentException("Argument " + VIGENERE_SQUARE + " must be exactly " + VIGENERE_SQUARE_LENGTH + " characters long.");
-            }
+    @Override
+    public String transform(String plaintext) {
+        StringBuilder sb = new StringBuilder();
 
-            vignereSquareAsSingleLine = rawVigenereSquare;
+        for (int i = 0; i < plaintext.length(); i ++) {
+            char mappedKeyIndex = key.charAt(i % key.length());
+            char plaintextIndex = plaintext.charAt(i);
+
+            sb.append(vigenereSquare[mappedKeyIndex][plaintextIndex]);
         }
 
-        for (int i = 0; i < 26; i ++) {
-            for (int j = 0; j < 26; j ++) {
-                vigenereSquare[i][j] = vignereSquareAsSingleLine.charAt((j * 26) + i);
-            }
-        }
-
-        key = (String) data.get(KEY);
+        return sb.toString();
     }
 
     @Override
@@ -84,7 +83,7 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         FormlyTemplateOptions vigenereSquareOptions = new FormlyTemplateOptions();
         vigenereSquareOptions.setLabel("Vigenere Square");
         vigenereSquareOptions.setRequired(true);
-        vigenereSquareOptions.setPattern("[a-z]+");
+        vigenereSquareOptions.setPattern("[A-Za-z]+");
         vigenereSquareOptions.setRows(26);
         vigenereSquareOptions.setCols(26);
         vigenereSquareOptions.setMinLength(VIGENERE_SQUARE_LENGTH);
@@ -101,7 +100,7 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         FormlyTemplateOptions keyOptions = new FormlyTemplateOptions();
         keyOptions.setLabel("Key");
         keyOptions.setRequired(true);
-        keyOptions.setPattern("[a-z]+");
+        keyOptions.setPattern("[A-Za-z]+");
 
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);
