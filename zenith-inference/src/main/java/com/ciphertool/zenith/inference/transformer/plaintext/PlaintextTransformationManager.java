@@ -46,6 +46,8 @@ public class PlaintextTransformationManager {
     }
 
     public String transform(String plaintext, List<PlaintextTransformationStep> steps) {
+        plaintext = plaintext.toLowerCase();
+
         List<PlaintextTransformer> toUse = new ArrayList<>(steps.size());
 
         for (PlaintextTransformationStep step : steps) {
