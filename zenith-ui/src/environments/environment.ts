@@ -24,7 +24,7 @@
 export const environment = {
   production: false,
   apiUrlBase: 'api', // relative URL
-  applicationVersion: '2.1.3',
+  applicationVersion: '2.1.4-SNAPSHOT',
   googleAnalyticsTrackingId: 'UA-159370258-1'
 };
 
