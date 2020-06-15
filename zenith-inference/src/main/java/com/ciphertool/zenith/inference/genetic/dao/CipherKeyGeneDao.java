@@ -60,10 +60,10 @@ public class CipherKeyGeneDao implements GeneDao {
 
     @Override
     public Gene findRandomGene(Chromosome chromosome) {
-//        return findProbabilisticGene(chromosome);
         return new CipherKeyGene(chromosome, String.valueOf(LetterUtils.getRandomLetter()));
     }
 
+    @Override
     public Gene findProbabilisticGene(Chromosome chromosome) {
         // Pick a plaintext at random according to the language model
         String nextPlaintext = letterUnigramProbabilities.get(rouletteSampler.getNextIndex()).getValue().toString();

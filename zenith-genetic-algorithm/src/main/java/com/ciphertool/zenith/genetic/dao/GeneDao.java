@@ -24,4 +24,6 @@ import com.ciphertool.zenith.genetic.entities.Gene;
 
 public interface GeneDao {
     Gene findRandomGene(Chromosome chromosome);
+
+    Gene findProbabilisticGene(Chromosome chromosome);
 }
