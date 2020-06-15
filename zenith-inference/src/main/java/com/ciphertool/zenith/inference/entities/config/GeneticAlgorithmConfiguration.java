@@ -77,4 +77,6 @@ public class GeneticAlgorithmConfiguration {
 
     @Min(1)
     private Integer tournamentSize;
+
+    private boolean enableFitnessSharing;
 }

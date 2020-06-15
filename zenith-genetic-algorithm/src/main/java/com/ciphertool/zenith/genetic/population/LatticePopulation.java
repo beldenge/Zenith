@@ -20,11 +20,12 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,21 +35,29 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+@NoArgsConstructor
 @Component
 public class LatticePopulation extends AbstractPopulation {
     private int currentRow = 0;
     private int nextColumn = 0;
     private Chromosome[][] individuals;
-    private Selector selector;
-    private GeneticAlgorithmStrategy strategy;
     private int latticeRows;
     private int latticeColumns;
     private boolean wrapAround;
     private int selectionRadius;
 
+    public LatticePopulation(TaskExecutor taskExecutor) {
+        this.taskExecutor = taskExecutor;
+    }
+
+    @Override
+    public Population getInstance() {
+        return new LatticePopulation(taskExecutor);
+    }
+
     @Override
     public void init(GeneticAlgorithmStrategy strategy) {
-        this.strategy = strategy;
+        super.init(strategy);
         this.latticeRows = strategy.getLatticeRows();
         this.latticeColumns = strategy.getLatticeColumns();
         this.wrapAround = strategy.getLatticeWrapAround();
@@ -154,14 +163,14 @@ public class LatticePopulation extends AbstractPopulation {
 
             Collections.sort(nearbyIndividuals);
 
-            int momIndex = selector.getNextIndexThreadSafe(nearbyIndividuals, strategy);
+            int momIndex = strategy.getSelector().getNextIndexThreadSafe(nearbyIndividuals, strategy);
             LatticeIndividual momCoordinates = nearbyLatticeIndividuals.get(momIndex);
             Chromosome mom = individuals[momCoordinates.getRow()][momCoordinates.getColumn()];
 
             // Ensure that dadIndex is different from momIndex
             nearbyIndividuals.remove(momIndex);
             nearbyLatticeIndividuals.remove(momIndex);
-            int dadIndex = selector.getNextIndexThreadSafe(nearbyIndividuals, strategy);
+            int dadIndex = strategy.getSelector().getNextIndexThreadSafe(nearbyIndividuals, strategy);
             LatticeIndividual dadCoordinates = nearbyLatticeIndividuals.get(dadIndex);
             Chromosome dad = individuals[dadCoordinates.getRow()][dadCoordinates.getColumn()];
 
@@ -277,10 +286,5 @@ public class LatticePopulation extends AbstractPopulation {
     @Override
     public void reIndexSelector() {
         // Nothing to do
-    }
-
-    @Override
-    public void setSelector(Selector selector) {
-        this.selector = selector;
     }
 }

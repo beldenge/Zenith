@@ -20,12 +20,12 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -39,12 +39,19 @@ public class StandardPopulation extends AbstractPopulation {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private List<Chromosome> individuals = new ArrayList<>();
-    private Selector selector;
-    private GeneticAlgorithmStrategy strategy;
+
+    public StandardPopulation(TaskExecutor taskExecutor) {
+        this.taskExecutor = taskExecutor;
+    }
+
+    @Override
+    public StandardPopulation getInstance() {
+        return new StandardPopulation(taskExecutor);
+    }
 
     @Override
     public void init(GeneticAlgorithmStrategy strategy) {
-        this.strategy = strategy;
+        super.init(strategy);
     }
 
     @Override
@@ -58,10 +65,10 @@ public class StandardPopulation extends AbstractPopulation {
 
         @Override
         public Parents call() {
-            int momIndex = selector.getNextIndex(individuals, strategy);
+            int momIndex = strategy.getSelector().getNextIndex(individuals, strategy);
             Chromosome mom = getIndividuals().get(momIndex);
 
-            int dadIndex = selector.getNextIndex(individuals, strategy);
+            int dadIndex = strategy.getSelector().getNextIndex(individuals, strategy);
             // Ensure that dadIndex is different from momIndex
             dadIndex += (dadIndex == momIndex) ? ((dadIndex == 0) ? 1 : -1) : 0;
             Chromosome dad = getIndividuals().get(dadIndex);
@@ -123,11 +130,6 @@ public class StandardPopulation extends AbstractPopulation {
 
     @Override
     public void reIndexSelector() {
-        this.selector.reIndex(this.individuals);
-    }
-
-    @Override
-    public void setSelector(Selector selector) {
-        this.selector = selector;
+        this.strategy.getSelector().reIndex(this.individuals);
     }
 }

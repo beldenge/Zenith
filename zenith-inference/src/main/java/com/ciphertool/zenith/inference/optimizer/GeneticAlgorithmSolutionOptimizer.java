@@ -69,6 +69,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String SELECTOR_NAME = "selectorName";
     public static final String TOURNAMENT_SELECTOR_ACCURACY = "tournamentSelectorAccuracy";
     public static final String TOURNAMENT_SIZE = "tournamentSize";
+    public static final String ENABLE_FITNESS_SHARING = "enableFitnessSharing";
 
     @Autowired
     private StandardGeneticAlgorithm geneticAlgorithm;
@@ -94,7 +95,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         CrossoverAlgorithm crossoverAlgorithm = null;
         MutationAlgorithm mutationAlgorithm = null;
         Selector selector = null;
-        FitnessEvaluator fitnessEvaluator = null;
+        FitnessEvaluator fitnessEvaluator;
 
         String populationName = (String) configuration.get(POPULATION_NAME);
         String breederName = (String) configuration.get(BREEDER_NAME);
@@ -105,7 +106,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         // Set the proper Population
         for (Population nextPopulation : populations) {
             if (nextPopulation.getClass().getSimpleName().equals(populationName)) {
-                population = nextPopulation;
+                population = nextPopulation.getInstance();
                 break;
             }
         }
@@ -213,6 +214,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Integer maxMutationsPerIndividual = (Integer) configuration.get(MAX_MUTATIONS_PER_INDIVIDUAL);
         Double tournamentSelectorAccuracy = (Double) configuration.get(TOURNAMENT_SELECTOR_ACCURACY);
         Integer tournamentSize = (Integer) configuration.get(TOURNAMENT_SIZE);
+        boolean enableFitnessSharing = (boolean) configuration.get(ENABLE_FITNESS_SHARING);
 
         GeneticAlgorithmInitialization initialization = init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
 
@@ -234,14 +236,11 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .selector(initialization.getSelector())
                 .tournamentSelectorAccuracy(tournamentSelectorAccuracy)
                 .tournamentSize(tournamentSize)
+                .shareFitness(enableFitnessSharing)
                 .build();
 
         Population population = geneticAlgorithmStrategy.getPopulation();
-        population.setElitism(geneticAlgorithmStrategy.getElitism());
-        population.setFitnessEvaluator(geneticAlgorithmStrategy.getFitnessEvaluator());
         population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
-        population.setSelector(geneticAlgorithmStrategy.getSelector());
-        population.setBreeder(geneticAlgorithmStrategy.getBreeder());
         population.init(geneticAlgorithmStrategy);
 
         CipherSolution overallBest = null;

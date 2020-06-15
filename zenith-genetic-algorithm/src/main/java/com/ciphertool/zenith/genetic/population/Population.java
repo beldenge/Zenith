@@ -19,13 +19,10 @@
 
 package com.ciphertool.zenith.genetic.population;
 
-import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.entities.Parents;
-import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 
 import java.math.BigDecimal;
@@ -34,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface Population {
+    Population getInstance();
+
     void init(GeneticAlgorithmStrategy strategy);
 
     Chromosome evaluateFitness(GenerationStatistics generationStatistics);
@@ -49,26 +48,9 @@ public interface Population {
     List<Chromosome> getIndividuals();
 
     /**
-     * @param breeder the breeder to set
-     */
-    void setBreeder(Breeder breeder);
-
-    /**
-     * @param fitnessEvaluator the fitnessEvaluator to set
-     */
-    void setFitnessEvaluator(FitnessEvaluator fitnessEvaluator);
-
-    /**
      * @param targetSize the targetSize to set
      */
     void setTargetSize(int targetSize);
-
-    void setElitism(int elitism);
-
-    /**
-     * @param selector the Selector to set
-     */
-    void setSelector(Selector selector);
 
     boolean addIndividual(Chromosome individual);
 

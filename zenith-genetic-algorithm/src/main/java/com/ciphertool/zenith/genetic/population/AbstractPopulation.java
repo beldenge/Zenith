@@ -19,8 +19,9 @@
 
 package com.ciphertool.zenith.genetic.population;
 
-import com.ciphertool.zenith.genetic.Breeder;
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
@@ -30,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -41,11 +44,14 @@ public abstract class AbstractPopulation implements Population {
     @Autowired
     protected TaskExecutor taskExecutor;
 
-    private Breeder breeder;
-    private FitnessEvaluator fitnessEvaluator;
+    protected GeneticAlgorithmStrategy strategy;
     protected int targetSize;
     protected Double totalFitness = 0d;
-    protected int elitism = 0;
+
+    @Override
+    public void init(GeneticAlgorithmStrategy strategy) {
+        this.strategy = strategy;
+    }
 
     @Override
     public int breed() {
@@ -86,7 +92,7 @@ public abstract class AbstractPopulation implements Population {
 
         @Override
         public Chromosome call() {
-            return breeder.breed();
+            return strategy.getBreeder().breed();
         }
     }
 
@@ -94,7 +100,7 @@ public abstract class AbstractPopulation implements Population {
     public List<Parents> select() {
         reIndexSelector();
 
-        int pairsToCrossover = (this.size() - this.elitism);
+        int pairsToCrossover = (this.size() - this.strategy.getElitism());
 
         List<FutureTask<Parents>> futureTasks = new ArrayList<>(pairsToCrossover);
         FutureTask<Parents> futureTask;
@@ -129,7 +135,27 @@ public abstract class AbstractPopulation implements Population {
 
     @Override
     public Chromosome evaluateFitness(GenerationStatistics generationStatistics) {
-        generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.fitnessEvaluator));
+        generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.strategy.getFitnessEvaluator()));
+
+        if (this.strategy.getShareFitness() != null && this.strategy.getShareFitness()) {
+            long start = System.currentTimeMillis();
+
+            for (Chromosome anchor : getIndividuals()) {
+                float distance = 1f;  // start at one to avoid division by zero
+
+                for (Chromosome target : getIndividuals()) {
+                    if (anchor == target) {
+                        continue;
+                    }
+
+                    distance += computeHammingDistance(anchor, target);
+                }
+
+                anchor.setFitness(anchor.getFitness() / (distance / 1000f));
+            }
+
+            generationStatistics.getPerformanceStatistics().setSharingMillis(System.currentTimeMillis() - start);
+        }
 
         this.totalFitness = 0d;
 
@@ -155,6 +181,22 @@ public abstract class AbstractPopulation implements Population {
         }
 
         return bestFitIndividual;
+    }
+
+    private int computeHammingDistance(Chromosome anchor, Chromosome target) {
+        int distance = 0;
+        int length = anchor.getGenes().size();
+        Iterator anchorIterator = anchor.getGenes().entrySet().iterator();
+        Iterator targetIterator = target.getGenes().entrySet().iterator();
+
+        for (int i = 0; i < length; i ++) {
+            Gene anchorGene = (Gene) ((Map.Entry<String, Object>) anchorIterator.next()).getValue();
+            Gene targetGene = (Gene) ((Map.Entry<String, Object>) targetIterator.next()).getValue();
+
+            distance += anchorGene.equals(targetGene) ? 0 : 1;
+        }
+
+        return distance;
     }
 
     /**
@@ -225,23 +267,8 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
-    public void setBreeder(Breeder breeder) {
-        this.breeder = breeder;
-    }
-
-    @Override
-    public void setFitnessEvaluator(FitnessEvaluator fitnessEvaluator) {
-        this.fitnessEvaluator = fitnessEvaluator;
-    }
-
-    @Override
     public void setTargetSize(int targetSize) {
         this.targetSize = targetSize;
-    }
-
-    @Override
-    public void setElitism(int elitism) {
-        this.elitism = elitism;
     }
 
     abstract void reIndexSelector();
