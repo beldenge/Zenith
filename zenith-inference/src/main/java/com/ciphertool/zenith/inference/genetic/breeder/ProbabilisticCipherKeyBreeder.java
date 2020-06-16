@@ -19,47 +19,25 @@
 
 package com.ciphertool.zenith.inference.genetic.breeder;
 
+import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
-import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
-import com.ciphertool.zenith.inference.probability.LetterProbability;
-import com.ciphertool.zenith.math.selection.RouletteSampler;
-import com.ciphertool.zenith.model.entities.TreeNGram;
-import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 @Component
 public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private static List<LetterProbability> letterUnigramProbabilities = new ArrayList<>();
-
-    private RouletteSampler<LetterProbability> rouletteSampler = new RouletteSampler<>();
-
     @Autowired
-    private ArrayMarkovModel letterMarkovModel;
+    private GeneDao geneDao;
 
     @Override
     public void init(Cipher cipher) {
         super.init(cipher);
-
-        Double probability;
-        for (TreeNGram node : letterMarkovModel.getFirstOrderNodes()) {
-            probability = ((double) node.getCount()) / letterMarkovModel.getTotalNGramCount();
-
-            letterUnigramProbabilities.add(new LetterProbability(node.getCumulativeString().charAt(0), probability));
-        }
-
-        Collections.sort(letterUnigramProbabilities);
-        rouletteSampler.reIndex(letterUnigramProbabilities);
     }
 
     @Override
@@ -68,10 +46,7 @@ public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
 
         for (String ciphertext : keys) {
             // Pick a plaintext at random according to the language model
-            String nextPlaintext = letterUnigramProbabilities.get(rouletteSampler.getNextIndex()).getValue().toString();
-
-            CipherKeyGene newGene = new CipherKeyGene(chromosome, nextPlaintext);
-            chromosome.putGene(ciphertext, newGene);
+            chromosome.putGene(ciphertext, geneDao.findProbabilisticGene(chromosome));
         }
 
         log.debug(chromosome.toString());

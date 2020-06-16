@@ -55,19 +55,16 @@ public class CipherKeyGene implements Gene {
         return this.chromosome;
     }
 
-    /**
-     * @return the value
-     */
     public String getValue() {
         return value;
     }
 
-    /**
-     * @param value the value to set
-     */
     public void setValue(String value) {
+        if (!this.value.equals(value)){
+            this.chromosome.setEvaluationNeeded(true);
+        }
+
         this.value = value;
-        this.chromosome.setEvaluationNeeded(true);
     }
 
     @Override

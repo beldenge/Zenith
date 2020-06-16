@@ -22,6 +22,7 @@ package com.ciphertool.zenith.genetic.algorithms.mutation;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Gene;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,17 +37,22 @@ public class StandardMutationAlgorithm implements MutationAlgorithm<Chromosome<O
     @Override
     public boolean mutateChromosome(Chromosome<Object> chromosome, GeneticAlgorithmStrategy strategy) {
         double mutationRate = strategy.getMutationRate();
-
-        Chromosome original = chromosome.clone();
+        boolean mutated = false;
         Set<Object> keys = chromosome.getGenes().keySet();
 
         for (Object key : keys) {
             if (ThreadLocalRandom.current().nextDouble() <= mutationRate) {
-                // Replace that map value with a randomly generated Gene
-                chromosome.replaceGene(key, geneDao.findRandomGene(chromosome));
+                Gene next = geneDao.findRandomGene(chromosome);
+
+                if (!next.equals(chromosome.getGenes().get(key))) {
+                    mutated = true;
+
+                    // Replace that map value with a randomly generated Gene
+                    chromosome.replaceGene(key, next);
+                }
             }
         }
 
-        return !original.equals(chromosome);
+        return mutated;
     }
 }

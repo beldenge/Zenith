@@ -60,8 +60,7 @@ public class StandardPopulation extends AbstractPopulation {
     }
 
     private class SelectionTask implements Callable<Parents> {
-        public SelectionTask() {
-        }
+        public SelectionTask() {}
 
         @Override
         public Parents call() {

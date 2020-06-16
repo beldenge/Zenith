@@ -169,7 +169,7 @@ public abstract class AbstractPopulation implements Population {
             }
         }
 
-        Double averageFitness = this.totalFitness / getIndividuals().size();
+        Double averageFitness = this.totalFitness / size();
 
         if (generationStatistics != null) {
             generationStatistics.setAverageFitness(averageFitness);
@@ -232,7 +232,7 @@ public abstract class AbstractPopulation implements Population {
 
         Chromosome individual;
 
-        List<Chromosome> individuals = this.getIndividuals();
+        List<Chromosome> individuals = getIndividuals();
 
         for (int i = individuals.size() - 1; i >= 0; i--) {
             individual = individuals.get(i);

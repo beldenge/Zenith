@@ -31,9 +31,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CipherKeyChromosome implements Chromosome<String> {
-    protected Cipher cipher;
+    private Cipher cipher;
 
-    protected boolean evaluationNeeded = true;
+    private boolean evaluationNeeded = true;
 
     private Double fitness = Double.MIN_VALUE;
 
@@ -41,18 +41,13 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     private Population population;
 
-    public CipherKeyChromosome() {
-        genes = new HashMap<>();
-    }
-
     public CipherKeyChromosome(Cipher cipher, int numGenes) {
         if (cipher == null) {
             throw new IllegalArgumentException("Cannot construct CipherKeyChromosome with null cipher.");
         }
 
         this.cipher = cipher;
-
-        genes = new HashMap<>(numGenes);
+        this.genes = new HashMap<>(numGenes);
     }
 
     public Cipher getCipher() {
@@ -103,6 +98,7 @@ public class CipherKeyChromosome implements Chromosome<String> {
         gene.setChromosome(this);
 
         this.genes.put(key, gene);
+        // TODO: it may be worth testing to see if there's already a Gene mapped to this key and if the value is the same, then don't evaluate
         this.evaluationNeeded = true;
     }
 
@@ -155,11 +151,8 @@ public class CipherKeyChromosome implements Chromosome<String> {
     public Chromosome clone() {
         CipherKeyChromosome copyChromosome = new CipherKeyChromosome(this.cipher, this.genes.size());
 
-        Gene nextGene;
-        for (String key : this.genes.keySet()) {
-            nextGene = this.genes.get(key).clone();
-
-            copyChromosome.putGene(key, nextGene);
+        for (Map.Entry<String, Gene> entry : this.genes.entrySet()) {
+            copyChromosome.putGene(entry.getKey(), entry.getValue().clone());
         }
 
         // We need to set these values last to maintain whether evaluation is needed on the clone

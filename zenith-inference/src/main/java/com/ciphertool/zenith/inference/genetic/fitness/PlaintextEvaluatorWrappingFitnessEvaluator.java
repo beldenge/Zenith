@@ -29,6 +29,7 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
 
         String solutionString = proposal.asSingleLineString();
 
-        if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
             solutionString = plaintextTransformationManager.transform(solutionString, plaintextTransformationSteps);
         }
 

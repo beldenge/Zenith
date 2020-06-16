@@ -26,6 +26,7 @@ import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransforma
 import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
 import com.ciphertool.zenith.inference.util.EntropyEvaluator;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class CipherSolutionPrinter {
 
     public void print(CipherSolution solution, List<PlaintextTransformationStep> plaintextTransformationSteps) {
         String plaintext = solution.asSingleLineString();
-        if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
             plaintext = plaintextTransformationManager.transform(plaintext, plaintextTransformationSteps);
         }
 

@@ -40,8 +40,7 @@ public class MultipleMutationAlgorithm implements MutationAlgorithm<Chromosome<O
     @Override
     public boolean mutateChromosome(Chromosome<Object> chromosome, GeneticAlgorithmStrategy strategy) {
         int maxMutations = strategy.getMaxMutationsPerIndividual();
-
-        Chromosome original = chromosome.clone();
+        boolean mutated = false;
         int numMutations;
 
         /*
@@ -63,10 +62,16 @@ public class MultipleMutationAlgorithm implements MutationAlgorithm<Chromosome<O
         }
 
         for (Object key : originalGenes.keySet()) {
-            // Replace that map value with a randomly generated Gene
-            chromosome.replaceGene(key, geneDao.findRandomGene(chromosome));
+            Gene next = geneDao.findRandomGene(chromosome);
+
+            if (!next.equals(chromosome.getGenes().get(key))) {
+                mutated = true;
+
+                // Replace that map value with a randomly generated Gene
+                chromosome.replaceGene(key, next);
+            }
         }
 
-        return !original.equals(chromosome);
+        return mutated;
     }
 }

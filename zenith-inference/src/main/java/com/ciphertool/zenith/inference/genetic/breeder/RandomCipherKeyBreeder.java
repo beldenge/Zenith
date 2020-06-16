@@ -21,7 +21,6 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import org.slf4j.Logger;
@@ -46,16 +45,7 @@ public class RandomCipherKeyBreeder extends AbstractCipherKeyBreeder {
         CipherKeyChromosome chromosome = new CipherKeyChromosome(cipher, keys.length);
 
         for (int i = 0; i < keys.length; i++) {
-            // Should never happen, but we check just in case
-            if (chromosome.actualSize() >= chromosome.targetSize()) {
-                throw new IllegalStateException(
-                        "Attempted to add a Gene to CipherKeyChromosome, but the maximum number of Genes ("
-                                + chromosome.targetSize() + ") have already been allocated.");
-            }
-
-            Gene newGene = geneDao.findRandomGene(chromosome);
-
-            chromosome.putGene(keys[i], newGene);
+            chromosome.putGene(keys[i], geneDao.findRandomGene(chromosome));
         }
 
         log.debug(chromosome.toString());

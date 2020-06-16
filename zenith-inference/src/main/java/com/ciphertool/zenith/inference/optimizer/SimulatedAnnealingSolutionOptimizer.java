@@ -26,6 +26,7 @@ import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +36,13 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.SplittableRandom;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private static SplittableRandom RANDOM = new SplittableRandom();
+    private static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     public static final String SAMPLER_ITERATIONS = "samplerIterations";
     public static final String ANNEALING_TEMPERATURE_MIN = "annealingTemperatureMin";
     public static final String ANNEALING_TEMPERATURE_MAX = "annealingTemperatureMax";
@@ -159,7 +160,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     private CipherSolution performEpoch(Map<String, Object> precomputedCounterweightData, Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         String solutionString = initialSolution.asSingleLineString();
 
-        if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
             solutionString = plaintextTransformationManager.transform(solutionString, plaintextTransformationSteps);
         }
 
@@ -230,7 +231,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
 
             String proposalString = new String(solutionCharArray);
 
-            if (plaintextTransformationSteps != null && !plaintextTransformationSteps.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
                 proposalString = plaintextTransformationManager.transform(proposalString, plaintextTransformationSteps);
             }
 
