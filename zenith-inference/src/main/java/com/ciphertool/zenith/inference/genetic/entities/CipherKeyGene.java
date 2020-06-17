@@ -55,6 +55,7 @@ public class CipherKeyGene implements Gene {
         return this.chromosome;
     }
 
+    @Override
     public String getValue() {
         return value;
     }

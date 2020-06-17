@@ -30,10 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -138,23 +135,7 @@ public abstract class AbstractPopulation implements Population {
         generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.strategy.getFitnessEvaluator()));
 
         if (this.strategy.getShareFitness() != null && this.strategy.getShareFitness()) {
-            long start = System.currentTimeMillis();
-
-            for (Chromosome anchor : getIndividuals()) {
-                float distance = 1f;  // start at one to avoid division by zero
-
-                for (Chromosome target : getIndividuals()) {
-                    if (anchor == target) {
-                        continue;
-                    }
-
-                    distance += computeHammingDistance(anchor, target);
-                }
-
-                anchor.setFitness(anchor.getFitness() / (distance / 1000f));
-            }
-
-            generationStatistics.getPerformanceStatistics().setSharingMillis(System.currentTimeMillis() - start);
+            shareFitness(generationStatistics);
         }
 
         this.totalFitness = 0d;
@@ -183,20 +164,44 @@ public abstract class AbstractPopulation implements Population {
         return bestFitIndividual;
     }
 
-    private int computeHammingDistance(Chromosome anchor, Chromosome target) {
-        int distance = 0;
-        int length = anchor.getGenes().size();
-        Iterator anchorIterator = anchor.getGenes().entrySet().iterator();
-        Iterator targetIterator = target.getGenes().entrySet().iterator();
+    private void shareFitness(GenerationStatistics generationStatistics) {
+        long start = System.currentTimeMillis();
 
-        for (int i = 0; i < length; i ++) {
-            Gene anchorGene = (Gene) ((Map.Entry<String, Object>) anchorIterator.next()).getValue();
-            Gene targetGene = (Gene) ((Map.Entry<String, Object>) targetIterator.next()).getValue();
+        int numberOfGenes = getIndividuals().get(0).getGenes().size();
+        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
+        int[][] precomputedDistances = new int[numberOfGenes][256];
 
-            distance += anchorGene.equals(targetGene) ? 0 : 1;
+        List<Object> uniqueGeneKeys = new ArrayList<>(getIndividuals().get(0).getGenes().keySet());
+
+        int geneIndex = 0;
+        for (Object geneKey : uniqueGeneKeys) {
+            Arrays.fill(precomputedDistances[geneIndex], 0);
+
+            for (char i = 'a'; i <= 'z'; i ++) {
+                for (Chromosome chromosome : getIndividuals()) {
+                    if (!((Gene) chromosome.getGenes().get(geneKey)).getValue().equals(String.valueOf(i))) {
+                        precomputedDistances[geneIndex][i] ++;
+                    }
+                }
+            }
+
+            geneIndex++;
         }
 
-        return distance;
+        for (Chromosome individual : getIndividuals()) {
+            float distance = 1f;  // start at one to avoid division by zero
+
+            List<Object> individualGeneKeys = new ArrayList<>(individual.getGenes().keySet());
+            int individualGeneIndex = 0;
+            for (Object geneKey : individualGeneKeys) {
+                distance += precomputedDistances[individualGeneIndex][((String) ((Gene) individual.getGenes().get(geneKey)).getValue()).charAt(0)];
+                individualGeneIndex++;
+            }
+
+            individual.setFitness(individual.getFitness() / Math.pow(distance, 1f / 10f));
+        }
+
+        generationStatistics.getPerformanceStatistics().setSharingMillis(System.currentTimeMillis() - start);
     }
 
     /**

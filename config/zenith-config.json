@@ -28,7 +28,8 @@
     "maxMutationsPerIndividual": 5,
     "selectorName": "TournamentSelector",
     "tournamentSelectorAccuracy": 0.9,
-    "tournamentSize": 5
+    "tournamentSize": 5,
+    "enableFitnessSharing": false
   },
   "ciphers": [
     {

@@ -33,4 +33,6 @@ public interface Gene extends Cloneable {
      * @return the Chromosome that this Gene is a part of
      */
     Chromosome getChromosome();
+
+    Object getValue();
 }
