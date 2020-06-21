@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.entities.config;
 
+import com.ciphertool.zenith.genetic.population.LatticePopulation;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -79,4 +80,31 @@ public class GeneticAlgorithmConfiguration {
     private Integer tournamentSize;
 
     private boolean enableFitnessSharing;
+
+    @Min(0)
+    private Integer invasiveSpeciesCount;
+
+    @AssertTrue(message = "The population size for LatticePopulation must be equal to the product of its rows and columns.")
+    public boolean isPopulationSizeEqualToLatticeDimensions() {
+        if (!LatticePopulation.class.getSimpleName().equals(populationName)) {
+            return true;
+        }
+
+        return populationSize == (latticeColumns * latticeRows);
+    }
+
+    @AssertTrue(message = "The elitism must be less than the populationSize.")
+    public boolean isElitismLessThanPopulationSize() {
+        return elitism < populationSize;
+    }
+
+    @AssertTrue(message = "The tournamentSize must be less than the populationSize.")
+    public boolean isTournamentSizeLessThanPopulationSize() {
+        return tournamentSize < populationSize;
+    }
+
+    @AssertTrue(message = "The invasiveSpeciesCount must be less than the populationSize.")
+    public boolean isInvasiveSpeciesCountLessThanPopulationSize() {
+        return invasiveSpeciesCount < populationSize;
+    }
 }

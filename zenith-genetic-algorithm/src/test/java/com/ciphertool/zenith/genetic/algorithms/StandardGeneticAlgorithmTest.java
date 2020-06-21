@@ -123,12 +123,12 @@ public class StandardGeneticAlgorithmTest {
 
         verify(populationMock, times(1)).select();
         verify(populationMock, times(2)).size();
-        verify(populationMock, never()).breed();
+        verify(populationMock, never()).breed(anyInt());
         verify(populationMock, times(1)).evaluateFitness(any(GenerationStatistics.class));
         verify(populationMock, times(100)).addIndividual(any(Chromosome.class));
         verify(populationMock, times(1)).sortIndividuals();
         verify(populationMock, times(1)).clearIndividuals();
-        verify(populationMock, times(1)).calculateEntropy();
+        verify(populationMock, never()).calculateEntropy();
         verifyNoMoreInteractions(populationMock);
 
         verify(mutationAlgorithmMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
@@ -337,10 +337,10 @@ public class StandardGeneticAlgorithmTest {
         standardGeneticAlgorithm.spawnInitialPopulation(strategyToSet);
 
         verify(populationMock, times(1)).clearIndividuals();
-        verify(populationMock, times(1)).breed();
+        verify(populationMock, times(1)).breed(eq(populationSize));
         verify(populationMock, times(1)).evaluateFitness(any(GenerationStatistics.class));
         verify(populationMock, times(1)).size();
-        verify(populationMock, times(1)).calculateEntropy();
+        verify(populationMock, never()).calculateEntropy();
         verifyNoMoreInteractions(populationMock);
     }
 }

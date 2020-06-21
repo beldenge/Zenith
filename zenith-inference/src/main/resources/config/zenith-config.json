@@ -13,7 +13,7 @@
     "annealingTemperatureMax": 0.012
   },
   "geneticAlgorithmConfiguration": {
-    "populationSize": 10000,
+    "populationSize": 1000,
     "numberOfGenerations": 1000,
     "elitism": 1,
     "populationName": "StandardPopulation",
@@ -21,14 +21,16 @@
     "latticeColumns": 100,
     "latticeWrapAround": true,
     "latticeRadius": 1,
-    "breederName": "RandomCipherKeyBreeder",
+    "breederName": "ProbabilisticCipherKeyBreeder",
     "crossoverAlgorithmName": "GeneWiseCrossoverAlgorithm",
     "mutationAlgorithmName": "StandardMutationAlgorithm",
-    "mutationRate": 0.05,
+    "mutationRate": 0.01,
     "maxMutationsPerIndividual": 5,
     "selectorName": "TournamentSelector",
-    "tournamentSelectorAccuracy": 0.75,
-    "tournamentSize": 5
+    "tournamentSelectorAccuracy": 0.9,
+    "tournamentSize": 5,
+    "enableFitnessSharing": false,
+    "invasiveSpeciesCount": 0
   },
   "ciphers": [
     {

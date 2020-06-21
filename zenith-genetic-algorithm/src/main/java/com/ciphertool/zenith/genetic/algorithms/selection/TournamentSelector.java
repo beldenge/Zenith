@@ -20,6 +20,7 @@ package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,10 @@ public class TournamentSelector implements Selector {
 
     @Override
     public synchronized void reIndex(List<Chromosome> individuals) {
+        // This sort is necessary since we rely on the List index for selection, and also it is necessary before reIndex() calls
         Collections.sort(individuals);
 
+        // TODO: this pattern will not work for multiple concurrent users, even with the synchronized keyword
         randomSelector.reIndex(individuals);
     }
 
@@ -47,12 +50,7 @@ public class TournamentSelector implements Selector {
         double selectionAccuracy = strategy.getTournamentSelectorAccuracy();
         int tournamentSize = strategy.getTournamentSize();
 
-        if (selectionAccuracy < 0.0 || selectionAccuracy > 1.0) {
-            throw new IllegalArgumentException("Tried to set a selectionAccuracy of " + selectionAccuracy
-                    + ", but TournamentSelector requires a selectionAccuracy between 0.0 and 1.0 inclusive.");
-        }
-
-        if (individuals == null || individuals.isEmpty()) {
+        if (CollectionUtils.isEmpty(individuals)) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 
             return -1;
@@ -63,7 +61,8 @@ public class TournamentSelector implements Selector {
         for (int i = 0; i < Math.min(tournamentSize, individuals.size()); i ++) {
             int chosenIndex = randomSelector.getNextIndex(individuals, strategy);
 
-            // TODO: How to handle whether we've chosen the same individual more than once?
+            // TODO: How to handle whether we've chosen the same individual more than once? -- since it's a map, the tournament size just suffers
+            // Even though we don't use the map value, it is necessary since we use a SortedMap to order by fitness
             competitors.put(chosenIndex, individuals.get(chosenIndex));
         }
 

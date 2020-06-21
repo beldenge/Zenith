@@ -20,6 +20,7 @@ package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -38,15 +39,13 @@ public class RandomSelector implements Selector {
 
     @Override
     public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        if (individuals == null || individuals.isEmpty()) {
+        if (CollectionUtils.isEmpty(individuals)) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 
             return -1;
         }
 
-        int randomIndex = (int) (ThreadLocalRandom.current().nextDouble() * individuals.size());
-
-        return randomIndex;
+        return (int) (ThreadLocalRandom.current().nextDouble() * individuals.size());
     }
 
     @Override

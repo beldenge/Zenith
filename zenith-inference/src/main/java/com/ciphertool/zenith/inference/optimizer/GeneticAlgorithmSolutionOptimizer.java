@@ -70,6 +70,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String TOURNAMENT_SELECTOR_ACCURACY = "tournamentSelectorAccuracy";
     public static final String TOURNAMENT_SIZE = "tournamentSize";
     public static final String ENABLE_FITNESS_SHARING = "enableFitnessSharing";
+    public static final String INVASIVE_SPECIES_COUNT = "invasiveSpeciesCount";
 
     @Autowired
     private StandardGeneticAlgorithm geneticAlgorithm;
@@ -215,6 +216,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Double tournamentSelectorAccuracy = (Double) configuration.get(TOURNAMENT_SELECTOR_ACCURACY);
         Integer tournamentSize = (Integer) configuration.get(TOURNAMENT_SIZE);
         boolean enableFitnessSharing = (boolean) configuration.get(ENABLE_FITNESS_SHARING);
+        Integer invasiveSpeciesCount = (Integer) configuration.get(INVASIVE_SPECIES_COUNT);
 
         GeneticAlgorithmInitialization initialization = init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
 
@@ -237,11 +239,10 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .tournamentSelectorAccuracy(tournamentSelectorAccuracy)
                 .tournamentSize(tournamentSize)
                 .shareFitness(enableFitnessSharing)
+                .invasiveSpeciesCount(invasiveSpeciesCount)
                 .build();
 
-        Population population = geneticAlgorithmStrategy.getPopulation();
-        population.setTargetSize(geneticAlgorithmStrategy.getPopulationSize());
-        population.init(geneticAlgorithmStrategy);
+        geneticAlgorithmStrategy.getPopulation().init(geneticAlgorithmStrategy);
 
         CipherSolution overallBest = null;
         CipherKeyChromosome last = null;

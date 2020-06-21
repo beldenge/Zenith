@@ -42,7 +42,6 @@ public abstract class AbstractPopulation implements Population {
     protected TaskExecutor taskExecutor;
 
     protected GeneticAlgorithmStrategy strategy;
-    protected int targetSize;
     protected Double totalFitness = 0d;
 
     @Override
@@ -51,12 +50,12 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
-    public int breed() {
+    public List<Chromosome> breed(int numberToBreed) {
         List<FutureTask<Chromosome>> futureTasks = new ArrayList<>();
         FutureTask<Chromosome> futureTask;
 
-        int individualsAdded = 0;
-        for (int i = 0; i < targetSize; i++) {
+        List<Chromosome> individualsAdded = new ArrayList<>(numberToBreed);
+        for (int i = 0; i < numberToBreed; i++) {
             futureTask = new FutureTask<>(new GeneratorTask());
             futureTasks.add(futureTask);
 
@@ -65,9 +64,7 @@ public abstract class AbstractPopulation implements Population {
 
         for (FutureTask<Chromosome> future : futureTasks) {
             try {
-                this.addIndividual(future.get());
-
-                individualsAdded++;
+                individualsAdded.add(future.get());
             } catch (InterruptedException ie) {
                 log.error("Caught InterruptedException while waiting for GeneratorTask ", ie);
             } catch (ExecutionException ee) {
@@ -75,7 +72,7 @@ public abstract class AbstractPopulation implements Population {
             }
         }
 
-        log.debug("Added {} individuals to the population.", individualsAdded);
+        log.debug("Added {} individuals to the population.", individualsAdded.size());
 
         return individualsAdded;
     }
@@ -97,7 +94,7 @@ public abstract class AbstractPopulation implements Population {
     public List<Parents> select() {
         reIndexSelector();
 
-        int pairsToCrossover = (this.size() - this.strategy.getElitism());
+        int pairsToCrossover = (this.size() - this.strategy.getElitism() - (this.strategy.getInvasiveSpeciesCount() != null ? this.strategy.getInvasiveSpeciesCount() : 0));
 
         List<FutureTask<Parents>> futureTasks = new ArrayList<>(pairsToCrossover);
         FutureTask<Parents> futureTask;
@@ -198,7 +195,7 @@ public abstract class AbstractPopulation implements Population {
                 individualGeneIndex++;
             }
 
-            individual.setFitness(individual.getFitness() / Math.pow(distance, 1f / 10f));
+            updateFitnessForIndividual(individual, individual.getFitness() / Math.pow(distance, 1f / 10f));
         }
 
         generationStatistics.getPerformanceStatistics().setSharingMillis(System.currentTimeMillis() - start);
@@ -272,8 +269,10 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
-    public void setTargetSize(int targetSize) {
-        this.targetSize = targetSize;
+    public void updateFitnessForIndividual(Chromosome individual, Double newFitness) {
+        totalFitness -= individual.getFitness();
+        individual.setFitness(newFitness);
+        totalFitness += individual.getFitness();
     }
 
     abstract void reIndexSelector();

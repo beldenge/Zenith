@@ -1,6 +1,6 @@
 {
   "selectedCipher" : "zodiac408",
-  "epochs": 500,
+  "epochs": 1,
   "selectedOptimizer": {
     "name": "GeneticAlgorithm"
   },
@@ -13,7 +13,7 @@
     "annealingTemperatureMax": 0.012
   },
   "geneticAlgorithmConfiguration": {
-    "populationSize": 1000,
+    "populationSize": 100,
     "numberOfGenerations": 1000,
     "elitism": 1,
     "populationName": "StandardPopulation",
@@ -28,8 +28,9 @@
     "maxMutationsPerIndividual": 5,
     "selectorName": "TournamentSelector",
     "tournamentSelectorAccuracy": 0.9,
-    "tournamentSize": 5,
-    "enableFitnessSharing": false
+    "tournamentSize": 2,
+    "enableFitnessSharing": false,
+    "invasiveSpeciesCount": 0
   },
   "ciphers": [
     {

@@ -30,10 +30,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,6 +46,9 @@ import java.util.concurrent.FutureTask;
 public class StandardGeneticAlgorithm {
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    @Value("${genetic-algorithm.calculate-entropy:false}")
+    private boolean calculateEntropy;
+
     @Autowired
     private TaskExecutor taskExecutor;
 
@@ -57,11 +60,14 @@ public class StandardGeneticAlgorithm {
         Population population = strategy.getPopulation();
 
         population.clearIndividuals();
-        population.breed();
+        List<Chromosome> initialPopulation = population.breed(strategy.getPopulationSize());
+        initialPopulation.stream().forEach(population::addIndividual);
 
-        long startEntropyCalculation = System.currentTimeMillis();
-        generationStatistics.setEntropy(population.calculateEntropy());
-        generationStatistics.getPerformanceStatistics().setEntropyMillis(System.currentTimeMillis() - startEntropyCalculation);
+        if (calculateEntropy) {
+            long startEntropyCalculation = System.currentTimeMillis();
+            generationStatistics.setEntropy(population.calculateEntropy());
+            generationStatistics.getPerformanceStatistics().setEntropyMillis(System.currentTimeMillis() - startEntropyCalculation);
+        }
 
         long startEvaluation = System.currentTimeMillis();
         population.evaluateFitness(generationStatistics);
@@ -98,6 +104,10 @@ public class StandardGeneticAlgorithm {
 
         Population population = strategy.getPopulation();
 
+        long startInvasiveSpeciesGeneration = System.currentTimeMillis();
+        List<Chromosome> invasiveSpecies = strategy.getInvasiveSpeciesCount() == null ? Collections.EMPTY_LIST : population.breed(strategy.getInvasiveSpeciesCount());
+        performanceStats.setInvasiveMillis(System.currentTimeMillis() - startInvasiveSpeciesGeneration);
+
         long startSelection = System.currentTimeMillis();
         List<Parents> allParents = population.select();
         performanceStats.setSelectionMillis(System.currentTimeMillis() - startSelection);
@@ -111,16 +121,21 @@ public class StandardGeneticAlgorithm {
         generationStatistics.setNumberOfMutations(mutate(strategy, children));
         performanceStats.setMutationMillis(System.currentTimeMillis() - startMutation);
 
-        replacePopulation(strategy, children);
+        replacePopulation(strategy, children, invasiveSpecies);
 
-        long startEntropyCalculation = System.currentTimeMillis();
-        BigDecimal entropy = population.calculateEntropy();
-        generationStatistics.setEntropy(entropy);
-        performanceStats.setEntropyMillis(System.currentTimeMillis() - startEntropyCalculation);
+        if (calculateEntropy) {
+            long startEntropyCalculation = System.currentTimeMillis();
+            generationStatistics.setEntropy(population.calculateEntropy());
+            performanceStats.setEntropyMillis(System.currentTimeMillis() - startEntropyCalculation);
+        }
 
         long startEvaluation = System.currentTimeMillis();
         population.evaluateFitness(generationStatistics);
         performanceStats.setEvaluationMillis(System.currentTimeMillis() - startEvaluation);
+
+        invasiveSpecies.stream().forEach(invasiveIndividual ->  {
+            population.updateFitnessForIndividual(invasiveIndividual, invasiveIndividual.getFitness() * 0.9f);
+        });
 
         performanceStats.setTotalMillis(System.currentTimeMillis() - generationStart);
 
@@ -145,7 +160,7 @@ public class StandardGeneticAlgorithm {
             childrenToAdd.addAll(crossoverResults);
         }
 
-        if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism()) < strategy.getPopulationSize()) {
+        if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism() + (strategy.getInvasiveSpeciesCount() != null ? strategy.getInvasiveSpeciesCount() : 0)) < strategy.getPopulationSize()) {
             throw new IllegalStateException(((null == childrenToAdd) ? "No" : childrenToAdd.size()) +
                     " children produced from concurrent crossover execution.  Expected " + strategy.getPopulationSize() + " children.");
         }
@@ -213,7 +228,7 @@ public class StandardGeneticAlgorithm {
         return mutations;
     }
 
-    protected void replacePopulation(GeneticAlgorithmStrategy strategy, List<Chromosome> children) {
+    protected void replacePopulation(GeneticAlgorithmStrategy strategy, List<Chromosome> children, List<Chromosome> invasiveSpecies) {
         List<Chromosome> eliteIndividuals = new ArrayList<>();
 
         Population population = strategy.getPopulation();
@@ -245,6 +260,8 @@ public class StandardGeneticAlgorithm {
                 child.setEvaluationNeeded(true);
             }
         }
+
+        invasiveSpecies.stream().forEach(population::addIndividual);
     }
 
     public void finish(ExecutionStatistics executionStatistics, int generationCount) {

@@ -128,6 +128,7 @@ public abstract class AbstractSolutionService {
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SELECTOR_ACCURACY, geneticAlgorithmConfiguration.getTournamentSelectorAccuracy());
             configuration.put(GeneticAlgorithmSolutionOptimizer.TOURNAMENT_SIZE, geneticAlgorithmConfiguration.getTournamentSize());
             configuration.put(GeneticAlgorithmSolutionOptimizer.ENABLE_FITNESS_SHARING, geneticAlgorithmConfiguration.isEnableFitnessSharing());
+            configuration.put(GeneticAlgorithmSolutionOptimizer.INVASIVE_SPECIES_COUNT, geneticAlgorithmConfiguration.getInvasiveSpeciesCount());
 
             cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, plaintextEvaluator, getCallback(request));
         } else {

@@ -62,6 +62,11 @@ public class LatticePopulation extends AbstractPopulation {
         this.latticeColumns = strategy.getLatticeColumns();
         this.wrapAround = strategy.getLatticeWrapAround();
         this.selectionRadius = strategy.getLatticeRadius();
+
+        if ((latticeRows * latticeColumns) != strategy.getPopulationSize()) {
+            throw new IllegalArgumentException("The population size " + strategy.getPopulationSize() + " for LatticePopulation must be " +
+                    "equal to the product of its rows and columns.  Rows=" + latticeRows + ", Columns=" + latticeColumns + ".");
+        }
     }
 
     @Override
@@ -217,16 +222,6 @@ public class LatticePopulation extends AbstractPopulation {
         public int compareTo(LatticeIndividual other) {
             return this.individual.compareTo(other.individual);
         }
-    }
-
-    @Override
-    public int breed() {
-        if ((latticeRows * latticeColumns) != targetSize) {
-            throw new IllegalArgumentException("The target size " + targetSize + " for LatticePopulation must be " +
-                    "equal to the product of its rows and columns.  Rows=" + latticeRows + ", Columns=" + latticeColumns + ".");
-        }
-
-        return super.breed();
     }
 
     @Override

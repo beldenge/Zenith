@@ -20,32 +20,29 @@
 package com.ciphertool.zenith.genetic.algorithms.crossover;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class GeneWiseCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
+public class SingleGeneCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
     private Coin coin = new Coin();
 
     @Override
     public Chromosome<Object> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
-        Chromosome<Object> child = (Chromosome<Object>) parentA.clone();
+        boolean coinFlip = coin.flip();
 
-        Gene next;
+        Chromosome<Object> parent = coinFlip ? parentB : parentA;
+        Chromosome<Object> child = coinFlip ? (Chromosome<Object>) parentA.clone() : (Chromosome<Object>) parentB.clone();
 
-        for (Map.Entry<Object, Gene> entry : child.getGenes().entrySet()) {
-            if (coin.flip()) {
-                next = parentB.getGenes().get(entry.getKey());
+        int index = ThreadLocalRandom.current().nextInt(parent.getGenes().size());
 
-                if (!entry.getValue().equals(next)) {
-                    child.replaceGene(entry.getKey(), next.clone());
-                }
-            } else {
-                // TODO: clone from parentA -- this could potentially save 50% of the cloning overhead vs. cloning the entire chromosome upfront
-            }
+        Object key = new ArrayList<>(parent.getGenes().keySet()).get(index);
+
+        if (!child.getGenes().get(key).equals(parent.getGenes().get(key))) {
+            child.replaceGene(key, parent.getGenes().get(key).clone());
         }
 
         return child;

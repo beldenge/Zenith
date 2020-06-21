@@ -87,7 +87,6 @@ public class StandardPopulationTest {
         ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
 
         int expectedPopulationSize = 10;
-        population.setTargetSize(expectedPopulationSize);
 
         Breeder breederMock = mock(Breeder.class);
         MockChromosome mockChromosome = new MockChromosome();
@@ -103,9 +102,10 @@ public class StandardPopulationTest {
         assertEquals(0, population.size());
         assertEquals(Double.valueOf(0d), population.getTotalFitness());
 
-        population.breed();
+        List<Chromosome> individuals = population.breed(expectedPopulationSize);
 
-        assertEquals(expectedPopulationSize, population.size());
+        assertEquals(expectedPopulationSize, individuals.size());
+        individuals.stream().forEach(population::addIndividual);
         assertEquals(Double.valueOf(50.0d), population.getTotalFitness());
     }
 

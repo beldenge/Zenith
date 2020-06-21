@@ -37,7 +37,7 @@ public interface Population {
 
     Chromosome evaluateFitness(GenerationStatistics generationStatistics);
 
-    int breed();
+    List<Chromosome> breed(int numberToBreed);
 
     List<Parents> select();
 
@@ -47,14 +47,11 @@ public interface Population {
 
     List<Chromosome> getIndividuals();
 
-    /**
-     * @param targetSize the targetSize to set
-     */
-    void setTargetSize(int targetSize);
-
     boolean addIndividual(Chromosome individual);
 
     void sortIndividuals();
+
+    void updateFitnessForIndividual(Chromosome individual, Double newFitness);
 
     @SuppressWarnings({"unchecked"})
     default BigDecimal calculateEntropy() {

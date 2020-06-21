@@ -32,16 +32,13 @@ public class GenerationStatistics {
     private int generation;
     private Double bestFitness;
     private Double averageFitness;
-    private BigDecimal entropy;
+    private BigDecimal entropy = BigDecimal.ZERO;
     private Double knownSolutionProximity;
     private int numberOfCrossovers;
     private int numberOfMutations;
     private int numberOfEvaluations;
     private PerformanceStatistics performanceStatistics = new PerformanceStatistics();
 
-    /**
-     * @param generation          the generation to set
-     */
     public GenerationStatistics(int generation) {
         this.generation = generation;
     }
