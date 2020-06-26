@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
+import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.AllArgsConstructor;
@@ -167,15 +168,17 @@ public class LatticePopulation extends AbstractPopulation {
                     .collect(Collectors.toList()));
 
             Collections.sort(nearbyIndividuals);
+            Selector newSelector = strategy.getSelector().getInstance();
+            newSelector.reIndex(nearbyIndividuals);
 
-            int momIndex = strategy.getSelector().getNextIndexThreadSafe(nearbyIndividuals, strategy);
+            int momIndex = newSelector.getNextIndex(nearbyIndividuals, strategy);
             LatticeIndividual momCoordinates = nearbyLatticeIndividuals.get(momIndex);
             Chromosome mom = individuals[momCoordinates.getRow()][momCoordinates.getColumn()];
 
             // Ensure that dadIndex is different from momIndex
             nearbyIndividuals.remove(momIndex);
             nearbyLatticeIndividuals.remove(momIndex);
-            int dadIndex = strategy.getSelector().getNextIndexThreadSafe(nearbyIndividuals, strategy);
+            int dadIndex = newSelector.getNextIndex(nearbyIndividuals, strategy);
             LatticeIndividual dadCoordinates = nearbyLatticeIndividuals.get(dadIndex);
             Chromosome dad = individuals[dadCoordinates.getRow()][dadCoordinates.getColumn()];
 

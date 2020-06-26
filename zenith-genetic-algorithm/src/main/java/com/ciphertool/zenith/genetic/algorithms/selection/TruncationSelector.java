@@ -27,22 +27,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
 @Component
 public class TruncationSelector implements Selector {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Autowired
     private RandomSelector randomSelector;
+
+    @Autowired
+    public TruncationSelector(RandomSelector randomSelector) {
+        this.randomSelector = randomSelector;
+    }
+
+    @Override
+    public Selector getInstance() {
+        return new TruncationSelector(randomSelector);
+    }
 
     @Override
     public synchronized void reIndex(List<Chromosome> individuals) {
-        // This sort is necessary since we rely on the List index for selection, and also it is necessary before reIndex() calls
-        Collections.sort(individuals);
-
-        randomSelector.reIndex(individuals);
+        // Nothing to do
     }
 
     @Override
@@ -56,11 +61,5 @@ public class TruncationSelector implements Selector {
         int truncationPoint = (int) (individuals.size() * strategy.getTruncationPercentage());
 
         return randomSelector.getNextIndex(individuals.subList(truncationPoint, individuals.size()), strategy) + truncationPoint;
-    }
-
-    @Override
-    public int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        reIndex(individuals);
-        return getNextIndex(individuals, strategy);
     }
 }

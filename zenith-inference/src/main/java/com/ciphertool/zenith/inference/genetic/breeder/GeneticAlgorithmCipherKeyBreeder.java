@@ -16,40 +16,40 @@
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ciphertool.zenith.genetic.algorithms.selection;
 
-import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
+package com.ciphertool.zenith.inference.genetic.breeder;
+
+import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import org.apache.commons.collections.CollectionUtils;
+import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
 @Component
-public class RandomSelector implements Selector {
+public class GeneticAlgorithmCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    @Autowired
+    private GeneDao geneDao;
+
     @Override
-    public Selector getInstance() {
-        return new RandomSelector();
+    public void init(Cipher cipher) {
+        super.init(cipher);
     }
 
     @Override
-    public void reIndex(List<Chromosome> individuals) {
-        // Nothing to do
-    }
+    public Chromosome breed() {
+        CipherKeyChromosome chromosome = new CipherKeyChromosome(cipher, keys.length);
 
-    @Override
-    public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        if (CollectionUtils.isEmpty(individuals)) {
-            log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
-
-            return -1;
+        for (int i = 0; i < keys.length; i++) {
+            chromosome.putGene(keys[i], geneDao.findRandomGene(chromosome));
         }
 
-        return (int) (ThreadLocalRandom.current().nextDouble() * individuals.size());
+        log.debug(chromosome.toString());
+
+        return chromosome;
     }
 }

@@ -177,7 +177,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         // Set the proper Selector
         for (Selector nextSelector : selectors) {
             if (nextSelector.getClass().getSimpleName().equals(selectorName)) {
-                selector = nextSelector;
+                selector = nextSelector.getInstance();
                 break;
             }
         }

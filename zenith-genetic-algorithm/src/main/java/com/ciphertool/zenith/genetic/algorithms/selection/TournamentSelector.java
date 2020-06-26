@@ -26,22 +26,31 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class TournamentSelector implements Selector {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    @Autowired
     private RandomSelector randomSelector;
 
-    @Override
-    public synchronized void reIndex(List<Chromosome> individuals) {
-        // This sort is necessary since we rely on the List index for selection, and also it is necessary before reIndex() calls
-        Collections.sort(individuals);
+    @Autowired
+    public TournamentSelector(RandomSelector randomSelector) {
+        this.randomSelector = randomSelector;
+    }
 
-        randomSelector.reIndex(individuals);
+    @Override
+    public Selector getInstance() {
+        return new TournamentSelector(randomSelector);
+    }
+
+    @Override
+    public void reIndex(List<Chromosome> individuals) {
+        // Nothing to do
     }
 
     @Override
@@ -73,11 +82,5 @@ public class TournamentSelector implements Selector {
 
         // return the least fit individual since it won the tournament
         return competitors.lastKey();
-    }
-
-    @Override
-    public int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        reIndex(individuals);
-        return getNextIndex(individuals, strategy);
     }
 }

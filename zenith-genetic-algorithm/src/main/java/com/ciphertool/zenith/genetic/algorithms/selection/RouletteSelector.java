@@ -23,35 +23,24 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
 @Component
 public class RouletteSelector implements Selector {
-    // TODO: this pattern will not work for multiple concurrent users, even with the synchronized keyword being used for reIndex()
     private RouletteSampler<Chromosome> rouletteSampler = new RouletteSampler<>();
 
     @Override
-    public synchronized void reIndex(List<Chromosome> individuals) {
-        // This sort is necessary since we rely on the List index for selection, and also it is necessary before reIndex() calls
-        Collections.sort(individuals);
+    public Selector getInstance() {
+        return new RouletteSelector();
+    }
 
+    @Override
+    public void reIndex(List<Chromosome> individuals) {
         rouletteSampler.reIndex(individuals);
     }
 
     @Override
     public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
         return rouletteSampler.getNextIndex();
-    }
-
-    @Override
-    public int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        RouletteSampler<Chromosome> localRouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(individuals);
-
-        localRouletteSampler.reIndex(individuals);
-
-        return localRouletteSampler.getNextIndex();
     }
 }

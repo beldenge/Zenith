@@ -130,6 +130,8 @@ public class StandardPopulation extends AbstractPopulation {
 
     @Override
     public void reIndexSelector() {
+        // This sort is necessary since we rely on the List index for selection
+        Collections.sort(this.individuals);
         this.strategy.getSelector().reIndex(this.individuals);
     }
 }

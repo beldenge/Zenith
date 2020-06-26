@@ -45,7 +45,8 @@ public class TournamentSelectorTest {
 
     @BeforeClass
     public static void setUp() {
-        tournamentSelector = new TournamentSelector();
+        randomSelectorMock = mock(RandomSelector.class);
+        tournamentSelector = new TournamentSelector(randomSelectorMock);
 
         strategy = GeneticAlgorithmStrategy.builder()
                 .tournamentSelectorAccuracy(0.9)
@@ -56,11 +57,6 @@ public class TournamentSelectorTest {
         Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
         ReflectionUtils.makeAccessible(logField);
         ReflectionUtils.setField(logField, tournamentSelector, logMock);
-
-        randomSelectorMock = mock(RandomSelector.class);
-        Field randomSelectorField = ReflectionUtils.findField(TournamentSelector.class, "randomSelector");
-        ReflectionUtils.makeAccessible(randomSelectorField);
-        ReflectionUtils.setField(randomSelectorField, tournamentSelector, randomSelectorMock);
     }
 
     @Before

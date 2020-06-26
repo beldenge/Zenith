@@ -23,13 +23,8 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 
 import java.util.List;
 
-/**
- * This class serves as the mode of selecting a fit individual from the population. It is essentially a helper class
- * used by other algorithms, most notably any SelectionAlgorithm implementation.
- *
- * @author george
- */
 public interface Selector {
+    Selector getInstance();
 
     /**
      * @param individuals the individuals to index
@@ -41,6 +36,4 @@ public interface Selector {
      * @return the indice of the chosen individual within the population
      */
     int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy);
-
-    int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy);
 }
