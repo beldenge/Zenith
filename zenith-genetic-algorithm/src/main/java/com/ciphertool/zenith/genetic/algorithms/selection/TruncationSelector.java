@@ -16,42 +16,51 @@
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package com.ciphertool.zenith.genetic.algorithms.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.math.selection.RouletteSampler;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
 @Component
-public class RouletteSelector implements Selector {
-    // TODO: this pattern will not work for multiple concurrent users, even with the synchronized keyword being used for reIndex()
-    private RouletteSampler<Chromosome> rouletteSampler = new RouletteSampler<>();
+public class TruncationSelector implements Selector {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private RandomSelector randomSelector;
 
     @Override
     public synchronized void reIndex(List<Chromosome> individuals) {
         // This sort is necessary since we rely on the List index for selection, and also it is necessary before reIndex() calls
         Collections.sort(individuals);
 
-        rouletteSampler.reIndex(individuals);
+        randomSelector.reIndex(individuals);
     }
 
     @Override
     public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        return rouletteSampler.getNextIndex();
+        if (CollectionUtils.isEmpty(individuals)) {
+            log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
+
+            return -1;
+        }
+
+        int truncationPoint = (int) (individuals.size() * strategy.getTruncationPercentage());
+
+        return randomSelector.getNextIndex(individuals.subList(truncationPoint, individuals.size()), strategy) + truncationPoint;
     }
 
     @Override
     public int getNextIndexThreadSafe(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        RouletteSampler<Chromosome> localRouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(individuals);
-
-        localRouletteSampler.reIndex(individuals);
-
-        return localRouletteSampler.getNextIndex();
+        reIndex(individuals);
+        return getNextIndex(individuals, strategy);
     }
 }

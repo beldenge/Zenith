@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.genetic.entities;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.population.AbstractPopulation;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
@@ -220,7 +221,7 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     @Override
     public Double getProbability() {
-        return this.fitness / this.population.getTotalFitness();
+        return AbstractPopulation.convertFromLogProbability(this.fitness) / this.population.getTotalProbability();
     }
 
     @Override

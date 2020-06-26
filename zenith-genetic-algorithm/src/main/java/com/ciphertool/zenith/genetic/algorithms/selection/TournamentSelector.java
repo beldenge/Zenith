@@ -41,20 +41,19 @@ public class TournamentSelector implements Selector {
         // This sort is necessary since we rely on the List index for selection, and also it is necessary before reIndex() calls
         Collections.sort(individuals);
 
-        // TODO: this pattern will not work for multiple concurrent users, even with the synchronized keyword
         randomSelector.reIndex(individuals);
     }
 
     @Override
     public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
-        double selectionAccuracy = strategy.getTournamentSelectorAccuracy();
-        int tournamentSize = strategy.getTournamentSize();
-
         if (CollectionUtils.isEmpty(individuals)) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 
             return -1;
         }
+
+        double selectionAccuracy = strategy.getTournamentSelectorAccuracy();
+        int tournamentSize = strategy.getTournamentSize();
 
         SortedMap<Integer, Chromosome> competitors = new TreeMap<>(Comparator.reverseOrder());
 

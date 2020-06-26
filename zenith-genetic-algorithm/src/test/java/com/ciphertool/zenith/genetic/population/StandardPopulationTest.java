@@ -177,7 +177,7 @@ public class StandardPopulationTest {
         assertFalse(chromosomeEvaluationNotNeeded1.isEvaluationNeeded());
         assertFalse(chromosomeEvaluationNotNeeded2.isEvaluationNeeded());
 
-        population.doConcurrentFitnessEvaluations(fitnessEvaluatorMock);
+        population.doConcurrentFitnessEvaluations(fitnessEvaluatorMock, population.getIndividuals());
 
         for (Chromosome individual : population.getIndividuals()) {
             assertFalse(individual.isEvaluationNeeded());

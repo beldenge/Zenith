@@ -43,6 +43,7 @@ public abstract class AbstractPopulation implements Population {
 
     protected GeneticAlgorithmStrategy strategy;
     protected Double totalFitness = 0d;
+    protected Double totalProbability = 0d;
 
     @Override
     public void init(GeneticAlgorithmStrategy strategy) {
@@ -129,18 +130,20 @@ public abstract class AbstractPopulation implements Population {
 
     @Override
     public Chromosome evaluateFitness(GenerationStatistics generationStatistics) {
-        generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.strategy.getFitnessEvaluator()));
+        generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.strategy.getFitnessEvaluator(), getIndividuals()));
 
         if (this.strategy.getShareFitness() != null && this.strategy.getShareFitness()) {
             shareFitness(generationStatistics);
         }
 
         this.totalFitness = 0d;
+        this.totalProbability = 0d;
 
         Chromosome bestFitIndividual = null;
 
         for (Chromosome individual : getIndividuals()) {
             this.totalFitness += individual.getFitness();
+            this.totalProbability += convertFromLogProbability(individual.getFitness());
 
             if (bestFitIndividual == null || individual.getFitness() > bestFitIndividual.getFitness()) {
                 bestFitIndividual = individual;
@@ -226,15 +229,13 @@ public abstract class AbstractPopulation implements Population {
      *
      * @throws InterruptedException if stop is requested
      */
-    protected int doConcurrentFitnessEvaluations(FitnessEvaluator fitnessEvaluator) {
+    protected int doConcurrentFitnessEvaluations(FitnessEvaluator fitnessEvaluator, List<Chromosome> individuals) {
         List<FutureTask<Void>> futureTasks = new ArrayList<>();
         FutureTask<Void> futureTask;
 
         int evaluationCount = 0;
 
         Chromosome individual;
-
-        List<Chromosome> individuals = getIndividuals();
 
         for (int i = individuals.size() - 1; i >= 0; i--) {
             individual = individuals.get(i);
@@ -269,13 +270,28 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
+    public Double getTotalProbability() {
+        return totalProbability;
+    }
+
+    @Override
     public void updateFitnessForIndividual(Chromosome individual, Double newFitness) {
         totalFitness -= individual.getFitness();
+        totalProbability -= convertFromLogProbability(individual.getFitness());
         individual.setFitness(newFitness);
         totalFitness += individual.getFitness();
+        totalProbability += convertFromLogProbability(individual.getFitness());
     }
 
     abstract void reIndexSelector();
 
     abstract Callable newSelectionTask();
+
+    public static Double convertFromLogProbability(Double logProbability) {
+        if (logProbability < 0) {
+            return Math.exp(logProbability);
+        }
+
+        return logProbability;
+    }
 }

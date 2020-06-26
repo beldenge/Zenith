@@ -127,4 +127,6 @@ public interface Population {
     }
 
     Double getTotalFitness();
+
+    Double getTotalProbability();
 }

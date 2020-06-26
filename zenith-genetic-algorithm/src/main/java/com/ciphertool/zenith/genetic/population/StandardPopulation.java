@@ -68,8 +68,6 @@ public class StandardPopulation extends AbstractPopulation {
             Chromosome mom = getIndividuals().get(momIndex);
 
             int dadIndex = strategy.getSelector().getNextIndex(individuals, strategy);
-            // Ensure that dadIndex is different from momIndex
-            dadIndex += (dadIndex == momIndex) ? ((dadIndex == 0) ? 1 : -1) : 0;
             Chromosome dad = getIndividuals().get(dadIndex);
 
             return new Parents(mom, dad);
@@ -96,6 +94,7 @@ public class StandardPopulation extends AbstractPopulation {
         }
 
         this.totalFitness -= this.individuals.get(indexToRemove).getFitness();
+        this.totalProbability -= convertFromLogProbability(this.individuals.get(indexToRemove).getFitness());
 
         return this.individuals.remove(indexToRemove);
     }
@@ -105,6 +104,7 @@ public class StandardPopulation extends AbstractPopulation {
         this.individuals.clear();
 
         this.totalFitness = 0d;
+        this.totalProbability = 0d;
     }
 
     @Override
@@ -114,6 +114,7 @@ public class StandardPopulation extends AbstractPopulation {
         individual.setPopulation(this);
 
         this.totalFitness += individual.getFitness() == null ? 0d : individual.getFitness();
+        this.totalProbability += convertFromLogProbability(individual.getFitness() == null ? 0d : individual.getFitness());
 
         return individual.isEvaluationNeeded();
     }

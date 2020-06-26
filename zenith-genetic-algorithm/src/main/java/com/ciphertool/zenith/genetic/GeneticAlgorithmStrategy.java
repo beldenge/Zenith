@@ -49,4 +49,5 @@ public class GeneticAlgorithmStrategy {
     private Integer tournamentSize;
     private Boolean shareFitness;
     private Integer invasiveSpeciesCount;
+    private Double truncationPercentage;
 }

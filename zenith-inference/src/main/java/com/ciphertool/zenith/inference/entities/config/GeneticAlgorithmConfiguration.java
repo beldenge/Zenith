@@ -79,6 +79,10 @@ public class GeneticAlgorithmConfiguration {
     @Min(1)
     private Integer tournamentSize;
 
+    @DecimalMin("0.0")
+    @DecimalMax("1.0")
+    private Double truncationPercentage;
+
     private boolean enableFitnessSharing;
 
     @Min(0)
