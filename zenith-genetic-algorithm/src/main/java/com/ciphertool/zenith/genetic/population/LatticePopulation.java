@@ -26,7 +26,6 @@ import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -47,13 +46,9 @@ public class LatticePopulation extends AbstractPopulation {
     private boolean wrapAround;
     private int selectionRadius;
 
-    public LatticePopulation(TaskExecutor taskExecutor) {
-        this.taskExecutor = taskExecutor;
-    }
-
     @Override
     public Population getInstance() {
-        return new LatticePopulation(taskExecutor);
+        return new LatticePopulation();
     }
 
     @Override

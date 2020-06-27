@@ -22,6 +22,8 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +33,7 @@ public abstract class AbstractCipherKeyBreeder implements Breeder {
 
     protected String[] keys;
 
-    public void init(Cipher cipher) {
+    public void init(Cipher cipher, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         this.cipher = cipher;
 
         List<String> keyList = cipher.getCiphertextCharacters().stream()

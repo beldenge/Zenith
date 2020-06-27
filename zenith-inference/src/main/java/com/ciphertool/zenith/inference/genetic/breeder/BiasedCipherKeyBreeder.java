@@ -21,8 +21,10 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import org.slf4j.Logger;
@@ -46,8 +48,8 @@ public class BiasedCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private ArrayMarkovModel letterMarkovModel;
 
     @Override
-    public void init(Cipher cipher) {
-        super.init(cipher);
+    public void init(Cipher cipher, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+        super.init(cipher, plaintextTransformationSteps, plaintextEvaluator);
 
         List<Character> biasedCharacterBucket = new ArrayList<>();
 

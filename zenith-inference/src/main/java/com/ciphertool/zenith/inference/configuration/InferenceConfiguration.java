@@ -331,4 +331,17 @@ public class InferenceConfiguration {
 
         return taskExecutor;
     }
+
+    @Bean("nestedGeneticAlgorithmTaskExecutor")
+    public ThreadPoolTaskExecutor nestedGeneticAlgorithmTaskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+        taskExecutor.setCorePoolSize(corePoolSize);
+        taskExecutor.setMaxPoolSize(maxPoolSize);
+        taskExecutor.setQueueCapacity(queueCapacity);
+        taskExecutor.setKeepAliveSeconds(5);
+        taskExecutor.setAllowCoreThreadTimeOut(true);
+
+        return taskExecutor;
+    }
 }

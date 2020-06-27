@@ -30,15 +30,14 @@ import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import org.junit.Test;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class StandardGeneticAlgorithmTest {
@@ -85,15 +84,6 @@ public class StandardGeneticAlgorithmTest {
         MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
 
-        GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .population(populationMock)
-                .populationSize(populationSize)
-                .mutationRate(mutationRate)
-                .mutationAlgorithm(mutationAlgorithmMock)
-                .crossoverAlgorithm(crossoverAlgorithmMock)
-                .elitism(0)
-                .build();
-
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
         doAnswer(invocation -> {
             ((FutureTask) invocation.getArguments()[0]).run();
@@ -101,9 +91,15 @@ public class StandardGeneticAlgorithmTest {
             return null;
         }).when(taskExecutorMock).execute(any(FutureTask.class));
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, standardGeneticAlgorithm, taskExecutorMock);
+        GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutorMock)
+                .population(populationMock)
+                .populationSize(populationSize)
+                .mutationRate(mutationRate)
+                .mutationAlgorithm(mutationAlgorithmMock)
+                .crossoverAlgorithm(crossoverAlgorithmMock)
+                .elitism(0)
+                .build();
 
         Chromosome chromosomeToReturn = new MockChromosome();
         when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
@@ -160,16 +156,13 @@ public class StandardGeneticAlgorithmTest {
             return null;
         }).when(taskExecutorMock).execute(any(FutureTask.class));
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, standardGeneticAlgorithm, taskExecutorMock);
-
         CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
 
         Chromosome chromosomeToReturn = new MockChromosome();
         when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutorMock)
                 .population(populationMock)
                 .crossoverAlgorithm(crossoverAlgorithmMock)
                 .elitism(0)
@@ -248,15 +241,12 @@ public class StandardGeneticAlgorithmTest {
             return null;
         }).when(taskExecutorMock).execute(any(FutureTask.class));
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, standardGeneticAlgorithm, taskExecutorMock);
-
         double mutationRate = 0.5;
 
         MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutorMock)
                 .population(populationMock)
                 .mutationRate(mutationRate)
                 .mutationAlgorithm(mutationAlgorithmMock)
@@ -293,15 +283,12 @@ public class StandardGeneticAlgorithmTest {
             return null;
         }).when(taskExecutorMock).execute(any(FutureTask.class));
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardGeneticAlgorithm.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, standardGeneticAlgorithm, taskExecutorMock);
-
         double mutationRate = 0.5;
 
         MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutorMock)
                 .population(populationMock)
                 .mutationRate(mutationRate)
                 .mutationAlgorithm(mutationAlgorithmMock)

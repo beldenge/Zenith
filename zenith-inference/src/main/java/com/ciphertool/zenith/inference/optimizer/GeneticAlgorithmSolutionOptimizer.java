@@ -29,6 +29,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.inference.configuration.GeneticAlgorithmInitialization;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
@@ -38,11 +39,10 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import lombok.Builder;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -72,6 +72,9 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String TRUNCATION_PERCENTAGE = "truncationPercentage";
     public static final String ENABLE_FITNESS_SHARING = "enableFitnessSharing";
     public static final String INVASIVE_SPECIES_COUNT = "invasiveSpeciesCount";
+
+    @Autowired
+    protected TaskExecutor taskExecutor;
 
     @Autowired
     private StandardGeneticAlgorithm geneticAlgorithm;
@@ -126,7 +129,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         for (Breeder nextBreeder : breeders) {
             if (nextBreeder.getClass().getSimpleName().equals(breederName)) {
                 breeder = nextBreeder;
-                ((AbstractCipherKeyBreeder) breeder).init(cipher);
+                ((AbstractCipherKeyBreeder) breeder).init(cipher, plaintextTransformationSteps, plaintextEvaluator);
                 break;
             }
         }
@@ -223,6 +226,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         GeneticAlgorithmInitialization initialization = init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
 
         GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
                 .populationSize(populationSize)
                 .numberOfGenerations(numberOfGenerations)
                 .elitism(elitism)
@@ -310,16 +314,5 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         log.info("Average epoch time={}ms", ((float) totalElapsed / (float) epoch));
 
         return overallBest;
-    }
-
-    @Getter
-    @Builder
-    private static class GeneticAlgorithmInitialization {
-        private Population population;
-        private Breeder breeder;
-        private CrossoverAlgorithm crossoverAlgorithm;
-        private MutationAlgorithm mutationAlgorithm;
-        private Selector selector;
-        private FitnessEvaluator fitnessEvaluator;
     }
 }

@@ -63,6 +63,7 @@ public class StandardPopulationTest {
         when(breederMock.breed()).thenReturn(chromosomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
                 .breeder(breederMock)
                 .build();
 
@@ -82,10 +83,6 @@ public class StandardPopulationTest {
     public void testBreed() {
         StandardPopulation population = new StandardPopulation();
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardPopulation.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
-
         int expectedPopulationSize = 10;
 
         Breeder breederMock = mock(Breeder.class);
@@ -94,6 +91,7 @@ public class StandardPopulationTest {
         when(breederMock.breed()).thenReturn(mockChromosome.clone());
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
                 .breeder(breederMock)
                 .build();
 
@@ -122,6 +120,7 @@ public class StandardPopulationTest {
                 mock(FitnessEvaluator.class));
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
                 .fitnessEvaluator(mockEvaluator)
                 .build();
 
@@ -141,14 +140,11 @@ public class StandardPopulationTest {
     public void testDoConcurrentFitnessEvaluations() {
         StandardPopulation population = new StandardPopulation();
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardPopulation.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
-
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
         when(fitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
                 .fitnessEvaluator(fitnessEvaluatorMock)
                 .build();
 
@@ -202,6 +198,7 @@ public class StandardPopulationTest {
         when(fitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
                 .fitnessEvaluator(fitnessEvaluatorMock)
                 .build();
 
@@ -265,6 +262,7 @@ public class StandardPopulationTest {
         when(fitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
                 .fitnessEvaluator(fitnessEvaluatorMock)
                 .build();
 
@@ -334,10 +332,6 @@ public class StandardPopulationTest {
     @Test
     public void testAddIndividual() {
         StandardPopulation population = new StandardPopulation();
-
-        Field taskExecutorField = ReflectionUtils.findField(StandardPopulation.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
 
         Double fitnessSum = 0d;
         assertEquals(fitnessSum, population.getTotalFitness());
@@ -422,10 +416,6 @@ public class StandardPopulationTest {
     @Test
     public void testSize() {
         StandardPopulation population = new StandardPopulation();
-
-        Field taskExecutorField = ReflectionUtils.findField(StandardPopulation.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
 
         assertEquals(0, population.size());
 

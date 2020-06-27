@@ -25,7 +25,6 @@ import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -40,13 +39,9 @@ public class StandardPopulation extends AbstractPopulation {
 
     private List<Chromosome> individuals = new ArrayList<>();
 
-    public StandardPopulation(TaskExecutor taskExecutor) {
-        this.taskExecutor = taskExecutor;
-    }
-
     @Override
     public StandardPopulation getInstance() {
-        return new StandardPopulation(taskExecutor);
+        return new StandardPopulation();
     }
 
     @Override

@@ -22,11 +22,15 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
+import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
@@ -36,8 +40,8 @@ public class ProbabilisticCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private GeneDao geneDao;
 
     @Override
-    public void init(Cipher cipher) {
-        super.init(cipher);
+    public void init(Cipher cipher, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+        super.init(cipher, plaintextTransformationSteps, plaintextEvaluator);
     }
 
     @Override

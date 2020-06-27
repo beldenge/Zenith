@@ -1,6 +1,6 @@
 {
   "selectedCipher" : "zodiac408",
-  "epochs": 10,
+  "epochs": 50,
   "selectedOptimizer": {
     "name": "GeneticAlgorithm"
   },
@@ -21,7 +21,7 @@
     "latticeColumns": 100,
     "latticeWrapAround": true,
     "latticeRadius": 1,
-    "breederName": "ProbabilisticCipherKeyBreeder",
+    "breederName": "GeneticAlgorithmCipherKeyBreeder",
     "crossoverAlgorithmName": "GeneWiseCrossoverAlgorithm",
     "mutationAlgorithmName": "StandardMutationAlgorithm",
     "mutationRate": 0.01,

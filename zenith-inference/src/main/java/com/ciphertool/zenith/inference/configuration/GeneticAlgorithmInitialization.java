@@ -17,8 +17,9 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic;
+package com.ciphertool.zenith.inference.configuration;
 
+import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
@@ -26,30 +27,14 @@ import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.core.task.TaskExecutor;
 
 @Getter
 @Builder
-public class GeneticAlgorithmStrategy {
-    private TaskExecutor taskExecutor;
-    private Integer populationSize;
-    private Integer numberOfGenerations;
-    private Integer elitism;
+public class GeneticAlgorithmInitialization {
     private Population population;
-    private Integer latticeRows;
-    private Integer latticeColumns;
-    private Boolean latticeWrapAround;
-    private Integer latticeRadius;
-    private CrossoverAlgorithm crossoverAlgorithm;
-    private FitnessEvaluator fitnessEvaluator;
-    private MutationAlgorithm mutationAlgorithm;
-    private Double mutationRate;
-    private Integer maxMutationsPerIndividual;
     private Breeder breeder;
+    private CrossoverAlgorithm crossoverAlgorithm;
+    private MutationAlgorithm mutationAlgorithm;
     private Selector selector;
-    private Double tournamentSelectorAccuracy;
-    private Integer tournamentSize;
-    private Boolean shareFitness;
-    private Integer invasiveSpeciesCount;
-    private Double truncationPercentage;
+    private FitnessEvaluator fitnessEvaluator;
 }

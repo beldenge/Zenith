@@ -29,9 +29,7 @@ import com.ciphertool.zenith.genetic.statistics.PerformanceStatistics;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -48,9 +46,6 @@ public class StandardGeneticAlgorithm {
 
     @Value("${genetic-algorithm.calculate-entropy:false}")
     private boolean calculateEntropy;
-
-    @Autowired
-    private TaskExecutor taskExecutor;
 
     public void spawnInitialPopulation(GeneticAlgorithmStrategy strategy) {
         GenerationStatistics generationStatistics = new GenerationStatistics(0);
@@ -179,7 +174,7 @@ public class StandardGeneticAlgorithm {
         for (Parents nextParents : allParents) {
             futureTask = new FutureTask<>(new CrossoverTask(strategy, nextParents));
             futureTasks.add(futureTask);
-            this.taskExecutor.execute(futureTask);
+            strategy.getTaskExecutor().execute(futureTask);
         }
 
         List<Chromosome> childrenToAdd = new ArrayList<>();
@@ -212,7 +207,7 @@ public class StandardGeneticAlgorithm {
         for (Chromosome child : children) {
             futureTask = new FutureTask<>(new MutationTask(strategy, child));
             futureTasks.add(futureTask);
-            this.taskExecutor.execute(futureTask);
+            strategy.getTaskExecutor().execute(futureTask);
         }
 
         for (FutureTask<Integer> future : futureTasks) {

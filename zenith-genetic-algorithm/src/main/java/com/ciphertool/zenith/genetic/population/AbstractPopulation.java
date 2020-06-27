@@ -27,19 +27,16 @@ import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 public abstract class AbstractPopulation implements Population {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    @Autowired
-    protected TaskExecutor taskExecutor;
 
     protected GeneticAlgorithmStrategy strategy;
     protected Double totalFitness = 0d;
@@ -60,7 +57,7 @@ public abstract class AbstractPopulation implements Population {
             futureTask = new FutureTask<>(new GeneratorTask());
             futureTasks.add(futureTask);
 
-            this.taskExecutor.execute(futureTask);
+            strategy.getTaskExecutor().execute(futureTask);
         }
 
         for (FutureTask<Chromosome> future : futureTasks) {
@@ -107,7 +104,7 @@ public abstract class AbstractPopulation implements Population {
         for (int i = 0; i < Math.max(0, pairsToCrossover); i++) {
             futureTask = new FutureTask<>(newSelectionTask());
             futureTasks.add(futureTask);
-            this.taskExecutor.execute(futureTask);
+            strategy.getTaskExecutor().execute(futureTask);
         }
 
         List<Parents> allParents = new ArrayList<>(this.size());
@@ -247,7 +244,7 @@ public abstract class AbstractPopulation implements Population {
                 evaluationCount++;
                 futureTask = new FutureTask<>(new EvaluationTask(individual, fitnessEvaluator));
                 futureTasks.add(futureTask);
-                this.taskExecutor.execute(futureTask);
+                strategy.getTaskExecutor().execute(futureTask);
             }
         }
 
