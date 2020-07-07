@@ -92,7 +92,7 @@ public abstract class AbstractPopulation implements Population {
     public List<Parents> select() {
         reIndexSelector();
 
-        int pairsToCrossover = (this.size() - this.strategy.getElitism() - (this.strategy.getInvasiveSpeciesCount() != null ? this.strategy.getInvasiveSpeciesCount() : 0));
+        int pairsToCrossover = (this.strategy.getPopulationSize() - this.strategy.getElitism() - (this.strategy.getInvasiveSpeciesCount() != null ? this.strategy.getInvasiveSpeciesCount() : 0));
 
         List<FutureTask<Parents>> futureTasks = new ArrayList<>(pairsToCrossover);
         FutureTask<Parents> futureTask;

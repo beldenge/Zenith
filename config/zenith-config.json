@@ -13,9 +13,9 @@
     "annealingTemperatureMax": 0.012
   },
   "geneticAlgorithmConfiguration": {
-    "populationSize": 1000,
-    "numberOfGenerations": 1000,
-    "elitism": 1,
+    "populationSize": 5000,
+    "numberOfGenerations": 10000,
+    "elitism": 0,
     "populationName": "StandardPopulation",
     "latticeRows": 100,
     "latticeColumns": 100,

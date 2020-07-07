@@ -77,7 +77,7 @@ public class GeneticAlgorithmCipherKeyBreeder extends AbstractCipherKeyBreeder {
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(nestedGeneticAlgorithmTaskExecutor)
                 .populationSize(100)
-                .numberOfGenerations(500)
+                .numberOfGenerations(100)
                 .elitism(0)
                 .population(initialization.getPopulation())
                 .fitnessEvaluator(initialization.getFitnessEvaluator())
