@@ -27,7 +27,6 @@ import java.util.Map;
 
 @Component
 public class IndexOfCoincidenceEvaluator implements CounterweightEvaluator {
-    private static final String LETTER_COUNTS_KEY = "letterCounts";
     private static final String PRECOMPUTED_NOMINATOR_VALUES_KEY = "precomputedNominatorValues";
     private static final String DENOMINATOR_KEY = "denominator";
 

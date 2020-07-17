@@ -37,6 +37,10 @@ public class RouletteSampler<T extends Probability> {
         sortedProbabilities.addAll(probabilities);
         Collections.sort(sortedProbabilities);
 
+        double sumOfInputProbabilities = probabilities.stream()
+                .mapToDouble(Probability::getProbability)
+                .sum();
+
         for (int i = 0; i < probabilities.size(); i ++) {
             if (probabilities.get(i) != sortedProbabilities.get(i)) {
                 throw new IllegalStateException("The List of probabilities must be sorted before being indexed.");
@@ -66,7 +70,7 @@ public class RouletteSampler<T extends Probability> {
                 continue;
             }
 
-            totalProbability += probabilities.get(i).getProbability();
+            totalProbability += (probabilities.get(i).getProbability() / sumOfInputProbabilities);
 
             nodes.add(new BinaryRouletteNode(i, totalProbability));
         }

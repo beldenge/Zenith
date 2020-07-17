@@ -173,6 +173,7 @@ public class LatticePopulation extends AbstractPopulation {
             // Ensure that dadIndex is different from momIndex
             nearbyIndividuals.remove(momIndex);
             nearbyLatticeIndividuals.remove(momIndex);
+            newSelector.reIndex(nearbyIndividuals);
             int dadIndex = newSelector.getNextIndex(nearbyIndividuals, strategy);
             LatticeIndividual dadCoordinates = nearbyLatticeIndividuals.get(dadIndex);
             Chromosome dad = individuals[dadCoordinates.getRow()][dadCoordinates.getColumn()];
