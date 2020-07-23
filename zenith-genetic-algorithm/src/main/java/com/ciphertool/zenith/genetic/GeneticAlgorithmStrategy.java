@@ -26,6 +26,7 @@ import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.core.task.TaskExecutor;
 
 @Getter
@@ -35,6 +36,7 @@ public class GeneticAlgorithmStrategy {
     private Integer populationSize;
     private Integer numberOfGenerations;
     private Integer elitism;
+    @Setter
     private Population population;
     private Integer latticeRows;
     private Integer latticeColumns;
@@ -52,4 +54,8 @@ public class GeneticAlgorithmStrategy {
     private Boolean shareFitness;
     private Integer invasiveSpeciesCount;
     private Double truncationPercentage;
+    private Integer minPopulations;
+    private Integer speciationEvents;
+    private Integer speciationFactor;
+    private Integer extinctionCycles;
 }

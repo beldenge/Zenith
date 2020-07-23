@@ -69,9 +69,6 @@ public class StandardPopulation extends AbstractPopulation {
         }
     }
 
-    /**
-     * @return the individuals
-     */
     @Override
     public List<Chromosome> getIndividuals() {
         return Collections.unmodifiableList(individuals);

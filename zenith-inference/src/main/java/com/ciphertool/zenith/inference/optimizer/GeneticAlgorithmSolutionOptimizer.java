@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
+import com.ciphertool.zenith.genetic.algorithms.DivergentGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
 import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
@@ -72,12 +72,16 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String TRUNCATION_PERCENTAGE = "truncationPercentage";
     public static final String ENABLE_FITNESS_SHARING = "enableFitnessSharing";
     public static final String INVASIVE_SPECIES_COUNT = "invasiveSpeciesCount";
+    public static final String MIN_POPULATIONS = "minPopulations";
+    public static final String SPECIATION_EVENTS = "speciationEvents";
+    public static final String SPECIATION_FACTOR = "speciationFactor";
+    public static final String EXTINCTION_CYCLES = "extinctionCycles";
 
     @Autowired
     protected TaskExecutor taskExecutor;
 
     @Autowired
-    private StandardGeneticAlgorithm geneticAlgorithm;
+    private DivergentGeneticAlgorithm geneticAlgorithm;
 
     @Autowired
     private List<Population> populations;
@@ -222,6 +226,10 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Double truncationPercentage = (Double) configuration.get(TRUNCATION_PERCENTAGE);
         boolean enableFitnessSharing = (boolean) configuration.get(ENABLE_FITNESS_SHARING);
         Integer invasiveSpeciesCount = (Integer) configuration.get(INVASIVE_SPECIES_COUNT);
+        Integer minPopulations = (Integer) configuration.get(MIN_POPULATIONS);
+        Integer speciationEvents = (Integer) configuration.get(SPECIATION_EVENTS);
+        Integer speciationFactor = (Integer) configuration.get(SPECIATION_FACTOR);
+        Integer extinctionCycles = (Integer) configuration.get(EXTINCTION_CYCLES);
 
         GeneticAlgorithmInitialization initialization = init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
 
@@ -247,6 +255,10 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .truncationPercentage(truncationPercentage)
                 .shareFitness(enableFitnessSharing)
                 .invasiveSpeciesCount(invasiveSpeciesCount)
+                .minPopulations(minPopulations)
+                .speciationEvents(speciationEvents)
+                .speciationFactor(speciationFactor)
+                .extinctionCycles(extinctionCycles)
                 .build();
 
         geneticAlgorithmStrategy.getPopulation().init(geneticAlgorithmStrategy);
@@ -268,10 +280,10 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
             totalElapsed += elapsed;
             log.info("Epoch completed in {}ms.", elapsed);
 
-            initialization.getPopulation().sortIndividuals();
+            geneticAlgorithmStrategy.getPopulation().sortIndividuals();
 
             if (log.isDebugEnabled()) {
-                List<Chromosome> individuals = initialization.getPopulation().getIndividuals();
+                List<Chromosome> individuals = geneticAlgorithmStrategy.getPopulation().getIndividuals();
                 int size = individuals.size();
 
                 for (int i = 0; i < size; i++) {
@@ -283,7 +295,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 }
             }
 
-            last = (CipherKeyChromosome) initialization.getPopulation().getIndividuals().get(initialization.getPopulation().getIndividuals().size() - 1);
+            last = (CipherKeyChromosome) geneticAlgorithmStrategy.getPopulation().getIndividuals().get(geneticAlgorithmStrategy.getPopulation().getIndividuals().size() - 1);
 
             log.info("Best probability solution:");
             CipherSolution bestSolution = ChromosomeToCipherSolutionMapper.map(last);

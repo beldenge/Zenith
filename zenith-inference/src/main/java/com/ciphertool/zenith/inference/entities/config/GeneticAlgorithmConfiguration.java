@@ -88,6 +88,18 @@ public class GeneticAlgorithmConfiguration {
     @Min(0)
     private Integer invasiveSpeciesCount;
 
+    @Min(0)
+    private Integer minPopulations;
+
+    @Min(0)
+    private Integer speciationEvents;
+
+    @Min(2)
+    private Integer speciationFactor;
+
+    @Min(0)
+    private Integer extinctionCycles;
+
     @AssertTrue(message = "The population size for LatticePopulation must be equal to the product of its rows and columns.")
     public boolean isPopulationSizeEqualToLatticeDimensions() {
         if (!LatticePopulation.class.getSimpleName().equals(populationName)) {

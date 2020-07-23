@@ -130,6 +130,11 @@ public abstract class AbstractSolutionService {
             configuration.put(GeneticAlgorithmSolutionOptimizer.TRUNCATION_PERCENTAGE, geneticAlgorithmConfiguration.getTruncationPercentage());
             configuration.put(GeneticAlgorithmSolutionOptimizer.ENABLE_FITNESS_SHARING, geneticAlgorithmConfiguration.isEnableFitnessSharing());
             configuration.put(GeneticAlgorithmSolutionOptimizer.INVASIVE_SPECIES_COUNT, geneticAlgorithmConfiguration.getInvasiveSpeciesCount());
+            configuration.put(GeneticAlgorithmSolutionOptimizer.MIN_POPULATIONS, geneticAlgorithmConfiguration.getMinPopulations());
+            configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_EVENTS, geneticAlgorithmConfiguration.getSpeciationEvents());
+            configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_FACTOR, geneticAlgorithmConfiguration.getSpeciationFactor());
+            configuration.put(GeneticAlgorithmSolutionOptimizer.EXTINCTION_CYCLES, geneticAlgorithmConfiguration.getExtinctionCycles());
+
 
             cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, plaintextEvaluator, getCallback(request));
         } else {
