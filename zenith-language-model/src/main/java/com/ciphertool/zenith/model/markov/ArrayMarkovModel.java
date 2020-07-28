@@ -84,6 +84,7 @@ public class ArrayMarkovModel {
     }
 
     public int computeArrayIndex(String ngram) {
+        // TODO: see if doing this in a loop vs separate lines helps performance
         int i = ((ngram.charAt(0) - ASCII_OFFSET) * FOURTH_POWER);
         int j = ((ngram.charAt(1) - ASCII_OFFSET) * THIRD_POWER);
         int k = ((ngram.charAt(2) - ASCII_OFFSET) * SECOND_POWER);

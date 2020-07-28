@@ -14,7 +14,7 @@
   },
   "geneticAlgorithmConfiguration": {
     "populationSize": 1000,
-    "numberOfGenerations": 10,
+    "numberOfGenerations": 5,
     "elitism": 0,
     "populationName": "StandardPopulation",
     "latticeRows": 100,
@@ -32,7 +32,7 @@
     "truncationPercentage": 0.9,
     "enableFitnessSharing": false,
     "invasiveSpeciesCount": 0,
-    "minPopulations": 32,
+    "minPopulations": 64,
     "speciationEvents": 1,
     "speciationFactor": 2,
     "extinctionCycles": 100
