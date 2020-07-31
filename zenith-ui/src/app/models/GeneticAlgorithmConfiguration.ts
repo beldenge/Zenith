@@ -27,8 +27,8 @@ export class GeneticAlgorithmConfiguration {
   latticeWrapAround: boolean;
   latticeRadius: number;
   breederName: string;
-  crossoverAlgorithmName: string;
-  mutationAlgorithmName: string;
+  crossoverOperatorName: string;
+  mutationOperatorName: string;
   mutationRate: number;
   maxMutationsPerIndividual: number;
   selectorName: string;

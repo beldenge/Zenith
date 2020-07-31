@@ -56,10 +56,10 @@ public class GeneticAlgorithmConfiguration {
     private String breederName;
 
     @NotBlank
-    private String crossoverAlgorithmName;
+    private String crossoverOperatorName;
 
     @NotBlank
-    private String mutationAlgorithmName;
+    private String mutationOperatorName;
 
     @NotNull
     @DecimalMin("0.0")

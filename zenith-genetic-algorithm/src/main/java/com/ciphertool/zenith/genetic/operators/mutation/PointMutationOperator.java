@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.mutation;
+package com.ciphertool.zenith.genetic.operators.mutation;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class StandardMutationAlgorithm implements MutationAlgorithm<Chromosome<Object>> {
+public class PointMutationOperator implements MutationOperator<Chromosome<Object>> {
     @Autowired
     private GeneDao geneDao;
 

@@ -19,9 +19,9 @@
 
 package com.ciphertool.zenith.genetic;
 
-import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
+import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
+import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
+import com.ciphertool.zenith.genetic.operators.selection.Selector;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
 import lombok.Builder;
@@ -42,9 +42,9 @@ public class GeneticAlgorithmStrategy {
     private Integer latticeColumns;
     private Boolean latticeWrapAround;
     private Integer latticeRadius;
-    private CrossoverAlgorithm crossoverAlgorithm;
+    private CrossoverOperator crossoverOperator;
     private FitnessEvaluator fitnessEvaluator;
-    private MutationAlgorithm mutationAlgorithm;
+    private MutationOperator mutationOperator;
     private Double mutationRate;
     private Integer maxMutationsPerIndividual;
     private Breeder breeder;

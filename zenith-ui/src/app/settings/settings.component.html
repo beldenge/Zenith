@@ -191,10 +191,10 @@
                   <div class="form-group row">
                     <div class="col-sm-11 mx-auto">
                       <mat-form-field appearance="outline">
-                        <mat-label>Crossover Algorithm Name</mat-label>
-                        <mat-select formControlName="crossoverAlgorithmName">
-                          <mat-option *ngFor="let crossoverAlgorithmName of crossoverAlgorithmNames" [value]="crossoverAlgorithmName">
-                            {{crossoverAlgorithmName.displayName}}
+                        <mat-label>Crossover Operator Name</mat-label>
+                        <mat-select formControlName="crossoverOperatorName">
+                          <mat-option *ngFor="let crossoverOperatorName of crossoverOperatorNames" [value]="crossoverOperatorName">
+                            {{crossoverOperatorName.displayName}}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>
@@ -290,10 +290,10 @@
                   <div class="form-group row">
                     <div class="col-sm-11 mx-auto">
                       <mat-form-field appearance="outline">
-                        <mat-label>Mutation Algorithm Name</mat-label>
-                        <mat-select formControlName="mutationAlgorithmName">
-                          <mat-option *ngFor="let mutationAlgorithmName of mutationAlgorithmNames" [value]="mutationAlgorithmName">
-                            {{mutationAlgorithmName.displayName}}
+                        <mat-label>Mutation Operator Name</mat-label>
+                        <mat-select formControlName="mutationOperatorName">
+                          <mat-option *ngFor="let mutationOperatorName of mutationOperatorNames" [value]="mutationOperatorName">
+                            {{mutationOperatorName.displayName}}
                           </mat-option>
                         </mat-select>
                       </mat-form-field>
@@ -302,7 +302,7 @@
                       <i class="far fa-question-circle mt-2" matTooltip="The algorithm for performing mutation on selected individuals" matTooltipPosition="right"></i>
                     </div>
                   </div>
-                  <div class="form-group row" *ngIf="geneticAlgorithmFormGroup.get('mutationAlgorithmName').value === mutationAlgorithmNames[0]">
+                  <div class="form-group row" *ngIf="geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[0]">
                     <div class="col-sm-11 mx-auto">
                       <mat-form-field appearance="outline">
                         <mat-label>Mutation Rate</mat-label>
@@ -314,7 +314,7 @@
                       <i class="far fa-question-circle mt-2" matTooltip="The rate of mutation for each gene within each individual" matTooltipPosition="right"></i>
                     </div>
                   </div>
-                  <div class="form-group row" *ngIf="geneticAlgorithmFormGroup.get('mutationAlgorithmName').value === mutationAlgorithmNames[1]">
+                  <div class="form-group row" *ngIf="geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[1]">
                     <div class="col-sm-11 mx-auto">
                       <mat-form-field appearance="outline">
                         <mat-label>Maximum Mutations Per Individual</mat-label>

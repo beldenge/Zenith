@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.crossover;
+package com.ciphertool.zenith.genetic.operators.crossover;
 
 /**
  * This class is a Data Transformation Object used to hold the index values needed during crossover. This allows these

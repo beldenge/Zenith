@@ -16,18 +16,31 @@
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
-
-package com.ciphertool.zenith.genetic.algorithms.mutation;
+package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.math.selection.RouletteSampler;
+import org.springframework.stereotype.Component;
 
-public interface MutationAlgorithm<T extends Chromosome> {
-    /**
-     * Performs a genetic mutation of the supplied Chromosome.
-     *
-     * @param chromosome the Chromosome to mutate
-     * @return whether the mutation was successful
-     */
-    boolean mutateChromosome(T chromosome, GeneticAlgorithmStrategy strategy);
+import java.util.List;
+
+@Component
+public class RouletteSelector implements Selector {
+    private RouletteSampler<Chromosome> rouletteSampler = new RouletteSampler<>();
+
+    @Override
+    public Selector getInstance() {
+        return new RouletteSelector();
+    }
+
+    @Override
+    public void reIndex(List<Chromosome> individuals) {
+        rouletteSampler.reIndex(individuals);
+    }
+
+    @Override
+    public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
+        return rouletteSampler.getNextIndex();
+    }
 }

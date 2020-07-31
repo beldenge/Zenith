@@ -20,8 +20,8 @@
 package com.ciphertool.zenith.genetic.statistics;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
+import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
+import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import org.junit.Test;
 
@@ -42,9 +42,9 @@ public class ExecutionStatisticsTest {
         assertSame(startDateToSet, executionStatistics.getStartDateTime());
         assertSame(strategy.getPopulationSize(), executionStatistics.getPopulationSize());
         assertSame(strategy.getMutationRate(), executionStatistics.getMutationRate());
-        assertEquals(strategy.getCrossoverAlgorithm().getClass().getSimpleName(), executionStatistics.getCrossoverAlgorithm());
+        assertEquals(strategy.getCrossoverOperator().getClass().getSimpleName(), executionStatistics.getCrossoverOperator());
         assertEquals(strategy.getFitnessEvaluator().getClass().getSimpleName(), executionStatistics.getFitnessEvaluator());
-        assertEquals(strategy.getMutationAlgorithm().getClass().getSimpleName(), executionStatistics.getMutationAlgorithm());
+        assertEquals(strategy.getMutationOperator().getClass().getSimpleName(), executionStatistics.getMutationOperator());
     }
 
     @Test
@@ -84,12 +84,12 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetCrossoverAlgorithm() {
-        String crossoverAlgorithmToSet = mock(CrossoverAlgorithm.class).getClass().getSimpleName();
+    public void testSetCrossoverOperator() {
+        String crossoverOperatorToSet = mock(CrossoverOperator.class).getClass().getSimpleName();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
-        executionStatistics.setCrossoverAlgorithm(crossoverAlgorithmToSet);
+        executionStatistics.setCrossoverOperator(crossoverOperatorToSet);
 
-        assertSame(crossoverAlgorithmToSet, executionStatistics.getCrossoverAlgorithm());
+        assertSame(crossoverOperatorToSet, executionStatistics.getCrossoverOperator());
     }
 
     @Test
@@ -102,12 +102,12 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetMutationAlgorithm() {
-        String mutationAlgorithmToSet = mock(MutationAlgorithm.class).getClass().getSimpleName();
+    public void testSetMutationOperator() {
+        String mutationOperatorToSet = mock(MutationOperator.class).getClass().getSimpleName();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
-        executionStatistics.setMutationAlgorithm(mutationAlgorithmToSet);
+        executionStatistics.setMutationOperator(mutationOperatorToSet);
 
-        assertSame(mutationAlgorithmToSet, executionStatistics.getMutationAlgorithm());
+        assertSame(mutationOperatorToSet, executionStatistics.getMutationOperator());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -191,20 +191,20 @@ public class ExecutionStatisticsTest {
         executionStatisticsWithDifferentMutationRate.setMutationRate(1.0);
         assertFalse(base.equals(executionStatisticsWithDifferentMutationRate));
 
-        ExecutionStatistics executionStatisticsWithDifferentCrossoverAlgorithm = new ExecutionStatistics(baseStartDate,
+        ExecutionStatistics executionStatisticsWithDifferentCrossoverOperator = new ExecutionStatistics(baseStartDate,
                 baseStrategy);
-        executionStatisticsWithDifferentCrossoverAlgorithm.setCrossoverAlgorithm("differentCrossoverAlgorithm");
-        assertFalse(base.equals(executionStatisticsWithDifferentCrossoverAlgorithm));
+        executionStatisticsWithDifferentCrossoverOperator.setCrossoverOperator("differentCrossoverOperator");
+        assertFalse(base.equals(executionStatisticsWithDifferentCrossoverOperator));
 
         ExecutionStatistics executionStatisticsWithDifferentFitnessEvaluator = new ExecutionStatistics(baseStartDate,
                 baseStrategy);
         executionStatisticsWithDifferentFitnessEvaluator.setFitnessEvaluator("differentFitnessEvaluator");
         assertFalse(base.equals(executionStatisticsWithDifferentFitnessEvaluator));
 
-        ExecutionStatistics executionStatisticsWithDifferentMutationAlgorithm = new ExecutionStatistics(baseStartDate,
+        ExecutionStatistics executionStatisticsWithDifferentMutationOperator = new ExecutionStatistics(baseStartDate,
                 baseStrategy);
-        executionStatisticsWithDifferentMutationAlgorithm.setMutationAlgorithm("differentMutationAlgorithm");
-        assertFalse(base.equals(executionStatisticsWithDifferentMutationAlgorithm));
+        executionStatisticsWithDifferentMutationOperator.setMutationOperator("differentMutationOperator");
+        assertFalse(base.equals(executionStatisticsWithDifferentMutationOperator));
 
         ExecutionStatistics executionStatisticsWithNullPropertiesA = new ExecutionStatistics();
         ExecutionStatistics executionStatisticsWithNullPropertiesB = new ExecutionStatistics();
@@ -215,16 +215,16 @@ public class ExecutionStatisticsTest {
     private static GeneticAlgorithmStrategy createGeneticAlgorithmStrategy() {
         Integer populationSizeToSet = 1000;
         Double mutationRateToSet = 0.05;
-        CrossoverAlgorithm crossoverAlgorithmToSet = mock(CrossoverAlgorithm.class);
+        CrossoverOperator crossoverOperatorToSet = mock(CrossoverOperator.class);
         FitnessEvaluator fitnessEvaluatorToSet = mock(FitnessEvaluator.class);
-        MutationAlgorithm mutationAlgorithmToSet = mock(MutationAlgorithm.class);
+        MutationOperator mutationOperatorToSet = mock(MutationOperator.class);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .populationSize(populationSizeToSet)
                 .mutationRate(mutationRateToSet)
-                .crossoverAlgorithm(crossoverAlgorithmToSet)
+                .crossoverOperator(crossoverOperatorToSet)
                 .fitnessEvaluator(fitnessEvaluatorToSet)
-                .mutationAlgorithm(mutationAlgorithmToSet)
+                .mutationOperator(mutationOperatorToSet)
                 .build();
 
         return strategy;

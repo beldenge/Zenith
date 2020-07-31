@@ -70,10 +70,10 @@ import java.util.stream.Collectors;
 
 @Configuration
 @ComponentScan(basePackages = {
-        "com.ciphertool.zenith.genetic.algorithms.crossover",
-        "com.ciphertool.zenith.genetic.algorithms.mutation",
-        "com.ciphertool.zenith.genetic.algorithms",
-        "com.ciphertool.zenith.genetic.algorithms.selection",
+        "com.ciphertool.zenith.genetic.operators.crossover",
+        "com.ciphertool.zenith.genetic.operators.mutation",
+        "com.ciphertool.zenith.genetic.operators",
+        "com.ciphertool.zenith.genetic.operators.selection",
         "com.ciphertool.zenith.genetic.population",
         "com.ciphertool.zenith.model.dao",
         "com.ciphertool.zenith.model.archive"

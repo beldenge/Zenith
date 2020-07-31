@@ -17,11 +17,11 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.crossover;
+package com.ciphertool.zenith.genetic.operators.crossover;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 
-public interface CrossoverAlgorithm<T extends Chromosome> {
+public interface CrossoverOperator<T extends Chromosome> {
 
     /**
      * Performs crossover to a List of children by cloning one or both of the parents and then selectively replacing

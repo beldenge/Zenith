@@ -17,10 +17,9 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms;
+package com.ciphertool.zenith.genetic.operators;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.speciation.SpeciationOperator;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.population.Population;
@@ -30,35 +29,23 @@ import com.ciphertool.zenith.genetic.statistics.PerformanceStatistics;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.stream.Collectors;
 
 @Component
-public class DivergentGeneticAlgorithm {
+public class StandardGeneticAlgorithm {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    private static final Comparator<Population> POPULATION_COMPARATOR = (pop1, pop2) -> {
-        Chromosome first = pop1.getIndividuals().get(pop1.getIndividuals().size() - 1);
-        Chromosome second = pop2.getIndividuals().get(pop2.getIndividuals().size() - 1);
-        return first.compareTo(second);
-    };
 
     @Value("${genetic-algorithm.calculate-entropy:false}")
     private boolean calculateEntropy;
-
-    @Autowired
-    private SpeciationOperator speciationOperator;
 
     public void spawnInitialPopulation(GeneticAlgorithmStrategy strategy) {
         GenerationStatistics generationStatistics = new GenerationStatistics(0);
@@ -89,62 +76,10 @@ public class DivergentGeneticAlgorithm {
     }
 
     public void evolve(GeneticAlgorithmStrategy strategy) {
-        List<Population> populations = new ArrayList<>(strategy.getMinPopulations());
-
-        for (int i = 0; i < strategy.getMinPopulations(); i ++) {
-            strategy.setPopulation(strategy.getPopulation().getInstance());
-            strategy.getPopulation().init(strategy);
-            evolvePopulation(strategy, true);
-            populations.add(strategy.getPopulation());
-        }
-
-        for (int i = 0; i < strategy.getExtinctionCycles(); i ++) {
-            if (populations.size() > strategy.getMinPopulations()) {
-                populations.stream().forEach(Population::sortIndividuals);
-
-                // Pick the "best" populations and reset to min populations
-                populations = populations.stream()
-                        .sorted(POPULATION_COMPARATOR.reversed())
-                        .limit(strategy.getMinPopulations())
-                        .collect(Collectors.toList());
-            }
-
-            for (int j = 0; j < strategy.getSpeciationEvents(); j ++) {
-                List<Population> newPopulations = new ArrayList<>(populations.size() * 2);
-
-                for (Population population : populations) {
-                    List<Population> divergentPopulations = speciationOperator.diverge(strategy, population);
-
-                    for (Population divergentPopulation : divergentPopulations) {
-                        strategy.setPopulation(divergentPopulation);
-                        strategy.getPopulation().init(strategy);
-                        evolvePopulation(strategy, false);
-                        newPopulations.add(strategy.getPopulation());
-                    }
-                }
-
-                populations.clear();
-                populations.addAll(newPopulations);
-            }
-        }
-
-        populations.stream().forEach(Population::sortIndividuals);
-
-        // Select the best population
-        Population bestPopulation = populations.stream()
-                .max(POPULATION_COMPARATOR)
-                .orElse(null);
-
-        strategy.setPopulation(bestPopulation);
-    }
-
-    private void evolvePopulation(GeneticAlgorithmStrategy strategy, boolean isNew) {
         int generationCount = 1;
         ExecutionStatistics executionStatistics = new ExecutionStatistics(LocalDateTime.now(), strategy);
 
-        if (isNew) {
-            spawnInitialPopulation(strategy);
-        }
+        spawnInitialPopulation(strategy);
 
         do {
             proceedWithNextGeneration(strategy, executionStatistics, generationCount);
@@ -237,7 +172,7 @@ public class DivergentGeneticAlgorithm {
          * guaranteed.
          */
         for (Parents nextParents : allParents) {
-            futureTask = new FutureTask<>(new DivergentGeneticAlgorithm.CrossoverTask(strategy, nextParents));
+            futureTask = new FutureTask<>(new CrossoverTask(strategy, nextParents));
             futureTasks.add(futureTask);
             strategy.getTaskExecutor().execute(futureTask);
         }
@@ -270,7 +205,7 @@ public class DivergentGeneticAlgorithm {
          * Execute each mutation concurrently.
          */
         for (Chromosome child : children) {
-            futureTask = new FutureTask<>(new DivergentGeneticAlgorithm.MutationTask(strategy, child));
+            futureTask = new FutureTask<>(new MutationTask(strategy, child));
             futureTasks.add(futureTask);
             strategy.getTaskExecutor().execute(futureTask);
         }
@@ -369,7 +304,7 @@ public class DivergentGeneticAlgorithm {
         @SuppressWarnings("unchecked")
         @Override
         public Chromosome call() {
-            return strategy.getCrossoverAlgorithm().crossover(parents.getMom(), parents.getDad());
+            return strategy.getCrossoverOperator().crossover(parents.getMom(), parents.getDad());
         }
     }
 
@@ -391,7 +326,7 @@ public class DivergentGeneticAlgorithm {
             /*
              * Mutate a gene within the Chromosome. The original Chromosome has been cloned.
              */
-            if (strategy.getMutationAlgorithm().mutateChromosome(chromosome, strategy)) {
+            if (strategy.getMutationOperator().mutateChromosome(chromosome, strategy)) {
                 return 1;
             }
 

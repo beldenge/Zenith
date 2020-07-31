@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.speciation;
+package com.ciphertool.zenith.genetic.operators.speciation;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.population.Population;

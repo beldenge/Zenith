@@ -10,7 +10,7 @@ In order to build a genetic algorithm using this module, you'll need to create i
 1. Gene - an 'atomic' piece of genetic information that can be mutated, crossed over, etc.
 2. Chromosome - essentially a collection of Genes
 3. Breeder - produces new individuals, for example when initializing the population
-4. GeneDao - produces novel Genes for use in mutation algorithms
+4. GeneDao - produces novel Genes for use in mutation operators
 5. FitnessEvaluator - Score the fitness of individuals in the population.  This is the most critical part to get right.
 
 Your GeneDao needs to be injectable by Spring (e.g. annotated as @Component and included in the component scan).  The others can be instantiated however you prefer as they will be manually set in the GeneticAlgorithmStrategy explained below.
@@ -25,8 +25,8 @@ Then in the body of your class (e.g. main method), you'll need to set your hyper
 ```java
 GeneticAlgorithmStrategy geneticAlgorithmStrategy = GeneticAlgorithmStrategy.builder()
         .population(population)
-        .crossoverAlgorithm(crossoverAlgorithm)
-        .mutationAlgorithm(mutationAlgorithm)
+        .crossoverOperator(crossoverOperator)
+        .mutationOperator(mutationOperator)
         .selector(selector)
         .fitnessEvaluator(fitnessEvaluator)
         .breeder(breeder)
@@ -61,25 +61,23 @@ The following Population implementations are available out of the box.  They are
    - The population topology is a two-dimensional lattice.  In theory this increases diversity because individuals can only reproduce with other individuals which are close to it on the lattice.
 
 # Crossover Implementations
-The following crossover implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.crossover```.
+The following crossover implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.operators.crossover```.
 
-1. GeneWiseCrossoverAlgorithm
+1. UniformCrossoverOperator
    - For each gene, there's an equal chance it will come from the first parent or second parent.
-2. RandomSinglePointCrossoverAlgorithm
+2. SinglePointCrossoverOperator
    - Picks a random gene index and then assigns all the genes prior to and including that index from the second parent, and it assigns all the genes after that index from the first parent.
 
 # Mutation Implementations
-The following mutation implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.mutation```.
+The following mutation implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.operators.mutation```.
 
-1. StandardMutationAlgorithm
+1. PointMutationOperator
    - Gives each gene a chance of mutation (defined by the mutation rate).  Each new gene is chosen randomly.
-2. MultipleMutationAlgorithm
+2. MultipleMutationOperator
    - Chooses a random number of mutations to perform, constrained by the configurable max, and then that number of genes are chosen at random to be mutated.  Each new gene is chosen randomly.
-3. MandatorySingleMutationAlgorithm
-   - Unconditionally mutates exactly one gene chosen at random.  The new gene is also chosen randomly.
 
 # Selection Implementations
-The following selection implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.algorithms.selection```.
+The following selection implementations are available out of the box.  They are in the package ```com.ciphertool.zenith.genetic.operators.selection```.
 
 1. RouletteSelector
    - Selects an individual based on the probability distribution of fitness values.  This should always be used unless there is a very good reason not to.

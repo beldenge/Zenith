@@ -17,11 +17,11 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms;
+package com.ciphertool.zenith.genetic.operators;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
+import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
+import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.mocks.MockChromosome;
@@ -81,8 +81,8 @@ public class StandardGeneticAlgorithmTest {
         when(populationMock.removeIndividual(anyInt())).thenReturn(new MockChromosome());
         when(populationMock.size()).thenReturn(initialPopulationSize);
 
-        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
-        CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
+        MutationOperator mutationOperatorMock = mock(MutationOperator.class);
+        CrossoverOperator crossoverOperatorMock = mock(CrossoverOperator.class);
 
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
         doAnswer(invocation -> {
@@ -96,13 +96,13 @@ public class StandardGeneticAlgorithmTest {
                 .population(populationMock)
                 .populationSize(populationSize)
                 .mutationRate(mutationRate)
-                .mutationAlgorithm(mutationAlgorithmMock)
-                .crossoverAlgorithm(crossoverAlgorithmMock)
+                .mutationOperator(mutationOperatorMock)
+                .crossoverOperator(crossoverOperatorMock)
                 .elitism(0)
                 .build();
 
         Chromosome chromosomeToReturn = new MockChromosome();
-        when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
+        when(crossoverOperatorMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
 
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
 
@@ -127,11 +127,11 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, never()).calculateEntropy();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationAlgorithmMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
-        verifyNoMoreInteractions(mutationAlgorithmMock);
+        verify(mutationOperatorMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
+        verifyNoMoreInteractions(mutationOperatorMock);
 
-        verify(crossoverAlgorithmMock, times(100)).crossover(any(Chromosome.class), any(Chromosome.class));
-        verifyNoMoreInteractions(crossoverAlgorithmMock);
+        verify(crossoverOperatorMock, times(100)).crossover(any(Chromosome.class), any(Chromosome.class));
+        verifyNoMoreInteractions(crossoverOperatorMock);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -156,15 +156,15 @@ public class StandardGeneticAlgorithmTest {
             return null;
         }).when(taskExecutorMock).execute(any(FutureTask.class));
 
-        CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
+        CrossoverOperator crossoverOperatorMock = mock(CrossoverOperator.class);
 
         Chromosome chromosomeToReturn = new MockChromosome();
-        when(crossoverAlgorithmMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
+        when(crossoverOperatorMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutorMock)
                 .population(populationMock)
-                .crossoverAlgorithm(crossoverAlgorithmMock)
+                .crossoverOperator(crossoverOperatorMock)
                 .elitism(0)
                 .populationSize(initialPopulationSize)
                 .build();
@@ -182,8 +182,8 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).size();
         verifyNoMoreInteractions(populationMock);
 
-        verify(crossoverAlgorithmMock, times(50)).crossover(any(Chromosome.class), any(Chromosome.class));
-        verifyNoMoreInteractions(crossoverAlgorithmMock);
+        verify(crossoverOperatorMock, times(50)).crossover(any(Chromosome.class), any(Chromosome.class));
+        verifyNoMoreInteractions(crossoverOperatorMock);
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -198,10 +198,10 @@ public class StandardGeneticAlgorithmTest {
         Chromosome chromosome = new MockChromosome();
         population.addIndividual(chromosome);
 
-        CrossoverAlgorithm crossoverAlgorithmMock = mock(CrossoverAlgorithm.class);
+        CrossoverOperator crossoverOperatorMock = mock(CrossoverOperator.class);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
-                .crossoverAlgorithm(crossoverAlgorithmMock)
+                .crossoverOperator(crossoverOperatorMock)
                 .population(population)
                 .build();
 
@@ -217,7 +217,7 @@ public class StandardGeneticAlgorithmTest {
 
         assertEquals(0, children.size());
 
-        verifyNoInteractions(crossoverAlgorithmMock);
+        verifyNoInteractions(crossoverOperatorMock);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -243,13 +243,13 @@ public class StandardGeneticAlgorithmTest {
 
         double mutationRate = 0.5;
 
-        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
+        MutationOperator mutationOperatorMock = mock(MutationOperator.class);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutorMock)
                 .population(populationMock)
                 .mutationRate(mutationRate)
-                .mutationAlgorithm(mutationAlgorithmMock)
+                .mutationOperator(mutationOperatorMock)
                 .elitism(0)
                 .build();
 
@@ -258,8 +258,8 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).sortIndividuals();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationAlgorithmMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
-        verifyNoMoreInteractions(mutationAlgorithmMock);
+        verify(mutationOperatorMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
+        verifyNoMoreInteractions(mutationOperatorMock);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -285,13 +285,13 @@ public class StandardGeneticAlgorithmTest {
 
         double mutationRate = 0.5;
 
-        MutationAlgorithm mutationAlgorithmMock = mock(MutationAlgorithm.class);
+        MutationOperator mutationOperatorMock = mock(MutationOperator.class);
 
         GeneticAlgorithmStrategy strategyToSet = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutorMock)
                 .population(populationMock)
                 .mutationRate(mutationRate)
-                .mutationAlgorithm(mutationAlgorithmMock)
+                .mutationOperator(mutationOperatorMock)
                 .elitism(0)
                 .build();
 
@@ -300,8 +300,8 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).sortIndividuals();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationAlgorithmMock, times(initialPopulationSize)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
-        verifyNoMoreInteractions(mutationAlgorithmMock);
+        verify(mutationOperatorMock, times(initialPopulationSize)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
+        verifyNoMoreInteractions(mutationOperatorMock);
     }
 
     @Test

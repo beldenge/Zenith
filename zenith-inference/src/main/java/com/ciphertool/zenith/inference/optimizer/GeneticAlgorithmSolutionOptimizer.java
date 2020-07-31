@@ -21,10 +21,10 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.DivergentGeneticAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.crossover.CrossoverAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.mutation.MutationAlgorithm;
-import com.ciphertool.zenith.genetic.algorithms.selection.Selector;
+import com.ciphertool.zenith.genetic.operators.DivergentGeneticAlgorithm;
+import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
+import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
+import com.ciphertool.zenith.genetic.operators.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
@@ -62,8 +62,8 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String LATTICE_WRAP_AROUND = "latticeWrapAround";
     public static final String LATTICE_RADIUS = "latticeRadius";
     public static final String BREEDER_NAME = "breederName";
-    public static final String CROSSOVER_ALGORITHM_NAME = "crossoverAlgorithmName";
-    public static final String MUTATION_ALGORITHM_NAME = "mutationAlgorithmName";
+    public static final String CROSSOVER_OPERATOR_NAME = "crossoverOperatorName";
+    public static final String MUTATION_OPERATOR_NAME = "mutationOperatorName";
     public static final String MUTATION_RATE = "mutationRate";
     public static final String MAX_MUTATIONS_PER_INDIVIDUAL = "maxMutationsPerIndividual";
     public static final String SELECTOR_NAME = "selectorName";
@@ -90,10 +90,10 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     private List<Breeder> breeders;
 
     @Autowired
-    private List<CrossoverAlgorithm> crossoverAlgorithms;
+    private List<CrossoverOperator> crossoverOperators;
 
     @Autowired
-    private List<MutationAlgorithm> mutationAlgorithms;
+    private List<MutationOperator> mutationOperators;
 
     @Autowired
     private List<Selector> selectors;
@@ -101,15 +101,15 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public GeneticAlgorithmInitialization init(Cipher cipher, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         Population population = null;
         Breeder breeder = null;
-        CrossoverAlgorithm crossoverAlgorithm = null;
-        MutationAlgorithm mutationAlgorithm = null;
+        CrossoverOperator crossoverOperator = null;
+        MutationOperator mutationOperator = null;
         Selector selector = null;
         FitnessEvaluator fitnessEvaluator;
 
         String populationName = (String) configuration.get(POPULATION_NAME);
         String breederName = (String) configuration.get(BREEDER_NAME);
-        String crossoverAlgorithmName = (String) configuration.get(CROSSOVER_ALGORITHM_NAME);
-        String mutationAlgorithmName = (String) configuration.get(MUTATION_ALGORITHM_NAME);
+        String crossoverOperatorName = (String) configuration.get(CROSSOVER_OPERATOR_NAME);
+        String mutationOperatorName = (String) configuration.get(MUTATION_OPERATOR_NAME);
         String selectorName = (String) configuration.get(SELECTOR_NAME);
 
         // Set the proper Population
@@ -147,38 +147,38 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
             throw new IllegalArgumentException("The Breeder with name " + breederName + " does not exist.");
         }
 
-        // Set the proper CrossoverAlgorithm
-        for (CrossoverAlgorithm nextCrossoverAlgorithm : crossoverAlgorithms) {
-            if (nextCrossoverAlgorithm.getClass().getSimpleName().equals(crossoverAlgorithmName)) {
-                crossoverAlgorithm = nextCrossoverAlgorithm;
+        // Set the proper CrossoverOperator
+        for (CrossoverOperator nextCrossoverOperator : crossoverOperators) {
+            if (nextCrossoverOperator.getClass().getSimpleName().equals(crossoverOperatorName)) {
+                crossoverOperator = nextCrossoverOperator;
                 break;
             }
         }
 
-        if (crossoverAlgorithm == null) {
-            List<String> existentCrossoverAlgorithms = crossoverAlgorithms.stream()
-                    .map(nextCrossoverAlgorithm -> nextCrossoverAlgorithm.getClass().getSimpleName())
+        if (crossoverOperator == null) {
+            List<String> existentCrossoverOperators = crossoverOperators.stream()
+                    .map(nextCrossoverOperator -> nextCrossoverOperator.getClass().getSimpleName())
                     .collect(Collectors.toList());
 
-            log.error("The CrossoverAlgorithm with name {} does not exist.  Please use a name from the following: {}", crossoverAlgorithmName, existentCrossoverAlgorithms);
-            throw new IllegalArgumentException("The CrossoverAlgorithm with name " + crossoverAlgorithmName + " does not exist.");
+            log.error("The CrossoverOperator with name {} does not exist.  Please use a name from the following: {}", crossoverOperatorName, existentCrossoverOperators);
+            throw new IllegalArgumentException("The CrossoverOperator with name " + crossoverOperatorName + " does not exist.");
         }
 
-        // Set the proper MutationAlgorithm
-        for (MutationAlgorithm nextMutationAlgorithm : mutationAlgorithms) {
-            if (nextMutationAlgorithm.getClass().getSimpleName().equals(mutationAlgorithmName)) {
-                mutationAlgorithm = nextMutationAlgorithm;
+        // Set the proper MutationOperator
+        for (MutationOperator nextMutationOperator : mutationOperators) {
+            if (nextMutationOperator.getClass().getSimpleName().equals(mutationOperatorName)) {
+                mutationOperator = nextMutationOperator;
                 break;
             }
         }
 
-        if (mutationAlgorithm == null) {
-            List<String> existentMutationAlgorithms = mutationAlgorithms.stream()
-                    .map(nextMutationAlgorithm -> nextMutationAlgorithm.getClass().getSimpleName())
+        if (mutationOperator == null) {
+            List<String> existentMutationOperators = mutationOperators.stream()
+                    .map(nextMutationOperator -> nextMutationOperator.getClass().getSimpleName())
                     .collect(Collectors.toList());
 
-            log.error("The MutationAlgorithm with name {} does not exist.  Please use a name from the following: {}", mutationAlgorithmName, existentMutationAlgorithms);
-            throw new IllegalArgumentException("The MutationAlgorithm with name " + mutationAlgorithmName + " does not exist.");
+            log.error("The MutationOperator with name {} does not exist.  Please use a name from the following: {}", mutationOperatorName, existentMutationOperators);
+            throw new IllegalArgumentException("The MutationOperator with name " + mutationOperatorName + " does not exist.");
         }
 
         // Set the proper Selector
@@ -203,8 +203,8 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         return GeneticAlgorithmInitialization.builder()
                 .population(population)
                 .breeder(breeder)
-                .crossoverAlgorithm(crossoverAlgorithm)
-                .mutationAlgorithm(mutationAlgorithm)
+                .crossoverOperator(crossoverOperator)
+                .mutationOperator(mutationOperator)
                 .selector(selector)
                 .fitnessEvaluator(fitnessEvaluator)
                 .build();
@@ -245,8 +245,8 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .latticeRadius(latticeRadius)
                 .fitnessEvaluator(initialization.getFitnessEvaluator())
                 .breeder(initialization.getBreeder())
-                .crossoverAlgorithm(initialization.getCrossoverAlgorithm())
-                .mutationAlgorithm(initialization.getMutationAlgorithm())
+                .crossoverOperator(initialization.getCrossoverOperator())
+                .mutationOperator(initialization.getMutationOperator())
                 .mutationRate(mutationRate)
                 .maxMutationsPerIndividual(maxMutationsPerIndividual)
                 .selector(initialization.getSelector())

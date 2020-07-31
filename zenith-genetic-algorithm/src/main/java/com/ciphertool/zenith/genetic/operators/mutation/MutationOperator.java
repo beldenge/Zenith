@@ -16,24 +16,18 @@
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ciphertool.zenith.genetic.algorithms.selection;
+
+package com.ciphertool.zenith.genetic.operators.mutation;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 
-import java.util.List;
-
-public interface Selector {
-    Selector getInstance();
-
+public interface MutationOperator<T extends Chromosome> {
     /**
-     * @param individuals the individuals to index
+     * Performs a genetic mutation of the supplied Chromosome.
+     *
+     * @param chromosome the Chromosome to mutate
+     * @return whether the mutation was successful
      */
-    void reIndex(List<Chromosome> individuals);
-
-    /**
-     * @param individuals  the List of individuals to select from
-     * @return the indice of the chosen individual within the population
-     */
-    int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy);
+    boolean mutateChromosome(T chromosome, GeneticAlgorithmStrategy strategy);
 }

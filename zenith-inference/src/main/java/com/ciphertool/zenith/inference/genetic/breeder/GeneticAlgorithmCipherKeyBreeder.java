@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.inference.genetic.breeder;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.algorithms.StandardGeneticAlgorithm;
+import com.ciphertool.zenith.genetic.operators.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.inference.configuration.GeneticAlgorithmInitialization;
 import com.ciphertool.zenith.inference.entities.Cipher;
@@ -68,8 +68,8 @@ public class GeneticAlgorithmCipherKeyBreeder extends AbstractCipherKeyBreeder {
         Map<String, Object> configuration = new HashMap<>();
         configuration.put(GeneticAlgorithmSolutionOptimizer.POPULATION_NAME, "StandardPopulation");
         configuration.put(GeneticAlgorithmSolutionOptimizer.BREEDER_NAME, "ProbabilisticCipherKeyBreeder");
-        configuration.put(GeneticAlgorithmSolutionOptimizer.CROSSOVER_ALGORITHM_NAME, "GeneWiseCrossoverAlgorithm");
-        configuration.put(GeneticAlgorithmSolutionOptimizer.MUTATION_ALGORITHM_NAME, "StandardMutationAlgorithm");
+        configuration.put(GeneticAlgorithmSolutionOptimizer.CROSSOVER_OPERATOR_NAME, "UniformCrossoverOperator");
+        configuration.put(GeneticAlgorithmSolutionOptimizer.MUTATION_OPERATOR_NAME, "PointMutationOperator");
         configuration.put(GeneticAlgorithmSolutionOptimizer.SELECTOR_NAME, "TournamentSelector");
 
         GeneticAlgorithmInitialization initialization = optimizer.init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
@@ -82,8 +82,8 @@ public class GeneticAlgorithmCipherKeyBreeder extends AbstractCipherKeyBreeder {
                 .population(initialization.getPopulation())
                 .fitnessEvaluator(initialization.getFitnessEvaluator())
                 .breeder(initialization.getBreeder())
-                .crossoverAlgorithm(initialization.getCrossoverAlgorithm())
-                .mutationAlgorithm(initialization.getMutationAlgorithm())
+                .crossoverOperator(initialization.getCrossoverOperator())
+                .mutationOperator(initialization.getMutationOperator())
                 .mutationRate(0.01)
                 .selector(initialization.getSelector())
                 .tournamentSelectorAccuracy(0.9)

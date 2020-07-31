@@ -17,24 +17,13 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.configuration;
+package com.ciphertool.zenith.genetic.operators.speciation;
 
-import com.ciphertool.zenith.genetic.Breeder;
-import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
-import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
-import com.ciphertool.zenith.genetic.operators.selection.Selector;
-import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.population.Population;
-import lombok.Builder;
-import lombok.Getter;
 
-@Getter
-@Builder
-public class GeneticAlgorithmInitialization {
-    private Population population;
-    private Breeder breeder;
-    private CrossoverOperator crossoverOperator;
-    private MutationOperator mutationOperator;
-    private Selector selector;
-    private FitnessEvaluator fitnessEvaluator;
+import java.util.List;
+
+public interface SpeciationOperator {
+    List<Population> diverge(GeneticAlgorithmStrategy strategy, Population population);
 }

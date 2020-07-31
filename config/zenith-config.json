@@ -1,6 +1,6 @@
 {
   "selectedCipher" : "zodiac408",
-  "epochs": 100,
+  "epochs": 1,
   "selectedOptimizer": {
     "name": "GeneticAlgorithm"
   },
@@ -22,8 +22,8 @@
     "latticeWrapAround": true,
     "latticeRadius": 1,
     "breederName": "ProbabilisticCipherKeyBreeder",
-    "crossoverAlgorithmName": "GeneWiseCrossoverAlgorithm",
-    "mutationAlgorithmName": "StandardMutationAlgorithm",
+    "crossoverOperatorName": "UniformCrossoverOperator",
+    "mutationOperatorName": "PointMutationOperator",
     "mutationRate": 0.01,
     "maxMutationsPerIndividual": 5,
     "selectorName": "TournamentSelector",

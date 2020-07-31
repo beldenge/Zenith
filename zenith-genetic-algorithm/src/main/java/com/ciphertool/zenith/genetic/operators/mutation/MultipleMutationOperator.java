@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.mutation;
+package com.ciphertool.zenith.genetic.operators.mutation;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class MultipleMutationAlgorithm implements MutationAlgorithm<Chromosome<Object>> {
+public class MultipleMutationOperator implements MutationOperator<Chromosome<Object>> {
     @Autowired
     private GeneDao geneDao;
 

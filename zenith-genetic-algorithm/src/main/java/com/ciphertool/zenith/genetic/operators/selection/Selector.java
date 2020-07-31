@@ -16,14 +16,24 @@
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
-
-package com.ciphertool.zenith.genetic.algorithms.speciation;
+package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.genetic.entities.Chromosome;
 
 import java.util.List;
 
-public interface SpeciationOperator {
-    List<Population> diverge(GeneticAlgorithmStrategy strategy, Population population);
+public interface Selector {
+    Selector getInstance();
+
+    /**
+     * @param individuals the individuals to index
+     */
+    void reIndex(List<Chromosome> individuals);
+
+    /**
+     * @param individuals  the List of individuals to select from
+     * @return the indice of the chosen individual within the population
+     */
+    int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy);
 }

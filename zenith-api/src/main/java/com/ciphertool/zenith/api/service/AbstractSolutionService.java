@@ -120,8 +120,8 @@ public abstract class AbstractSolutionService {
             configuration.put(GeneticAlgorithmSolutionOptimizer.LATTICE_WRAP_AROUND, geneticAlgorithmConfiguration.getLatticeWrapAround());
             configuration.put(GeneticAlgorithmSolutionOptimizer.LATTICE_RADIUS, geneticAlgorithmConfiguration.getLatticeRadius());
             configuration.put(GeneticAlgorithmSolutionOptimizer.BREEDER_NAME, geneticAlgorithmConfiguration.getBreederName());
-            configuration.put(GeneticAlgorithmSolutionOptimizer.CROSSOVER_ALGORITHM_NAME, geneticAlgorithmConfiguration.getCrossoverAlgorithmName());
-            configuration.put(GeneticAlgorithmSolutionOptimizer.MUTATION_ALGORITHM_NAME, geneticAlgorithmConfiguration.getMutationAlgorithmName());
+            configuration.put(GeneticAlgorithmSolutionOptimizer.CROSSOVER_OPERATOR_NAME, geneticAlgorithmConfiguration.getCrossoverOperatorName());
+            configuration.put(GeneticAlgorithmSolutionOptimizer.MUTATION_OPERATOR_NAME, geneticAlgorithmConfiguration.getMutationOperatorName());
             configuration.put(GeneticAlgorithmSolutionOptimizer.MUTATION_RATE, geneticAlgorithmConfiguration.getMutationRate());
             configuration.put(GeneticAlgorithmSolutionOptimizer.MAX_MUTATIONS_PER_INDIVIDUAL, geneticAlgorithmConfiguration.getMaxMutationsPerIndividual());
             configuration.put(GeneticAlgorithmSolutionOptimizer.SELECTOR_NAME, geneticAlgorithmConfiguration.getSelectorName());

@@ -37,9 +37,9 @@ public class ExecutionStatistics {
     private LocalDateTime endDateTime;
     private Integer populationSize;
     private Double mutationRate;
-    private String crossoverAlgorithm;
+    private String crossoverOperator;
     private String fitnessEvaluator;
-    private String mutationAlgorithm;
+    private String mutationOperator;
 
     private List<GenerationStatistics> generationStatisticsList = new ArrayList<>();
 
@@ -52,9 +52,9 @@ public class ExecutionStatistics {
 
         this.populationSize = strategy.getPopulationSize();
         this.mutationRate = strategy.getMutationRate();
-        this.crossoverAlgorithm = (strategy.getCrossoverAlgorithm() != null) ? strategy.getCrossoverAlgorithm().getClass().getSimpleName() : null;
+        this.crossoverOperator = (strategy.getCrossoverOperator() != null) ? strategy.getCrossoverOperator().getClass().getSimpleName() : null;
         this.fitnessEvaluator = (strategy.getFitnessEvaluator() != null) ? strategy.getFitnessEvaluator().getClass().getSimpleName() : null;
-        this.mutationAlgorithm = (strategy.getMutationAlgorithm() != null) ? strategy.getMutationAlgorithm().getClass().getSimpleName() : null;
+        this.mutationOperator = (strategy.getMutationOperator() != null) ? strategy.getMutationOperator().getClass().getSimpleName() : null;
     }
 
     /**

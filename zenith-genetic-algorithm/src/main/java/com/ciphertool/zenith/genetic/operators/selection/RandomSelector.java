@@ -16,36 +16,25 @@
  * You should have received a copy of the GNU General Public License along with
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ciphertool.zenith.genetic.algorithms.selection;
+package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class TournamentSelector implements Selector {
+public class RandomSelector implements Selector {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    private RandomSelector randomSelector;
-
-    @Autowired
-    public TournamentSelector(RandomSelector randomSelector) {
-        this.randomSelector = randomSelector;
-    }
 
     @Override
     public Selector getInstance() {
-        return new TournamentSelector(randomSelector);
+        return new RandomSelector();
     }
 
     @Override
@@ -61,26 +50,6 @@ public class TournamentSelector implements Selector {
             return -1;
         }
 
-        double selectionAccuracy = strategy.getTournamentSelectorAccuracy();
-        int tournamentSize = strategy.getTournamentSize();
-
-        SortedMap<Integer, Chromosome> competitors = new TreeMap<>(Comparator.reverseOrder());
-
-        for (int i = 0; i < Math.min(tournamentSize, individuals.size()); i ++) {
-            int chosenIndex = randomSelector.getNextIndex(individuals, strategy);
-
-            // TODO: How to handle whether we've chosen the same individual more than once? -- since it's a map, the tournament size just suffers
-            // Even though we don't use the map value, it is necessary since we use a SortedMap to order by fitness
-            competitors.put(chosenIndex, individuals.get(chosenIndex));
-        }
-
-        for (Integer index : competitors.keySet()) {
-            if (ThreadLocalRandom.current().nextDouble() <= selectionAccuracy) {
-                return index;
-            }
-        }
-
-        // return the least fit individual since it won the tournament
-        return competitors.lastKey();
+        return (int) (ThreadLocalRandom.current().nextDouble() * individuals.size());
     }
 }

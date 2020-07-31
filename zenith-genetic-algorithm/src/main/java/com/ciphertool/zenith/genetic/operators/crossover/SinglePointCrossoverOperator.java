@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.algorithms.crossover;
+package com.ciphertool.zenith.genetic.operators.crossover;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.util.Coin;
@@ -27,7 +27,7 @@ import java.util.Random;
 import java.util.Set;
 
 @Component
-public class RandomSinglePointCrossoverAlgorithm implements CrossoverAlgorithm<Chromosome<Object>> {
+public class SinglePointCrossoverOperator implements CrossoverOperator<Chromosome<Object>> {
     private Coin coin = new Coin();
 
     @Override

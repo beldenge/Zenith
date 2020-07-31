@@ -48,8 +48,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   availableFitnessFunctions: ZenithFitnessFunction[] = [];
   populationNames: SelectOption[] = ConfigurationService.POPULATION_NAMES;
   breederNames: SelectOption[] = ConfigurationService.BREEDER_NAMES;
-  crossoverAlgorithmNames: SelectOption[] = ConfigurationService.CROSSOVER_ALGORITHM_NAMES;
-  mutationAlgorithmNames: SelectOption[] = ConfigurationService.MUTATION_ALGORITHM_NAMES;
+  crossoverOperatorNames: SelectOption[] = ConfigurationService.CROSSOVER_OPERATOR_NAMES;
+  mutationOperatorNames: SelectOption[] = ConfigurationService.MUTATION_OPERATOR_NAMES;
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
   selectedFitnessFunction: ZenithFitnessFunction;
   featuresSubscription: Subscription;
@@ -73,8 +73,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     latticeWrapAround: [null],
     latticeRadius: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
     breederName: [null],
-    crossoverAlgorithmName: [null],
-    mutationAlgorithmName: [null],
+    crossoverOperatorName: [null],
+    mutationOperatorName: [null],
     mutationRate: [null, [Validators.min(0.0), Validators.max(1.0), Validators.pattern(DECIMAL_PATTERN)]],
     maxMutationsPerIndividual: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     selectorName: [null],
@@ -136,8 +136,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
         latticeWrapAround: configuration.latticeWrapAround,
         latticeRadius: configuration.latticeRadius,
         breederName: this.breederNames.find(name => name.name === configuration.breederName),
-        crossoverAlgorithmName: this.crossoverAlgorithmNames.find(name => name.name === configuration.crossoverAlgorithmName),
-        mutationAlgorithmName: this.mutationAlgorithmNames.find(name => name.name === configuration.mutationAlgorithmName),
+        crossoverOperatorName: this.crossoverOperatorNames.find(name => name.name === configuration.crossoverOperatorName),
+        mutationOperatorName: this.mutationOperatorNames.find(name => name.name === configuration.mutationOperatorName),
         mutationRate: configuration.mutationRate,
         maxMutationsPerIndividual: configuration.maxMutationsPerIndividual,
         selectorName: this.selectorNames.find(name => name.name === configuration.selectorName),
@@ -239,8 +239,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
           latticeWrapAround: this.geneticAlgorithmFormGroup.get('latticeWrapAround').value,
           latticeRadius: this.geneticAlgorithmFormGroup.get('latticeRadius').value,
           breederName: this.geneticAlgorithmFormGroup.get('breederName').value.name,
-          crossoverAlgorithmName: this.geneticAlgorithmFormGroup.get('crossoverAlgorithmName').value.name,
-          mutationAlgorithmName: this.geneticAlgorithmFormGroup.get('mutationAlgorithmName').value.name,
+          crossoverOperatorName: this.geneticAlgorithmFormGroup.get('crossoverOperatorName').value.name,
+          mutationOperatorName: this.geneticAlgorithmFormGroup.get('mutationOperatorName').value.name,
           mutationRate: this.geneticAlgorithmFormGroup.get('mutationRate').value,
           maxMutationsPerIndividual: this.geneticAlgorithmFormGroup.get('maxMutationsPerIndividual').value,
           selectorName: this.geneticAlgorithmFormGroup.get('selectorName').value.name,

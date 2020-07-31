@@ -70,23 +70,20 @@ export class ConfigurationService {
     displayName: 'Probabilistic'
   }];
 
-  static readonly CROSSOVER_ALGORITHM_NAMES: SelectOption[] = [{
-    name: 'GeneWiseCrossoverAlgorithm',
-    displayName: 'Gene-Wise'
+  static readonly CROSSOVER_OPERATOR_NAMES: SelectOption[] = [{
+    name: 'GeneWiseCrossoverOperator',
+    displayName: 'Uniform'
   }, {
-    name: 'RandomSinglePointCrossoverAlgorithm',
-    displayName: 'Random Single-Point'
+    name: 'SinglePointCrossoverOperator',
+    displayName: 'Single-Point'
   }];
 
-  static readonly MUTATION_ALGORITHM_NAMES: SelectOption[] = [{
-    name: 'StandardMutationAlgorithm',
-    displayName: 'Standard'
+  static readonly MUTATION_OPERATOR_NAMES: SelectOption[] = [{
+    name: 'PointMutationOperator',
+    displayName: 'Point'
   }, {
-    name: 'MultipleMutationAlgorithm',
+    name: 'MultipleMutationOperator',
     displayName: 'Multiple'
-  }, {
-    name: 'MandatorySingleMutationAlgorithm',
-    displayName: 'Mandatory Single'
   }];
 
   static readonly SELECTOR_NAMES: SelectOption[] = [{
