@@ -35,6 +35,4 @@ public class PerformanceStatistics {
     private long mutationMillis;
     private long evaluationMillis;
     private long entropyMillis;
-    private long sharingMillis;
-    private long invasiveMillis;
 }

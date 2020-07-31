@@ -164,10 +164,6 @@ public class DivergentGeneticAlgorithm {
 
         Population population = strategy.getPopulation();
 
-        long startInvasiveSpeciesGeneration = System.currentTimeMillis();
-        List<Chromosome> invasiveSpecies = strategy.getInvasiveSpeciesCount() == null ? Collections.EMPTY_LIST : population.breed(strategy.getInvasiveSpeciesCount());
-        performanceStats.setInvasiveMillis(System.currentTimeMillis() - startInvasiveSpeciesGeneration);
-
         long startSelection = System.currentTimeMillis();
         List<Parents> allParents = population.select();
         performanceStats.setSelectionMillis(System.currentTimeMillis() - startSelection);
@@ -181,7 +177,7 @@ public class DivergentGeneticAlgorithm {
         generationStatistics.setNumberOfMutations(mutate(strategy, children));
         performanceStats.setMutationMillis(System.currentTimeMillis() - startMutation);
 
-        replacePopulation(strategy, children, invasiveSpecies);
+        replacePopulation(strategy, children);
 
         if (calculateEntropy) {
             long startEntropyCalculation = System.currentTimeMillis();
@@ -192,11 +188,6 @@ public class DivergentGeneticAlgorithm {
         long startEvaluation = System.currentTimeMillis();
         population.evaluateFitness(generationStatistics);
         performanceStats.setEvaluationMillis(System.currentTimeMillis() - startEvaluation);
-
-        invasiveSpecies.stream().forEach(invasiveIndividual ->  {
-            population.updateFitnessForIndividual(invasiveIndividual, invasiveIndividual.getFitness() * 0.9f);
-        });
-
         performanceStats.setTotalMillis(System.currentTimeMillis() - generationStart);
 
         log.info(generationStatistics.toString());
@@ -220,7 +211,7 @@ public class DivergentGeneticAlgorithm {
             childrenToAdd.addAll(crossoverResults);
         }
 
-        if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism() + (strategy.getInvasiveSpeciesCount() != null ? strategy.getInvasiveSpeciesCount() : 0)) < strategy.getPopulationSize()) {
+        if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism()) < strategy.getPopulationSize()) {
             throw new IllegalStateException(((null == childrenToAdd) ? "No" : childrenToAdd.size()) +
                     " children produced from concurrent crossover execution.  Expected " + strategy.getPopulationSize() + " children.");
         }
@@ -288,7 +279,7 @@ public class DivergentGeneticAlgorithm {
         return mutations;
     }
 
-    protected void replacePopulation(GeneticAlgorithmStrategy strategy, List<Chromosome> children, List<Chromosome> invasiveSpecies) {
+    protected void replacePopulation(GeneticAlgorithmStrategy strategy, List<Chromosome> children) {
         List<Chromosome> eliteIndividuals = new ArrayList<>();
 
         Population population = strategy.getPopulation();
@@ -303,25 +294,8 @@ public class DivergentGeneticAlgorithm {
 
         population.clearIndividuals();
 
-        for (Chromosome elite : eliteIndividuals) {
-            population.addIndividual(elite);
-
-            // If shareFitness is enabled, we have to force evaluation in order to avoid modifying the fitness from previous generations
-            if (strategy.getShareFitness() != null && strategy.getShareFitness()) {
-                elite.setEvaluationNeeded(true);
-            }
-        }
-
-        for (Chromosome child : children) {
-            population.addIndividual(child);
-
-            // If shareFitness is enabled, we have to force evaluation in order to avoid modifying the fitness from previous generations
-            if (strategy.getShareFitness() != null && strategy.getShareFitness()) {
-                child.setEvaluationNeeded(true);
-            }
-        }
-
-        invasiveSpecies.stream().forEach(population::addIndividual);
+        eliteIndividuals.stream().forEach(population::addIndividual);
+        children.stream().forEach(population::addIndividual);
     }
 
     public void finish(ExecutionStatistics executionStatistics, int generationCount) {

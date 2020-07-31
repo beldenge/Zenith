@@ -29,9 +29,10 @@
     "selectorName": "TournamentSelector",
     "tournamentSelectorAccuracy": 0.9,
     "tournamentSize": 5,
-    "truncationPercentage": 0.01,
-    "enableFitnessSharing": false,
-    "invasiveSpeciesCount": 0
+    "minPopulations": 64,
+    "speciationEvents": 1,
+    "speciationFactor": 2,
+    "extinctionCycles": 100
   },
   "ciphers": [
     {

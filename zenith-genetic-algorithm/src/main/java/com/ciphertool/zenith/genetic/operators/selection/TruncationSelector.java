@@ -58,8 +58,6 @@ public class TruncationSelector implements Selector {
             return -1;
         }
 
-        int truncationPoint = (int) (individuals.size() * strategy.getTruncationPercentage());
-
-        return randomSelector.getNextIndex(individuals.subList(truncationPoint, individuals.size()), strategy) + truncationPoint;
+        return randomSelector.getNextIndex(individuals, strategy);
     }
 }

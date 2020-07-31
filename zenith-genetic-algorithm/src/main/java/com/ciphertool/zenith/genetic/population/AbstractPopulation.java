@@ -21,7 +21,6 @@ package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
@@ -29,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -92,7 +90,7 @@ public abstract class AbstractPopulation implements Population {
     public List<Parents> select() {
         reIndexSelector();
 
-        int pairsToCrossover = (this.strategy.getPopulationSize() - this.strategy.getElitism() - (this.strategy.getInvasiveSpeciesCount() != null ? this.strategy.getInvasiveSpeciesCount() : 0));
+        int pairsToCrossover = (this.strategy.getPopulationSize() - this.strategy.getElitism());
 
         List<FutureTask<Parents>> futureTasks = new ArrayList<>(pairsToCrossover);
         FutureTask<Parents> futureTask;
@@ -129,10 +127,6 @@ public abstract class AbstractPopulation implements Population {
     public Chromosome evaluateFitness(GenerationStatistics generationStatistics) {
         generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.strategy.getFitnessEvaluator(), getIndividuals()));
 
-        if (this.strategy.getShareFitness() != null && this.strategy.getShareFitness()) {
-            shareFitness(generationStatistics);
-        }
-
         this.totalFitness = 0d;
         this.totalProbability = 0d;
 
@@ -159,46 +153,6 @@ public abstract class AbstractPopulation implements Population {
         }
 
         return bestFitIndividual;
-    }
-
-    private void shareFitness(GenerationStatistics generationStatistics) {
-        long start = System.currentTimeMillis();
-
-        int numberOfGenes = getIndividuals().get(0).getGenes().size();
-        // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
-        int[][] precomputedDistances = new int[numberOfGenes][256];
-
-        List<Object> uniqueGeneKeys = new ArrayList<>(getIndividuals().get(0).getGenes().keySet());
-
-        int geneIndex = 0;
-        for (Object geneKey : uniqueGeneKeys) {
-            Arrays.fill(precomputedDistances[geneIndex], 0);
-
-            for (char i = 'a'; i <= 'z'; i ++) {
-                for (Chromosome chromosome : getIndividuals()) {
-                    if (!((Gene) chromosome.getGenes().get(geneKey)).getValue().equals(String.valueOf(i))) {
-                        precomputedDistances[geneIndex][i] ++;
-                    }
-                }
-            }
-
-            geneIndex++;
-        }
-
-        for (Chromosome individual : getIndividuals()) {
-            float distance = 1f;  // start at one to avoid division by zero
-
-            List<Object> individualGeneKeys = new ArrayList<>(individual.getGenes().keySet());
-            int individualGeneIndex = 0;
-            for (Object geneKey : individualGeneKeys) {
-                distance += precomputedDistances[individualGeneIndex][((String) ((Gene) individual.getGenes().get(geneKey)).getValue()).charAt(0)];
-                individualGeneIndex++;
-            }
-
-            updateFitnessForIndividual(individual, individual.getFitness() / Math.pow(distance, 1f / 10f));
-        }
-
-        generationStatistics.getPerformanceStatistics().setSharingMillis(System.currentTimeMillis() - start);
     }
 
     /**

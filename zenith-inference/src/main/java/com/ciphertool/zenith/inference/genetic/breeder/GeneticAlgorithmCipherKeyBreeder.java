@@ -88,8 +88,6 @@ public class GeneticAlgorithmCipherKeyBreeder extends AbstractCipherKeyBreeder {
                 .selector(initialization.getSelector())
                 .tournamentSelectorAccuracy(0.9)
                 .tournamentSize(5)
-                .shareFitness(false)
-                .invasiveSpeciesCount(0)
                 .build();
 
         strategy.getPopulation().init(strategy);

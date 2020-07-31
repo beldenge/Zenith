@@ -51,9 +51,6 @@ public class GeneticAlgorithmStrategy {
     private Selector selector;
     private Double tournamentSelectorAccuracy;
     private Integer tournamentSize;
-    private Boolean shareFitness;
-    private Integer invasiveSpeciesCount;
-    private Double truncationPercentage;
     private Integer minPopulations;
     private Integer speciationEvents;
     private Integer speciationFactor;

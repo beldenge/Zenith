@@ -69,9 +69,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String SELECTOR_NAME = "selectorName";
     public static final String TOURNAMENT_SELECTOR_ACCURACY = "tournamentSelectorAccuracy";
     public static final String TOURNAMENT_SIZE = "tournamentSize";
-    public static final String TRUNCATION_PERCENTAGE = "truncationPercentage";
-    public static final String ENABLE_FITNESS_SHARING = "enableFitnessSharing";
-    public static final String INVASIVE_SPECIES_COUNT = "invasiveSpeciesCount";
     public static final String MIN_POPULATIONS = "minPopulations";
     public static final String SPECIATION_EVENTS = "speciationEvents";
     public static final String SPECIATION_FACTOR = "speciationFactor";
@@ -223,9 +220,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Integer maxMutationsPerIndividual = (Integer) configuration.get(MAX_MUTATIONS_PER_INDIVIDUAL);
         Double tournamentSelectorAccuracy = (Double) configuration.get(TOURNAMENT_SELECTOR_ACCURACY);
         Integer tournamentSize = (Integer) configuration.get(TOURNAMENT_SIZE);
-        Double truncationPercentage = (Double) configuration.get(TRUNCATION_PERCENTAGE);
-        boolean enableFitnessSharing = (boolean) configuration.get(ENABLE_FITNESS_SHARING);
-        Integer invasiveSpeciesCount = (Integer) configuration.get(INVASIVE_SPECIES_COUNT);
         Integer minPopulations = (Integer) configuration.get(MIN_POPULATIONS);
         Integer speciationEvents = (Integer) configuration.get(SPECIATION_EVENTS);
         Integer speciationFactor = (Integer) configuration.get(SPECIATION_FACTOR);
@@ -252,9 +246,6 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .selector(initialization.getSelector())
                 .tournamentSelectorAccuracy(tournamentSelectorAccuracy)
                 .tournamentSize(tournamentSize)
-                .truncationPercentage(truncationPercentage)
-                .shareFitness(enableFitnessSharing)
-                .invasiveSpeciesCount(invasiveSpeciesCount)
                 .minPopulations(minPopulations)
                 .speciationEvents(speciationEvents)
                 .speciationFactor(speciationFactor)
