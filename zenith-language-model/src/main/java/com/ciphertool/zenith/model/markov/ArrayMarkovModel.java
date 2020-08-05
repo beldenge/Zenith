@@ -71,7 +71,7 @@ public class ArrayMarkovModel {
 
         int arrayIndex = computeArrayIndex(ngram);
 
-        if(nGramLogProbabilities[arrayIndex] != unknownLetterNGramLogProbability) {
+        if (nGramLogProbabilities[arrayIndex] != unknownLetterNGramLogProbability) {
             throw new IllegalStateException("Unable to add the same ngram twice='" + ngram + "'.");
         }
 
@@ -80,6 +80,7 @@ public class ArrayMarkovModel {
     }
 
     public float findExact(String ngram) {
+        // TODO: see if there is a way to do this with JavaCL for faster parallelism
         return nGramLogProbabilities[computeArrayIndex(ngram)];
     }
 

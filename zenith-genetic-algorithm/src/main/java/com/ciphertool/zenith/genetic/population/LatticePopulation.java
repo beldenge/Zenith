@@ -20,12 +20,14 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.operators.selection.Selector;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import com.ciphertool.zenith.genetic.operators.selection.Selector;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -38,17 +40,27 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Component
 public class LatticePopulation extends AbstractPopulation {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
     private int currentRow = 0;
-    private int nextColumn = 0;
+    private int currentColumn = 0;
     private Chromosome[][] individuals;
     private int latticeRows;
     private int latticeColumns;
     private boolean wrapAround;
     private int selectionRadius;
 
+    public LatticePopulation(int latticeRows, int latticeColumns, boolean wrapAround, int selectionRadius) {
+        this.latticeRows = latticeRows;
+        this.latticeColumns = latticeColumns;
+        this.wrapAround = wrapAround;
+        this.selectionRadius = selectionRadius;
+        this.individuals = new Chromosome[this.latticeRows][this.latticeColumns];
+    }
+
     @Override
     public Population getInstance() {
-        return new LatticePopulation();
+        return new LatticePopulation(this.latticeRows, this.latticeColumns, this.wrapAround, this.selectionRadius);
     }
 
     @Override
@@ -71,13 +83,12 @@ public class LatticePopulation extends AbstractPopulation {
     }
 
     private class SelectionTask implements Callable<Parents> {
-        public SelectionTask() {
-        }
+        public SelectionTask() {}
 
         @Override
         public Parents call() {
             int row = ThreadLocalRandom.current().nextInt(latticeRows);
-            int column = ThreadLocalRandom.current().nextInt(latticeColumns);
+            int column = ThreadLocalRandom.current().nextInt(currentColumn - 1);
 
             List<LatticeIndividual> nearbyLatticeIndividuals = new ArrayList<>();
 
@@ -183,7 +194,7 @@ public class LatticePopulation extends AbstractPopulation {
     }
 
     private boolean outOfBounds(int rowIndex, int columnIndex) {
-        return rowIndex < 0 || rowIndex > (latticeRows - 1) || columnIndex < 0 || columnIndex > (latticeColumns - 1);
+        return rowIndex < 0 || rowIndex > (latticeRows - 1) || columnIndex < 0 || columnIndex > (latticeColumns - 1) || columnIndex > (currentColumn - 1);
     }
 
     private int wrapRowIndex(int rowIndex) {
@@ -227,7 +238,7 @@ public class LatticePopulation extends AbstractPopulation {
     public void clearIndividuals() {
         individuals = new Chromosome[latticeRows][latticeColumns];
         currentRow = 0;
-        nextColumn = 0;
+        currentColumn = 0;
     }
 
     @Override
@@ -237,32 +248,42 @@ public class LatticePopulation extends AbstractPopulation {
 
     @Override
     public List<Chromosome> getIndividuals() {
-        List<Chromosome> individualsAsList = new ArrayList<>();
-
-        for (int x = 0; x < latticeRows; x++) {
-            for (int y = 0; y < latticeColumns; y++) {
-                individualsAsList.add(individuals[x][y]);
-            }
-        }
+        List<Chromosome> individualsAsList = getIndividualsAsList();
 
         Collections.sort(individualsAsList);
 
         return individualsAsList;
     }
 
-    @Override
-    public synchronized boolean addIndividual(Chromosome individual) {
-        if (currentRow > latticeRows - 1) {
-            throw new IllegalStateException("Attempted to add an individual to LatticePopulation at row " + currentRow + ", but the population is already full.");
+    public List<Chromosome> getIndividualsUnsorted() {
+        return getIndividualsAsList();
+    }
+
+    private List<Chromosome> getIndividualsAsList() {
+        List<Chromosome> individualsAsList = new ArrayList<>();
+
+        for (int y = 0; y < latticeColumns; y++) {
+            for (int x = 0; x < latticeRows; x++) {
+                individualsAsList.add(individuals[x][y]);
+            }
         }
 
-        this.individuals[currentRow][nextColumn] = individual;
+        return individualsAsList;
+    }
 
-        if (nextColumn == latticeColumns - 1) {
-            currentRow ++;
-            nextColumn = 0;
+    @Override
+    public synchronized boolean addIndividual(Chromosome individual) {
+        if (currentColumn > latticeColumns - 1) {
+            throw new IllegalStateException("Attempted to add an individual to LatticePopulation at column " + currentColumn + ", but the population is already full.");
+        }
+
+        this.individuals[currentRow][currentColumn] = individual;
+
+        if (currentRow == latticeRows - 1) {
+            currentColumn ++;
+            currentRow = 0;
         } else {
-            nextColumn ++;
+            currentRow ++;
         }
 
         individual.setPopulation(this);

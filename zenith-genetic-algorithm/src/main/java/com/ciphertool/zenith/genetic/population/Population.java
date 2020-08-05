@@ -55,11 +55,6 @@ public interface Population {
 
     @SuppressWarnings({"unchecked"})
     default BigDecimal calculateEntropy() {
-        if (!(this.getIndividuals().get(0) instanceof Chromosome)) {
-            throw new UnsupportedOperationException(
-                    "Calculation of entropy is currently only supported for Chromosome types.");
-        }
-
         Map<Object, Map<Object, Integer>> symbolCounts = new HashMap<>();
 
         Object geneKey;

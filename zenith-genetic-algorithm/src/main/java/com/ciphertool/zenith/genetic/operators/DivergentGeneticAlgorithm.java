@@ -20,10 +20,12 @@
 package com.ciphertool.zenith.genetic.operators;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.operators.speciation.SpeciationOperator;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import com.ciphertool.zenith.genetic.operators.speciation.FitnessSpeciationOperator;
+import com.ciphertool.zenith.genetic.operators.speciation.ProximitySpeciationOperator;
 import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import com.ciphertool.zenith.genetic.statistics.PerformanceStatistics;
@@ -58,7 +60,10 @@ public class DivergentGeneticAlgorithm {
     private boolean calculateEntropy;
 
     @Autowired
-    private SpeciationOperator speciationOperator;
+    private FitnessSpeciationOperator fitnessSpeciationOperator;
+
+    @Autowired
+    private ProximitySpeciationOperator proximitySpeciationOperator;
 
     public void spawnInitialPopulation(GeneticAlgorithmStrategy strategy) {
         GenerationStatistics generationStatistics = new GenerationStatistics(0);
@@ -113,7 +118,13 @@ public class DivergentGeneticAlgorithm {
                 List<Population> newPopulations = new ArrayList<>(populations.size() * 2);
 
                 for (Population population : populations) {
-                    List<Population> divergentPopulations = speciationOperator.diverge(strategy, population);
+                    List<Population> divergentPopulations;
+
+                    if (population instanceof StandardPopulation) {
+                        divergentPopulations = fitnessSpeciationOperator.diverge(strategy, population);
+                    } else {
+                        divergentPopulations = proximitySpeciationOperator.diverge(strategy, population);
+                    }
 
                     for (Population divergentPopulation : divergentPopulations) {
                         strategy.setPopulation(divergentPopulation);

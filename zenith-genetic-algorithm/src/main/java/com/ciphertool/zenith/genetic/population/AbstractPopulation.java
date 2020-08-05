@@ -110,9 +110,7 @@ public abstract class AbstractPopulation implements Population {
         // Add the result of each FutureTask to the Lists of Chromosomes selected for subsequent crossover
         for (FutureTask<Parents> future : futureTasks) {
             try {
-                Parents nextParents = future.get();
-
-                allParents.add(nextParents);
+                allParents.add(future.get());
             } catch (InterruptedException ie) {
                 log.error("Caught InterruptedException while waiting for SelectionTask ", ie);
             } catch (ExecutionException ee) {
@@ -186,11 +184,7 @@ public abstract class AbstractPopulation implements Population {
 
         int evaluationCount = 0;
 
-        Chromosome individual;
-
-        for (int i = individuals.size() - 1; i >= 0; i--) {
-            individual = individuals.get(i);
-
+        for (Chromosome individual : individuals) {
             /*
              * Only evaluate individuals that have changed since the last evaluation.
              */
