@@ -112,8 +112,7 @@ public class InferenceConfiguration {
     @Bean
     public ApplicationConfiguration configuration() {
         // First read configuration from the classpath
-        ClassLoader cl = this.getClass().getClassLoader();
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(getClass().getClassLoader());
         Resource[] resources;
 
         try {

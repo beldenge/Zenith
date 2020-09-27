@@ -25,8 +25,6 @@ import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -37,8 +35,6 @@ import java.util.Map;
 
 @SpringBootApplication
 public class InferenceApplication implements CommandLineRunner {
-    private Logger log = LoggerFactory.getLogger(getClass());
-
     @Autowired
     private Cipher cipher;
 
