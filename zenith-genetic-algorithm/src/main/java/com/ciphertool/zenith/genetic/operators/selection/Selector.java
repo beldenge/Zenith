@@ -19,7 +19,7 @@
 package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 
 import java.util.List;
 
@@ -29,11 +29,11 @@ public interface Selector {
     /**
      * @param individuals the individuals to index
      */
-    void reIndex(List<Chromosome> individuals);
+    void reIndex(List<Genome> individuals);
 
     /**
      * @param individuals  the List of individuals to select from
      * @return the indice of the chosen individual within the population
      */
-    int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy);
+    int getNextIndex(List<Genome> individuals, GeneticAlgorithmStrategy strategy);
 }

@@ -19,8 +19,8 @@
 
 package com.ciphertool.zenith.genetic.operators.selection;
 
-import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.mocks.MockChromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.population.Population;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -57,20 +57,17 @@ public class RandomSelectorTest {
 
     @Test
     public void testGetNextIndex() {
-        List<Chromosome> individuals = new ArrayList<>();
+        Population populationMock = mock(Population.class);
+        List<Genome> individuals = new ArrayList<>();
 
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(2.0d);
-        individuals.add(chromosome1);
+        Genome genome1 = new Genome(true, 0.2d, populationMock);
+        individuals.add(genome1);
 
-        Double bestFitness = 3.0d;
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(bestFitness);
-        individuals.add(chromosome2);
+        Genome genome2 = new Genome(true, 0.3d, populationMock);
+        individuals.add(genome2);
 
-        MockChromosome chromosome3 = new MockChromosome();
-        chromosome3.setFitness(1.0d);
-        individuals.add(chromosome3);
+        Genome genome3 = new Genome(true, 0.5d, populationMock);
+        individuals.add(genome3);
 
         int selectedIndex = randomSelector.getNextIndex(individuals, null);
 

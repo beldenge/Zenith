@@ -23,6 +23,7 @@ import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,25 +31,28 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class PointMutationOperator implements MutationOperator<Chromosome<Object>> {
+public class PointMutationOperator implements MutationOperator {
     @Autowired
     private GeneDao geneDao;
 
     @Override
-    public boolean mutateChromosome(Chromosome<Object> chromosome, GeneticAlgorithmStrategy strategy) {
+    public boolean mutateChromosomes(Genome genome, GeneticAlgorithmStrategy strategy) {
         double mutationRate = strategy.getMutationRate();
         boolean mutated = false;
-        Set<Object> keys = chromosome.getGenes().keySet();
 
-        for (Object key : keys) {
-            if (ThreadLocalRandom.current().nextDouble() <= mutationRate) {
-                Gene next = geneDao.findRandomGene(chromosome);
+        for (Chromosome<Object> chromosome : genome.getChromosomes()) {
+            Set<Object> keys = chromosome.getGenes().keySet();
 
-                if (!next.equals(chromosome.getGenes().get(key))) {
-                    mutated = true;
+            for (Object key : keys) {
+                if (ThreadLocalRandom.current().nextDouble() <= mutationRate) {
+                    Gene next = geneDao.findRandomGene(chromosome);
 
-                    // Replace that map value with a randomly generated Gene
-                    chromosome.replaceGene(key, next);
+                    if (!next.equals(chromosome.getGenes().get(key))) {
+                        mutated = true;
+
+                        // Replace that map value with a randomly generated Gene
+                        chromosome.replaceGene(key, next);
+                    }
                 }
             }
         }

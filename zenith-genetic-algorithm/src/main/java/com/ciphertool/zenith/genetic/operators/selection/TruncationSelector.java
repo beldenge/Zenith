@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +46,12 @@ public class TruncationSelector implements Selector {
     }
 
     @Override
-    public synchronized void reIndex(List<Chromosome> individuals) {
+    public synchronized void reIndex(List<Genome> individuals) {
         // Nothing to do
     }
 
     @Override
-    public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
+    public int getNextIndex(List<Genome> individuals, GeneticAlgorithmStrategy strategy) {
         if (CollectionUtils.isEmpty(individuals)) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 

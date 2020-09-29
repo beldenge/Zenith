@@ -20,14 +20,12 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.operators.selection.Selector;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -40,11 +38,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Component
 public class LatticePopulation extends AbstractPopulation {
-    private Logger log = LoggerFactory.getLogger(getClass());
-
     private int currentRow = 0;
     private int currentColumn = 0;
-    private Chromosome[][] individuals;
+    private Genome[][] individuals;
     private int latticeRows;
     private int latticeColumns;
     private boolean wrapAround;
@@ -55,7 +51,7 @@ public class LatticePopulation extends AbstractPopulation {
         this.latticeColumns = latticeColumns;
         this.wrapAround = wrapAround;
         this.selectionRadius = selectionRadius;
-        this.individuals = new Chromosome[this.latticeRows][this.latticeColumns];
+        this.individuals = new Genome[this.latticeRows][this.latticeColumns];
     }
 
     @Override
@@ -167,7 +163,7 @@ public class LatticePopulation extends AbstractPopulation {
 
             Collections.sort(nearbyLatticeIndividuals);
 
-            List<Chromosome> nearbyIndividuals = new ArrayList<>();
+            List<Genome> nearbyIndividuals = new ArrayList<>();
 
             nearbyIndividuals.addAll(nearbyLatticeIndividuals.stream()
                     .map(LatticeIndividual::getIndividual)
@@ -179,7 +175,7 @@ public class LatticePopulation extends AbstractPopulation {
 
             int momIndex = newSelector.getNextIndex(nearbyIndividuals, strategy);
             LatticeIndividual momCoordinates = nearbyLatticeIndividuals.get(momIndex);
-            Chromosome mom = individuals[momCoordinates.getRow()][momCoordinates.getColumn()];
+            Genome mom = individuals[momCoordinates.getRow()][momCoordinates.getColumn()];
 
             // Ensure that dadIndex is different from momIndex
             nearbyIndividuals.remove(momIndex);
@@ -187,7 +183,7 @@ public class LatticePopulation extends AbstractPopulation {
             newSelector.reIndex(nearbyIndividuals);
             int dadIndex = newSelector.getNextIndex(nearbyIndividuals, strategy);
             LatticeIndividual dadCoordinates = nearbyLatticeIndividuals.get(dadIndex);
-            Chromosome dad = individuals[dadCoordinates.getRow()][dadCoordinates.getColumn()];
+            Genome dad = individuals[dadCoordinates.getRow()][dadCoordinates.getColumn()];
 
             return new Parents(mom, dad);
         }
@@ -224,7 +220,7 @@ public class LatticePopulation extends AbstractPopulation {
     @AllArgsConstructor
     @Getter
     private class LatticeIndividual implements Comparable<LatticeIndividual> {
-        private Chromosome individual;
+        private Genome individual;
         private int row;
         private int column;
 
@@ -236,7 +232,7 @@ public class LatticePopulation extends AbstractPopulation {
 
     @Override
     public void clearIndividuals() {
-        individuals = new Chromosome[latticeRows][latticeColumns];
+        individuals = new Genome[latticeRows][latticeColumns];
         currentRow = 0;
         currentColumn = 0;
     }
@@ -247,20 +243,20 @@ public class LatticePopulation extends AbstractPopulation {
     }
 
     @Override
-    public List<Chromosome> getIndividuals() {
-        List<Chromosome> individualsAsList = getIndividualsAsList();
+    public List<Genome> getIndividuals() {
+        List<Genome> individualsAsList = getIndividualsAsList();
 
         Collections.sort(individualsAsList);
 
         return individualsAsList;
     }
 
-    public List<Chromosome> getIndividualsUnsorted() {
+    public List<Genome> getIndividualsUnsorted() {
         return getIndividualsAsList();
     }
 
-    private List<Chromosome> getIndividualsAsList() {
-        List<Chromosome> individualsAsList = new ArrayList<>();
+    private List<Genome> getIndividualsAsList() {
+        List<Genome> individualsAsList = new ArrayList<>();
 
         for (int y = 0; y < latticeColumns; y++) {
             for (int x = 0; x < latticeRows; x++) {
@@ -272,7 +268,7 @@ public class LatticePopulation extends AbstractPopulation {
     }
 
     @Override
-    public synchronized boolean addIndividual(Chromosome individual) {
+    public synchronized boolean addIndividual(Genome individual) {
         if (currentColumn > latticeColumns - 1) {
             throw new IllegalStateException("Attempted to add an individual to LatticePopulation at column " + currentColumn + ", but the population is already full.");
         }

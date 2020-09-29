@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.genetic.operators.crossover;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
@@ -27,34 +28,47 @@ import java.util.Random;
 import java.util.Set;
 
 @Component
-public class SinglePointCrossoverOperator implements CrossoverOperator<Chromosome<Object>> {
+public class SinglePointCrossoverOperator implements CrossoverOperator {
     private Coin coin = new Coin();
 
     @Override
-    public Chromosome<Object> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
+    public Genome crossover(Genome firstGenome, Genome secondGenome) {
+        // TODO: consider using ThreadLocalRandom
         Random generator = new Random();
-        Set<Object> availableKeys = parentA.getGenes().keySet();
-        Object[] keys = availableKeys.toArray();
 
-        // Get a random map key
-        int randomIndex = generator.nextInt(keys.length);
+        Genome childGenome = new Genome(false, 0d, firstGenome.getPopulation());
 
-        // Replace all the Genes from the map key to the end of the array
-        Chromosome<Object> dad = coin.flip() ? parentA : parentB;
-        Chromosome<Object> mom = (dad == parentA) ? parentB : parentA;
+        for (int i = 0; i < firstGenome.getChromosomes().size(); i ++) {
+            Chromosome parentA = firstGenome.getChromosomes().get(i);
+            Chromosome parentB = secondGenome.getChromosomes().get(i);
 
-        Chromosome<Object> child = dad.clone();
-        for (int i = 0; i <= randomIndex; i++) {
-            Object nextKey = keys[i];
+            Set<Object> availableKeys = parentA.getGenes().keySet();
+            Object[] keys = availableKeys.toArray();
 
-            if (null == mom.getGenes().get(nextKey)) {
-                throw new IllegalStateException("Expected second parent to have a Gene with key " + nextKey
-                        + ", but no such key was found.  Cannot continue.");
+            // Get a random map key
+            int randomIndex = generator.nextInt(keys.length);
+
+            // Replace all the Genes from the map key to the end of the array
+            Chromosome<Object> dad = coin.flip() ? parentA : parentB;
+            Chromosome<Object> mom = (dad == parentA) ? parentB : parentA;
+
+            Chromosome<Object> childChromosome = dad.clone();
+            childChromosome.setGenome(childGenome);
+
+            for (int j = 0; j <= randomIndex; i++) {
+                Object nextKey = keys[j];
+
+                if (null == mom.getGenes().get(nextKey)) {
+                    throw new IllegalStateException("Expected second parent to have a Gene with key " + nextKey
+                            + ", but no such key was found.  Cannot continue.");
+                }
+
+                childChromosome.replaceGene(nextKey, mom.getGenes().get(nextKey).clone());
             }
 
-            child.replaceGene(nextKey, mom.getGenes().get(nextKey).clone());
+            childGenome.addChromosome(childChromosome);
         }
 
-        return child;
+        return childGenome;
     }
 }

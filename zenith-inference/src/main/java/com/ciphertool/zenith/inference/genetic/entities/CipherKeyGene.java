@@ -62,7 +62,7 @@ public class CipherKeyGene implements Gene {
 
     public void setValue(String value) {
         if (!this.value.equals(value)){
-            this.chromosome.setEvaluationNeeded(true);
+            this.chromosome.getGenome().setEvaluationNeeded(true);
         }
 
         this.value = value;

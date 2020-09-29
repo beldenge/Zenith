@@ -20,14 +20,14 @@
 package com.ciphertool.zenith.genetic.operators.mutation;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 
-public interface MutationOperator<T extends Chromosome> {
+public interface MutationOperator {
     /**
      * Performs a genetic mutation of the supplied Chromosome.
      *
-     * @param chromosome the Chromosome to mutate
+     * @param genome the Genome to mutate
      * @return whether the mutation was successful
      */
-    boolean mutateChromosome(T chromosome, GeneticAlgorithmStrategy strategy);
+    boolean mutateChromosomes(Genome genome, GeneticAlgorithmStrategy strategy);
 }

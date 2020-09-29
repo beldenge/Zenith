@@ -19,7 +19,7 @@
 package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.math.selection.RouletteSampler;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +27,7 @@ import java.util.List;
 
 @Component
 public class RouletteSelector implements Selector {
-    private RouletteSampler<Chromosome> rouletteSampler = new RouletteSampler<>();
+    private RouletteSampler<Genome> rouletteSampler = new RouletteSampler<>();
 
     @Override
     public Selector getInstance() {
@@ -35,12 +35,12 @@ public class RouletteSelector implements Selector {
     }
 
     @Override
-    public void reIndex(List<Chromosome> individuals) {
+    public void reIndex(List<Genome> individuals) {
         rouletteSampler.reIndex(individuals);
     }
 
     @Override
-    public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
+    public int getNextIndex(List<Genome> individuals, GeneticAlgorithmStrategy strategy) {
         return rouletteSampler.getNextIndex();
     }
 }

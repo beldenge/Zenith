@@ -19,8 +19,8 @@
 
 package com.ciphertool.zenith.genetic.fitness;
 
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 
 public interface FitnessEvaluator {
-    Double evaluate(Chromosome chromosome);
+    Double evaluate(Genome genome);
 }

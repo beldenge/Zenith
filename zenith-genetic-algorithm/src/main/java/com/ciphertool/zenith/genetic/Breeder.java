@@ -19,8 +19,9 @@
 
 package com.ciphertool.zenith.genetic;
 
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.population.Population;
 
 public interface Breeder {
-    Chromosome breed();
+    Genome breed(Population population);
 }

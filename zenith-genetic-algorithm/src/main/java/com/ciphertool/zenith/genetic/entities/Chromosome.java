@@ -19,19 +19,9 @@
 
 package com.ciphertool.zenith.genetic.entities;
 
-import com.ciphertool.zenith.genetic.population.Population;
-import com.ciphertool.zenith.math.selection.Probability;
-
 import java.util.Map;
 
-public interface Chromosome<T> extends Cloneable, Comparable<Chromosome>, Probability {
-    Double getFitness();
-
-    /**
-     * @param fitness
-     */
-    void setFitness(Double fitness);
-
+public interface Chromosome<T> extends Cloneable {
     /*
      * Returns the size as the number of gene sequences
      */
@@ -41,29 +31,6 @@ public interface Chromosome<T> extends Cloneable, Comparable<Chromosome>, Probab
 
     Chromosome clone();
 
-    /*
-     * Whether this Chromosome has changed since it was last evaluated.
-     */
-    boolean isEvaluationNeeded();
-
-    /**
-     * @param evaluationNeeded the evaluationNeeded value to set
-     */
-    void setEvaluationNeeded(boolean evaluationNeeded);
-
-    /**
-     * @return this Chromosome's Population
-     */
-    Population getPopulation();
-
-    /**
-     * @param population the population to set
-     */
-    void setPopulation(Population population);
-
-    /**
-     * @return an unmodifiable Map of this Chromosome's Genes
-     */
     Map<T, Gene> getGenes();
 
     /**
@@ -81,7 +48,7 @@ public interface Chromosome<T> extends Cloneable, Comparable<Chromosome>, Probab
      */
     void replaceGene(T key, Gene newGene);
 
-    boolean hasKnownSolution();
+    Genome getGenome();
 
-    Double knownSolutionProximity();
+    void setGenome(Genome genome);
 }

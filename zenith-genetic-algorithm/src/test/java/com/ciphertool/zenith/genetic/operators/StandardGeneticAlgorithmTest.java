@@ -20,11 +20,10 @@
 package com.ciphertool.zenith.genetic.operators;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
+import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
 import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.entities.Parents;
-import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
@@ -65,20 +64,20 @@ public class StandardGeneticAlgorithmTest {
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
 
-        List<Chromosome> individuals = new ArrayList<>();
+        List<Genome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockChromosome());
+            individuals.add(new Genome(true, 0d, populationMock));
         }
 
         List<Parents> allParents = new ArrayList<>(initialPopulationSize);
 
         for (int i = 0; i < initialPopulationSize; i ++) {
-            allParents.add(new Parents(new MockChromosome(), new MockChromosome()));
+            allParents.add(new Parents(new Genome(true, 0d, populationMock), new Genome(true, 0d, populationMock)));
         }
 
         when(populationMock.select()).thenReturn(allParents);
         when(populationMock.getIndividuals()).thenReturn(individuals);
-        when(populationMock.removeIndividual(anyInt())).thenReturn(new MockChromosome());
+        when(populationMock.removeIndividual(anyInt())).thenReturn(new Genome(true, 0d, populationMock));
         when(populationMock.size()).thenReturn(initialPopulationSize);
 
         MutationOperator mutationOperatorMock = mock(MutationOperator.class);
@@ -101,8 +100,8 @@ public class StandardGeneticAlgorithmTest {
                 .elitism(0)
                 .build();
 
-        Chromosome chromosomeToReturn = new MockChromosome();
-        when(crossoverOperatorMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
+        Genome genomeToReturn = new Genome(true, 0d, populationMock);
+        when(crossoverOperatorMock.crossover(any(Genome.class), any(Genome.class))).thenReturn(genomeToReturn);
 
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
 
@@ -121,16 +120,16 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(2)).size();
         verify(populationMock, never()).breed(anyInt());
         verify(populationMock, times(1)).evaluateFitness(any(GenerationStatistics.class));
-        verify(populationMock, times(100)).addIndividual(any(Chromosome.class));
+        verify(populationMock, times(100)).addIndividual(any(Genome.class));
         verify(populationMock, times(1)).sortIndividuals();
         verify(populationMock, times(1)).clearIndividuals();
         verify(populationMock, never()).calculateEntropy();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationOperatorMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
+        verify(mutationOperatorMock, times(100)).mutateChromosomes(any(Genome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationOperatorMock);
 
-        verify(crossoverOperatorMock, times(100)).crossover(any(Chromosome.class), any(Chromosome.class));
+        verify(crossoverOperatorMock, times(100)).crossover(any(Genome.class), any(Genome.class));
         verifyNoMoreInteractions(crossoverOperatorMock);
     }
 
@@ -141,13 +140,13 @@ public class StandardGeneticAlgorithmTest {
 
         int initialPopulationSize = 50;
 
-        List<Chromosome> individuals = new ArrayList<>();
-        for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockChromosome());
-        }
-
         StandardPopulation populationMock = mock(StandardPopulation.class);
         when(populationMock.size()).thenReturn(initialPopulationSize);
+
+        List<Genome> individuals = new ArrayList<>();
+        for (int i = 0; i < initialPopulationSize; i++) {
+            individuals.add(new Genome(true, 0d, populationMock));
+        }
 
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
         doAnswer(invocation -> {
@@ -158,8 +157,8 @@ public class StandardGeneticAlgorithmTest {
 
         CrossoverOperator crossoverOperatorMock = mock(CrossoverOperator.class);
 
-        Chromosome chromosomeToReturn = new MockChromosome();
-        when(crossoverOperatorMock.crossover(any(Chromosome.class), any(Chromosome.class))).thenReturn(chromosomeToReturn);
+        Genome genomeToReturn = new Genome(true, 0d, populationMock);
+        when(crossoverOperatorMock.crossover(any(Genome.class), any(Genome.class))).thenReturn(genomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutorMock)
@@ -175,14 +174,14 @@ public class StandardGeneticAlgorithmTest {
             allParents.add(new Parents(individuals.get(i), individuals.get(i)));
         }
 
-        List<Chromosome> children = standardGeneticAlgorithm.crossover(strategy, allParents);
+        List<Genome> children = standardGeneticAlgorithm.crossover(strategy, allParents);
 
         assertEquals(50, children.size());
 
         verify(populationMock, times(1)).size();
         verifyNoMoreInteractions(populationMock);
 
-        verify(crossoverOperatorMock, times(50)).crossover(any(Chromosome.class), any(Chromosome.class));
+        verify(crossoverOperatorMock, times(50)).crossover(any(Genome.class), any(Genome.class));
         verifyNoMoreInteractions(crossoverOperatorMock);
     }
 
@@ -195,8 +194,8 @@ public class StandardGeneticAlgorithmTest {
 
         int initialPopulationSize = 10;
 
-        Chromosome chromosome = new MockChromosome();
-        population.addIndividual(chromosome);
+        Genome genome = new Genome(true, 0d, population);
+        population.addIndividual(genome);
 
         CrossoverOperator crossoverOperatorMock = mock(CrossoverOperator.class);
 
@@ -208,10 +207,10 @@ public class StandardGeneticAlgorithmTest {
         List<Parents> allParents = new ArrayList<>();
 
         for (int i = initialPopulationSize / 2; i < initialPopulationSize; i++) {
-            allParents.add(new Parents(new MockChromosome(), new MockChromosome()));
+            allParents.add(new Parents(new Genome(true, 0d, population), new Genome(true, 0d, population)));
         }
 
-        List<Chromosome> children = standardGeneticAlgorithm.crossover(strategyToSet, allParents);
+        List<Genome> children = standardGeneticAlgorithm.crossover(strategyToSet, allParents);
 
         assertEquals(1, population.size());
 
@@ -225,12 +224,12 @@ public class StandardGeneticAlgorithmTest {
     public void testMutate() {
         int initialPopulationSize = 100;
 
-        List<Chromosome> individuals = new ArrayList<>();
-        for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockChromosome());
-        }
-
         StandardPopulation populationMock = mock(StandardPopulation.class);
+
+        List<Genome> individuals = new ArrayList<>();
+        for (int i = 0; i < initialPopulationSize; i++) {
+            individuals.add(new Genome(true, 0d, populationMock));
+        }
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
@@ -258,7 +257,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).sortIndividuals();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationOperatorMock, times(100)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
+        verify(mutationOperatorMock, times(100)).mutateChromosomes(any(Genome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationOperatorMock);
     }
 
@@ -267,12 +266,12 @@ public class StandardGeneticAlgorithmTest {
     public void testMutate_SmallPopulation() {
         int initialPopulationSize = 100;
 
-        List<Chromosome> individuals = new ArrayList<>();
-        for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new MockChromosome());
-        }
-
         StandardPopulation populationMock = mock(StandardPopulation.class);
+
+        List<Genome> individuals = new ArrayList<>();
+        for (int i = 0; i < initialPopulationSize; i++) {
+            individuals.add(new Genome(true, 0d, populationMock));
+        }
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
@@ -300,7 +299,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, times(1)).sortIndividuals();
         verifyNoMoreInteractions(populationMock);
 
-        verify(mutationOperatorMock, times(initialPopulationSize)).mutateChromosome(any(Chromosome.class), same(strategyToSet));
+        verify(mutationOperatorMock, times(initialPopulationSize)).mutateChromosomes(any(Genome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationOperatorMock);
     }
 
@@ -315,8 +314,8 @@ public class StandardGeneticAlgorithmTest {
                 .build();
 
         // Setting the individuals to something non-empty so the calculateEntropy() method won't fail
-        List<Chromosome> individuals = new ArrayList<>();
-        individuals.add(new MockChromosome());
+        List<Genome> individuals = new ArrayList<>();
+        individuals.add(new Genome(true, 0d, populationMock));
         when(populationMock.getIndividuals()).thenReturn(individuals);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();

@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ import java.util.concurrent.Callable;
 public class StandardPopulation extends AbstractPopulation {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private List<Chromosome> individuals = new ArrayList<>();
+    private List<Genome> individuals = new ArrayList<>();
 
     @Override
     public StandardPopulation getInstance() {
@@ -60,17 +60,17 @@ public class StandardPopulation extends AbstractPopulation {
         @Override
         public Parents call() {
             int momIndex = strategy.getSelector().getNextIndex(individuals, strategy);
-            Chromosome mom = getIndividuals().get(momIndex);
+            Genome mom = getIndividuals().get(momIndex);
 
             int dadIndex = strategy.getSelector().getNextIndex(individuals, strategy);
-            Chromosome dad = getIndividuals().get(dadIndex);
+            Genome dad = getIndividuals().get(dadIndex);
 
             return new Parents(mom, dad);
         }
     }
 
     @Override
-    public List<Chromosome> getIndividuals() {
+    public List<Genome> getIndividuals() {
         return Collections.unmodifiableList(individuals);
     }
 
@@ -78,7 +78,7 @@ public class StandardPopulation extends AbstractPopulation {
      * Removes an individual from the population based on its index. This is much more efficient than removing by
      * equality.
      */
-    public synchronized Chromosome removeIndividual(int indexToRemove) {
+    public synchronized Genome removeIndividual(int indexToRemove) {
         if (indexToRemove < 0 || indexToRemove > this.individuals.size() - 1) {
             log.error("Tried to remove individual by invalid index {} from population of size {}.  Returning.", indexToRemove, this.size());
 
@@ -100,7 +100,7 @@ public class StandardPopulation extends AbstractPopulation {
     }
 
     @Override
-    public synchronized boolean addIndividual(Chromosome individual) {
+    public synchronized boolean addIndividual(Genome individual) {
         this.individuals.add(individual);
 
         individual.setPopulation(this);

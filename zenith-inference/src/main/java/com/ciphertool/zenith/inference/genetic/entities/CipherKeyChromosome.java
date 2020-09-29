@@ -21,32 +21,27 @@ package com.ciphertool.zenith.inference.genetic.entities;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.population.AbstractPopulation;
-import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
-import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CipherKeyChromosome implements Chromosome<String> {
+    private Genome genome;
+
     private Cipher cipher;
-
-    private boolean evaluationNeeded = true;
-
-    private Double fitness = Double.MIN_VALUE;
 
     private Map<String, Gene> genes;
 
-    private Population population;
-
-    public CipherKeyChromosome(Cipher cipher, int numGenes) {
+    public CipherKeyChromosome(Genome genome, Cipher cipher, int numGenes) {
         if (cipher == null) {
             throw new IllegalArgumentException("Cannot construct CipherKeyChromosome with null cipher.");
         }
 
+        this.genome = genome;
         this.cipher = cipher;
         this.genes = new HashMap<>(numGenes);
     }
@@ -57,27 +52,6 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     public void setCipher(Cipher cipher) {
         this.cipher = cipher;
-    }
-
-    @Override
-    public boolean isEvaluationNeeded() {
-        return evaluationNeeded;
-    }
-
-    @Override
-    public void setEvaluationNeeded(boolean evaluationNeeded) {
-        this.evaluationNeeded = evaluationNeeded;
-    }
-
-    @Override
-    public Double getFitness() {
-        return fitness;
-    }
-
-    @Override
-    public void setFitness(Double fitness) {
-        this.fitness = fitness;
-        this.evaluationNeeded = false;
     }
 
     @Override
@@ -100,7 +74,10 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
         this.genes.put(key, gene);
         // TODO: it may be worth testing to see if there's already a Gene mapped to this key and if the value is the same, then don't evaluate
-        this.evaluationNeeded = true;
+
+        if (this.genome != null) {
+            this.genome.setEvaluationNeeded(true);
+        }
     }
 
     @Override
@@ -109,7 +86,10 @@ public class CipherKeyChromosome implements Chromosome<String> {
             throw new IllegalArgumentException("Attempted to remove a Gene from CipherKeyChromosome with key " + key + ", but this key does not exist.  Returning null.");
         }
 
-        this.evaluationNeeded = true;
+        if (this.genome != null) {
+            this.genome.setEvaluationNeeded(true);
+        }
+
         return this.genes.remove(key);
     }
 
@@ -128,8 +108,8 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
         newGene.setChromosome(this);
 
-        if (!this.evaluationNeeded) {
-            this.evaluationNeeded = !((CipherKeyGene) this.genes.get(key)).getValue().equals(((CipherKeyGene) newGene).getValue());
+        if (this.genome != null && !this.genome.isEvaluationNeeded()) {
+            this.genome.setEvaluationNeeded(!((CipherKeyGene) this.genes.get(key)).getValue().equals(((CipherKeyGene) newGene).getValue()));
         }
 
         this.genes.put(key, newGene);
@@ -149,16 +129,22 @@ public class CipherKeyChromosome implements Chromosome<String> {
     }
 
     @Override
+    public Genome getGenome() {
+        return genome;
+    }
+
+    @Override
+    public void setGenome(Genome genome) {
+        this.genome = genome;
+    }
+
+    @Override
     public Chromosome clone() {
-        CipherKeyChromosome copyChromosome = new CipherKeyChromosome(this.cipher, this.genes.size());
+        CipherKeyChromosome copyChromosome = new CipherKeyChromosome(null, this.cipher, this.genes.size());
 
         for (Map.Entry<String, Gene> entry : this.genes.entrySet()) {
             copyChromosome.putGene(entry.getKey(), entry.getValue().clone());
         }
-
-        // We need to set these values last to maintain whether evaluation is needed on the clone
-        copyChromosome.setFitness(this.fitness);
-        copyChromosome.setEvaluationNeeded(this.evaluationNeeded);
 
         return copyChromosome;
     }
@@ -202,40 +188,5 @@ public class CipherKeyChromosome implements Chromosome<String> {
         }
 
         return true;
-    }
-
-    @Override
-    public Population getPopulation() {
-        return population;
-    }
-
-    @Override
-    public void setPopulation(Population population) {
-        this.population = population;
-    }
-
-    @Override
-    public Chromosome<String> getValue() {
-        return this;
-    }
-
-    @Override
-    public Double getProbability() {
-        return AbstractPopulation.convertFromLogProbability(this.fitness) / this.population.getTotalProbability();
-    }
-
-    @Override
-    public int compareTo(Chromosome other) {
-        return this.fitness.compareTo(other.getFitness());
-    }
-
-    @Override
-    public boolean hasKnownSolution() {
-        return cipher.hasKnownSolution();
-    }
-
-    @Override
-    public Double knownSolutionProximity() {
-        return Double.valueOf(ChromosomeToCipherSolutionMapper.map(this).evaluateKnownSolution());
     }
 }

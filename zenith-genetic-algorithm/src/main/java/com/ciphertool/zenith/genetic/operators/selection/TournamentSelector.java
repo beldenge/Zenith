@@ -19,7 +19,7 @@
 package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,12 +49,12 @@ public class TournamentSelector implements Selector {
     }
 
     @Override
-    public void reIndex(List<Chromosome> individuals) {
+    public void reIndex(List<Genome> individuals) {
         // Nothing to do
     }
 
     @Override
-    public int getNextIndex(List<Chromosome> individuals, GeneticAlgorithmStrategy strategy) {
+    public int getNextIndex(List<Genome> individuals, GeneticAlgorithmStrategy strategy) {
         if (CollectionUtils.isEmpty(individuals)) {
             log.warn("Attempted to select an individual from a null or empty population.  Unable to continue.");
 
@@ -64,7 +64,7 @@ public class TournamentSelector implements Selector {
         double selectionAccuracy = strategy.getTournamentSelectorAccuracy();
         int tournamentSize = strategy.getTournamentSize();
 
-        SortedMap<Integer, Chromosome> competitors = new TreeMap<>(Comparator.reverseOrder());
+        SortedMap<Integer, Genome> competitors = new TreeMap<>(Comparator.reverseOrder());
 
         for (int i = 0; i < Math.min(tournamentSize, individuals.size()); i ++) {
             int chosenIndex = randomSelector.getNextIndex(individuals, strategy);

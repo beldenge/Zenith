@@ -22,7 +22,6 @@ package com.ciphertool.zenith.genetic.statistics;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 
 public class GenerationStatisticsTest {
     @Test
@@ -59,15 +58,6 @@ public class GenerationStatisticsTest {
         generationStatistics.setAverageFitness(averageFitnessToSet);
 
         assertEquals(averageFitnessToSet, generationStatistics.getAverageFitness());
-    }
-
-    @Test
-    public void testSetKnownSolutionProximity() {
-        Double knownSolutionProximityToSet = 9.9d;
-        GenerationStatistics generationStatistics = new GenerationStatistics();
-        generationStatistics.setKnownSolutionProximity(knownSolutionProximityToSet);
-
-        assertSame(knownSolutionProximityToSet, generationStatistics.getKnownSolutionProximity());
     }
 
     @Test

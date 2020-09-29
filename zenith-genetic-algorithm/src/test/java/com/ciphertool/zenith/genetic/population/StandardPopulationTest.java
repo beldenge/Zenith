@@ -21,9 +21,8 @@ package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
-import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -58,25 +57,26 @@ public class StandardPopulationTest {
         StandardPopulation population = new StandardPopulation();
         StandardPopulation.GeneratorTask generatorTask = population.new GeneratorTask();
 
-        MockChromosome chromosomeToReturn = new MockChromosome();
+        Genome genomeToReturn = new Genome(true, 0d, population);
         Breeder breederMock = mock(Breeder.class);
-        when(breederMock.breed()).thenReturn(chromosomeToReturn);
+        when(breederMock.breed(same(population))).thenReturn(genomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
                 .breeder(breederMock)
+                .population(population)
                 .build();
 
         population.init(strategy);
 
-        Chromosome chromosomeReturned = null;
+        Genome genomeReturned = null;
         try {
-            chromosomeReturned = generatorTask.call();
+            genomeReturned = generatorTask.call();
         } catch (Exception e) {
             fail(e.getMessage());
         }
 
-        assertSame(chromosomeToReturn, chromosomeReturned);
+        assertSame(genomeToReturn, genomeReturned);
     }
 
     @Test
@@ -85,14 +85,15 @@ public class StandardPopulationTest {
 
         int expectedPopulationSize = 10;
 
+        Genome genomeToReturn = new Genome(true, 5.0d, population);
         Breeder breederMock = mock(Breeder.class);
-        MockChromosome mockChromosome = new MockChromosome();
-        mockChromosome.setFitness(5.0d);
-        when(breederMock.breed()).thenReturn(mockChromosome.clone());
+
+        when(breederMock.breed(same(population))).thenReturn(genomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
                 .breeder(breederMock)
+                .population(population)
                 .build();
 
         population.init(strategy);
@@ -100,7 +101,7 @@ public class StandardPopulationTest {
         assertEquals(0, population.size());
         assertEquals(Double.valueOf(0d), population.getTotalFitness());
 
-        List<Chromosome> individuals = population.breed(expectedPopulationSize);
+        List<Genome> individuals = population.breed(expectedPopulationSize);
 
         assertEquals(expectedPopulationSize, individuals.size());
         individuals.stream().forEach(population::addIndividual);
@@ -110,14 +111,13 @@ public class StandardPopulationTest {
     @Test
     public void testEvaluatorTask() {
         StandardPopulation population = new StandardPopulation();
-        MockChromosome chromosomeToEvaluate = new MockChromosome();
+        Genome genomeToEvaluate = new Genome(true, 0d, population);
 
         FitnessEvaluator mockEvaluator = mock(FitnessEvaluator.class);
         Double fitnessToReturn = 101.0d;
-        when(mockEvaluator.evaluate(same(chromosomeToEvaluate))).thenReturn(fitnessToReturn);
+        when(mockEvaluator.evaluate(same(genomeToEvaluate))).thenReturn(fitnessToReturn);
 
-        StandardPopulation.EvaluationTask evaluationTask = population.new EvaluationTask(chromosomeToEvaluate,
-                mock(FitnessEvaluator.class));
+        StandardPopulation.EvaluationTask evaluationTask = population.new EvaluationTask(genomeToEvaluate, mock(FitnessEvaluator.class));
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -141,7 +141,7 @@ public class StandardPopulationTest {
         StandardPopulation population = new StandardPopulation();
 
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(fitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
+        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -150,37 +150,31 @@ public class StandardPopulationTest {
 
         population.init(strategy);
 
-        MockChromosome chromosomeEvaluationNeeded1 = new MockChromosome();
-        chromosomeEvaluationNeeded1.setFitness(1.0d);
-        population.addIndividual(chromosomeEvaluationNeeded1);
-        chromosomeEvaluationNeeded1.setEvaluationNeeded(true);
+        Genome genomeEvaluationNeeded1 = new Genome(true, 1.0d, population);
+        population.addIndividual(genomeEvaluationNeeded1);
 
-        MockChromosome chromosomeEvaluationNeeded2 = new MockChromosome();
-        chromosomeEvaluationNeeded2.setFitness(1.0d);
-        population.addIndividual(chromosomeEvaluationNeeded2);
-        chromosomeEvaluationNeeded2.setEvaluationNeeded(true);
+        Genome genomeEvaluationNeeded2 = new Genome(true, 1.0d, population);
+        population.addIndividual(genomeEvaluationNeeded2);
 
-        MockChromosome chromosomeEvaluationNotNeeded1 = new MockChromosome();
-        chromosomeEvaluationNotNeeded1.setFitness(1.0d);
-        population.addIndividual(chromosomeEvaluationNotNeeded1);
+        Genome genomeEvaluationNotNeeded1 = new Genome(false, 1.0d, population);
+        population.addIndividual(genomeEvaluationNotNeeded1);
 
-        MockChromosome chromosomeEvaluationNotNeeded2 = new MockChromosome();
-        chromosomeEvaluationNotNeeded2.setFitness(1.0d);
-        population.addIndividual(chromosomeEvaluationNotNeeded2);
+        Genome genomeEvaluationNotNeeded2 = new Genome(false, 1.0d, population);
+        population.addIndividual(genomeEvaluationNotNeeded2);
 
-        assertTrue(chromosomeEvaluationNeeded1.isEvaluationNeeded());
-        assertTrue(chromosomeEvaluationNeeded2.isEvaluationNeeded());
-        assertFalse(chromosomeEvaluationNotNeeded1.isEvaluationNeeded());
-        assertFalse(chromosomeEvaluationNotNeeded2.isEvaluationNeeded());
+        assertTrue(genomeEvaluationNeeded1.isEvaluationNeeded());
+        assertTrue(genomeEvaluationNeeded2.isEvaluationNeeded());
+        assertFalse(genomeEvaluationNotNeeded1.isEvaluationNeeded());
+        assertFalse(genomeEvaluationNotNeeded2.isEvaluationNeeded());
 
         population.doConcurrentFitnessEvaluations(fitnessEvaluatorMock, population.getIndividuals());
 
-        for (Chromosome individual : population.getIndividuals()) {
+        for (Genome individual : population.getIndividuals()) {
             assertFalse(individual.isEvaluationNeeded());
         }
 
         // Only two of the individuals needed to be evaluated
-        verify(fitnessEvaluatorMock, times(2)).evaluate(any(Chromosome.class));
+        verify(fitnessEvaluatorMock, times(2)).evaluate(any(Genome.class));
     }
 
     @Ignore
@@ -195,7 +189,7 @@ public class StandardPopulationTest {
         ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
 
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(fitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
+        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -204,37 +198,31 @@ public class StandardPopulationTest {
 
         population.init(strategy);
 
-        MockChromosome chromosomeEvaluationNeeded1 = new MockChromosome();
-        chromosomeEvaluationNeeded1.setFitness(5.0d);
-        population.addIndividual(chromosomeEvaluationNeeded1);
-        chromosomeEvaluationNeeded1.setEvaluationNeeded(true);
+        Genome genomeEvaluationNeeded1 = new Genome(true, 5.0d, population);
+        population.addIndividual(genomeEvaluationNeeded1);
 
-        MockChromosome chromosomeEvaluationNeeded2 = new MockChromosome();
-        chromosomeEvaluationNeeded2.setFitness(5.0d);
-        population.addIndividual(chromosomeEvaluationNeeded2);
-        chromosomeEvaluationNeeded2.setEvaluationNeeded(true);
+        Genome genomeEvaluationNeeded2 = new Genome(true, 5.0d, population);
+        population.addIndividual(genomeEvaluationNeeded2);
 
-        MockChromosome chromosomeEvaluationNotNeeded1 = new MockChromosome();
-        chromosomeEvaluationNotNeeded1.setFitness(5.0d);
-        population.addIndividual(chromosomeEvaluationNotNeeded1);
+        Genome genomeEvaluationNotNeeded1 = new Genome(false, 5.0d, population);
+        population.addIndividual(genomeEvaluationNotNeeded1);
 
-        MockChromosome chromosomeEvaluationNotNeeded2 = new MockChromosome();
-        chromosomeEvaluationNotNeeded2.setFitness(100.1d);
-        population.addIndividual(chromosomeEvaluationNotNeeded2);
+        Genome genomeEvaluationNotNeeded2 = new Genome(false, 100.1d, population);
+        population.addIndividual(genomeEvaluationNotNeeded2);
 
-        assertTrue(chromosomeEvaluationNeeded1.isEvaluationNeeded());
-        assertTrue(chromosomeEvaluationNeeded2.isEvaluationNeeded());
-        assertFalse(chromosomeEvaluationNotNeeded1.isEvaluationNeeded());
-        assertFalse(chromosomeEvaluationNotNeeded2.isEvaluationNeeded());
+        assertTrue(genomeEvaluationNeeded1.isEvaluationNeeded());
+        assertTrue(genomeEvaluationNeeded2.isEvaluationNeeded());
+        assertFalse(genomeEvaluationNotNeeded1.isEvaluationNeeded());
+        assertFalse(genomeEvaluationNotNeeded2.isEvaluationNeeded());
 
         population.evaluateFitness(generationStatistics);
 
-        for (Chromosome individual : population.getIndividuals()) {
+        for (Genome individual : population.getIndividuals()) {
             assertFalse(individual.isEvaluationNeeded());
         }
 
         // Only two of the individuals needed to be evaluated
-        verify(fitnessEvaluatorMock, times(2)).evaluate(any(Chromosome.class));
+        verify(fitnessEvaluatorMock, times(2)).evaluate(any(Genome.class));
 
         /*
          * The fitnessEvaluatorMock always returns 1.0, so the total is (1.0 x 2) + 5.0 + 100.1, since two individuals
@@ -259,7 +247,7 @@ public class StandardPopulationTest {
         ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
 
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(fitnessEvaluatorMock.evaluate(any(Chromosome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
+        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -268,37 +256,31 @@ public class StandardPopulationTest {
 
         population.init(strategy);
 
-        MockChromosome chromosomeEvaluationNeeded1 = new MockChromosome();
-        chromosomeEvaluationNeeded1.setFitness(5.0d);
-        population.addIndividual(chromosomeEvaluationNeeded1);
-        chromosomeEvaluationNeeded1.setEvaluationNeeded(true);
+        Genome genomeEvaluationNeeded1 = new Genome(true, 5.0d, population);
+        population.addIndividual(genomeEvaluationNeeded1);
 
-        MockChromosome chromosomeEvaluationNeeded2 = new MockChromosome();
-        chromosomeEvaluationNeeded2.setFitness(5.0d);
-        population.addIndividual(chromosomeEvaluationNeeded2);
-        chromosomeEvaluationNeeded2.setEvaluationNeeded(true);
+        Genome genomeEvaluationNeeded2 = new Genome(true, 5.0d, population);
+        population.addIndividual(genomeEvaluationNeeded2);
 
-        MockChromosome chromosomeEvaluationNotNeeded1 = new MockChromosome();
-        chromosomeEvaluationNotNeeded1.setFitness(5.0d);
-        population.addIndividual(chromosomeEvaluationNotNeeded1);
+        Genome genomeEvaluationNotNeeded1 = new Genome(false, 5.0d, population);
+        population.addIndividual(genomeEvaluationNotNeeded1);
 
-        MockChromosome chromosomeEvaluationNotNeeded2 = new MockChromosome();
-        chromosomeEvaluationNotNeeded2.setFitness(100.1d);
-        population.addIndividual(chromosomeEvaluationNotNeeded2);
+        Genome genomeEvaluationNotNeeded2 = new Genome(false, 100.1d, population);
+        population.addIndividual(genomeEvaluationNotNeeded2);
 
-        assertTrue(chromosomeEvaluationNeeded1.isEvaluationNeeded());
-        assertTrue(chromosomeEvaluationNeeded2.isEvaluationNeeded());
-        assertFalse(chromosomeEvaluationNotNeeded1.isEvaluationNeeded());
-        assertFalse(chromosomeEvaluationNotNeeded2.isEvaluationNeeded());
+        assertTrue(genomeEvaluationNeeded1.isEvaluationNeeded());
+        assertTrue(genomeEvaluationNeeded2.isEvaluationNeeded());
+        assertFalse(genomeEvaluationNotNeeded1.isEvaluationNeeded());
+        assertFalse(genomeEvaluationNotNeeded2.isEvaluationNeeded());
 
         population.evaluateFitness(generationStatistics);
 
-        for (Chromosome individual : population.getIndividuals()) {
+        for (Genome individual : population.getIndividuals()) {
             assertFalse(individual.isEvaluationNeeded());
         }
 
         // Only two of the individuals needed to be evaluated
-        verify(fitnessEvaluatorMock, times(2)).evaluate(any(Chromosome.class));
+        verify(fitnessEvaluatorMock, times(2)).evaluate(any(Genome.class));
 
         /*
          * The fitnessEvaluatorMock always returns 1.0, so the total is (1.0 x 2) + 5.0 + 100.1, since two individuals
@@ -309,17 +291,16 @@ public class StandardPopulationTest {
         assertEquals(expectedTotalFitness, population.getTotalFitness());
         assertEquals(Double.valueOf(expectedTotalFitness / population.size()), generationStatistics.getAverageFitness());
         assertEquals(Double.valueOf(100.1d), generationStatistics.getBestFitness());
-        assertEquals(Double.valueOf(100.0d), generationStatistics.getKnownSolutionProximity());
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testIndividualsUnmodifiable() {
         StandardPopulation population = new StandardPopulation();
-        population.addIndividual(mock(Chromosome.class));
-        population.addIndividual(mock(Chromosome.class));
-        population.addIndividual(mock(Chromosome.class));
+        population.addIndividual(mock(Genome.class));
+        population.addIndividual(mock(Genome.class));
+        population.addIndividual(mock(Genome.class));
 
-        List<Chromosome> individuals = population.getIndividuals();
+        List<Genome> individuals = population.getIndividuals();
         individuals.remove(0); // should throw exception
     }
 
@@ -337,42 +318,36 @@ public class StandardPopulationTest {
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(0, population.size());
 
-        // Add a chromosome that needs evaluation
-        MockChromosome chromosomeEvaluationNeeded = new MockChromosome();
-        chromosomeEvaluationNeeded.setFitness(5.0d);
-        chromosomeEvaluationNeeded.setEvaluationNeeded(true);
-        population.addIndividual(chromosomeEvaluationNeeded);
+        // Add a genome that needs evaluation
+        Genome genomeEvaluationNeeded = new Genome(true, 5.0d, population);
+        population.addIndividual(genomeEvaluationNeeded);
 
         // Validate
-        fitnessSum += chromosomeEvaluationNeeded.getFitness();
+        fitnessSum += genomeEvaluationNeeded.getFitness();
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(1, population.size());
-        assertSame(chromosomeEvaluationNeeded, population.getIndividuals().get(0));
+        assertSame(genomeEvaluationNeeded, population.getIndividuals().get(0));
 
-        // Add a chromosome that doesn't need evaluation
-        MockChromosome chromosomeEvaluationNotNeeded = new MockChromosome();
-        chromosomeEvaluationNotNeeded.setFitness(5.0d);
-        population.addIndividual(chromosomeEvaluationNotNeeded);
+        // Add a genome that doesn't need evaluation
+        Genome genomeEvaluationNotNeeded = new Genome(false, 5.0d, population);
+        population.addIndividual(genomeEvaluationNotNeeded);
 
         // Validate
-        fitnessSum += chromosomeEvaluationNotNeeded.getFitness();
+        fitnessSum += genomeEvaluationNotNeeded.getFitness();
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(2, population.size());
-        assertSame(chromosomeEvaluationNotNeeded, population.getIndividuals().get(1));
+        assertSame(genomeEvaluationNotNeeded, population.getIndividuals().get(1));
     }
 
     @Test
     public void testRemoveIndividual() {
         StandardPopulation population = new StandardPopulation();
 
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(5.0d);
-        population.addIndividual(chromosome1);
-        chromosome1.setEvaluationNeeded(true);
+        Genome genome1 = new Genome(true, 5.0d, population);
+        population.addIndividual(genome1);
 
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(5.0d);
-        population.addIndividual(chromosome2);
+        Genome genome2 = new Genome(false, 5.0d, population);
+        population.addIndividual(genome2);
 
         Double fitnessSum = 10.0d;
         assertEquals(fitnessSum, population.getTotalFitness());
@@ -381,7 +356,7 @@ public class StandardPopulationTest {
         fitnessSum -= population.removeIndividual(1).getFitness();
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(1, population.size());
-        assertSame(chromosome1, population.getIndividuals().get(0));
+        assertSame(genome1, population.getIndividuals().get(0));
 
         fitnessSum -= population.removeIndividual(0).getFitness();
         assertEquals(fitnessSum, population.getTotalFitness());
@@ -395,14 +370,11 @@ public class StandardPopulationTest {
     public void testClearIndividuals() {
         StandardPopulation population = new StandardPopulation();
 
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(5.0d);
-        population.addIndividual(chromosome1);
-        chromosome1.setEvaluationNeeded(true);
+        Genome genome1 = new Genome(true, 5.0d, population);
+        population.addIndividual(genome1);
 
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(5.0d);
-        population.addIndividual(chromosome2);
+        Genome genome2 = new Genome(false, 5.0d, population);
+        population.addIndividual(genome2);
 
         assertEquals(Double.valueOf(10.0d), population.getTotalFitness());
         assertEquals(2, population.size());
@@ -419,11 +391,11 @@ public class StandardPopulationTest {
 
         assertEquals(0, population.size());
 
-        population.addIndividual(new MockChromosome());
+        population.addIndividual(new Genome(true, 0d, population));
 
         assertEquals(1, population.size());
 
-        population.addIndividual(new MockChromosome());
+        population.addIndividual(new Genome(true, 0d, population));
 
         assertEquals(2, population.size());
     }
@@ -432,26 +404,23 @@ public class StandardPopulationTest {
     public void testSortIndividuals() {
         StandardPopulation population = new StandardPopulation();
 
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(3.0d);
-        population.addIndividual(chromosome1);
+        Genome genome1 = new Genome(false, 3.0d, population);
+        population.addIndividual(genome1);
 
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(2.0d);
-        population.addIndividual(chromosome2);
+        Genome genome2 = new Genome(false, 2.0d, population);
+        population.addIndividual(genome2);
 
-        MockChromosome chromosome3 = new MockChromosome();
-        chromosome3.setFitness(1.0d);
-        population.addIndividual(chromosome3);
+        Genome genome3 = new Genome(false, 1.0d, population);
+        population.addIndividual(genome3);
 
-        assertSame(chromosome1, population.getIndividuals().get(0));
-        assertSame(chromosome2, population.getIndividuals().get(1));
-        assertSame(chromosome3, population.getIndividuals().get(2));
+        assertSame(genome1, population.getIndividuals().get(0));
+        assertSame(genome2, population.getIndividuals().get(1));
+        assertSame(genome3, population.getIndividuals().get(2));
 
         population.sortIndividuals();
 
-        assertSame(chromosome3, population.getIndividuals().get(0));
-        assertSame(chromosome2, population.getIndividuals().get(1));
-        assertSame(chromosome1, population.getIndividuals().get(2));
+        assertSame(genome3, population.getIndividuals().get(0));
+        assertSame(genome2, population.getIndividuals().get(1));
+        assertSame(genome1, population.getIndividuals().get(2));
     }
 }

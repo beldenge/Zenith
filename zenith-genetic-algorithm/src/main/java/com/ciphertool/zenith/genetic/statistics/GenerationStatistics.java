@@ -33,7 +33,6 @@ public class GenerationStatistics {
     private Double bestFitness;
     private Double averageFitness;
     private BigDecimal entropy = BigDecimal.ZERO;
-    private Double knownSolutionProximity;
     private int numberOfCrossovers;
     private int numberOfMutations;
     private int numberOfEvaluations;

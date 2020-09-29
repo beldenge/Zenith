@@ -19,11 +19,8 @@
 
 package com.ciphertool.zenith.genetic.operators.selection;
 
-import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.mocks.MockChromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.population.Population;
-import com.ciphertool.zenith.math.selection.BinaryRouletteNode;
-import com.ciphertool.zenith.math.selection.BinaryRouletteTree;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -45,28 +42,19 @@ public class RouletteSelectorTest {
     @Test
     public void testGetNextIndex() {
         Population populationMock = mock(Population.class);
-        BinaryRouletteTree binaryRouletteTree = new BinaryRouletteTree();
-        binaryRouletteTree.insert(new BinaryRouletteNode(0, 7.0d));
 
-        List<Chromosome> individuals = new ArrayList<>();
+        List<Genome> individuals = new ArrayList<>();
 
-        MockChromosome chromosome1 = new MockChromosome();
-        chromosome1.setFitness(0.2d);
-        individuals.add(chromosome1);
-        chromosome1.setPopulation(populationMock);
+        Genome genome1 = new Genome(false, 0.2d, populationMock);
+        individuals.add(genome1);
 
-        Double bestFitness = 0.3d;
-        MockChromosome chromosome2 = new MockChromosome();
-        chromosome2.setFitness(bestFitness);
-        individuals.add(chromosome2);
-        chromosome2.setPopulation(populationMock);
+        Genome genome2 = new Genome(false, 0.3d, populationMock);
+        individuals.add(genome2);
 
-        MockChromosome chromosome3 = new MockChromosome();
-        chromosome3.setFitness(0.5d);
-        individuals.add(chromosome3);
-        chromosome3.setPopulation(populationMock);
+        Genome genome3 = new Genome(false, 0.5d, populationMock);
+        individuals.add(genome3);
 
-        when(populationMock.getTotalFitness()).thenReturn(individuals.stream().mapToDouble(individual -> individual.getFitness()).sum());
+        when(populationMock.getTotalProbability()).thenReturn(individuals.stream().mapToDouble(individual -> individual.getFitness()).sum());
 
         rouletteSelector.reIndex(individuals);
 

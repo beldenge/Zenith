@@ -21,33 +21,42 @@ package com.ciphertool.zenith.genetic.operators.crossover;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Component
-public class UniformCrossoverOperator implements CrossoverOperator<Chromosome<Object>> {
+public class UniformCrossoverOperator implements CrossoverOperator {
     private Coin coin = new Coin();
 
     @Override
-    public Chromosome<Object> crossover(Chromosome<Object> parentA, Chromosome<Object> parentB) {
-        Chromosome<Object> child = (Chromosome<Object>) parentA.clone();
+    public Genome crossover(Genome firstGenome, Genome secondGenome) {
+        Genome childGenome = new Genome(false, 0d, firstGenome.getPopulation());
 
-        Gene next;
+        for (int i = 0; i < firstGenome.getChromosomes().size(); i ++) {
+            Chromosome<Object> childChromosome = (Chromosome<Object>) firstGenome.getChromosomes().get(i).clone();
+            childChromosome.setGenome(childGenome);
+            Chromosome<Object> parentB = secondGenome.getChromosomes().get(i);
 
-        for (Map.Entry<Object, Gene> entry : child.getGenes().entrySet()) {
-            if (coin.flip()) {
-                next = parentB.getGenes().get(entry.getKey());
+            Gene next;
 
-                if (!entry.getValue().equals(next)) {
-                    child.replaceGene(entry.getKey(), next.clone());
+            for (Map.Entry<Object, Gene> entry : childChromosome.getGenes().entrySet()) {
+                if (coin.flip()) {
+                    next = parentB.getGenes().get(entry.getKey());
+
+                    if (!entry.getValue().equals(next)) {
+                        childChromosome.replaceGene(entry.getKey(), next.clone());
+                    }
+                } else {
+                    // TODO: clone from parentA -- this could potentially save 50% of the cloning overhead vs. cloning the entire chromosome upfront
                 }
-            } else {
-                // TODO: clone from parentA -- this could potentially save 50% of the cloning overhead vs. cloning the entire chromosome upfront
             }
+
+            childGenome.addChromosome(childChromosome);
         }
 
-        return child;
+        return childGenome;
     }
 }

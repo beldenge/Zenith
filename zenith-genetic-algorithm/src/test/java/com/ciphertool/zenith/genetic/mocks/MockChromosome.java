@@ -21,32 +21,19 @@ package com.ciphertool.zenith.genetic.mocks;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.genetic.entities.Genome;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MockChromosome implements Chromosome<Object> {
-    private boolean needsEvaluation;
-    private Double fitness = 0d;
+    private Genome genome;
     private Map<Object, Gene> genes = new HashMap<>();
     private Integer targetSize = 0;
-    private Population population;
 
     @Override
     public Map<Object, Gene> getGenes() {
         return this.genes;
-    }
-
-    @Override
-    public Double getFitness() {
-        return this.fitness;
-    }
-
-    @Override
-    public void setFitness(Double fitness) {
-        this.fitness = fitness;
-        this.needsEvaluation = false;
     }
 
     @Override
@@ -66,16 +53,6 @@ public class MockChromosome implements Chromosome<Object> {
      */
     public void setTargetSize(int targetSize) {
         this.targetSize = targetSize;
-    }
-
-    @Override
-    public boolean isEvaluationNeeded() {
-        return this.needsEvaluation;
-    }
-
-    @Override
-    public void setEvaluationNeeded(boolean needsEvaluation) {
-        this.needsEvaluation = needsEvaluation;
     }
 
     @Override
@@ -100,17 +77,20 @@ public class MockChromosome implements Chromosome<Object> {
     }
 
     @Override
+    public Genome getGenome() {
+        return genome;
+    }
+
+    @Override
+    public void setGenome(Genome genome) {
+        this.genome = genome;
+    }
+
+    @Override
     public MockChromosome clone() {
         MockChromosome copyChromosome = new MockChromosome();
 
         copyChromosome.genes = new HashMap<>();
-        copyChromosome.setEvaluationNeeded(this.needsEvaluation);
-
-        /*
-         * Since we are copying over the fitness value, we don't need to reset the evaluationNeeded flag because the
-         * cloned default is correct.
-         */
-        copyChromosome.setFitness(this.fitness);
 
         /*
          * We don't need to clone the solutionSetId or cipherId as even though they are objects, they should remain
@@ -151,48 +131,6 @@ public class MockChromosome implements Chromosome<Object> {
 
     @Override
     public String toString() {
-        return "MockChromosome [needsEvaluation=" + needsEvaluation + ", fitness=" + fitness + ", genes=" + genes
-                + "]";
-    }
-
-    /**
-     * @return the population
-     */
-    @Override
-    public Population getPopulation() {
-        return population;
-    }
-
-    /**
-     * @param population the population to set
-     */
-    @Override
-    public void setPopulation(Population population) {
-        this.population = population;
-    }
-
-    @Override
-    public Object getValue() {
-        return this;
-    }
-
-    @Override
-    public Double getProbability() {
-        return this.fitness / this.population.getTotalFitness();
-    }
-
-    @Override
-    public int compareTo(Chromosome other) {
-        return fitness.compareTo(other.getFitness());
-    }
-
-    @Override
-    public boolean hasKnownSolution() {
-        return true;
-    }
-
-    @Override
-    public Double knownSolutionProximity() {
-        return 1.0d;
+        return "MockChromosome [genes=" + genes + "]";
     }
 }

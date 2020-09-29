@@ -2,7 +2,7 @@
   "selectedCipher" : "zodiac408",
   "epochs": 10,
   "selectedOptimizer": {
-    "name": "SimulatedAnnealing"
+    "name": "GeneticAlgorithm"
   },
   "selectedFitnessFunction": {
     "name": "NgramAndIndexOfCoincidence"

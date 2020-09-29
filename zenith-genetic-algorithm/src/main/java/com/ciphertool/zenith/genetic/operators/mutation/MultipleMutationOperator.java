@@ -23,6 +23,7 @@ import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.dao.GeneDao;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,42 +34,44 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class MultipleMutationOperator implements MutationOperator<Chromosome<Object>> {
+public class MultipleMutationOperator implements MutationOperator {
     @Autowired
     private GeneDao geneDao;
 
     @Override
-    public boolean mutateChromosome(Chromosome<Object> chromosome, GeneticAlgorithmStrategy strategy) {
+    public boolean mutateChromosomes(Genome genome, GeneticAlgorithmStrategy strategy) {
         int maxMutations = strategy.getMaxMutationsPerIndividual();
         boolean mutated = false;
         int numMutations;
 
-        /*
-         * Choose a random number of mutations constrained by the configurable max and the total number of genes
-         */
-        numMutations = ThreadLocalRandom.current().nextInt(Math.min(maxMutations, chromosome.getGenes().size())) + 1;
-
-        List<Object> availableKeys = new ArrayList<>(chromosome.getGenes().keySet());
-        Map<Object, Gene> originalGenes = new HashMap<>(numMutations);
-
-        for (int i = 0; i < numMutations; i++) {
+        for (Chromosome<Object> chromosome : genome.getChromosomes()) {
             /*
-             * We don't want to reuse an index, so we get one from the List of indices which are still available
+             * Choose a random number of mutations constrained by the configurable max and the total number of genes
              */
-            int randomIndex = (int) (ThreadLocalRandom.current().nextDouble() * availableKeys.size());
-            Object randomKey = availableKeys.get(randomIndex);
-            originalGenes.put(randomKey, chromosome.getGenes().get(randomKey));
-            availableKeys.remove(randomIndex);
-        }
+            numMutations = ThreadLocalRandom.current().nextInt(Math.min(maxMutations, chromosome.getGenes().size())) + 1;
 
-        for (Object key : originalGenes.keySet()) {
-            Gene next = geneDao.findRandomGene(chromosome);
+            List<Object> availableKeys = new ArrayList<>(chromosome.getGenes().keySet());
+            Map<Object, Gene> originalGenes = new HashMap<>(numMutations);
 
-            if (!next.equals(chromosome.getGenes().get(key))) {
-                mutated = true;
+            for (int i = 0; i < numMutations; i++) {
+                /*
+                 * We don't want to reuse an index, so we get one from the List of indices which are still available
+                 */
+                int randomIndex = (int) (ThreadLocalRandom.current().nextDouble() * availableKeys.size());
+                Object randomKey = availableKeys.get(randomIndex);
+                originalGenes.put(randomKey, chromosome.getGenes().get(randomKey));
+                availableKeys.remove(randomIndex);
+            }
 
-                // Replace that map value with a randomly generated Gene
-                chromosome.replaceGene(key, next);
+            for (Object key : originalGenes.keySet()) {
+                Gene next = geneDao.findRandomGene(chromosome);
+
+                if (!next.equals(chromosome.getGenes().get(key))) {
+                    mutated = true;
+
+                    // Replace that map value with a randomly generated Gene
+                    chromosome.replaceGene(key, next);
+                }
             }
         }
 

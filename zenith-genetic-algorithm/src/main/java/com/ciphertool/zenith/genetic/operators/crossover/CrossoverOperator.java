@@ -19,9 +19,9 @@
 
 package com.ciphertool.zenith.genetic.operators.crossover;
 
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 
-public interface CrossoverOperator<T extends Chromosome> {
+public interface CrossoverOperator {
 
     /**
      * Performs crossover to a List of children by cloning one or both of the parents and then selectively replacing
@@ -29,7 +29,7 @@ public interface CrossoverOperator<T extends Chromosome> {
      *
      * @param parentA the first parent
      * @param parentB the second parent
-     * @return the child Chromosome produced from the crossover
+     * @return the child Genome produced from the crossover
      */
-    T crossover(T parentA, T parentB);
+    Genome crossover(Genome parentA, Genome parentB);
 }

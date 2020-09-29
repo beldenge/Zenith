@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.population;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
@@ -46,11 +46,11 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
-    public List<Chromosome> breed(int numberToBreed) {
-        List<FutureTask<Chromosome>> futureTasks = new ArrayList<>();
-        FutureTask<Chromosome> futureTask;
+    public List<Genome> breed(int numberToBreed) {
+        List<FutureTask<Genome>> futureTasks = new ArrayList<>();
+        FutureTask<Genome> futureTask;
 
-        List<Chromosome> individualsAdded = new ArrayList<>(numberToBreed);
+        List<Genome> individualsAdded = new ArrayList<>(numberToBreed);
         for (int i = 0; i < numberToBreed; i++) {
             futureTask = new FutureTask<>(new GeneratorTask());
             futureTasks.add(futureTask);
@@ -58,7 +58,7 @@ public abstract class AbstractPopulation implements Population {
             strategy.getTaskExecutor().execute(futureTask);
         }
 
-        for (FutureTask<Chromosome> future : futureTasks) {
+        for (FutureTask<Genome> future : futureTasks) {
             try {
                 individualsAdded.add(future.get());
             } catch (InterruptedException ie) {
@@ -76,13 +76,13 @@ public abstract class AbstractPopulation implements Population {
     /**
      * A concurrent task for adding a brand new Chromosome to the population.
      */
-    protected class GeneratorTask implements Callable<Chromosome> {
+    protected class GeneratorTask implements Callable<Genome> {
         public GeneratorTask() {
         }
 
         @Override
-        public Chromosome call() {
-            return strategy.getBreeder().breed();
+        public Genome call() {
+            return strategy.getBreeder().breed(strategy.getPopulation());
         }
     }
 
@@ -122,15 +122,15 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
-    public Chromosome evaluateFitness(GenerationStatistics generationStatistics) {
+    public Genome evaluateFitness(GenerationStatistics generationStatistics) {
         generationStatistics.setNumberOfEvaluations(this.doConcurrentFitnessEvaluations(this.strategy.getFitnessEvaluator(), getIndividuals()));
 
         this.totalFitness = 0d;
         this.totalProbability = 0d;
 
-        Chromosome bestFitIndividual = null;
+        Genome bestFitIndividual = null;
 
-        for (Chromosome individual : getIndividuals()) {
+        for (Genome individual : getIndividuals()) {
             this.totalFitness += individual.getFitness();
             this.totalProbability += convertFromLogProbability(individual.getFitness());
 
@@ -144,10 +144,6 @@ public abstract class AbstractPopulation implements Population {
         if (generationStatistics != null) {
             generationStatistics.setAverageFitness(averageFitness);
             generationStatistics.setBestFitness(bestFitIndividual.getFitness());
-
-            if (bestFitIndividual.hasKnownSolution()) {
-                generationStatistics.setKnownSolutionProximity(bestFitIndividual.knownSolutionProximity() * 100.0d);
-            }
         }
 
         return bestFitIndividual;
@@ -157,17 +153,17 @@ public abstract class AbstractPopulation implements Population {
      * A concurrent task for evaluating the fitness of a Chromosome.
      */
     protected class EvaluationTask implements Callable<Void> {
-        private Chromosome chromosome;
+        private Genome genome;
         private FitnessEvaluator fitnessEvaluator;
 
-        public EvaluationTask(Chromosome chromosome, FitnessEvaluator fitnessEvaluator) {
-            this.chromosome = chromosome;
+        public EvaluationTask(Genome genome, FitnessEvaluator fitnessEvaluator) {
+            this.genome = genome;
             this.fitnessEvaluator = fitnessEvaluator;
         }
 
         @Override
         public Void call() {
-            this.chromosome.setFitness(this.fitnessEvaluator.evaluate(this.chromosome));
+            this.genome.setFitness(this.fitnessEvaluator.evaluate(this.genome));
 
             return null;
         }
@@ -178,13 +174,13 @@ public abstract class AbstractPopulation implements Population {
      *
      * @throws InterruptedException if stop is requested
      */
-    protected int doConcurrentFitnessEvaluations(FitnessEvaluator fitnessEvaluator, List<Chromosome> individuals) {
+    protected int doConcurrentFitnessEvaluations(FitnessEvaluator fitnessEvaluator, List<Genome> individuals) {
         List<FutureTask<Void>> futureTasks = new ArrayList<>();
         FutureTask<Void> futureTask;
 
         int evaluationCount = 0;
 
-        for (Chromosome individual : individuals) {
+        for (Genome individual : individuals) {
             /*
              * Only evaluate individuals that have changed since the last evaluation.
              */
@@ -217,15 +213,6 @@ public abstract class AbstractPopulation implements Population {
     @Override
     public Double getTotalProbability() {
         return totalProbability;
-    }
-
-    @Override
-    public void updateFitnessForIndividual(Chromosome individual, Double newFitness) {
-        totalFitness -= individual.getFitness();
-        totalProbability -= convertFromLogProbability(individual.getFitness());
-        individual.setFitness(newFitness);
-        totalFitness += individual.getFitness();
-        totalProbability += convertFromLogProbability(individual.getFitness());
     }
 
     abstract void reIndexSelector();

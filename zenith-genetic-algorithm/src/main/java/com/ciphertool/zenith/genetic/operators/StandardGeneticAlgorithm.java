@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.genetic.operators;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
@@ -55,7 +55,7 @@ public class StandardGeneticAlgorithm {
         Population population = strategy.getPopulation();
 
         population.clearIndividuals();
-        List<Chromosome> initialPopulation = population.breed(strategy.getPopulationSize());
+        List<Genome> initialPopulation = population.breed(strategy.getPopulationSize());
         initialPopulation.stream().forEach(population::addIndividual);
 
         if (calculateEntropy) {
@@ -104,7 +104,7 @@ public class StandardGeneticAlgorithm {
         performanceStats.setSelectionMillis(System.currentTimeMillis() - startSelection);
 
         long startCrossover = System.currentTimeMillis();
-        List<Chromosome> children = crossover(strategy, allParents);
+        List<Genome> children = crossover(strategy, allParents);
         generationStatistics.setNumberOfCrossovers(children.size());
         performanceStats.setCrossoverMillis(System.currentTimeMillis() - startCrossover);
 
@@ -131,7 +131,7 @@ public class StandardGeneticAlgorithm {
         executionStatistics.addGenerationStatistics(generationStatistics);
     }
 
-    public List<Chromosome> crossover(GeneticAlgorithmStrategy strategy, List<Parents> allParents) {
+    public List<Genome> crossover(GeneticAlgorithmStrategy strategy, List<Parents> allParents) {
         if (strategy.getPopulation().size() < 2) {
             log.info("Unable to perform crossover because there is only 1 individual in the population. Returning.");
 
@@ -140,8 +140,8 @@ public class StandardGeneticAlgorithm {
 
         log.debug("Pairs to crossover: {}", allParents.size());
 
-        List<Chromosome> crossoverResults = doConcurrentCrossovers(strategy, allParents);
-        List<Chromosome> childrenToAdd = new ArrayList<>();
+        List<Genome> crossoverResults = doConcurrentCrossovers(strategy, allParents);
+        List<Genome> childrenToAdd = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(crossoverResults)) {
             childrenToAdd.addAll(crossoverResults);
@@ -155,9 +155,9 @@ public class StandardGeneticAlgorithm {
         return childrenToAdd;
     }
 
-    protected List<Chromosome> doConcurrentCrossovers(GeneticAlgorithmStrategy strategy, List<Parents> allParents) {
-        List<FutureTask<Chromosome>> futureTasks = new ArrayList<>();
-        FutureTask<Chromosome> futureTask;
+    protected List<Genome> doConcurrentCrossovers(GeneticAlgorithmStrategy strategy, List<Parents> allParents) {
+        List<FutureTask<Genome>> futureTasks = new ArrayList<>();
+        FutureTask<Genome> futureTask;
 
         /*
          * Execute each crossover concurrently. Parents should produce two children, but this is not necessarily always
@@ -169,10 +169,10 @@ public class StandardGeneticAlgorithm {
             strategy.getTaskExecutor().execute(futureTask);
         }
 
-        List<Chromosome> childrenToAdd = new ArrayList<>();
+        List<Genome> childrenToAdd = new ArrayList<>();
 
         // Add the result of each FutureTask to the population since it represents a new child Chromosome.
-        for (FutureTask<Chromosome> future : futureTasks) {
+        for (FutureTask<Genome> future : futureTasks) {
             try {
                 childrenToAdd.add(future.get());
             } catch (InterruptedException ie) {
@@ -185,7 +185,7 @@ public class StandardGeneticAlgorithm {
         return childrenToAdd;
     }
 
-    public int mutate(GeneticAlgorithmStrategy strategy, List<Chromosome> children) {
+    public int mutate(GeneticAlgorithmStrategy strategy, List<Genome> children) {
         int mutations = 0;
         List<FutureTask<Integer>> futureTasks = new ArrayList<>();
         FutureTask<Integer> futureTask;
@@ -196,7 +196,7 @@ public class StandardGeneticAlgorithm {
         /*
          * Execute each mutation concurrently.
          */
-        for (Chromosome child : children) {
+        for (Genome child : children) {
             futureTask = new FutureTask<>(new MutationTask(strategy, child));
             futureTasks.add(futureTask);
             strategy.getTaskExecutor().execute(futureTask);
@@ -215,8 +215,8 @@ public class StandardGeneticAlgorithm {
         return mutations;
     }
 
-    protected void replacePopulation(GeneticAlgorithmStrategy strategy, List<Chromosome> children) {
-        List<Chromosome> eliteIndividuals = new ArrayList<>();
+    protected void replacePopulation(GeneticAlgorithmStrategy strategy, List<Genome> children) {
+        List<Genome> eliteIndividuals = new ArrayList<>();
 
         Population population = strategy.getPopulation();
 
@@ -267,7 +267,7 @@ public class StandardGeneticAlgorithm {
     /**
      * A concurrent task for performing a crossover of two parent Chromosomes, producing one child Chromosome.
      */
-    protected class CrossoverTask implements Callable<Chromosome> {
+    protected class CrossoverTask implements Callable<Genome> {
         private GeneticAlgorithmStrategy strategy;
         private Parents parents;
 
@@ -278,7 +278,7 @@ public class StandardGeneticAlgorithm {
 
         @SuppressWarnings("unchecked")
         @Override
-        public Chromosome call() {
+        public Genome call() {
             return strategy.getCrossoverOperator().crossover(parents.getMom(), parents.getDad());
         }
     }
@@ -288,11 +288,11 @@ public class StandardGeneticAlgorithm {
      */
     protected class MutationTask implements Callable<Integer> {
         private GeneticAlgorithmStrategy strategy;
-        private Chromosome chromosome;
+        private Genome genome;
 
-        public MutationTask(GeneticAlgorithmStrategy strategy, Chromosome chromosome) {
+        public MutationTask(GeneticAlgorithmStrategy strategy, Genome genome) {
             this.strategy = strategy;
-            this.chromosome = chromosome;
+            this.genome = genome;
         }
 
         @SuppressWarnings("unchecked")
@@ -301,7 +301,7 @@ public class StandardGeneticAlgorithm {
             /*
              * Mutate a gene within the Chromosome. The original Chromosome has been cloned.
              */
-            if (strategy.getMutationOperator().mutateChromosome(chromosome, strategy)) {
+            if (strategy.getMutationOperator().mutateChromosomes(genome, strategy)) {
                 return 1;
             }
 

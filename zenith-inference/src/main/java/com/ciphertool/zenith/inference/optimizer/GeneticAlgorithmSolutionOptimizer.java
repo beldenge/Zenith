@@ -21,13 +21,14 @@ package com.ciphertool.zenith.inference.optimizer;
 
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
+import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.operators.DivergentGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
 import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.operators.selection.Selector;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
-import com.ciphertool.zenith.genetic.entities.Gene;
-import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.configuration.GeneticAlgorithmInitialization;
 import com.ciphertool.zenith.inference.entities.Cipher;
@@ -274,19 +275,21 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
             geneticAlgorithmStrategy.getPopulation().sortIndividuals();
 
             if (log.isDebugEnabled()) {
-                List<Chromosome> individuals = geneticAlgorithmStrategy.getPopulation().getIndividuals();
+                List<Genome> individuals = geneticAlgorithmStrategy.getPopulation().getIndividuals();
                 int size = individuals.size();
 
                 for (int i = 0; i < size; i++) {
-                    Chromosome next = individuals.get(i);
-                    log.info("Chromosome {}:", (i + 1), next);
+                    Genome next = individuals.get(i);
+                    log.info("Genome {}:", (i + 1), next);
                     if (log.isInfoEnabled()) {
-                        cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(next), plaintextTransformationSteps);
+                        // There's only one chromosome for this type of Genome
+                        Chromosome chromosome = next.getChromosomes().get(0);
+                        cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(chromosome), plaintextTransformationSteps);
                     }
                 }
             }
 
-            last = (CipherKeyChromosome) geneticAlgorithmStrategy.getPopulation().getIndividuals().get(geneticAlgorithmStrategy.getPopulation().getIndividuals().size() - 1);
+            last = (CipherKeyChromosome) geneticAlgorithmStrategy.getPopulation().getIndividuals().get(geneticAlgorithmStrategy.getPopulation().getIndividuals().size() - 1).getChromosomes().get(0);
 
             log.info("Best probability solution:");
             CipherSolution bestSolution = ChromosomeToCipherSolutionMapper.map(last);

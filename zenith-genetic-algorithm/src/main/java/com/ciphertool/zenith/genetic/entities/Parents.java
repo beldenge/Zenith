@@ -25,6 +25,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class Parents {
-    private Chromosome mom;
-    private Chromosome dad;
+    private Genome mom;
+    private Genome dad;
 }

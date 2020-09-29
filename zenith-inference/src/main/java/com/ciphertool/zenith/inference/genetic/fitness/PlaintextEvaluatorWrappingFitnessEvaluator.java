@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.genetic.fitness;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
@@ -48,7 +49,10 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
     }
 
     @Override
-    public Double evaluate(Chromosome chromosome) {
+    public Double evaluate(Genome genome) {
+        // There's only one chromosome for this type of Genome
+        Chromosome chromosome = genome.getChromosomes().get(0);
+
         CipherSolution proposal = ChromosomeToCipherSolutionMapper.map(chromosome);
 
         String solutionString = proposal.asSingleLineString();

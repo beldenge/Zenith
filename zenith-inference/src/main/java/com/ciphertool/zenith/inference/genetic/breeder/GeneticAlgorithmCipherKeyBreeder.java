@@ -20,8 +20,9 @@
 package com.ciphertool.zenith.inference.genetic.breeder;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.operators.StandardGeneticAlgorithm;
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.configuration.GeneticAlgorithmInitialization;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
@@ -64,7 +65,7 @@ public class GeneticAlgorithmCipherKeyBreeder extends AbstractCipherKeyBreeder {
     }
 
     @Override
-    public Chromosome breed() {
+    public Genome breed(Population population) {
         Map<String, Object> configuration = new HashMap<>();
         configuration.put(GeneticAlgorithmSolutionOptimizer.POPULATION_NAME, "StandardPopulation");
         configuration.put(GeneticAlgorithmSolutionOptimizer.BREEDER_NAME, "ProbabilisticCipherKeyBreeder");
@@ -98,6 +99,9 @@ public class GeneticAlgorithmCipherKeyBreeder extends AbstractCipherKeyBreeder {
 
         log.info("Gene Produced");
 
-        return initialization.getPopulation().getIndividuals().get(initialization.getPopulation().getIndividuals().size() - 1);
+        Genome genome = initialization.getPopulation().getIndividuals().get(initialization.getPopulation().getIndividuals().size() - 1);
+        genome.setPopulation(population);
+
+        return genome;
     }
 }

@@ -19,7 +19,8 @@
 
 package com.ciphertool.zenith.inference.genetic.breeder;
 
-import com.ciphertool.zenith.genetic.entities.Chromosome;
+import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
@@ -77,8 +78,9 @@ public class BiasedCipherKeyBreeder extends AbstractCipherKeyBreeder {
     }
 
     @Override
-    public Chromosome breed() {
-        CipherKeyChromosome chromosome = new CipherKeyChromosome(cipher, keys.length);
+    public Genome breed(Population population) {
+        Genome genome = new Genome(true, 0d, population);
+        CipherKeyChromosome chromosome = new CipherKeyChromosome(genome, cipher, keys.length);
 
         for (String ciphertext : keys) {
             // Pick a plaintext at random according to the language model
@@ -89,6 +91,8 @@ public class BiasedCipherKeyBreeder extends AbstractCipherKeyBreeder {
 
         log.debug(chromosome.toString());
 
-        return chromosome;
+        genome.addChromosome(chromosome);
+
+        return genome;
     }
 }

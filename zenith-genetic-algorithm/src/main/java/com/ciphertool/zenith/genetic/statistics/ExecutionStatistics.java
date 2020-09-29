@@ -57,23 +57,14 @@ public class ExecutionStatistics {
         this.mutationOperator = (strategy.getMutationOperator() != null) ? strategy.getMutationOperator().getClass().getSimpleName() : null;
     }
 
-    /**
-     * @return an unmodifiable List of GenerationStatistics
-     */
     public List<GenerationStatistics> getGenerationStatisticsList() {
         return Collections.unmodifiableList(this.generationStatisticsList);
     }
 
-    /**
-     * @param generationStatistics the GenerationStatistics to add
-     */
     public void addGenerationStatistics(GenerationStatistics generationStatistics) {
         this.generationStatisticsList.add(generationStatistics);
     }
 
-    /**
-     * @param generationStatistics the GenerationStatistics to remove
-     */
     public void removeGenerationStatistics(GenerationStatistics generationStatistics) {
         this.generationStatisticsList.remove(generationStatistics);
     }
