@@ -29,6 +29,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+ * TODO: we should probably create an AbstractChromosome which handles the add/put/replace operations since they are
+ * pretty generic, and the logic for setting whether the genome requires evaluation is critical to implement correctly
+ * for other Chromosome implementations.
+ */
 public class CipherKeyChromosome implements Chromosome<String> {
     private Genome genome;
 

@@ -36,21 +36,20 @@ public class SinglePointCrossoverOperator implements CrossoverOperator {
         // TODO: consider using ThreadLocalRandom
         Random generator = new Random();
 
-        Genome childGenome = new Genome(false, 0d, firstGenome.getPopulation());
+        Genome dadGenome = coin.flip() ? firstGenome : secondGenome;
+        Genome momGenome = (dadGenome == firstGenome) ? secondGenome : firstGenome;
 
-        for (int i = 0; i < firstGenome.getChromosomes().size(); i ++) {
-            Chromosome parentA = firstGenome.getChromosomes().get(i);
-            Chromosome parentB = secondGenome.getChromosomes().get(i);
+        Genome childGenome = new Genome(dadGenome.isEvaluationNeeded(), dadGenome.getFitness(), dadGenome.getPopulation());
 
-            Set<Object> availableKeys = parentA.getGenes().keySet();
+        for (int i = 0; i < dadGenome.getChromosomes().size(); i ++) {
+            Chromosome<Object> dad = dadGenome.getChromosomes().get(i);
+            Chromosome<Object> mom = momGenome.getChromosomes().get(i);
+
+            Set<Object> availableKeys = dad.getGenes().keySet();
             Object[] keys = availableKeys.toArray();
 
             // Get a random map key
             int randomIndex = generator.nextInt(keys.length);
-
-            // Replace all the Genes from the map key to the end of the array
-            Chromosome<Object> dad = coin.flip() ? parentA : parentB;
-            Chromosome<Object> mom = (dad == parentA) ? parentB : parentA;
 
             Chromosome<Object> childChromosome = dad.clone();
             childChromosome.setGenome(childGenome);

@@ -33,7 +33,7 @@ public class UniformCrossoverOperator implements CrossoverOperator {
 
     @Override
     public Genome crossover(Genome firstGenome, Genome secondGenome) {
-        Genome childGenome = new Genome(false, 0d, firstGenome.getPopulation());
+        Genome childGenome = new Genome(firstGenome.isEvaluationNeeded(), firstGenome.getFitness(), firstGenome.getPopulation());
 
         for (int i = 0; i < firstGenome.getChromosomes().size(); i ++) {
             Chromosome<Object> childChromosome = (Chromosome<Object>) firstGenome.getChromosomes().get(i).clone();
