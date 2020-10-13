@@ -22,6 +22,7 @@ package com.ciphertool.zenith.genetic.operators;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import com.ciphertool.zenith.genetic.operators.algorithm.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
 import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;

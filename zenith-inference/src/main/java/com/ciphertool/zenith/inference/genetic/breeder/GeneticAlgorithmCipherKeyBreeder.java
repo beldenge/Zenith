@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.genetic.breeder;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
-import com.ciphertool.zenith.genetic.operators.StandardGeneticAlgorithm;
+import com.ciphertool.zenith.genetic.operators.algorithm.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.configuration.GeneticAlgorithmInitialization;
 import com.ciphertool.zenith.inference.entities.Cipher;

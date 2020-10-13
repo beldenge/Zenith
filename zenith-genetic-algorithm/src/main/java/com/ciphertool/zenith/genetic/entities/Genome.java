@@ -28,8 +28,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Genome implements Comparable<Genome>, Probability {
-    private boolean evaluationNeeded = true;
-    private Double fitness = Double.MIN_VALUE;
+    private boolean evaluationNeeded;
+    private Double fitness;
     private List<Chromosome> chromosomes = new ArrayList<>();
     private Population population;
 

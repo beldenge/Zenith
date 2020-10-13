@@ -100,6 +100,7 @@ public class CipherKeyChromosome implements Chromosome<String> {
 
     /*
      * This does the same thing as putGene(), and exists solely for semantic consistency.
+     * TODO: if the previous comment is true, then we need to either get rid of this method or call putGene from it
      */
     @Override
     public void replaceGene(String key, Gene newGene) {

@@ -25,7 +25,7 @@ import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
-import com.ciphertool.zenith.genetic.operators.DivergentGeneticAlgorithm;
+import com.ciphertool.zenith.genetic.operators.algorithm.DivergentGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
 import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.operators.selection.Selector;

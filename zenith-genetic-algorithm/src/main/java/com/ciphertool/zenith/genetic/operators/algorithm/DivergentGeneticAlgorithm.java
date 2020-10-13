@@ -17,35 +17,53 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.genetic.operators;
+package com.ciphertool.zenith.genetic.operators.algorithm;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import com.ciphertool.zenith.genetic.operators.speciation.FitnessSpeciationOperator;
+import com.ciphertool.zenith.genetic.operators.speciation.ProximitySpeciationOperator;
 import com.ciphertool.zenith.genetic.population.Population;
+import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import com.ciphertool.zenith.genetic.statistics.PerformanceStatistics;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
 
 @Component
-public class StandardGeneticAlgorithm {
+public class DivergentGeneticAlgorithm {
     private Logger log = LoggerFactory.getLogger(getClass());
+
+    private static final Comparator<Population> POPULATION_COMPARATOR = (pop1, pop2) -> {
+        Genome first = pop1.getIndividuals().get(pop1.getIndividuals().size() - 1);
+        Genome second = pop2.getIndividuals().get(pop2.getIndividuals().size() - 1);
+        return first.compareTo(second);
+    };
 
     @Value("${genetic-algorithm.calculate-entropy:false}")
     private boolean calculateEntropy;
+
+    @Autowired
+    private FitnessSpeciationOperator fitnessSpeciationOperator;
+
+    @Autowired
+    private ProximitySpeciationOperator proximitySpeciationOperator;
 
     public void spawnInitialPopulation(GeneticAlgorithmStrategy strategy) {
         GenerationStatistics generationStatistics = new GenerationStatistics(0);
@@ -76,10 +94,68 @@ public class StandardGeneticAlgorithm {
     }
 
     public void evolve(GeneticAlgorithmStrategy strategy) {
+        List<Population> populations = new ArrayList<>(strategy.getMinPopulations());
+
+        for (int i = 0; i < strategy.getMinPopulations(); i ++) {
+            strategy.setPopulation(strategy.getPopulation().getInstance());
+            strategy.getPopulation().init(strategy);
+            evolvePopulation(strategy, true);
+            populations.add(strategy.getPopulation());
+        }
+
+        for (int i = 0; i < strategy.getExtinctionCycles(); i ++) {
+            if (populations.size() > strategy.getMinPopulations()) {
+                populations.stream().forEach(Population::sortIndividuals);
+
+                // Pick the "best" populations and reset to min populations
+                populations = populations.stream()
+                        .sorted(POPULATION_COMPARATOR.reversed())
+                        .limit(strategy.getMinPopulations())
+                        .collect(Collectors.toList());
+            }
+
+            for (int j = 0; j < strategy.getSpeciationEvents(); j ++) {
+                List<Population> newPopulations = new ArrayList<>(populations.size() * 2);
+
+                for (Population population : populations) {
+                    List<Population> divergentPopulations;
+
+                    if (population instanceof StandardPopulation) {
+                        divergentPopulations = fitnessSpeciationOperator.diverge(strategy, population);
+                    } else {
+                        divergentPopulations = proximitySpeciationOperator.diverge(strategy, population);
+                    }
+
+                    for (Population divergentPopulation : divergentPopulations) {
+                        strategy.setPopulation(divergentPopulation);
+                        strategy.getPopulation().init(strategy);
+                        evolvePopulation(strategy, false);
+                        newPopulations.add(strategy.getPopulation());
+                    }
+                }
+
+                populations.clear();
+                populations.addAll(newPopulations);
+            }
+        }
+
+        populations.stream().forEach(Population::sortIndividuals);
+
+        // Select the best population
+        Population bestPopulation = populations.stream()
+                .max(POPULATION_COMPARATOR)
+                .orElse(null);
+
+        strategy.setPopulation(bestPopulation);
+    }
+
+    private void evolvePopulation(GeneticAlgorithmStrategy strategy, boolean isNew) {
         int generationCount = 1;
         ExecutionStatistics executionStatistics = new ExecutionStatistics(LocalDateTime.now(), strategy);
 
-        spawnInitialPopulation(strategy);
+        if (isNew) {
+            spawnInitialPopulation(strategy);
+        }
 
         do {
             proceedWithNextGeneration(strategy, executionStatistics, generationCount);
@@ -123,7 +199,6 @@ public class StandardGeneticAlgorithm {
         long startEvaluation = System.currentTimeMillis();
         population.evaluateFitness(generationStatistics);
         performanceStats.setEvaluationMillis(System.currentTimeMillis() - startEvaluation);
-
         performanceStats.setTotalMillis(System.currentTimeMillis() - generationStart);
 
         log.info(generationStatistics.toString());
@@ -164,7 +239,7 @@ public class StandardGeneticAlgorithm {
          * guaranteed.
          */
         for (Parents nextParents : allParents) {
-            futureTask = new FutureTask<>(new CrossoverTask(strategy, nextParents));
+            futureTask = new FutureTask<>(new DivergentGeneticAlgorithm.CrossoverTask(strategy, nextParents));
             futureTasks.add(futureTask);
             strategy.getTaskExecutor().execute(futureTask);
         }
@@ -197,7 +272,7 @@ public class StandardGeneticAlgorithm {
          * Execute each mutation concurrently.
          */
         for (Genome child : children) {
-            futureTask = new FutureTask<>(new MutationTask(strategy, child));
+            futureTask = new FutureTask<>(new DivergentGeneticAlgorithm.MutationTask(strategy, child));
             futureTasks.add(futureTask);
             strategy.getTaskExecutor().execute(futureTask);
         }
