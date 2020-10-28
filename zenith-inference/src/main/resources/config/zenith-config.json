@@ -14,7 +14,7 @@
   },
   "geneticAlgorithmConfiguration": {
     "populationSize": 1000,
-    "numberOfGenerations": 5,
+    "numberOfGenerations": 4,
     "elitism": 0,
     "populationName": "StandardPopulation",
     "latticeRows": 1,

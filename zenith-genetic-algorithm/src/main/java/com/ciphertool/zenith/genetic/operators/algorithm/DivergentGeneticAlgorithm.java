@@ -160,7 +160,7 @@ public class DivergentGeneticAlgorithm {
         do {
             proceedWithNextGeneration(strategy, executionStatistics, generationCount);
             generationCount++;
-        } while (generationCount < strategy.getNumberOfGenerations());
+        } while (generationCount <= strategy.getNumberOfGenerations());
 
         finish(executionStatistics, generationCount);
     }
