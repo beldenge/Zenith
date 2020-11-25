@@ -22,5 +22,5 @@ package com.ciphertool.zenith.genetic.fitness;
 import com.ciphertool.zenith.genetic.entities.Genome;
 
 public interface FitnessEvaluator {
-    Double evaluate(Genome genome);
+    Fitness[] evaluate(Genome genome);
 }

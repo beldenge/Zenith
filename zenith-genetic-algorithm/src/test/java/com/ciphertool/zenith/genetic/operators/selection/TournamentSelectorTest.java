@@ -21,7 +21,8 @@ package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
-import com.ciphertool.zenith.genetic.mocks.MockChromosome;
+import com.ciphertool.zenith.genetic.fitness.Fitness;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.genetic.population.Population;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,13 +72,13 @@ public class TournamentSelectorTest {
         Population populationMock = mock(Population.class);
         List<Genome> individuals = new ArrayList<>();
 
-        Genome genome1 = new Genome(true, 0.2d, populationMock);
+        Genome genome1 = new Genome(true, new Fitness[] { new MaximizingFitness(0.2d) }, populationMock);
         individuals.add(genome1);
 
-        Genome genome2 = new Genome(true, 0.3d, populationMock);
+        Genome genome2 = new Genome(true, new Fitness[] { new MaximizingFitness(0.3d) }, populationMock);
         individuals.add(genome2);
 
-        Genome genome3 = new Genome(true, 0.5d, populationMock);
+        Genome genome3 = new Genome(true, new Fitness[] { new MaximizingFitness(0.5d) }, populationMock);
         individuals.add(genome3);
 
         tournamentSelector.reIndex(individuals);

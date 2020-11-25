@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.inference.entities.*;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
@@ -82,7 +84,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
             solution.addLogProbability(i, response.getProbabilities().get(i).getLogProbability());
         }
 
-        return new SolutionScore(logProbabilitiesUpdated, solution.getLogProbability());
+        return new SolutionScore(logProbabilitiesUpdated, new Fitness[] { new MaximizingFitness(solution.getLogProbability()) });
     }
 
     @Override

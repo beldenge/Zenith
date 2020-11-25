@@ -21,12 +21,12 @@ package com.ciphertool.zenith.inference.evaluator;
 
 import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
+import com.ciphertool.zenith.genetic.fitness.ProximityFitness;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
-import com.ciphertool.zenith.inference.util.MathUtils;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -38,13 +38,13 @@ import java.util.Map;
 
 @NoArgsConstructor
 @Component
-public class NgramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNgramEvaluator implements PlaintextEvaluator {
+public class NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator extends AbstractNgramEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
 
-    public NgramAndIndexOfCoincidencePlaintextEvaluator(ArrayMarkovModel letterMarkovModel, IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator, Map<String, Object> data) {
+    public NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator(ArrayMarkovModel letterMarkovModel, IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator, Map<String, Object> data) {
         this.letterMarkovModel = letterMarkovModel;
         this.indexOfCoincidenceEvaluator = indexOfCoincidenceEvaluator;
         super.init();
@@ -60,11 +60,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNgramE
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-        // Scaling down the index of coincidence by its sixth root seems to be the optimal amount to penalize the sum of log probabilities by
-        // This has been determined through haphazard experimentation
-        float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(precomputedData, cipher, solutionString));
-
-        return new SolutionScore(logProbabilitiesUpdated, new Fitness[] { new MaximizingFitness(score) });
+        return new SolutionScore(logProbabilitiesUpdated, new Fitness[] { new MaximizingFitness(solution.getLogProbability()), new ProximityFitness(0.067d ,indexOfCoincidenceEvaluator.evaluate(precomputedData, cipher, solutionString)) });
     }
 
     @Override
@@ -74,7 +70,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNgramE
 
     @Override
     public PlaintextEvaluator getInstance(Map<String, Object> data) {
-        return new NgramAndIndexOfCoincidencePlaintextEvaluator(letterMarkovModel, indexOfCoincidenceEvaluator, data);
+        return new NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator(letterMarkovModel, indexOfCoincidenceEvaluator, data);
     }
 
     @Override

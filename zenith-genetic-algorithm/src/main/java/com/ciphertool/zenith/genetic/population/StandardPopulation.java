@@ -22,6 +22,7 @@ package com.ciphertool.zenith.genetic.population;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import com.ciphertool.zenith.genetic.operators.sort.ParetoSorter;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,8 +86,12 @@ public class StandardPopulation extends AbstractPopulation {
             return null;
         }
 
-        this.totalFitness -= this.individuals.get(indexToRemove).getFitness();
-        this.totalProbability -= convertFromLogProbability(this.individuals.get(indexToRemove).getFitness());
+        Genome individualToRemove = this.individuals.get(indexToRemove);
+
+        if (individualToRemove.getFitnesses() != null && individualToRemove.getFitnesses().length == 1) {
+            this.totalFitness -= individualToRemove.getFitnesses()[0].getValue();
+            this.totalProbability -= convertFromLogProbability(individualToRemove.getFitnesses()[0].getValue());
+        }
 
         return this.individuals.remove(indexToRemove);
     }
@@ -105,8 +110,10 @@ public class StandardPopulation extends AbstractPopulation {
 
         individual.setPopulation(this);
 
-        this.totalFitness += individual.getFitness() == null ? 0d : individual.getFitness();
-        this.totalProbability += convertFromLogProbability(individual.getFitness() == null ? 0d : individual.getFitness());
+        if (individual.getFitnesses() != null && individual.getFitnesses().length == 1) {
+            this.totalFitness += individual.getFitnesses()[0].getValue();
+            this.totalProbability += convertFromLogProbability(individual.getFitnesses()[0].getValue());
+        }
 
         return individual.isEvaluationNeeded();
     }
@@ -117,13 +124,13 @@ public class StandardPopulation extends AbstractPopulation {
 
     @Override
     public void sortIndividuals() {
-        Collections.sort(individuals);
+        ParetoSorter.sort(individuals);
     }
 
     @Override
     public void reIndexSelector() {
         // This sort is necessary since we rely on the List index for selection
-        Collections.sort(this.individuals);
+        sortIndividuals();
         this.strategy.getSelector().reIndex(this.individuals);
     }
 }

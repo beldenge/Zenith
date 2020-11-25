@@ -79,7 +79,7 @@ public class BiasedCipherKeyBreeder extends AbstractCipherKeyBreeder {
 
     @Override
     public Genome breed(Population population) {
-        Genome genome = new Genome(true, 0d, population);
+        Genome genome = new Genome(true, null, population);
         CipherKeyChromosome chromosome = new CipherKeyChromosome(genome, cipher, keys.length);
 
         for (String ciphertext : keys) {

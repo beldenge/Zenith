@@ -22,15 +22,14 @@ package com.ciphertool.zenith.genetic.population;
 import com.ciphertool.zenith.genetic.Breeder;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -57,7 +56,7 @@ public class StandardPopulationTest {
         StandardPopulation population = new StandardPopulation();
         StandardPopulation.GeneratorTask generatorTask = population.new GeneratorTask();
 
-        Genome genomeToReturn = new Genome(true, 0d, population);
+        Genome genomeToReturn = new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population);
         Breeder breederMock = mock(Breeder.class);
         when(breederMock.breed(same(population))).thenReturn(genomeToReturn);
 
@@ -85,7 +84,7 @@ public class StandardPopulationTest {
 
         int expectedPopulationSize = 10;
 
-        Genome genomeToReturn = new Genome(true, 5.0d, population);
+        Genome genomeToReturn = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         Breeder breederMock = mock(Breeder.class);
 
         when(breederMock.breed(same(population))).thenReturn(genomeToReturn);
@@ -111,13 +110,13 @@ public class StandardPopulationTest {
     @Test
     public void testEvaluatorTask() {
         StandardPopulation population = new StandardPopulation();
-        Genome genomeToEvaluate = new Genome(true, 0d, population);
+        Genome genomeToEvaluate = new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population);
 
         FitnessEvaluator mockEvaluator = mock(FitnessEvaluator.class);
         Double fitnessToReturn = 101.0d;
-        when(mockEvaluator.evaluate(same(genomeToEvaluate))).thenReturn(fitnessToReturn);
+        when(mockEvaluator.evaluate(same(genomeToEvaluate))).thenReturn(new Fitness[] { new MaximizingFitness(fitnessToReturn) });
 
-        StandardPopulation.EvaluationTask evaluationTask = population.new EvaluationTask(genomeToEvaluate, mock(FitnessEvaluator.class));
+        StandardPopulation.EvaluationTask evaluationTask = population.new EvaluationTask(genomeToEvaluate, mockEvaluator);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -126,14 +125,17 @@ public class StandardPopulationTest {
 
         population.init(strategy);
 
-        Void fitnessReturned = null;
+        Double fitnessReturned = null;
         try {
-            fitnessReturned = evaluationTask.call();
+            evaluationTask.call();
+            fitnessReturned = genomeToEvaluate.getFitnesses()[0].getValue();
         } catch (Exception e) {
             fail(e.getMessage());
         }
 
-        assertNull(fitnessReturned);
+        assertEquals(fitnessToReturn, fitnessReturned);
+        verify(mockEvaluator, times(1)).evaluate(same(genomeToEvaluate));
+        verifyNoMoreInteractions(mockEvaluator);
     }
 
     @Test
@@ -141,7 +143,7 @@ public class StandardPopulationTest {
         StandardPopulation population = new StandardPopulation();
 
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
+        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(new Fitness[] { new MaximizingFitness(DEFAULT_FITNESS_VALUE) });
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -150,16 +152,16 @@ public class StandardPopulationTest {
 
         population.init(strategy);
 
-        Genome genomeEvaluationNeeded1 = new Genome(true, 1.0d, population);
+        Genome genomeEvaluationNeeded1 = new Genome(true, new Fitness[] { new MaximizingFitness(1.0d) }, population);
         population.addIndividual(genomeEvaluationNeeded1);
 
-        Genome genomeEvaluationNeeded2 = new Genome(true, 1.0d, population);
+        Genome genomeEvaluationNeeded2 = new Genome(true, new Fitness[] { new MaximizingFitness(1.0d) }, population);
         population.addIndividual(genomeEvaluationNeeded2);
 
-        Genome genomeEvaluationNotNeeded1 = new Genome(false, 1.0d, population);
+        Genome genomeEvaluationNotNeeded1 = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d) }, population);
         population.addIndividual(genomeEvaluationNotNeeded1);
 
-        Genome genomeEvaluationNotNeeded2 = new Genome(false, 1.0d, population);
+        Genome genomeEvaluationNotNeeded2 = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d) }, population);
         population.addIndividual(genomeEvaluationNotNeeded2);
 
         assertTrue(genomeEvaluationNeeded1.isEvaluationNeeded());
@@ -177,19 +179,14 @@ public class StandardPopulationTest {
         verify(fitnessEvaluatorMock, times(2)).evaluate(any(Genome.class));
     }
 
-    @Ignore
     @Test
     public void testEvaluateFitness() {
         GenerationStatistics generationStatistics = new GenerationStatistics();
 
         StandardPopulation population = new StandardPopulation();
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardPopulation.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
-
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
+        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(new Fitness[] { new MaximizingFitness(DEFAULT_FITNESS_VALUE) });
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -198,16 +195,16 @@ public class StandardPopulationTest {
 
         population.init(strategy);
 
-        Genome genomeEvaluationNeeded1 = new Genome(true, 5.0d, population);
+        Genome genomeEvaluationNeeded1 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNeeded1);
 
-        Genome genomeEvaluationNeeded2 = new Genome(true, 5.0d, population);
+        Genome genomeEvaluationNeeded2 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNeeded2);
 
-        Genome genomeEvaluationNotNeeded1 = new Genome(false, 5.0d, population);
+        Genome genomeEvaluationNotNeeded1 = new Genome(false, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNotNeeded1);
 
-        Genome genomeEvaluationNotNeeded2 = new Genome(false, 100.1d, population);
+        Genome genomeEvaluationNotNeeded2 = new Genome(false, new Fitness[] { new MaximizingFitness(100.1d) }, population);
         population.addIndividual(genomeEvaluationNotNeeded2);
 
         assertTrue(genomeEvaluationNeeded1.isEvaluationNeeded());
@@ -235,19 +232,14 @@ public class StandardPopulationTest {
         assertEquals(Double.valueOf(100.1d), generationStatistics.getBestFitness());
     }
 
-    @Ignore
     @Test
     public void testEvaluateFitnessCompareToKnownSolution() {
         GenerationStatistics generationStatistics = new GenerationStatistics();
 
         StandardPopulation population = new StandardPopulation();
 
-        Field taskExecutorField = ReflectionUtils.findField(StandardPopulation.class, "taskExecutor");
-        ReflectionUtils.makeAccessible(taskExecutorField);
-        ReflectionUtils.setField(taskExecutorField, population, taskExecutor);
-
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
-        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(DEFAULT_FITNESS_VALUE);
+        when(fitnessEvaluatorMock.evaluate(any(Genome.class))).thenReturn(new Fitness[] { new MaximizingFitness(DEFAULT_FITNESS_VALUE) });
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
                 .taskExecutor(taskExecutor)
@@ -256,16 +248,16 @@ public class StandardPopulationTest {
 
         population.init(strategy);
 
-        Genome genomeEvaluationNeeded1 = new Genome(true, 5.0d, population);
+        Genome genomeEvaluationNeeded1 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNeeded1);
 
-        Genome genomeEvaluationNeeded2 = new Genome(true, 5.0d, population);
+        Genome genomeEvaluationNeeded2 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNeeded2);
 
-        Genome genomeEvaluationNotNeeded1 = new Genome(false, 5.0d, population);
+        Genome genomeEvaluationNotNeeded1 = new Genome(false, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNotNeeded1);
 
-        Genome genomeEvaluationNotNeeded2 = new Genome(false, 100.1d, population);
+        Genome genomeEvaluationNotNeeded2 = new Genome(false, new Fitness[] { new MaximizingFitness(100.1d) }, population);
         population.addIndividual(genomeEvaluationNotNeeded2);
 
         assertTrue(genomeEvaluationNeeded1.isEvaluationNeeded());
@@ -319,21 +311,21 @@ public class StandardPopulationTest {
         assertEquals(0, population.size());
 
         // Add a genome that needs evaluation
-        Genome genomeEvaluationNeeded = new Genome(true, 5.0d, population);
+        Genome genomeEvaluationNeeded = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNeeded);
 
         // Validate
-        fitnessSum += genomeEvaluationNeeded.getFitness();
+        fitnessSum += genomeEvaluationNeeded.getFitnesses()[0].getValue();
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(1, population.size());
         assertSame(genomeEvaluationNeeded, population.getIndividuals().get(0));
 
         // Add a genome that doesn't need evaluation
-        Genome genomeEvaluationNotNeeded = new Genome(false, 5.0d, population);
+        Genome genomeEvaluationNotNeeded = new Genome(false, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genomeEvaluationNotNeeded);
 
         // Validate
-        fitnessSum += genomeEvaluationNotNeeded.getFitness();
+        fitnessSum += genomeEvaluationNotNeeded.getFitnesses()[0].getValue();
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(2, population.size());
         assertSame(genomeEvaluationNotNeeded, population.getIndividuals().get(1));
@@ -343,22 +335,22 @@ public class StandardPopulationTest {
     public void testRemoveIndividual() {
         StandardPopulation population = new StandardPopulation();
 
-        Genome genome1 = new Genome(true, 5.0d, population);
+        Genome genome1 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genome1);
 
-        Genome genome2 = new Genome(false, 5.0d, population);
+        Genome genome2 = new Genome(false, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genome2);
 
         Double fitnessSum = 10.0d;
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(2, population.size());
 
-        fitnessSum -= population.removeIndividual(1).getFitness();
+        fitnessSum -= population.removeIndividual(1).getFitnesses()[0].getValue();
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(1, population.size());
         assertSame(genome1, population.getIndividuals().get(0));
 
-        fitnessSum -= population.removeIndividual(0).getFitness();
+        fitnessSum -= population.removeIndividual(0).getFitnesses()[0].getValue();
         assertEquals(fitnessSum, population.getTotalFitness());
         assertEquals(0, population.size());
 
@@ -370,10 +362,10 @@ public class StandardPopulationTest {
     public void testClearIndividuals() {
         StandardPopulation population = new StandardPopulation();
 
-        Genome genome1 = new Genome(true, 5.0d, population);
+        Genome genome1 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genome1);
 
-        Genome genome2 = new Genome(false, 5.0d, population);
+        Genome genome2 = new Genome(false, new Fitness[] { new MaximizingFitness(5.0d) }, population);
         population.addIndividual(genome2);
 
         assertEquals(Double.valueOf(10.0d), population.getTotalFitness());
@@ -391,11 +383,11 @@ public class StandardPopulationTest {
 
         assertEquals(0, population.size());
 
-        population.addIndividual(new Genome(true, 0d, population));
+        population.addIndividual(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population));
 
         assertEquals(1, population.size());
 
-        population.addIndividual(new Genome(true, 0d, population));
+        population.addIndividual(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population));
 
         assertEquals(2, population.size());
     }
@@ -404,13 +396,13 @@ public class StandardPopulationTest {
     public void testSortIndividuals() {
         StandardPopulation population = new StandardPopulation();
 
-        Genome genome1 = new Genome(false, 3.0d, population);
+        Genome genome1 = new Genome(false, new Fitness[] { new MaximizingFitness(3.0d) }, population);
         population.addIndividual(genome1);
 
-        Genome genome2 = new Genome(false, 2.0d, population);
+        Genome genome2 = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d) }, population);
         population.addIndividual(genome2);
 
-        Genome genome3 = new Genome(false, 1.0d, population);
+        Genome genome3 = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d) }, population);
         population.addIndividual(genome3);
 
         assertSame(genome1, population.getIndividuals().get(0));

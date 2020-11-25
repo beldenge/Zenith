@@ -306,7 +306,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 correctSolutions ++;
             }
 
-            overallBest = (overallBest == null) ? bestSolution : (bestSolution.getScore() > overallBest.getScore() ? bestSolution : overallBest);
+            overallBest = (overallBest == null) ? bestSolution : (bestSolution.compareTo(overallBest) > 0 ? bestSolution : overallBest);
 
             if (onEpochComplete != null) {
                 onEpochComplete.fire(epoch + 1);

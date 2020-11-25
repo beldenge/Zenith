@@ -22,6 +22,7 @@ package com.ciphertool.zenith.genetic.operators.algorithm;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import com.ciphertool.zenith.genetic.operators.sort.ParetoSorter;
 import com.ciphertool.zenith.genetic.operators.speciation.FitnessSpeciationOperator;
 import com.ciphertool.zenith.genetic.operators.speciation.ProximitySpeciationOperator;
 import com.ciphertool.zenith.genetic.population.Population;
@@ -39,7 +40,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -49,12 +49,6 @@ import java.util.stream.Collectors;
 @Component
 public class DivergentGeneticAlgorithm {
     private Logger log = LoggerFactory.getLogger(getClass());
-
-    private static final Comparator<Population> POPULATION_COMPARATOR = (pop1, pop2) -> {
-        Genome first = pop1.getIndividuals().get(pop1.getIndividuals().size() - 1);
-        Genome second = pop2.getIndividuals().get(pop2.getIndividuals().size() - 1);
-        return first.compareTo(second);
-    };
 
     @Value("${genetic-algorithm.calculate-entropy:false}")
     private boolean calculateEntropy;
@@ -107,10 +101,16 @@ public class DivergentGeneticAlgorithm {
             if (populations.size() > strategy.getMinPopulations()) {
                 populations.stream().forEach(Population::sortIndividuals);
 
+                List<Genome> bestIndividuals = populations.stream()
+                        .map(pop -> pop.getIndividuals().get(pop.getIndividuals().size() - 1))
+                        .collect(Collectors.toList());
+
+                ParetoSorter.sort(bestIndividuals);
+                final List<Genome> finalBestIndividuals = bestIndividuals.subList(bestIndividuals.size() - strategy.getMinPopulations(), bestIndividuals.size());
+
                 // Pick the "best" populations and reset to min populations
                 populations = populations.stream()
-                        .sorted(POPULATION_COMPARATOR.reversed())
-                        .limit(strategy.getMinPopulations())
+                        .filter(pop -> finalBestIndividuals.contains(pop.getIndividuals().get(pop.getIndividuals().size() - 1)))
                         .collect(Collectors.toList());
             }
 
@@ -142,8 +142,15 @@ public class DivergentGeneticAlgorithm {
         populations.stream().forEach(Population::sortIndividuals);
 
         // Select the best population
+        List<Genome> bestIndividuals = populations.stream()
+                .map(pop -> pop.getIndividuals().get(pop.getIndividuals().size() - 1))
+                .collect(Collectors.toList());
+
+        ParetoSorter.sort(bestIndividuals);
+
         Population bestPopulation = populations.stream()
-                .max(POPULATION_COMPARATOR)
+                .filter(pop -> bestIndividuals.contains(pop.getIndividuals().get(pop.getIndividuals().size() - 1)))
+                .findFirst()
                 .orElse(null);
 
         strategy.setPopulation(bestPopulation);

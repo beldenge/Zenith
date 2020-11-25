@@ -17,16 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.genetic.fitness;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+public interface Fitness extends Comparable<Fitness>, Cloneable {
+    double getValue();
 
-@Getter
-@Setter
-@AllArgsConstructor
-public class SolutionResponse {
-    private String plaintext;
-    private float[] scores;
+    Fitness clone();
 }

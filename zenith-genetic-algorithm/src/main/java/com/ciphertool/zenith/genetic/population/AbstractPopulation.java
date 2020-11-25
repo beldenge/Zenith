@@ -129,21 +129,25 @@ public abstract class AbstractPopulation implements Population {
         this.totalProbability = 0d;
 
         Genome bestFitIndividual = null;
+        boolean singleObjective = true;
 
         for (Genome individual : getIndividuals()) {
-            this.totalFitness += individual.getFitness();
-            this.totalProbability += convertFromLogProbability(individual.getFitness());
+            // Probability calculation and average fitness is only supported for single-objective fitness functions.
+            if (individual.getFitnesses().length == 1) {
+                this.totalFitness += individual.getFitnesses()[0].getValue();
+                this.totalProbability += individual.getProbability();
+            } else {
+                singleObjective = false;
+            }
 
-            if (bestFitIndividual == null || individual.getFitness() > bestFitIndividual.getFitness()) {
+            if (bestFitIndividual == null || individual.compareTo(bestFitIndividual) > 0) {
                 bestFitIndividual = individual;
             }
         }
 
-        Double averageFitness = this.totalFitness / size();
-
-        if (generationStatistics != null) {
-            generationStatistics.setAverageFitness(averageFitness);
-            generationStatistics.setBestFitness(bestFitIndividual.getFitness());
+        if (singleObjective) {
+            generationStatistics.setAverageFitness(this.totalFitness / size());
+            generationStatistics.setBestFitness(bestFitIndividual.getFitnesses()[0].getValue());
         }
 
         return bestFitIndividual;
@@ -163,7 +167,7 @@ public abstract class AbstractPopulation implements Population {
 
         @Override
         public Void call() {
-            this.genome.setFitness(this.fitnessEvaluator.evaluate(this.genome));
+            this.genome.setFitnesses(this.fitnessEvaluator.evaluate(this.genome));
 
             return null;
         }

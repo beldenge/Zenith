@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +61,7 @@ public class CipherSolutionPrinter {
         Cipher cipher = solution.getCipher();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Solution [probability=" + solution.getProbability() + ", logProbability=" + solution.getLogProbability() + ", score=" + solution.getScore()
+        sb.append("Solution [probability=" + solution.getProbability() + ", logProbability=" + solution.getLogProbability() + ", scores=" + Arrays.toString(solution.getScores())
                 + ", indexOfCoincidence=" + indexOfCoincidenceEvaluator.evaluate(null, cipher, plaintext) + ", entropy=" + entropyEvaluator.evaluate(null, cipher, plaintext)
                 + ", chiSquared=" + chiSquaredEvaluator.evaluate(null, cipher, plaintext) + (cipher.hasKnownSolution() ? ", proximity="
                 + String.format("%1$,.2f", solution.evaluateKnownSolution() * 100.0) + "%" : "") + "]\n");

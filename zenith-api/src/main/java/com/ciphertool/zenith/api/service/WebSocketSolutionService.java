@@ -57,6 +57,13 @@ public class WebSocketSolutionService extends AbstractSolutionService {
             return;
         }
 
-        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString(), Double.valueOf(cipherSolution.getScore())), Collections.singletonMap(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION));
+        float[] scores = new float[cipherSolution.getScores().length];
+
+        for (int i = 0; i < cipherSolution.getScores().length; i ++) {
+            scores[i] = (float) cipherSolution.getScores()[i].getValue();
+        }
+
+        // TODO: need to update the Angular client to be able to handle the array of scores
+        template.convertAndSend("/topic/solutions", new SolutionResponse(cipherSolution.asSingleLineString(), scores), Collections.singletonMap(TYPE_HEADER_KEY, WebSocketResponseType.SOLUTION));
     }
 }

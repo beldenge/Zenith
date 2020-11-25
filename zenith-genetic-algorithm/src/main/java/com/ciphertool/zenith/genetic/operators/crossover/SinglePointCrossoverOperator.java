@@ -39,7 +39,7 @@ public class SinglePointCrossoverOperator implements CrossoverOperator {
         Genome dadGenome = coin.flip() ? firstGenome : secondGenome;
         Genome momGenome = (dadGenome == firstGenome) ? secondGenome : firstGenome;
 
-        Genome childGenome = new Genome(dadGenome.isEvaluationNeeded(), dadGenome.getFitness(), dadGenome.getPopulation());
+        Genome childGenome = new Genome(dadGenome.isEvaluationNeeded(), dadGenome.getFitnesses(), dadGenome.getPopulation());
 
         for (int i = 0; i < dadGenome.getChromosomes().size(); i ++) {
             Chromosome<Object> dad = dadGenome.getChromosomes().get(i);

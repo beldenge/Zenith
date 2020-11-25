@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.genetic.entities;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.population.AbstractPopulation;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.math.selection.Probability;
@@ -29,14 +30,22 @@ import java.util.List;
 
 public class Genome implements Comparable<Genome>, Probability {
     private boolean evaluationNeeded;
-    private Double fitness;
+    private Fitness[] fitnesses;
     private List<Chromosome> chromosomes = new ArrayList<>();
     private Population population;
 
-    public Genome(boolean evaluationNeeded, Double fitness, Population population) {
+    public Genome(boolean evaluationNeeded, Fitness[] fitnesses, Population population) {
         this.evaluationNeeded = evaluationNeeded;
-        this.fitness = fitness;
         this.population = population;
+
+        // We need to clone the fitnesses since this is usually called after cloning a Chromosome
+        if (fitnesses != null) {
+            Fitness[] newFitnesses = new Fitness[fitnesses.length];
+            for (int i = 0; i < fitnesses.length; i++) {
+                newFitnesses[i] = fitnesses[i].clone();
+            }
+            this.fitnesses = newFitnesses;
+        }
     }
 
     public List<Chromosome> getChromosomes() {
@@ -47,12 +56,12 @@ public class Genome implements Comparable<Genome>, Probability {
         chromosomes.add(chromosome);
     }
 
-    public Double getFitness() {
-        return fitness;
+    public Fitness[] getFitnesses() {
+        return fitnesses;
     }
 
-    public void setFitness(Double fitness) {
-        this.fitness = fitness;
+    public void setFitnesses(Fitness[] fitnesses) {
+        this.fitnesses = fitnesses;
         this.evaluationNeeded = false;
     }
 
@@ -82,11 +91,37 @@ public class Genome implements Comparable<Genome>, Probability {
 
     @Override
     public Double getProbability() {
-        return AbstractPopulation.convertFromLogProbability(this.fitness) / this.population.getTotalProbability();
+        if (fitnesses.length > 1) {
+            throw new IllegalStateException("Probability calculation is only supported for single-objective fitness functions.");
+        }
+
+        return AbstractPopulation.convertFromLogProbability(Double.valueOf(this.fitnesses[0].getValue())) / this.population.getTotalProbability();
     }
 
     @Override
     public int compareTo(Genome other) {
-        return this.fitness.compareTo(other.getFitness());
+        if (fitnesses.length == 1) {
+            return fitnesses[0].compareTo(other.fitnesses[0]);
+        }
+
+        int dominating = 0;
+        int equivalent = 0;
+
+        // Calculate domination per the pareto front
+        for (int i = 0; i < fitnesses.length; i ++) {
+           if (fitnesses[i].compareTo(other.fitnesses[i]) > 0) {
+               dominating ++;
+           } else if (fitnesses[i].compareTo(other.fitnesses[i]) == 0) {
+               equivalent ++;
+           }
+        }
+
+        if (dominating == fitnesses.length) {
+            return 1;
+        } else if ((dominating + equivalent) > 0) {
+            return 0;
+        }
+
+        return -1;
     }
 }

@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
@@ -62,7 +64,7 @@ public class NgramAndChiSquaredPlaintextEvaluator extends AbstractNgramEvaluator
         // This has been determined through haphazard experimentation
         float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) - MathUtils.powRoot(chiSquaredEvaluator.evaluate(precomputedData, cipher, solutionString), 8f);
 
-        return new SolutionScore(logProbabilitiesUpdated, score);
+        return new SolutionScore(logProbabilitiesUpdated, new Fitness[] { new MaximizingFitness(score) });
     }
 
     @Override

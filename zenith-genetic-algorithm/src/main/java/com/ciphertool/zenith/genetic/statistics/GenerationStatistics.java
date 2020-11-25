@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @EqualsAndHashCode
-@ToString
 public class GenerationStatistics {
     private int generation;
     private Double bestFitness;
@@ -40,5 +39,19 @@ public class GenerationStatistics {
 
     public GenerationStatistics(int generation) {
         this.generation = generation;
+    }
+
+    @Override
+    public String toString() {
+        return "GenerationStatistics [" +
+                "generation=" + generation +
+                (bestFitness == null ? "" : ", bestFitness=" + bestFitness) +
+                (averageFitness == null ? "" : ", averageFitness=" + averageFitness) +
+                ", entropy=" + entropy +
+                ", numberOfCrossovers=" + numberOfCrossovers +
+                ", numberOfMutations=" + numberOfMutations +
+                ", numberOfEvaluations=" + numberOfEvaluations +
+                ", performanceStatistics=" + performanceStatistics +
+                ']';
     }
 }

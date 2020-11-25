@@ -17,16 +17,33 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.genetic.fitness;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+public class MinimizingFitness extends AbstractFitness {
+    public MinimizingFitness(double value) {
+        this.value = value;
+    }
 
-@Getter
-@Setter
-@AllArgsConstructor
-public class SolutionResponse {
-    private String plaintext;
-    private float[] scores;
+    @Override
+    public int compareTo(Fitness o) {
+        if (this.value < o.getValue()) {
+            return 1;
+        } else if (this.value == o.getValue()) {
+            return 0;
+        }
+
+        return -1;
+    }
+
+    @Override
+    public MinimizingFitness clone() {
+        return new MinimizingFitness(value);
+    }
+
+    @Override
+    public String toString() {
+        return "MinimizingFitness{" +
+                "value=" + value +
+                '}';
+    }
 }

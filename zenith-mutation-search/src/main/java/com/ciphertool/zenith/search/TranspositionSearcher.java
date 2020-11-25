@@ -261,7 +261,7 @@ public class TranspositionSearcher {
 //        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipher);
         int cycleScore = cycleCountEvaluator.evaluate(cipher);
 //        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
-        float languageModelScore = languageModelEvaluator.evaluate(configuration, optimizer, plaintextEvaluator, epochs, cipherSolution.getCipher());
+        float languageModelScore = languageModelEvaluator.evaluate(configuration, optimizer, plaintextEvaluator, epochs, cipherSolution.getCipher())[0];
 
         float scaledScore = languageModelScore + (cycleScore / 25f);
 

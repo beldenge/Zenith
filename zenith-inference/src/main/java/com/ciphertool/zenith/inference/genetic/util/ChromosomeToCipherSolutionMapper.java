@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.genetic.util;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
@@ -36,6 +37,18 @@ public class ChromosomeToCipherSolutionMapper {
         for (Map.Entry<String, Gene> entry : cipherKeyChromosome.getGenes().entrySet()) {
             CipherKeyGene cipherKeyGene = (CipherKeyGene) entry.getValue();
             cipherSolution.putMapping(entry.getKey(), cipherKeyGene.getValue().charAt(0));
+        }
+
+        Fitness[] sourceFitnesses = chromosome.getGenome().getFitnesses();
+
+        if (sourceFitnesses != null) {
+            Fitness[] clonedScores = new Fitness[sourceFitnesses.length];
+
+            for (int i = 0; i < sourceFitnesses.length; i++) {
+                clonedScores[i] = sourceFitnesses[i].clone();
+            }
+
+            cipherSolution.setScores(clonedScores);
         }
 
         return cipherSolution;

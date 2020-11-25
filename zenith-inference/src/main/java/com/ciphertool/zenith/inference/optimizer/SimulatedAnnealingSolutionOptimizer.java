@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.optimizer;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
@@ -128,7 +129,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 correctSolutions ++;
             }
 
-            overallBest = (overallBest == null) ? best : (best.getScore() > overallBest.getScore() ? best : overallBest);
+            overallBest = (overallBest == null) ? best : (best.compareTo(overallBest) > 0 ? best : overallBest);
 
             if (onEpochComplete != null) {
                 onEpochComplete.fire(epoch + 1);
@@ -165,7 +166,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         }
 
         SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, initialSolution, solutionString, null);
-        initialSolution.setScore(score.getScore());
+        initialSolution.setScores(score.getScores());
 
         if (log.isDebugEnabled()) {
             cipherSolutionPrinter.print(initialSolution, plaintextTransformationSteps);
@@ -221,7 +222,8 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 continue;
             }
 
-            float originalScore = solution.getScore();
+            // TODO: this needs to be refactored in order to support multi objective scoring functions
+            Fitness[] originalScores = solution.getScores();
             solution.replaceMapping(nextKey, letter);
 
             int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(nextKey);
@@ -236,10 +238,15 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             }
 
             SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, solution, proposalString, nextKey);
-            solution.setScore(score.getScore());
+            solution.setScores(score.getScores());
 
-            if (!selectNext(temperature, originalScore, solution.getScore())) {
-                solution.setScore(originalScore);
+            if (originalScores.length > 1) {
+                throw new IllegalStateException("SimulatedAnnealing currently only supports single-objective scoring functions.");
+            }
+
+            // TODO: these next few lines need to be refactored in order to support multi objective scoring functions
+            if (!selectNext(temperature, (float) originalScores[0].getValue(), (float) solution.getScores()[0].getValue())) {
+                solution.setScores(new Fitness[] { originalScores[0] });
                 solution.replaceMapping(nextKey, originalMapping);
 
                 float[][] ngramProbabilitiesUpdated = score.getNgramProbabilitiesUpdated();

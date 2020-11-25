@@ -17,16 +17,15 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.genetic.fitness;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+public abstract class AbstractFitness implements Fitness {
+    protected double value;
 
-@Getter
-@Setter
-@AllArgsConstructor
-public class SolutionResponse {
-    private String plaintext;
-    private float[] scores;
+    @Override
+    public double getValue() {
+        return value;
+    }
+
+    public abstract Fitness clone();
 }

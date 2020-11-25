@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CipherSolution {
+public class CipherSolution implements Comparable<CipherSolution>, Cloneable {
     private static Logger log = LoggerFactory.getLogger(CipherSolution.class);
 
     private Cipher cipher;
@@ -39,7 +40,7 @@ public class CipherSolution {
 
     private float[] logProbabilities;
 
-    private float score;
+    private Fitness[] scores;
 
     public CipherSolution(Cipher cipher, int numCiphertextKeys) {
         if (cipher == null) {
@@ -148,6 +149,7 @@ public class CipherSolution {
         this.mappings.put(key, newPlaintext);
     }
 
+    @Override
     public CipherSolution clone() {
         CipherSolution copySolution = new CipherSolution(this.cipher, this.mappings.size());
 
@@ -163,17 +165,21 @@ public class CipherSolution {
         // We need to set these values last to maintain whether evaluation is needed on the clone
         copySolution.setProbability(this.probability);
 
-        copySolution.setScore(this.score);
+        Fitness[] newScores = new Fitness[this.scores.length];
+        for (int i = 0; i < this.scores.length; i ++) {
+            newScores[i] = this.scores[i].clone();
+        }
+        copySolution.setScores(newScores);
 
         return copySolution;
     }
 
-    public float getScore() {
-        return score;
+    public Fitness[] getScores() {
+        return scores;
     }
 
-    public void setScore(float score) {
-        this.score = score;
+    public void setScores(Fitness[] scores) {
+        this.scores = scores;
     }
 
     public float evaluateKnownSolution() {
@@ -217,5 +223,32 @@ public class CipherSolution {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public int compareTo(CipherSolution other) {
+        if (scores.length == 1) {
+            return scores[0].compareTo(other.scores[0]);
+        }
+
+        int dominating = 0;
+        int equivalent = 0;
+
+        // Calculate domination per the pareto front
+        for (int i = 0; i < scores.length; i ++) {
+            if (scores[i].compareTo(other.scores[i]) > 0) {
+                dominating ++;
+            } else if (scores[i].compareTo(other.scores[i]) == 0) {
+                equivalent ++;
+            }
+        }
+
+        if (dominating == scores.length) {
+            return 1;
+        } else if ((dominating + equivalent) > 0) {
+            return 0;
+        }
+
+        return -1;
     }
 }

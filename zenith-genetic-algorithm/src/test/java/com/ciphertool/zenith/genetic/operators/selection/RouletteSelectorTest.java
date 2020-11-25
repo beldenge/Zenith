@@ -20,6 +20,8 @@
 package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.fitness.Fitness;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.genetic.population.Population;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,16 +47,16 @@ public class RouletteSelectorTest {
 
         List<Genome> individuals = new ArrayList<>();
 
-        Genome genome1 = new Genome(false, 0.2d, populationMock);
+        Genome genome1 = new Genome(false, new Fitness[] { new MaximizingFitness(0.2d) }, populationMock);
         individuals.add(genome1);
 
-        Genome genome2 = new Genome(false, 0.3d, populationMock);
+        Genome genome2 = new Genome(false, new Fitness[] { new MaximizingFitness(0.3d) }, populationMock);
         individuals.add(genome2);
 
-        Genome genome3 = new Genome(false, 0.5d, populationMock);
+        Genome genome3 = new Genome(false, new Fitness[] { new MaximizingFitness(0.5d) }, populationMock);
         individuals.add(genome3);
 
-        when(populationMock.getTotalProbability()).thenReturn(individuals.stream().mapToDouble(individual -> individual.getFitness()).sum());
+        when(populationMock.getTotalProbability()).thenReturn(individuals.stream().mapToDouble(individual -> individual.getFitnesses()[0].getValue()).sum());
 
         rouletteSelector.reIndex(individuals);
 

@@ -23,13 +23,13 @@ import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.operators.selection.Selector;
+import com.ciphertool.zenith.genetic.operators.sort.ParetoSorter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
@@ -161,28 +161,36 @@ public class LatticePopulation extends AbstractPopulation {
                 }
             }
 
-            Collections.sort(nearbyLatticeIndividuals);
-
             List<Genome> nearbyIndividuals = new ArrayList<>();
 
             nearbyIndividuals.addAll(nearbyLatticeIndividuals.stream()
                     .map(LatticeIndividual::getIndividual)
                     .collect(Collectors.toList()));
 
-            Collections.sort(nearbyIndividuals);
+            ParetoSorter.sort(nearbyIndividuals);
+            List<LatticeIndividual> sortedLatticeIndividuals = new ArrayList<>(nearbyLatticeIndividuals.size());
+            for (Genome individual : nearbyIndividuals) {
+                for (LatticeIndividual latticeIndividual : nearbyLatticeIndividuals) {
+                    if (individual == latticeIndividual.getIndividual()) {
+                        sortedLatticeIndividuals.add(latticeIndividual);
+                        break;
+                    }
+                }
+            }
+
             Selector newSelector = strategy.getSelector().getInstance();
             newSelector.reIndex(nearbyIndividuals);
 
             int momIndex = newSelector.getNextIndex(nearbyIndividuals, strategy);
-            LatticeIndividual momCoordinates = nearbyLatticeIndividuals.get(momIndex);
+            LatticeIndividual momCoordinates = sortedLatticeIndividuals.get(momIndex);
             Genome mom = individuals[momCoordinates.getRow()][momCoordinates.getColumn()];
 
             // Ensure that dadIndex is different from momIndex
             nearbyIndividuals.remove(momIndex);
-            nearbyLatticeIndividuals.remove(momIndex);
+            sortedLatticeIndividuals.remove(momIndex);
             newSelector.reIndex(nearbyIndividuals);
             int dadIndex = newSelector.getNextIndex(nearbyIndividuals, strategy);
-            LatticeIndividual dadCoordinates = nearbyLatticeIndividuals.get(dadIndex);
+            LatticeIndividual dadCoordinates = sortedLatticeIndividuals.get(dadIndex);
             Genome dad = individuals[dadCoordinates.getRow()][dadCoordinates.getColumn()];
 
             return new Parents(mom, dad);
@@ -246,7 +254,7 @@ public class LatticePopulation extends AbstractPopulation {
     public List<Genome> getIndividuals() {
         List<Genome> individualsAsList = getIndividualsAsList();
 
-        Collections.sort(individualsAsList);
+        ParetoSorter.sort(individualsAsList);
 
         return individualsAsList;
     }
@@ -284,7 +292,9 @@ public class LatticePopulation extends AbstractPopulation {
 
         individual.setPopulation(this);
 
-        this.totalFitness += individual.getFitness() == null ? 0d : individual.getFitness();
+        if (individual.getFitnesses() != null && individual.getFitnesses().length == 1) {
+            this.totalFitness += individual.getFitnesses()[0].getValue();
+        }
 
         return individual.isEvaluationNeeded();
     }

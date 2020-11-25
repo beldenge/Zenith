@@ -20,27 +20,12 @@
 package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.SolutionRequest;
-import com.ciphertool.zenith.api.model.SolutionRequestTransformer;
 import com.ciphertool.zenith.api.model.SolutionResponse;
-import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
-import com.ciphertool.zenith.inference.entities.Ciphertext;
-import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
-import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
-import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
-import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -56,6 +41,13 @@ public class SolutionService extends AbstractSolutionService {
     public SolutionResponse solve(@Validated @RequestBody SolutionRequest request) {
         CipherSolution cipherSolution = doSolve(request);
 
-        return new SolutionResponse(cipherSolution.asSingleLineString(), Double.valueOf(cipherSolution.getScore()));
+        float[] scores = new float[cipherSolution.getScores().length];
+
+        for (int i = 0; i < cipherSolution.getScores().length; i ++) {
+            scores[i] = (float) cipherSolution.getScores()[i].getValue();
+        }
+
+        // TODO: need to update the Angular client to be able to handle the array of scores
+        return new SolutionResponse(cipherSolution.asSingleLineString(), scores);
     }
 }
