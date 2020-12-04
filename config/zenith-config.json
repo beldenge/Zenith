@@ -5,7 +5,7 @@
     "name": "GeneticAlgorithm"
   },
   "selectedFitnessFunction": {
-    "name": "NgramAndIndexOfCoincidenceMultiObjective"
+    "name": "NgramAndIndexOfCoincidence"
   },
   "simulatedAnnealingConfiguration": {
     "samplerIterations": 5000,

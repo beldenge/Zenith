@@ -33,6 +33,7 @@ public class Genome implements Comparable<Genome>, Probability {
     private Fitness[] fitnesses;
     private List<Chromosome> chromosomes = new ArrayList<>();
     private Population population;
+    private double crowdingValue;
 
     public Genome(boolean evaluationNeeded, Fitness[] fitnesses, Population population) {
         this.evaluationNeeded = evaluationNeeded;
@@ -82,6 +83,14 @@ public class Genome implements Comparable<Genome>, Probability {
 
     public void setPopulation(Population population) {
         this.population = population;
+    }
+
+    public double getCrowdingValue() {
+        return crowdingValue;
+    }
+
+    public void setCrowdingValue(double crowdingValue) {
+        this.crowdingValue = crowdingValue;
     }
 
     @Override

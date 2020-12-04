@@ -26,7 +26,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
-import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
+import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -38,15 +38,15 @@ import java.util.Map;
 
 @NoArgsConstructor
 @Component
-public class NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator extends AbstractNgramEvaluator implements PlaintextEvaluator {
+public class NgramAndChiSquaredMultiObjectivePlaintextEvaluator extends AbstractNgramEvaluator implements PlaintextEvaluator {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator;
+    private ChiSquaredEvaluator chiSquaredEvaluator;
 
-    public NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator(ArrayMarkovModel letterMarkovModel, IndexOfCoincidenceEvaluator indexOfCoincidenceEvaluator, Map<String, Object> data) {
+    public NgramAndChiSquaredMultiObjectivePlaintextEvaluator(ArrayMarkovModel letterMarkovModel, ChiSquaredEvaluator chiSquaredEvaluator, Map<String, Object> data) {
         this.letterMarkovModel = letterMarkovModel;
-        this.indexOfCoincidenceEvaluator = indexOfCoincidenceEvaluator;
+        this.chiSquaredEvaluator = chiSquaredEvaluator;
         super.init();
     }
 
@@ -60,17 +60,17 @@ public class NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator extends 
             log.debug("Letter N-Grams took {}ms.", (System.currentTimeMillis() - startLetter));
         }
 
-        return new SolutionScore(logProbabilitiesUpdated, new Fitness[] { new MaximizingFitness(solution.getLogProbability()), new MinimizingFitness(indexOfCoincidenceEvaluator.evaluate(precomputedData, cipher, solutionString), 0.07d) });
+        return new SolutionScore(logProbabilitiesUpdated, new Fitness[]{new MaximizingFitness(solution.getLogProbability()), new MinimizingFitness(chiSquaredEvaluator.evaluate(precomputedData, cipher, solutionString), 40d)});
     }
 
     @Override
     public Map<String, Object> getPrecomputedCounterweightData(Cipher cipher) {
-        return indexOfCoincidenceEvaluator.precompute(cipher);
+        return chiSquaredEvaluator.precompute(cipher);
     }
 
     @Override
     public PlaintextEvaluator getInstance(Map<String, Object> data) {
-        return new NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator(letterMarkovModel, indexOfCoincidenceEvaluator, data);
+        return new NgramAndChiSquaredMultiObjectivePlaintextEvaluator(letterMarkovModel, chiSquaredEvaluator, data);
     }
 
     @Override
@@ -80,11 +80,11 @@ public class NgramAndIndexOfCoincidenceMultiObjectivePlaintextEvaluator extends 
 
     @Override
     public int getOrder() {
-        return 4;
+        return 6;
     }
 
     @Override
     public String getHelpText() {
-        return "Uses a character-level n-gram model along with calculating the index of coincidence.";
+        return "Uses a character-level n-gram model along with calculating the chi squared test.";
     }
 }

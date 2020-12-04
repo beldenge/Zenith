@@ -27,10 +27,20 @@ public class ProximityFitness  extends AbstractFitness {
         this.value = value;
     }
 
+    public ProximityFitness(double target, double value, Double guardRail) {
+        this.target = target;
+        this.value = value;
+        this.guardRail = guardRail;
+    }
+
     @Override
     public int compareTo(Fitness o) {
         double thisDistance = Math.abs(target - value);
         double otherDistance = Math.abs(((ProximityFitness) o).target - ((ProximityFitness) o).value);
+
+        if (guardRail != null && thisDistance < guardRail && otherDistance < guardRail) {
+            return 0;
+        }
 
         if (thisDistance < otherDistance) {
             return 1;
@@ -43,7 +53,7 @@ public class ProximityFitness  extends AbstractFitness {
 
     @Override
     public ProximityFitness clone() {
-        return new ProximityFitness(target, value);
+        return new ProximityFitness(target, value, guardRail == null ? null : guardRail.doubleValue());
     }
 
     @Override

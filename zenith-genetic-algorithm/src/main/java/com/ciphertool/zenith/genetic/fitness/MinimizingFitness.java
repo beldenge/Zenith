@@ -24,8 +24,17 @@ public class MinimizingFitness extends AbstractFitness {
         this.value = value;
     }
 
+    public MinimizingFitness(double value, Double guardRail) {
+        this.value = value;
+        this.guardRail = guardRail;
+    }
+
     @Override
     public int compareTo(Fitness o) {
+        if (guardRail != null && value < guardRail && o.getValue() < guardRail) {
+            return 0;
+        }
+
         if (this.value < o.getValue()) {
             return 1;
         } else if (this.value == o.getValue()) {
@@ -37,7 +46,7 @@ public class MinimizingFitness extends AbstractFitness {
 
     @Override
     public MinimizingFitness clone() {
-        return new MinimizingFitness(value);
+        return new MinimizingFitness(value, guardRail == null ? null : guardRail.doubleValue());
     }
 
     @Override

@@ -21,6 +21,7 @@ package com.ciphertool.zenith.genetic.fitness;
 
 public abstract class AbstractFitness implements Fitness {
     protected double value;
+    protected Double guardRail;
 
     @Override
     public double getValue() {

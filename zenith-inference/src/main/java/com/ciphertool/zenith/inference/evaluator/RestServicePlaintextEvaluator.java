@@ -118,7 +118,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
 
     @Override
     public int getOrder() {
-        return 4;
+        return 7;
     }
 
     @Override

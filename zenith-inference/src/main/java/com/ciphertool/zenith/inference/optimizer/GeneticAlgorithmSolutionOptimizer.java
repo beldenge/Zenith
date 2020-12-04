@@ -281,11 +281,9 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 for (int i = 0; i < size; i++) {
                     Genome next = individuals.get(i);
                     log.info("Genome {}:", (i + 1), next);
-                    if (log.isInfoEnabled()) {
-                        // There's only one chromosome for this type of Genome
-                        Chromosome chromosome = next.getChromosomes().get(0);
-                        cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(chromosome), plaintextTransformationSteps);
-                    }
+                    // There's only one chromosome for this type of Genome
+                    Chromosome chromosome = next.getChromosomes().get(0);
+                    cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(chromosome), plaintextTransformationSteps);
                 }
             }
 

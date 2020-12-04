@@ -66,14 +66,13 @@ public class ParetoSorter {
             }
 
             for (List<Genome> bucket : paretoBuckets) {
-                for (Genome genome : bucket) {
-                    sorted.add(genome);
-                }
+                sortByCrowding(bucket);
+                sorted.addAll(bucket);
             }
         }
 
         individuals.clear();
-        sorted.forEach(individuals::add);
+        individuals.addAll(sorted);
     }
 
     private static int paretoCompareTo(Genome individual, List<Genome> paretoBucket) {
@@ -88,5 +87,56 @@ public class ParetoSorter {
         }
 
         return 0;
+    }
+
+    private static void sortByCrowding(List<Genome> paretoBucket) {
+        List<Genome> sorted = new ArrayList<>(paretoBucket.size());
+
+        for (Genome individual : paretoBucket) {
+            individual.setCrowdingValue(computeSumOfDistances(individual, paretoBucket));
+
+            if (sorted.isEmpty()) {
+                sorted.add(individual);
+            } else {
+                int i = 0;
+
+                for (; i < sorted.size(); i ++) {
+                    Genome sortedIndividual = sorted.get(i);
+
+                    if (individual.getCrowdingValue() <= sortedIndividual.getCrowdingValue()) {
+                        break;
+                    }
+                }
+
+                sorted.add(i, individual);
+            }
+        }
+
+        paretoBucket.clear();
+        paretoBucket.addAll(sorted);
+    }
+
+    private static double computeSumOfDistances(Genome individual, List<Genome> paretoBucket) {
+        double sum = 0d;
+
+        for (Genome other : paretoBucket) {
+            if (individual == other) {
+                continue;
+            }
+
+            sum += computeDistance(individual, other);
+        }
+
+        return sum;
+    }
+
+    private static double computeDistance(Genome first, Genome second) {
+        double sumOfSquares = 0d;
+
+        for (int i = 0; i < first.getFitnesses().length; i ++) {
+            sumOfSquares += Math.pow((second.getFitnesses()[i].getValue() - first.getFitnesses()[i].getValue()), 2d);
+        }
+
+        return Math.sqrt(sumOfSquares);
     }
 }
