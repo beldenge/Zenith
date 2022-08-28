@@ -35,9 +35,4 @@ public class AutoConfigurationController implements ErrorController {
     public ModelAndView error() {
         return new ModelAndView("index.html");
     }
-
-    @Override
-    public String getErrorPath() {
-        return "/error";
-    }
 }

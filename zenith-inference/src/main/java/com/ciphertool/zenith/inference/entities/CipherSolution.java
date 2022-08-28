@@ -243,9 +243,9 @@ public class CipherSolution implements Comparable<CipherSolution>, Cloneable {
             }
         }
 
-        if (dominating == scores.length) {
+        if (dominating > 0 && (dominating + equivalent) == scores.length) {
             return 1;
-        } else if ((dominating + equivalent) > 0) {
+        } else if (dominating > 0) {
             return 0;
         }
 

@@ -26,13 +26,14 @@ import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.*;
@@ -41,7 +42,7 @@ public class StandardPopulationTest {
     private static ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
     private static final Double DEFAULT_FITNESS_VALUE = 1.0d;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         taskExecutor.setCorePoolSize(4);
         taskExecutor.setMaxPoolSize(4);
@@ -285,7 +286,7 @@ public class StandardPopulationTest {
         assertEquals(Double.valueOf(100.1d), generationStatistics.getBestFitness());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testIndividualsUnmodifiable() {
         StandardPopulation population = new StandardPopulation();
         population.addIndividual(mock(Genome.class));
@@ -293,7 +294,10 @@ public class StandardPopulationTest {
         population.addIndividual(mock(Genome.class));
 
         List<Genome> individuals = population.getIndividuals();
-        individuals.remove(0); // should throw exception
+
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            individuals.remove(0); // should throw exception
+        });
     }
 
     @Test

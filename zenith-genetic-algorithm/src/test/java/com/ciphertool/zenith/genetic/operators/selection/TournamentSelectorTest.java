@@ -24,9 +24,9 @@ import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.genetic.population.Population;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
@@ -34,8 +34,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -45,7 +45,7 @@ public class TournamentSelectorTest {
     private static RandomSelector randomSelectorMock;
     private static GeneticAlgorithmStrategy strategy;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         randomSelectorMock = mock(RandomSelector.class);
         tournamentSelector = new TournamentSelector(randomSelectorMock);
@@ -61,7 +61,7 @@ public class TournamentSelectorTest {
         ReflectionUtils.setField(logField, tournamentSelector, logMock);
     }
 
-    @Before
+    @BeforeEach
     public void resetMocks() {
         reset(logMock);
         reset(randomSelectorMock);

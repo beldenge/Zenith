@@ -41,6 +41,20 @@
               <app-ngrams-table [ngramsDataSource]="trigramsDataSource"></app-ngrams-table>
             </div>
           </div>
+          <div *ngIf="shown" class="row mt-4">
+            <div class="col-md-4">
+              <h6 class="text-primary">Quadrigram Counts</h6>
+              <app-ngrams-table [ngramsDataSource]="quadrigramsDataSource"></app-ngrams-table>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-primary">Pentagram Counts</h6>
+              <app-ngrams-table [ngramsDataSource]="pentagramsDataSource"></app-ngrams-table>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-primary">Hexagram Counts</h6>
+              <app-ngrams-table [ngramsDataSource]="hexagramsDataSource"></app-ngrams-table>
+            </div>
+          </div>
         </mat-expansion-panel>
       </div>
     </div>

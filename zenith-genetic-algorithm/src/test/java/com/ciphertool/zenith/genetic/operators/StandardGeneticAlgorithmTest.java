@@ -30,7 +30,7 @@ import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.task.TaskExecutor;
 
 import java.time.LocalDateTime;
@@ -38,8 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class StandardGeneticAlgorithmTest {

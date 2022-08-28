@@ -19,11 +19,12 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CipherTest {
     @Test
@@ -73,7 +74,7 @@ public class CipherTest {
         assertTrue(cipher.hasKnownSolution());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testCiphertextCharactersUnmodifiable() {
         Cipher cipher = new Cipher();
         cipher.addCiphertextCharacter(new Ciphertext(1, "a"));
@@ -81,7 +82,10 @@ public class CipherTest {
         cipher.addCiphertextCharacter(new Ciphertext(3, "c"));
 
         List<Ciphertext> ciphertextCharacters = cipher.getCiphertextCharacters();
-        ciphertextCharacters.remove(0); // should throw exception
+
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            ciphertextCharacters.remove(0); // should throw exception
+        });
     }
 
     @Test

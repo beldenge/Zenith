@@ -31,10 +31,6 @@
 
     <artifactId>zenith-api</artifactId>
 
-    <properties>
-        <springfox.version>2.9.2</springfox.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.ciphertool.zenith</groupId>
@@ -48,21 +44,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-bean-validators</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
         </dependency>
     </dependencies>
 

@@ -39,7 +39,7 @@ public class MarkovModelTest {
     private static LetterNGramMarkovImporter importer;
     private static TreeMarkovModel model;
 
-    // @BeforeClass
+    // @BeforeAll
     public static void setUp() {
         ThreadPoolTaskExecutor taskExecutorSpy = spy(new ThreadPoolTaskExecutor());
         taskExecutorSpy.setCorePoolSize(4);

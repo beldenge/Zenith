@@ -8,7 +8,7 @@ A cipher solver application that is:
  - extensible
  - flexible: can be used as a web UI, command-line app, or REST API
 
-The aim of this project is to provide a complete tool with that is easy to use for somewhat technical people in solving ciphers.  It is highly configurable but has sensible defaults.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
+The aim of this project is to provide a complete tool with that is easy to use for somewhat technical people in solving ciphers.  It is highly configurable but has sensible defaults.
 
 # How-to
 ### Prerequisites
@@ -28,7 +28,7 @@ Check out [zenith-ui](zenith-ui/README.md) for more information.
 For specifics on the command-line and REST API, please check out the [zenith-inference](zenith-inference/README.md) and [zenith-api](zenith-api/README.md) modules respectively.
 
 ### Stopping
-In order to stop Zenith, you'll have to type `ctrl + z` in the terminal where zenith is running.
+In order to stop Zenith, you'll have to type `ctrl + c` in the terminal where zenith is running.
 
 # Benchmarks
 When using the simulated annealing optimizer, it successfully solves the Zodiac 408 cipher with varying probability and speed depending on the hyperparameters chosen.  It is especially sensitive to the annealing temperatures and number of sampler iterations.

@@ -125,6 +125,27 @@ public class CipherStatisticsService {
             trigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
         }
 
-        return new NgramStatisticsResponse(unigramCounts, bigramCounts, trigramCounts);
+        Map<String, Integer> quadrigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 4);
+        List<NgramCount> quadrigramCounts = new ArrayList<>(quadrigramCountMap.size());
+
+        for (Map.Entry<String, Integer> entry : quadrigramCountMap.entrySet()) {
+            quadrigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
+        }
+
+        Map<String, Integer> pentagramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 5);
+        List<NgramCount> pentagramCounts = new ArrayList<>(pentagramCountMap.size());
+
+        for (Map.Entry<String, Integer> entry : pentagramCountMap.entrySet()) {
+            pentagramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
+        }
+
+        Map<String, Integer> hexagramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 6);
+        List<NgramCount> hexagramCounts = new ArrayList<>(hexagramCountMap.size());
+
+        for (Map.Entry<String, Integer> entry : hexagramCountMap.entrySet()) {
+            hexagramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
+        }
+
+        return new NgramStatisticsResponse(unigramCounts, bigramCounts, trigramCounts, quadrigramCounts, pentagramCounts, hexagramCounts);
     }
 }

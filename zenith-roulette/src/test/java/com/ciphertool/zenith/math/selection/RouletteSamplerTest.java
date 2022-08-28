@@ -19,12 +19,12 @@
 
 package com.ciphertool.zenith.math.selection;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RouletteSamplerTest {
     public class DummyProbability implements Probability<Character>, Comparable<DummyProbability> {
@@ -53,7 +53,7 @@ public class RouletteSamplerTest {
     }
 
     // This is a valid test but mark it as @Ignore because it sometimes fails due to the nature of random chance
-    @Ignore
+    @Disabled
     @Test
     public void testSampling() {
         List<DummyProbability> dummyProbabilities = new ArrayList<>();

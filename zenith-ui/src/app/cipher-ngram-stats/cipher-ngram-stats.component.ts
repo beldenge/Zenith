@@ -39,6 +39,9 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewIn
   unigramsDataSource: MatTableDataSource<any>;
   bigramsDataSource: MatTableDataSource<any>;
   trigramsDataSource: MatTableDataSource<any>;
+  quadrigramsDataSource: MatTableDataSource<any>;
+  pentagramsDataSource: MatTableDataSource<any>;
+  hexagramsDataSource: MatTableDataSource<any>;
   headerTextOpened = "Hide ngram statistics";
   headerTextClosed = "Show ngram statistics";
   headerText = this.headerTextClosed;
@@ -75,6 +78,9 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewIn
       this.unigramsDataSource = new MatTableDataSource(response.unigramCounts.sort(sortFunction));
       this.bigramsDataSource = new MatTableDataSource(response.bigramCounts.sort(sortFunction));
       this.trigramsDataSource = new MatTableDataSource(response.trigramCounts.sort(sortFunction));
+      this.quadrigramsDataSource = new MatTableDataSource(response.quadrigramCounts.sort(sortFunction));
+      this.pentagramsDataSource = new MatTableDataSource(response.pentagramCounts.sort(sortFunction));
+      this.hexagramsDataSource = new MatTableDataSource(response.hexagramCounts.sort(sortFunction));
       this.shown = true;
       this.headerText = this.headerTextOpened;
     });

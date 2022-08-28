@@ -125,9 +125,9 @@ public class Genome implements Comparable<Genome>, Probability {
            }
         }
 
-        if (dominating == fitnesses.length) {
+        if (dominating > 0 && (dominating + equivalent) == fitnesses.length) {
             return 1;
-        } else if ((dominating + equivalent) > 0) {
+        } else if (dominating > 0) {
             return 0;
         }
 

@@ -23,20 +23,20 @@ import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.genetic.population.Population;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class RouletteSelectorTest {
     private static RouletteSelector rouletteSelector;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         rouletteSelector = new RouletteSelector();
     }

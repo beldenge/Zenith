@@ -19,9 +19,9 @@
 
 package com.ciphertool.zenith.genetic.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CoinTest {
     private static final int MAX_FLIPS = 100;
