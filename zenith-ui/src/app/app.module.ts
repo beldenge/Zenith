@@ -33,7 +33,6 @@ import { BlockifyPipe } from './blockify.pipe';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import { SortablejsModule } from "ngx-sortablejs";
 import { CiphertextTransformersComponent } from './ciphertext-transformers/ciphertext-transformers.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -66,6 +65,7 @@ import { CipherNgramStatsComponent } from './cipher-ngram-stats/cipher-ngram-sta
 import { NgramsTableComponent } from './ngrams-table/ngrams-table.component';
 import { TopNavComponent } from './top-nav/top-nav.component';
 import { FormlyFieldTextArea } from "@ngx-formly/material/textarea";
+import {SortablejsModule} from "./sortable/sortablejs.module";
 
 export function minValidationMessage(err, field) {
   return `This field has a minimum value of ${field.templateOptions.min}`;
@@ -141,57 +141,57 @@ export function registerValidationMessages() {
     NgramsTableComponent,
     TopNavComponent
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        HttpClientModule,
-        FormsModule,
-        ReactiveFormsModule,
-        SortablejsModule.forRoot({animation: 150}),
-        BrowserAnimationsModule,
-        MatTooltipModule,
-        MatDialogModule,
-        MatButtonModule,
-        MatStepperModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatTableModule,
-        MatSortModule,
-        MatPaginatorModule,
-        MatSnackBarModule,
-        FormlyModule.forRoot({
-          types: [
-            {
-              name: 'input',
-              component: FormlyFieldInput,
-              defaultOptions: {
-                modelOptions: {
-                  debounce: {
-                    default: 500
-                  }
-                }
-              }
-            },
-            {
-              name: 'textarea',
-              component: FormlyFieldTextArea,
-              defaultOptions: {
-                modelOptions: {
-                  debounce: {
-                    default: 500
-                  }
+  imports: [
+      BrowserModule,
+      AppRoutingModule,
+      HttpClientModule,
+      FormsModule,
+      ReactiveFormsModule,
+      SortablejsModule.forRoot({animation: 150}),
+      BrowserAnimationsModule,
+      MatTooltipModule,
+      MatDialogModule,
+      MatButtonModule,
+      MatStepperModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatTableModule,
+      MatSortModule,
+      MatPaginatorModule,
+      MatSnackBarModule,
+      FormlyModule.forRoot({
+        types: [
+          {
+            name: 'input',
+            component: FormlyFieldInput,
+            defaultOptions: {
+              modelOptions: {
+                debounce: {
+                  default: 500
                 }
               }
             }
-          ]
-        }),
-        FormlyMaterialModule,
-        MatProgressSpinnerModule,
-        MatRadioModule,
-        MatSelectModule,
-        MatExpansionModule,
-        MatSlideToggleModule
-    ],
+          },
+          {
+            name: 'textarea',
+            component: FormlyFieldTextArea,
+            defaultOptions: {
+              modelOptions: {
+                debounce: {
+                  default: 500
+                }
+              }
+            }
+          }
+        ]
+      }),
+      FormlyMaterialModule,
+      MatProgressSpinnerModule,
+      MatRadioModule,
+      MatSelectModule,
+      MatExpansionModule,
+      MatSlideToggleModule
+  ],
   providers: [
     JsonPipe,
     {

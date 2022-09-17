@@ -26,7 +26,6 @@
     "@types/intro.js": "^2.4.6",
     "intro.js": "^2.9.3",
     "net": "^1.0.2",
-    "ngx-sortablejs": "^3.1.4",
     "rxjs": "~6.5.5",
     "sockjs-client": "^1.4.0",
     "sortablejs": "^1.10.2",
