@@ -28,7 +28,7 @@
     "net": "^1.0.2",
     "rxjs": "~6.5.5",
     "sockjs-client": "^1.4.0",
-    "sortablejs": "^1.10.2",
+    "sortablejs": "^1.15.0",
     "stompjs": "^2.3.3",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.3"
