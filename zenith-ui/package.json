@@ -30,7 +30,7 @@
     "sockjs-client": "^1.4.0",
     "sortablejs": "^1.15.0",
     "stompjs": "^2.3.3",
-    "tslib": "^1.9.0",
+    "tslib": "^2.4.0",
     "zone.js": "~0.10.3"
   },
   "devDependencies": {
