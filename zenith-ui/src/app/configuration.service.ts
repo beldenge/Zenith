@@ -183,15 +183,6 @@ export class ConfigurationService {
     this.enableTracking$.next(enabled);
   }
 
-  getEnablePageTransitionsAsObservable(): Observable<boolean> {
-    return this.enablePageTransitions$.asObservable();
-  }
-
-  updateEnablePageTransitions(enabled: boolean) {
-    localStorage.setItem(LocalStorageKeys.ENABLE_PAGE_TRANSITIONS, enabled.toString());
-    this.enablePageTransitions$.next(enabled);
-  }
-
   getSelectedCipherAsObservable(): Observable<Cipher> {
     return this.selectedCipher$.asObservable();
   }

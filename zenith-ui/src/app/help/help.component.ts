@@ -32,11 +32,9 @@ export class HelpComponent implements OnInit, OnDestroy, AfterViewInit {
   // Workaround for angular component issue #13870
   disableAnimation = true;
   enableTrackingSubscription: Subscription;
-  enablePageTransitionsSubscription: Subscription;
 
   applicationSettingsForm = this.fb.group({
-    enableTracking: [true],
-    enablePageTransitions: [true]
+    enableTracking: [true]
   });
 
   constructor(private fb: UntypedFormBuilder, private introductionService: IntroductionService, private configurationService: ConfigurationService) { }
@@ -47,17 +45,10 @@ export class HelpComponent implements OnInit, OnDestroy, AfterViewInit {
         this.applicationSettingsForm.patchValue({ 'enableTracking': enabled });
       }
     });
-
-    this.enablePageTransitionsSubscription = this.configurationService.getEnablePageTransitionsAsObservable().subscribe(enabled => {
-      if (this.applicationSettingsForm.get('enablePageTransitions').value !== enabled) {
-        this.applicationSettingsForm.patchValue({ 'enablePageTransitions': enabled });
-      }
-    });
   }
 
   ngOnDestroy() {
     this.enableTrackingSubscription.unsubscribe();
-    this.enablePageTransitionsSubscription.unsubscribe();
   }
 
   ngAfterViewInit(): void {
@@ -71,9 +62,5 @@ export class HelpComponent implements OnInit, OnDestroy, AfterViewInit {
 
   onTrackingToggleChange() {
     this.configurationService.updateEnableTracking(this.applicationSettingsForm.get('enableTracking').value);
-  }
-
-  onPageTransitionToggleChange() {
-    this.configurationService.updateEnablePageTransitions(this.applicationSettingsForm.get('enablePageTransitions').value);
   }
 }

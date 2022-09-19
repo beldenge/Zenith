@@ -18,7 +18,6 @@
  */
 
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { animate, animateChild, group, query, style, transition, trigger } from "@angular/animations";
 import { CipherService } from "./cipher.service";
 import { IntroductionService } from "./introduction.service";
 import { NavigationEnd, Router } from "@angular/router";
@@ -33,42 +32,12 @@ declare let gtag: Function;
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-  animations: [
-    trigger('routeAnimations', [
-      transition('* => *', [
-        style({ position: 'relative' }),
-        query(':enter, :leave', [
-          style({
-            position: 'absolute',
-            top: '4.375rem',
-            left: 0,
-            width: '100%'
-          })
-        ], { optional: true }),
-        query(':enter', [
-          style({ left: '-100%'})
-        ], { optional: true }),
-        query(':leave', animateChild(), { optional: true }),
-        group([
-          query(':leave', [
-            animate('200ms ease-out', style({ left: '100%'}))
-          ], { optional: true }),
-          query(':enter', [
-            animate('300ms ease-out', style({ left: '0%'}))
-          ], { optional: true })
-        ]),
-        query(':enter', animateChild(), { optional: true }),
-      ])
-    ])
-  ]
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   title = 'zenith-angular';
   trackingEnabled = false;
   enableTrackingSubscription: Subscription;
-  pageTransitionsEnabled = false;
-  enablePageTransitionsSubscription: Subscription;
   googleAnalyticsInitialized = false;
 
   constructor(private elementRef: ElementRef,
@@ -82,10 +51,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
         gtag('config', environment.googleAnalyticsTrackingId, { 'page_path': event.urlAfterRedirects });
       }
     });
-  }
-
-  getState(outlet) {
-    return this.pageTransitionsEnabled ? outlet.activatedRouteData.state : null;
   }
 
   ngOnInit() {
@@ -111,16 +76,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (enableTracking !== null) {
       this.configurationService.updateEnableTracking(enableTracking === 'true');
     }
-
-    this.enablePageTransitionsSubscription = this.configurationService.getEnablePageTransitionsAsObservable().subscribe((enabled) => {
-      this.pageTransitionsEnabled = enabled;
-    });
-
-    let enablePageTransitions = localStorage.getItem(LocalStorageKeys.ENABLE_PAGE_TRANSITIONS);
-
-    if (enablePageTransitions) {
-      this.configurationService.updateEnablePageTransitions(enablePageTransitions === 'true');
-    }
   }
 
   ngAfterViewInit() {
@@ -129,7 +84,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.enableTrackingSubscription.unsubscribe();
-    this.enablePageTransitionsSubscription.unsubscribe();
   }
 
   initGoogleAnalytics() {
