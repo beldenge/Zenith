@@ -25,7 +25,7 @@ import { SelectOption } from "./models/SelectOption";
 import { ApplicationConfiguration } from "./models/ApplicationConfiguration";
 import { ZenithTransformer } from "./models/ZenithTransformer";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
 import { ZenithFitnessFunction } from "./models/ZenithFitnessFunction";
 import { FitnessFunctionService } from "./fitness-function.service";
@@ -132,7 +132,7 @@ export class ConfigurationService {
 
       for (let i = 0; i < availableFitnessFunctions.length; i ++) {
         if (availableFitnessFunctions[i].form) {
-          availableFitnessFunctions[i].form.form = new FormGroup({});
+          availableFitnessFunctions[i].form.form = new UntypedFormGroup({});
         }
       }
 
@@ -356,7 +356,7 @@ export class ConfigurationService {
     if (configuration.appliedCiphertextTransformers) {
       configuration.appliedCiphertextTransformers.forEach(transformer => {
         if (transformer.form) {
-          transformer.form.form = new FormGroup({});
+          transformer.form.form = new UntypedFormGroup({});
         }
       });
     } else {
@@ -368,7 +368,7 @@ export class ConfigurationService {
     if (configuration.appliedPlaintextTransformers) {
       configuration.appliedPlaintextTransformers.forEach(transformer => {
         if (transformer.form) {
-          transformer.form.form = new FormGroup({});
+          transformer.form.form = new UntypedFormGroup({});
         }
       });
     } else {

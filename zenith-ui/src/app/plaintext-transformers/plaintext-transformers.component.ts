@@ -22,7 +22,7 @@ import { Subscription } from "rxjs";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { ZenithTransformer } from "../models/ZenithTransformer";
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
@@ -156,7 +156,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     };
 
     if (clone.form) {
-      clone.form.form = new FormGroup({});
+      clone.form.form = new UntypedFormGroup({});
     }
 
     return clone;

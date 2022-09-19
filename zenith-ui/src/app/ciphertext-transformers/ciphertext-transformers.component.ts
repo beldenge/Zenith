@@ -23,7 +23,7 @@ import { ZenithTransformer } from "../models/ZenithTransformer";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { Subscription } from "rxjs";
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
 import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
@@ -162,7 +162,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     };
 
     if (clone.form) {
-      clone.form.form = new FormGroup({});
+      clone.form.form = new UntypedFormGroup({});
     }
 
     return clone;

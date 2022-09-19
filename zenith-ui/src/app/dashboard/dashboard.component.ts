@@ -20,7 +20,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
-import { FormBuilder, Validators } from "@angular/forms";
+import { UntypedFormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
 import { ZenithTransformer } from "../models/ZenithTransformer";
@@ -83,7 +83,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   geneticAlgorithmConfigurationSubscription: Subscription;
   featuresSubscription: Subscription;
 
-  constructor(private fb: FormBuilder,
+  constructor(private fb: UntypedFormBuilder,
               private cipherService: CipherService,
               private _snackBar: MatSnackBar,
               private configurationService: ConfigurationService,

@@ -19,7 +19,7 @@
 
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { IntroductionService } from "../introduction.service";
-import { FormBuilder } from "@angular/forms";
+import { UntypedFormBuilder } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
 import { Subscription } from "rxjs";
 
@@ -39,7 +39,7 @@ export class HelpComponent implements OnInit, OnDestroy, AfterViewInit {
     enablePageTransitions: [true]
   });
 
-  constructor(private fb: FormBuilder, private introductionService: IntroductionService, private configurationService: ConfigurationService) { }
+  constructor(private fb: UntypedFormBuilder, private introductionService: IntroductionService, private configurationService: ConfigurationService) { }
 
   ngOnInit() {
     this.enableTrackingSubscription = this.configurationService.getEnableTrackingAsObservable().subscribe(enabled => {

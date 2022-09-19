@@ -18,7 +18,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { Validators } from '@angular/forms';
 import { ConfigurationService } from "../configuration.service";
@@ -89,7 +89,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup
   });
 
-  constructor(private fb: FormBuilder, private json: JsonPipe, private configurationService: ConfigurationService, private introductionService: IntroductionService) { }
+  constructor(private fb: UntypedFormBuilder, private json: JsonPipe, private configurationService: ConfigurationService, private introductionService: IntroductionService) { }
 
   ngOnInit() {
     this.configurationService.getConfigurationLoadedNotification().subscribe((loaded) => {

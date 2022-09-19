@@ -19,7 +19,7 @@
 
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from "@angular/forms";
 import { CipherService } from "../cipher.service";
 import { CipherRequest } from "../models/CipherRequest";
 import { Cipher } from "../models/Cipher";
@@ -41,14 +41,14 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   ciphers: Cipher[];
   cipher: Cipher;
   mode: string;
-  newCipherForm: FormGroup;
+  newCipherForm: UntypedFormGroup;
   ciphersSubscription: Subscription;
   rows: number = null;
   columns: number = null;
 
   constructor(public dialogRef: MatDialogRef<CipherModalComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any,
-              private fb: FormBuilder,
+              private fb: UntypedFormBuilder,
               private cipherService: CipherService,
               private _snackBar: MatSnackBar) { }
 
