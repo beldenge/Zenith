@@ -35,9 +35,12 @@ import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +57,10 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validator;
-import javax.validation.constraints.Min;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Min;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -300,17 +303,22 @@ public class InferenceConfiguration {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         builder.customizers((restTemplate) -> {
-            PoolingHttpClientConnectionManager connectionManager = new
-                    PoolingHttpClientConnectionManager();
-            connectionManager.setMaxTotal(10);
-            connectionManager.setDefaultMaxPerRoute(10);
+            PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                    .setMaxConnTotal(10)
+                    .setMaxConnPerRoute(10)
+                    .build();
 
-            CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(connectionManager).build();
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setResponseTimeout(Timeout.ofMilliseconds(5000))
+                    .setConnectionRequestTimeout(Timeout.ofMilliseconds(5000))
+                    .build();
+
+            HttpClient httpclient = HttpClients.custom()
+                    .setConnectionManager(connectionManager)
+                    .setDefaultRequestConfig(requestConfig)
+                    .build();
 
             HttpComponentsClientHttpRequestFactory httpReqFactory = new HttpComponentsClientHttpRequestFactory(httpclient);
-            httpReqFactory.setReadTimeout(5000);
-            httpReqFactory.setConnectionRequestTimeout(5000);
-            httpReqFactory.setConnectTimeout(5000);
 
             restTemplate.setRequestFactory(httpReqFactory);
         });

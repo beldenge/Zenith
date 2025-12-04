@@ -23,7 +23,7 @@ import com.ciphertool.zenith.genetic.population.LatticePopulation;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter

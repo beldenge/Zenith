@@ -23,7 +23,7 @@ import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransforma
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -25,7 +25,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.search",
