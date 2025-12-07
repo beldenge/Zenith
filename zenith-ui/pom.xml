@@ -96,7 +96,7 @@
                             <outputDirectory>${project.build.directory}/classes/static/</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.parent.basedir}/zenith-ui/dist/zenith-angular</directory>
+                                    <directory>${project.parent.basedir}/zenith-ui/dist/zenith-angular/browser</directory>
                                 </resource>
                             </resources>
                         </configuration>
