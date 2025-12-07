@@ -25,7 +25,7 @@ import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { SolutionRequestTransformer } from "../models/SolutionRequestTransformer";
-import { MatLegacySnackBar as MatSnackBar } from "@angular/material/legacy-snack-bar";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { ConfigurationService } from "../configuration.service";
 import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
 import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";

@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from "rxjs";
-import { MatLegacyTooltip as MatTooltip } from "@angular/material/legacy-tooltip";
+import { MatTooltip } from "@angular/material/tooltip";
 import { SolutionService } from "../solution.service";
 import { WordSegmentationService } from "../word-segmentation.service";
 import { SolutionResponse } from "../models/SolutionResponse";

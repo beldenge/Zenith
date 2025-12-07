@@ -22,7 +22,7 @@ import { Cipher } from "../models/Cipher";
 import { BehaviorSubject, Observable, Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 import { CipherService } from "../cipher.service";
-import { MatLegacyTooltip as MatTooltip } from "@angular/material/legacy-tooltip";
+import { MatTooltip } from "@angular/material/tooltip";
 
 const originalTooltipText = 'Copy to clipboard';
 

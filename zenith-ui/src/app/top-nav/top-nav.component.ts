@@ -26,7 +26,7 @@ import {SolutionService} from "../solution.service";
 import {ConfigurationService} from "../configuration.service";
 import {CipherService} from "../cipher.service";
 import {Subscription} from "rxjs";
-import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-top-nav',

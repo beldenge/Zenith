@@ -19,13 +19,13 @@
 
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CipherService } from "../cipher.service";
-import { MatLegacyTableDataSource as MatTableDataSource } from "@angular/material/legacy-table";
+import { MatTableDataSource } from "@angular/material/table";
 import { MatSort } from "@angular/material/sort";
-import { MatLegacyPaginator as MatPaginator } from "@angular/material/legacy-paginator";
+import { MatPaginator } from "@angular/material/paginator";
 import { Cipher } from "../models/Cipher";
 import { CipherModalComponent } from "../cipher-modal/cipher-modal.component";
-import { MatLegacyDialog as MatDialog } from "@angular/material/legacy-dialog";
-import { MatLegacySnackBar as MatSnackBar } from "@angular/material/legacy-snack-bar";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
