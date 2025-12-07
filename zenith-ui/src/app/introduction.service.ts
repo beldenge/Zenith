@@ -18,9 +18,9 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Router } from "@angular/router";
-import introJs, { IntroJs } from "intro.js";
-import { BehaviorSubject } from "rxjs";
+import { Router } from '@angular/router';
+import introJs from 'intro.js';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -32,11 +32,11 @@ export class IntroductionService {
   showIntroCiphertextTransformers = new BehaviorSubject(false);
   showIntroPlaintextTransformers = new BehaviorSubject(false);
 
-  introDashboard: IntroJs;
-  introManageCiphers: IntroJs;
-  introSettings: IntroJs;
-  introCiphertextTransformers: IntroJs;
-  introPlaintextTransformers: IntroJs;
+  introDashboard: any;
+  introManageCiphers: any;
+  introSettings: any;
+  introCiphertextTransformers: any;
+  introPlaintextTransformers: any;
 
   constructor(private router: Router) {
     this.introDashboard = introJs();
@@ -101,15 +101,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introDashboard.oncomplete(function() {
+    const self = this;
+    this.introDashboard.oncomplete(() => {
       self.router.navigate(['/ciphers']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introDashboard.onexit(function() {});
+      self.introDashboard.onexit(() => {});
     });
 
-    this.introDashboard.onexit(function() {
+    this.introDashboard.onexit(() => {
       self.stopIntro();
     });
 
@@ -144,15 +144,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introManageCiphers.oncomplete(function() {
+    const self = this;
+    this.introManageCiphers.oncomplete(() => {
       self.router.navigate(['/settings']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introManageCiphers.onexit(function() {});
+      self.introManageCiphers.onexit(() => {});
     });
 
-    this.introManageCiphers.onexit(function() {
+    this.introManageCiphers.onexit(() => {
       self.stopIntro();
     });
 
@@ -191,15 +191,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introSettings.oncomplete(function() {
+    const self = this;
+    this.introSettings.oncomplete(() => {
       self.router.navigate(['/transformers/ciphertext']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introSettings.onexit(function() {});
+      self.introSettings.onexit(() => {});
     });
 
-    this.introSettings.onexit(function() {
+    this.introSettings.onexit(() => {
       self.stopIntro();
     });
 
@@ -238,15 +238,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introCiphertextTransformers.oncomplete(function() {
+    const self = this;
+    this.introCiphertextTransformers.oncomplete(() => {
       self.router.navigate(['/transformers/plaintext']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introCiphertextTransformers.onexit(function() {});
+      self.introCiphertextTransformers.onexit(() => {});
     });
 
-    this.introCiphertextTransformers.onexit(function() {
+    this.introCiphertextTransformers.onexit(() => {
       self.stopIntro();
     });
 
@@ -285,15 +285,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introPlaintextTransformers.oncomplete(function() {
+    const self = this;
+    this.introPlaintextTransformers.oncomplete(() => {
       self.router.navigate(['/dashboard']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introPlaintextTransformers.onexit(function() {});
+      self.introPlaintextTransformers.onexit(() => {});
     });
 
-    this.introPlaintextTransformers.onexit(function() {
+    this.introPlaintextTransformers.onexit(() => {
       self.stopIntro();
     });
 
