@@ -1,21 +1,21 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2020 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <h1 mat-dialog-title>{{mode === 'CREATE' ? 'Create a new cipher' : 'Update "' + cipher.name + '"'}}</h1>
 <div mat-dialog-content>
@@ -32,11 +32,15 @@
       </a>
       <textarea matInput formControlName="ciphertext" required rows="5" class="w-100"></textarea>
       <mat-error>Ciphertext is required and the row lengths must all be the same</mat-error>
-      <small class="float-right mr-4" *ngIf="rows > 0">rows: {{rows}}<span class="mx-1"></span>columns: {{columns ? columns : 'N/A'}}</small>
+      @if (rows > 0) {
+        <small class="float-right mr-4">rows: {{rows}}<span class="mx-1"></span>columns: {{columns ? columns : 'N/A'}}</small>
+      }
     </mat-form-field>
   </form>
 </div>
 <div mat-dialog-actions>
   <button type="button" mat-button mat-dialog-close>Cancel</button>
-  <button mat-button *ngIf="newCipherForm.valid" (click)="save()">Save</button>
+  @if (newCipherForm.valid) {
+    <button mat-button (click)="save()">Save</button>
+  }
 </div>

@@ -1,27 +1,29 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2020 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div class="card shadow mb-4">
   <!-- Card Header - Dropdown -->
   <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-primary">Word Segmentation</h6>
-    <span id="segmentation_score" *ngIf="segmentation" class="ml-2 mr-auto text-muted">(Score: {{score | number : '1.4-4'}})</span>
+    @if (segmentation) {
+      <span id="segmentation_score" class="ml-2 mr-auto text-muted">(Score: {{score | number : '1.4-4'}})</span>
+    }
     <div class="dropdown no-arrow">
       <a class="dropdown-toggle" href="javascript:void(0);" role="button" #tooltip="matTooltip" matTooltip="{{tooltipText | async}}" (mouseover)="resetTooltipText()" matTooltipPosition="above" (click)="copyPlaintext(tooltip)">
         <i class="far fa-copy"></i>
@@ -30,6 +32,8 @@
   </div>
   <!-- Card Body -->
   <div class="card-body">
-    <div *ngIf="segmentation">{{segmentation}}</div>
+    @if (segmentation) {
+      <div>{{segmentation}}</div>
+    }
   </div>
 </div>

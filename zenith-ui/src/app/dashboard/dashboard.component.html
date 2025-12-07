@@ -1,30 +1,32 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2020 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div class="container-fluid mt-4">
 
-  <div *ngIf="showApplicationDownloadInfo" class="w-100 mb-4 alert alert-warning d-inline-block" role="alert" [@simpleFadeAnimation]>
-    <i class="fas fa-info-circle mr-2"></i>Thank you for using Project Zenith!   It is free and open source, and it can be run locally or hosted.  Please check out the <a href="https://github.com/beldenge/Zenith/releases" target="_blank">releases page</a> to download the latest version.
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="disableApplicationDownloadInfo()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
+  @if (showApplicationDownloadInfo) {
+    <div class="w-100 mb-4 alert alert-warning d-inline-block" role="alert" [@simpleFadeAnimation]>
+      <i class="fas fa-info-circle mr-2"></i>Thank you for using Project Zenith!   It is free and open source, and it can be run locally or hosted.  Please check out the <a href="https://github.com/beldenge/Zenith/releases" target="_blank">releases page</a> to download the latest version.
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="disableApplicationDownloadInfo()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  }
 
   <app-cipher-stats-summary></app-cipher-stats-summary>
 
@@ -47,19 +49,23 @@
   </div>
 
   <div class="row justify-content-end">
-    <div class="col-xl-10" *ngIf="hyperparametersForm.get('epochs').value > 1">
-      <h4 class="small font-weight-bold">Progress <span class="float-right">{{progressPercentage | number:'1.0-0'}}%</span></h4>
-      <div class="progress">
-        <div class="progress-bar" role="progressbar" [ngStyle]="{'width': progressPercentage + '%'}" aria-valuemin="0" aria-valuemax="100"></div>
+    @if (hyperparametersForm.get('epochs').value > 1) {
+      <div class="col-xl-10">
+        <h4 class="small font-weight-bold">Progress <span class="float-right">{{progressPercentage | number:'1.0-0'}}%</span></h4>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" [ngStyle]="{'width': progressPercentage + '%'}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
       </div>
-    </div>
+    }
     <div class="col-xl-1">
       <form class="user" [formGroup]="hyperparametersForm">
         <div class="form-group row">
           <label class="col-md-6 my-auto" for="epochs" matTooltip="Number of times to run the solver, the best solution of which will be displayed in the panel above" matTooltipPosition="above">Epochs</label>
           <input id="epochs" type="text" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" (keyup)="onEpochsChange()">
         </div>
-        <div class="text-center text-danger small" *ngIf="!hyperparametersForm.get('epochs').valid">{{epochsValidationMessage}}</div>
+        @if (!hyperparametersForm.get('epochs').valid) {
+          <div class="text-center text-danger small">{{epochsValidationMessage}}</div>
+        }
       </form>
     </div>
     <div class="col-xl-1">

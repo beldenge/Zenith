@@ -1,21 +1,21 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2020 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div id="cipher_statistics_summary" class="row">
   <div class="col-xl-2 col-md-6 mb-4">
@@ -29,8 +29,12 @@
                 <i class="far fa-question-circle" matTooltip="The number of unique ciphertext symbols" matTooltipPosition="above"></i>
               </div>
             </div>
-            <mat-spinner *ngIf="uniqueSymbols === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="uniqueSymbols !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{uniqueSymbols}}</div>
+            @if (uniqueSymbols === null) {
+              <mat-spinner [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
+            }
+            @if (uniqueSymbols !== null) {
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{uniqueSymbols}}</div>
+            }
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
@@ -51,8 +55,12 @@
                 <i class="far fa-question-circle" matTooltip="The number of unique ciphertext symbols divided by cipher length" matTooltipPosition="above"></i>
               </div>
             </div>
-            <mat-spinner *ngIf="multiplicity === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="multiplicity !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{multiplicity | number : '1.4-4'}}</div>
+            @if (multiplicity === null) {
+              <mat-spinner [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
+            }
+            @if (multiplicity !== null) {
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{multiplicity | number : '1.4-4'}}</div>
+            }
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
@@ -73,8 +81,12 @@
                 <i class="far fa-question-circle" matTooltip="A measure of randomness in the ciphertext" matTooltipPosition="above"></i>
               </div>
             </div>
-            <mat-spinner *ngIf="entropy === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="entropy !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{entropy | number : '1.4-4'}}</div>
+            @if (entropy === null) {
+              <mat-spinner [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
+            }
+            @if (entropy !== null) {
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{entropy | number : '1.4-4'}}</div>
+            }
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
@@ -95,8 +107,12 @@
                 <i class="far fa-question-circle" matTooltip="A measure of randomness in the ciphertext as compared with a uniform distribution" matTooltipPosition="above"></i>
               </div>
             </div>
-            <mat-spinner *ngIf="indexOfCoincidence === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="indexOfCoincidence !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{indexOfCoincidence | number : '1.4-4'}}</div>
+            @if (indexOfCoincidence === null) {
+              <mat-spinner [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
+            }
+            @if (indexOfCoincidence !== null) {
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{indexOfCoincidence | number : '1.4-4'}}</div>
+            }
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
@@ -117,8 +133,12 @@
                 <i class="far fa-question-circle" matTooltip="The sum of all bigram counts which appear more than once" matTooltipPosition="above"></i>
               </div>
             </div>
-            <mat-spinner *ngIf="bigramRepeats === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="bigramRepeats !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{bigramRepeats}}</div>
+            @if (bigramRepeats === null) {
+              <mat-spinner [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
+            }
+            @if (bigramRepeats !== null) {
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{bigramRepeats}}</div>
+            }
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
@@ -139,8 +159,12 @@
                 <i class="far fa-question-circle" matTooltip="A custom scoring method for pairs of symbols (not bigrams) that have a cyclic pattern in the ciphertext." matTooltipPosition="above"></i>
               </div>
             </div>
-            <mat-spinner *ngIf="cycleScore === null" [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
-            <div *ngIf="cycleScore !== null" class="h5 mb-0 font-weight-bold text-gray-800">{{cycleScore}}</div>
+            @if (cycleScore === null) {
+              <mat-spinner [ngClass]="'mx-auto'" diameter="25"></mat-spinner>
+            }
+            @if (cycleScore !== null) {
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{cycleScore}}</div>
+            }
           </div>
           <div class="col-auto">
             <i class="text-gray-300"></i>
