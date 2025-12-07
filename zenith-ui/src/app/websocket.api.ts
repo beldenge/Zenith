@@ -18,7 +18,7 @@
  */
 
 import * as Stomp from 'stompjs';
-import * as SockJS from 'sockjs-client';
+import SockJS from 'sockjs-client';
 
 export class WebSocketAPI {
   stompClient: any;

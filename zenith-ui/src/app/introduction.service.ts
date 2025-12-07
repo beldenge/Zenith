@@ -19,7 +19,7 @@
 
 import { Injectable } from '@angular/core';
 import { Router } from "@angular/router";
-import * as introJs from "intro.js/intro";
+import introJs, { IntroJs } from "intro.js";
 import { BehaviorSubject } from "rxjs";
 
 @Injectable({
@@ -32,13 +32,18 @@ export class IntroductionService {
   showIntroCiphertextTransformers = new BehaviorSubject(false);
   showIntroPlaintextTransformers = new BehaviorSubject(false);
 
-  introDashboard: introJs = new introJs();
-  introManageCiphers: introJs = new introJs();
-  introSettings: introJs = new introJs();
-  introCiphertextTransformers: introJs = new introJs();
-  introPlaintextTransformers: introJs = new introJs();
+  introDashboard: IntroJs;
+  introManageCiphers: IntroJs;
+  introSettings: IntroJs;
+  introCiphertextTransformers: IntroJs;
+  introPlaintextTransformers: IntroJs;
 
   constructor(private router: Router) {
+    this.introDashboard = introJs();
+    this.introManageCiphers = introJs();
+    this.introSettings = introJs();
+    this.introCiphertextTransformers = introJs();
+    this.introPlaintextTransformers = introJs();
   }
 
   startIntro(): void {
