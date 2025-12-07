@@ -19,7 +19,7 @@
 
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from "@angular/common";
 
@@ -118,99 +118,93 @@ export function registerValidationMessages() {
   };
 }
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    SideNavComponent,
-    CipherStatsSummaryComponent,
-    CiphertextComponent,
-    PlaintextComponent,
-    BlockifyPipe,
-    DashboardComponent,
-    SettingsComponent,
-    NotFoundComponent,
-    CiphertextTransformersComponent,
-    CipherModalComponent,
-    ManageCiphersComponent,
-    PlaintextTransformersComponent,
-    PlaintextSampleComponent,
-    HelpComponent,
-    WordSegmentationComponent,
-    SpacifyPipe,
-    CipherNgramStatsComponent,
-    NgramsTableComponent,
-    TopNavComponent
-  ],
-  imports: [
-      BrowserModule,
-      AppRoutingModule,
-      HttpClientModule,
-      FormsModule,
-      ReactiveFormsModule,
-      SortablejsModule.forRoot({animation: 150}),
-      BrowserAnimationsModule,
-      MatTooltipModule,
-      MatDialogModule,
-      MatButtonModule,
-      MatStepperModule,
-      MatFormFieldModule,
-      MatInputModule,
-      MatTableModule,
-      MatSortModule,
-      MatPaginatorModule,
-      MatSnackBarModule,
-      FormlyModule.forRoot({
-        types: [
-          {
-            name: 'input',
-            component: FormlyFieldInput,
-            defaultOptions: {
-              modelOptions: {
-                debounce: {
-                  default: 500
+@NgModule({ declarations: [
+        AppComponent,
+        SideNavComponent,
+        CipherStatsSummaryComponent,
+        CiphertextComponent,
+        PlaintextComponent,
+        BlockifyPipe,
+        DashboardComponent,
+        SettingsComponent,
+        NotFoundComponent,
+        CiphertextTransformersComponent,
+        CipherModalComponent,
+        ManageCiphersComponent,
+        PlaintextTransformersComponent,
+        PlaintextSampleComponent,
+        HelpComponent,
+        WordSegmentationComponent,
+        SpacifyPipe,
+        CipherNgramStatsComponent,
+        NgramsTableComponent,
+        TopNavComponent
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        AppRoutingModule,
+        FormsModule,
+        ReactiveFormsModule,
+        SortablejsModule.forRoot({ animation: 150 }),
+        BrowserAnimationsModule,
+        MatTooltipModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatStepperModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatTableModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatSnackBarModule,
+        FormlyModule.forRoot({
+            types: [
+                {
+                    name: 'input',
+                    component: FormlyFieldInput,
+                    defaultOptions: {
+                        modelOptions: {
+                            debounce: {
+                                default: 500
+                            }
+                        }
+                    }
+                },
+                {
+                    name: 'textarea',
+                    component: FormlyFieldTextArea,
+                    defaultOptions: {
+                        modelOptions: {
+                            debounce: {
+                                default: 500
+                            }
+                        }
+                    }
                 }
-              }
+            ]
+        }),
+        FormlyMaterialModule,
+        MatProgressSpinnerModule,
+        MatRadioModule,
+        MatSelectModule,
+        MatExpansionModule,
+        MatSlideToggleModule], providers: [
+        JsonPipe,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: DefaultHttpInterceptor,
+            multi: true
+        },
+        {
+            provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+            useValue: {
+                appearance: 'outline'
             }
-          },
-          {
-            name: 'textarea',
-            component: FormlyFieldTextArea,
-            defaultOptions: {
-              modelOptions: {
-                debounce: {
-                  default: 500
-                }
-              }
-            }
-          }
-        ]
-      }),
-      FormlyMaterialModule,
-      MatProgressSpinnerModule,
-      MatRadioModule,
-      MatSelectModule,
-      MatExpansionModule,
-      MatSlideToggleModule
-  ],
-  providers: [
-    JsonPipe,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: DefaultHttpInterceptor,
-      multi: true
-    },
-    {
-      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-      useValue: {
-        appearance: 'outline'
-      }
-    },
-    {
-      provide: FORMLY_CONFIG,
-      multi: true,
-      useFactory: registerValidationMessages
-    }
-  ],
-  bootstrap: [AppComponent]
-})
+        },
+        {
+            provide: FORMLY_CONFIG,
+            multi: true,
+            useFactory: registerValidationMessages
+        },
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule { }
