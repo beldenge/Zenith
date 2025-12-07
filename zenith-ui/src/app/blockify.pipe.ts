@@ -20,7 +20,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'blockify'
+    name: 'blockify',
+    standalone: false
 })
 export class BlockifyPipe implements PipeTransform {
   transform(value: String, columns: number): String {

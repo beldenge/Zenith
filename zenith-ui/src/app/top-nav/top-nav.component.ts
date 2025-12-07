@@ -29,9 +29,10 @@ import {Subscription} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
-  selector: 'app-top-nav',
-  templateUrl: './top-nav.component.html',
-  styleUrls: ['./top-nav.component.css']
+    selector: 'app-top-nav',
+    templateUrl: './top-nav.component.html',
+    styleUrls: ['./top-nav.component.css'],
+    standalone: false
 })
 export class TopNavComponent implements OnInit, OnDestroy {
   configFilename = 'zenith-config.json';

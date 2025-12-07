@@ -1,7 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'spacify'
+    name: 'spacify',
+    standalone: false
 })
 export class SpacifyPipe implements PipeTransform {
   transform(value: String): String {

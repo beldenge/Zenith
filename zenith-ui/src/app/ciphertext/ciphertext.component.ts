@@ -27,9 +27,10 @@ import { MatTooltip } from "@angular/material/tooltip";
 const originalTooltipText = 'Copy to clipboard';
 
 @Component({
-  selector: 'app-ciphertext',
-  templateUrl: './ciphertext.component.html',
-  styleUrls: ['./ciphertext.component.css']
+    selector: 'app-ciphertext',
+    templateUrl: './ciphertext.component.html',
+    styleUrls: ['./ciphertext.component.css'],
+    standalone: false
 })
 export class CiphertextComponent implements OnInit, OnDestroy {
   cipher: Cipher;

@@ -23,9 +23,10 @@ import { SidebarService } from "../sidebar.service";
 import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'app-side-nav',
-  templateUrl: './side-nav.component.html',
-  styleUrls: ['./side-nav.component.css']
+    selector: 'app-side-nav',
+    templateUrl: './side-nav.component.html',
+    styleUrls: ['./side-nav.component.css'],
+    standalone: false
 })
 export class SideNavComponent implements OnInit, OnDestroy {
   applicationVersion: string = environment.applicationVersion;

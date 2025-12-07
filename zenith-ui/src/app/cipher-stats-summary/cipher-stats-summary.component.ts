@@ -24,9 +24,10 @@ import { CipherStatisticsService } from "../cipher-statistics.service";
 import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'app-cipher-stats-summary',
-  templateUrl: './cipher-stats-summary.component.html',
-  styleUrls: ['./cipher-stats-summary.component.css']
+    selector: 'app-cipher-stats-summary',
+    templateUrl: './cipher-stats-summary.component.html',
+    styleUrls: ['./cipher-stats-summary.component.css'],
+    standalone: false
 })
 export class CipherStatsSummaryComponent implements OnInit, OnDestroy {
   uniqueSymbols: number = null;

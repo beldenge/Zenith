@@ -30,16 +30,16 @@ import { SolutionService } from "../solution.service";
 import { TransformerUtil } from "../util/transformer-util";
 
 @Component({
-  selector: 'app-plaintext-transformers',
-  templateUrl: './plaintext-transformers.component.html',
-  styleUrls: ['./plaintext-transformers.component.css'],
-  animations: [
-    // the fade-in/fade-out animation.
-    trigger('simpleFadeAnimation', [
-      transition(':leave',
-        animate(300, style({ opacity: 0 })))
-    ])
-  ]
+    selector: 'app-plaintext-transformers',
+    templateUrl: './plaintext-transformers.component.html',
+    styleUrls: ['./plaintext-transformers.component.css'],
+    animations: [
+        // the fade-in/fade-out animation.
+        trigger('simpleFadeAnimation', [
+            transition(':leave', animate(300, style({ opacity: 0 })))
+        ])
+    ],
+    standalone: false
 })
 export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   showIntroPlaintextTransformersSubscription: Subscription;

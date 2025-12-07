@@ -33,9 +33,10 @@ const INTEGER_PATTERN: string = "^[0-9]+$";
 const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
 
 @Component({
-  selector: 'app-settings',
-  templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.css']
+    selector: 'app-settings',
+    templateUrl: './settings.component.html',
+    styleUrls: ['./settings.component.css'],
+    standalone: false
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   showIntroSettingsSubscription: Subscription;

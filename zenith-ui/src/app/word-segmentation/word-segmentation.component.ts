@@ -8,9 +8,10 @@ import { SolutionResponse } from "../models/SolutionResponse";
 const originalTooltipText = 'Copy to clipboard';
 
 @Component({
-  selector: 'app-word-segmentation',
-  templateUrl: './word-segmentation.component.html',
-  styleUrls: ['./word-segmentation.component.css']
+    selector: 'app-word-segmentation',
+    templateUrl: './word-segmentation.component.html',
+    styleUrls: ['./word-segmentation.component.css'],
+    standalone: false
 })
 export class WordSegmentationComponent implements OnInit, OnDestroy {
   solution: SolutionResponse;

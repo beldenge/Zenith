@@ -31,9 +31,10 @@ import { Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 
 @Component({
-  selector: 'app-manage-ciphers',
-  templateUrl: './manage-ciphers.component.html',
-  styleUrls: ['./manage-ciphers.component.css'],
+    selector: 'app-manage-ciphers',
+    templateUrl: './manage-ciphers.component.html',
+    styleUrls: ['./manage-ciphers.component.css'],
+    standalone: false
 })
 export class ManageCiphersComponent implements OnInit, OnDestroy {
   blockifyPipe = new BlockifyPipe();

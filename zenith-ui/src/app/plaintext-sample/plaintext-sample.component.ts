@@ -22,9 +22,10 @@ import { ConfigurationService } from "../configuration.service";
 import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'app-plaintext-sample',
-  templateUrl: './plaintext-sample.component.html',
-  styleUrls: ['./plaintext-sample.component.css']
+    selector: 'app-plaintext-sample',
+    templateUrl: './plaintext-sample.component.html',
+    styleUrls: ['./plaintext-sample.component.css'],
+    standalone: false
 })
 export class PlaintextSampleComponent implements OnInit, AfterContentInit  {
   @Input() transformedSample: string;

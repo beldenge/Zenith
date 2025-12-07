@@ -32,9 +32,10 @@ const WHITESPACE_REGEX = /\s+/g;
 const NEWLINE_REGEX = /\r?\n/g;
 
 @Component({
-  selector: 'app-cipher-modal',
-  templateUrl: './cipher-modal.component.html',
-  styleUrls: ['./cipher-modal.component.css']
+    selector: 'app-cipher-modal',
+    templateUrl: './cipher-modal.component.html',
+    styleUrls: ['./cipher-modal.component.css'],
+    standalone: false
 })
 export class CipherModalComponent implements OnInit, OnDestroy {
   blockifyPipe = new BlockifyPipe();

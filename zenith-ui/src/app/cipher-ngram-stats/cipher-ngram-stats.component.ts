@@ -27,9 +27,10 @@ import { NgramStatisticsResponse } from "../models/NgramStatisticsResponse";
 import { MatExpansionPanel } from "@angular/material/expansion";
 
 @Component({
-  selector: 'app-cipher-ngram-stats',
-  templateUrl: './cipher-ngram-stats.component.html',
-  styleUrls: ['./cipher-ngram-stats.component.css']
+    selector: 'app-cipher-ngram-stats',
+    templateUrl: './cipher-ngram-stats.component.html',
+    styleUrls: ['./cipher-ngram-stats.component.css'],
+    standalone: false
 })
 export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewInit {
   // Workaround for angular component issue #13870

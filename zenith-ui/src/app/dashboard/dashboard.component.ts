@@ -43,16 +43,16 @@ import { animate, style, transition, trigger } from "@angular/animations";
 import { SidebarService } from "../sidebar.service";
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
-  animations: [
-    // the fade-in/fade-out animation.
-    trigger('simpleFadeAnimation', [
-      transition(':leave',
-        animate(300, style({ opacity: 0 })))
-    ])
-  ]
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.css'],
+    animations: [
+        // the fade-in/fade-out animation.
+        trigger('simpleFadeAnimation', [
+            transition(':leave', animate(300, style({ opacity: 0 })))
+        ])
+    ],
+    standalone: false
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   showApplicationDownloadInfo: boolean = false;

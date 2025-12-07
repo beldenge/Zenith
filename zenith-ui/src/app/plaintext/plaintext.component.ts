@@ -29,9 +29,10 @@ import { SolutionResponse } from "../models/SolutionResponse";
 const originalTooltipText = 'Copy to clipboard';
 
 @Component({
-  selector: 'app-plaintext',
-  templateUrl: './plaintext.component.html',
-  styleUrls: ['./plaintext.component.css']
+    selector: 'app-plaintext',
+    templateUrl: './plaintext.component.html',
+    styleUrls: ['./plaintext.component.css'],
+    standalone: false
 })
 export class PlaintextComponent implements OnInit, OnDestroy {
   cipher: Cipher;
