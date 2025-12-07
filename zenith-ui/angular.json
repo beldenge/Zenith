@@ -76,10 +76,10 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "zenith-angular:build:production"
+              "buildTarget": "zenith-angular:build:production"
             },
             "development": {
-              "browserTarget": "zenith-angular:build:development"
+              "buildTarget": "zenith-angular:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -87,7 +87,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "zenith-angular:build"
+            "buildTarget": "zenith-angular:build"
           }
         },
         "test": {
