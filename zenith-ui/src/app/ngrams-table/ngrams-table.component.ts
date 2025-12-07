@@ -18,9 +18,9 @@
  */
 
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from "@angular/material/table";
+import { MatLegacyTableDataSource as MatTableDataSource } from "@angular/material/legacy-table";
 import { MatSort } from "@angular/material/sort";
-import { MatPaginator } from "@angular/material/paginator";
+import { MatLegacyPaginator as MatPaginator } from "@angular/material/legacy-paginator";
 
 @Component({
   selector: 'app-ngrams-table',

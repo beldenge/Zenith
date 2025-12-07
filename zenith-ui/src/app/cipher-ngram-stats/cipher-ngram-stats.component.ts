@@ -22,7 +22,7 @@ import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { Subscription } from "rxjs";
 import { CipherStatisticsService } from "../cipher-statistics.service";
-import { MatTableDataSource } from "@angular/material/table";
+import { MatLegacyTableDataSource as MatTableDataSource } from "@angular/material/legacy-table";
 import { NgramStatisticsResponse } from "../models/NgramStatisticsResponse";
 import { MatExpansionPanel } from "@angular/material/expansion";
 

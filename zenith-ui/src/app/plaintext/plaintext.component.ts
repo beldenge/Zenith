@@ -22,7 +22,7 @@ import { Cipher } from "../models/Cipher";
 import { BehaviorSubject, Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 import { CipherService } from "../cipher.service";
-import { MatTooltip } from "@angular/material/tooltip";
+import { MatLegacyTooltip as MatTooltip } from "@angular/material/legacy-tooltip";
 import { SolutionService } from "../solution.service";
 import { SolutionResponse } from "../models/SolutionResponse";
 
