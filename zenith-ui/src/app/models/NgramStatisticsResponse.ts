@@ -20,10 +20,7 @@
 import { NgramCount } from "./NgramCount";
 
 export class NgramStatisticsResponse {
-  unigramCounts: NgramCount[];
-  bigramCounts: NgramCount[];
-  trigramCounts: NgramCount[];
-  quadrigramCounts: NgramCount[];
-  pentagramCounts: NgramCount[];
-  hexagramCounts: NgramCount[];
+  firstNGramCounts: NgramCount[];
+  secondNGramCounts: NgramCount[];
+  thirdNGramCounts: NgramCount[];
 }

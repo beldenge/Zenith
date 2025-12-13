@@ -24,6 +24,7 @@ export class Cipher {
   ciphertext: string;
   transformed: Cipher;
   readOnly: boolean;
+  statsPage: number;
 
   constructor(name: string, rows: number, columns: number, ciphertext: string) {
     this.name = name;

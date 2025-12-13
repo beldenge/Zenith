@@ -28,36 +28,22 @@
             </mat-panel-title>
           </mat-expansion-panel-header>
           @if (shown) {
-            <div class="row">
-              <div class="col-md-4">
-                <h6 class="text-primary">Unigram Counts</h6>
-                <app-ngrams-table [ngramsDataSource]="unigramsDataSource"></app-ngrams-table>
+            @for (nextDataSourcePage of ngramsDataSources; track nextDataSourcePage; let i = $index) {
+              <div class="row">
+                @for (nextDataSource of nextDataSourcePage; track nextDataSource; let j = $index) {
+                  <div class="col-md-4">
+                    <h6 class="text-primary">{{(i * nextDataSourcePage.length) + j + 1}}-gram Counts</h6>
+                    <app-ngrams-table [ngramsDataSource]="nextDataSource"></app-ngrams-table>
+                  </div>
+                }
               </div>
-              <div class="col-md-4">
-                <h6 class="text-primary">Bigram Counts</h6>
-                <app-ngrams-table [ngramsDataSource]="bigramsDataSource"></app-ngrams-table>
-              </div>
-              <div class="col-md-4">
-                <h6 class="text-primary">Trigram Counts</h6>
-                <app-ngrams-table [ngramsDataSource]="trigramsDataSource"></app-ngrams-table>
-              </div>
-            </div>
-          }
-          @if (shown) {
-            <div class="row mt-4">
-              <div class="col-md-4">
-                <h6 class="text-primary">Quadrigram Counts</h6>
-                <app-ngrams-table [ngramsDataSource]="quadrigramsDataSource"></app-ngrams-table>
-              </div>
-              <div class="col-md-4">
-                <h6 class="text-primary">Pentagram Counts</h6>
-                <app-ngrams-table [ngramsDataSource]="pentagramsDataSource"></app-ngrams-table>
-              </div>
-              <div class="col-md-4">
-                <h6 class="text-primary">Hexagram Counts</h6>
-                <app-ngrams-table [ngramsDataSource]="hexagramsDataSource"></app-ngrams-table>
-              </div>
-            </div>
+            }
+            <a id="more_button" href="javascript:void(0);" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true}" (click)="onMore()">
+              <span class="icon text-white-50">
+                <i [ngClass]="{'fas': true, 'fa-chevron-down' : true}"></i>
+              </span>
+              <span class="text">More</span>
+            </a>
           }
         </mat-expansion-panel>
       </div>

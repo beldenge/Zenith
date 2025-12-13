@@ -100,11 +100,12 @@ export class CipherStatisticsService {
     return this.cycleScoreObservables[cipher.ciphertext];
   }
 
-  getNgramStatistics(cipher: Cipher) {
+  getNgramStatistics(cipher: Cipher, statsPage: number) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
+    cipher.statsPage = statsPage;
 
     if (!this.ngramStatisticsObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.ngramStatisticsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/ngrams', cipher).pipe(shareReplay(1));
+      this.ngramStatisticsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/ngrams', cipher).pipe();
     }
 
     return this.ngramStatisticsObservables[cipher.ciphertext];

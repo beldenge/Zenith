@@ -37,20 +37,16 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewIn
   disableAnimation = true;
   selectedCipher: Cipher;
   selectedCipherSubscription: Subscription;
-  unigramsDataSource: MatTableDataSource<any>;
-  bigramsDataSource: MatTableDataSource<any>;
-  trigramsDataSource: MatTableDataSource<any>;
-  quadrigramsDataSource: MatTableDataSource<any>;
-  pentagramsDataSource: MatTableDataSource<any>;
-  hexagramsDataSource: MatTableDataSource<any>;
-  headerTextOpened = "Hide ngram statistics";
-  headerTextClosed = "Show ngram statistics";
+  ngramsDataSources: MatTableDataSource<any>[][] = [];
+  headerTextOpened = 'Hide ngram statistics';
+  headerTextClosed = 'Show ngram statistics';
   headerText = this.headerTextClosed;
-  shown: boolean = false;
+  shown = false;
 
   @ViewChild(MatExpansionPanel, { static: true }) matExpansionPanelElement: MatExpansionPanel;
 
-  constructor(private cipherService: CipherService, private cipherStatisticsService: CipherStatisticsService) { }
+  constructor(private cipherService: CipherService,
+              private cipherStatisticsService: CipherStatisticsService) {}
 
   ngOnInit(): void {
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
@@ -74,16 +70,18 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   onExpand(): void {
-    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher).subscribe((response: NgramStatisticsResponse) => {
-      let sortFunction = (a, b) => a.count < b.count ? 1 : (a.count > b.count ? -1 : 0);
-      this.unigramsDataSource = new MatTableDataSource(response.unigramCounts.sort(sortFunction));
-      this.bigramsDataSource = new MatTableDataSource(response.bigramCounts.sort(sortFunction));
-      this.trigramsDataSource = new MatTableDataSource(response.trigramCounts.sort(sortFunction));
-      this.quadrigramsDataSource = new MatTableDataSource(response.quadrigramCounts.sort(sortFunction));
-      this.pentagramsDataSource = new MatTableDataSource(response.pentagramCounts.sort(sortFunction));
-      this.hexagramsDataSource = new MatTableDataSource(response.hexagramCounts.sort(sortFunction));
-      this.shown = true;
-      this.headerText = this.headerTextOpened;
+    this.shown = true;
+    this.headerText = this.headerTextOpened;
+    this.onMore();
+  }
+
+  onMore(): void {
+    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher, this.ngramsDataSources?.length).subscribe((response: NgramStatisticsResponse) => {
+      const sortFunction = (a, b) => a.count < b.count ? 1 : (a.count > b.count ? -1 : 0);
+      this.ngramsDataSources.push([]);
+      this.ngramsDataSources[0].push(new MatTableDataSource(response.firstNGramCounts.sort(sortFunction)));
+      this.ngramsDataSources[0].push(new MatTableDataSource(response.secondNGramCounts.sort(sortFunction)));
+      this.ngramsDataSources[0].push(new MatTableDataSource(response.thirdNGramCounts.sort(sortFunction)));
     });
   }
 }

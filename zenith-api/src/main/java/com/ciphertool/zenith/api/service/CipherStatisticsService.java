@@ -100,52 +100,24 @@ public class CipherStatisticsService {
 
     @PostMapping("/ngrams")
     @ResponseBody
-    @Cacheable(value = "ngrams", key = "#request.ciphertext")
     public NgramStatisticsResponse getNGramStatistics(@RequestBody CipherRequest request) {
         Cipher cipher = request.asCipher();
 
-        Map<String, Integer> unigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 1);
-        List<NgramCount> unigramCounts = new ArrayList<>(unigramCountMap.size());
+        List<NgramCount> firstNGramCounts = getNGramCounts(cipher, request, 1);
+        List<NgramCount> secondNGramCounts = getNGramCounts(cipher, request, 2);
+        List<NgramCount> thirdNGramCounts = getNGramCounts(cipher, request, 3);
 
-        for (Map.Entry<String, Integer> entry : unigramCountMap.entrySet()) {
-            unigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
+        return new NgramStatisticsResponse(firstNGramCounts, secondNGramCounts, thirdNGramCounts);
+    }
+
+    private List<NgramCount> getNGramCounts(Cipher cipher, CipherRequest request, int offset) {
+        Map<String, Integer> nGramCountMap = ciphertextNgramEvaluator.evaluate(cipher, (request.getStatsPage() * 3) + offset);
+        List<NgramCount> nGramCounts = new ArrayList<>(nGramCountMap.size());
+
+        for (Map.Entry<String, Integer> entry : nGramCountMap.entrySet()) {
+            nGramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
         }
 
-        Map<String, Integer> bigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 2);
-        List<NgramCount> bigramCounts = new ArrayList<>(bigramCountMap.size());
-
-        for (Map.Entry<String, Integer> entry : bigramCountMap.entrySet()) {
-            bigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
-        }
-
-        Map<String, Integer> trigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 3);
-        List<NgramCount> trigramCounts = new ArrayList<>(trigramCountMap.size());
-
-        for (Map.Entry<String, Integer> entry : trigramCountMap.entrySet()) {
-            trigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
-        }
-
-        Map<String, Integer> quadrigramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 4);
-        List<NgramCount> quadrigramCounts = new ArrayList<>(quadrigramCountMap.size());
-
-        for (Map.Entry<String, Integer> entry : quadrigramCountMap.entrySet()) {
-            quadrigramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
-        }
-
-        Map<String, Integer> pentagramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 5);
-        List<NgramCount> pentagramCounts = new ArrayList<>(pentagramCountMap.size());
-
-        for (Map.Entry<String, Integer> entry : pentagramCountMap.entrySet()) {
-            pentagramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
-        }
-
-        Map<String, Integer> hexagramCountMap = ciphertextNgramEvaluator.evaluate(cipher, 6);
-        List<NgramCount> hexagramCounts = new ArrayList<>(hexagramCountMap.size());
-
-        for (Map.Entry<String, Integer> entry : hexagramCountMap.entrySet()) {
-            hexagramCounts.add(new NgramCount(entry.getKey(), entry.getValue()));
-        }
-
-        return new NgramStatisticsResponse(unigramCounts, bigramCounts, trigramCounts, quadrigramCounts, pentagramCounts, hexagramCounts);
+        return nGramCounts;
     }
 }

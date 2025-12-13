@@ -43,6 +43,8 @@ public class CipherRequest {
     @NotBlank
     private String ciphertext;
 
+    private int statsPage;
+
     @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
     public boolean isLengthValid() {
         return (rows * columns) == ciphertext.split(" ").length;

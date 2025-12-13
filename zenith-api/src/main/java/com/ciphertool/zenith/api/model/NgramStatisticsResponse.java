@@ -29,10 +29,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class NgramStatisticsResponse {
-    private List<NgramCount> unigramCounts;
-    private List<NgramCount> bigramCounts;
-    private List<NgramCount> trigramCounts;
-    private List<NgramCount> quadrigramCounts;
-    private List<NgramCount> pentagramCounts;
-    private List<NgramCount> hexagramCounts;
+    private List<NgramCount> firstNGramCounts;
+    private List<NgramCount> secondNGramCounts;
+    private List<NgramCount> thirdNGramCounts;
 }
