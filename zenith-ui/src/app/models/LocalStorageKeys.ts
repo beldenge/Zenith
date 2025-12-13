@@ -19,8 +19,5 @@
 
 export enum LocalStorageKeys {
   APPLICATION_CONFIGURATION = "application_configuration",
-  SKIP_INTRO = "skip_intro",
-  ENABLE_TRACKING = "enable_tracking",
-  ENABLE_PAGE_TRANSITIONS = "enable_page_transitions",
   SHOW_APPLICATION_DOWNLOAD_INFO = "show_application_download_info"
 }

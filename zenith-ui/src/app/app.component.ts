@@ -17,17 +17,8 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { CipherService } from "./cipher.service";
-import { IntroductionService } from "./introduction.service";
-import { NavigationEnd, Router } from "@angular/router";
-import { environment } from "../environments/environment";
-import { ConfigurationService } from "./configuration.service";
-import { Subscription } from "rxjs";
-import { LocalStorageKeys } from "./models/LocalStorageKeys";
+import { Component, HostListener } from '@angular/core';
 import { SidebarService } from "./sidebar.service";
-
-declare let gtag: Function;
 
 @Component({
     selector: 'app-root',
@@ -35,67 +26,8 @@ declare let gtag: Function;
     styleUrls: ['./app.component.css'],
     standalone: false
 })
-export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
-  title = 'zenith-angular';
-  trackingEnabled = false;
-  enableTrackingSubscription: Subscription;
-  googleAnalyticsInitialized = false;
-
-  constructor(private elementRef: ElementRef,
-              private cipherService: CipherService,
-              private introductionService: IntroductionService,
-              private configurationService: ConfigurationService,
-              private router: Router,
-              private sidebarService: SidebarService) {
-    this.router.events.subscribe(event => {
-      if(this.trackingEnabled && event instanceof NavigationEnd) {
-        gtag('config', environment.googleAnalyticsTrackingId, { 'page_path': event.urlAfterRedirects });
-      }
-    });
-  }
-
-  ngOnInit() {
-    if (!localStorage.getItem(LocalStorageKeys.SKIP_INTRO)) {
-      localStorage.setItem(LocalStorageKeys.SKIP_INTRO, 'true');
-      this.introductionService.startIntro();
-    }
-
-    let skipInitGA = true;
-
-    this.enableTrackingSubscription = this.configurationService.getEnableTrackingAsObservable().subscribe((enabled) => {
-      this.trackingEnabled = enabled;
-
-      if (!skipInitGA) {
-        this.initGoogleAnalytics();
-      }
-
-      skipInitGA = false;
-    });
-
-    let enableTracking = localStorage.getItem(LocalStorageKeys.ENABLE_TRACKING);
-
-    if (enableTracking !== null) {
-      this.configurationService.updateEnableTracking(enableTracking === 'true');
-    }
-  }
-
-  ngAfterViewInit() {
-    this.initGoogleAnalytics();
-  }
-
-  ngOnDestroy() {
-    this.enableTrackingSubscription.unsubscribe();
-  }
-
-  initGoogleAnalytics() {
-    if(this.trackingEnabled && !this.googleAnalyticsInitialized) {
-      let s = document.createElement("script");
-      s.type = "text/javascript";
-      s.src = "https://www.googletagmanager.com/gtag/js?id=UA-159370258-1";
-      this.elementRef.nativeElement.appendChild(s);
-      this.googleAnalyticsInitialized = true;
-    }
-  }
+export class AppComponent {
+  constructor(private sidebarService: SidebarService) {}
 
   @HostListener('window:resize', ['$event'])
   onResize(event) {

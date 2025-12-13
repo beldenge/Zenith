@@ -17,11 +17,8 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { IntroductionService } from "../introduction.service";
-import { UntypedFormBuilder } from "@angular/forms";
-import { ConfigurationService } from "../configuration.service";
-import { Subscription } from "rxjs";
 
 @Component({
     selector: 'app-help',
@@ -29,28 +26,11 @@ import { Subscription } from "rxjs";
     styleUrls: ['./help.component.css'],
     standalone: false
 })
-export class HelpComponent implements OnInit, OnDestroy, AfterViewInit {
+export class HelpComponent implements AfterViewInit {
   // Workaround for angular component issue #13870
   disableAnimation = true;
-  enableTrackingSubscription: Subscription;
 
-  applicationSettingsForm = this.fb.group({
-    enableTracking: [true]
-  });
-
-  constructor(private fb: UntypedFormBuilder, private introductionService: IntroductionService, private configurationService: ConfigurationService) { }
-
-  ngOnInit() {
-    this.enableTrackingSubscription = this.configurationService.getEnableTrackingAsObservable().subscribe(enabled => {
-      if (this.applicationSettingsForm.get('enableTracking').value !== enabled) {
-        this.applicationSettingsForm.patchValue({ 'enableTracking': enabled });
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    this.enableTrackingSubscription.unsubscribe();
-  }
+  constructor(private introductionService: IntroductionService) {}
 
   ngAfterViewInit(): void {
     // timeout required to avoid the dreaded 'ExpressionChangedAfterItHasBeenCheckedError'
@@ -59,9 +39,5 @@ export class HelpComponent implements OnInit, OnDestroy, AfterViewInit {
 
   replayIntroduction() {
     this.introductionService.startIntro();
-  }
-
-  onTrackingToggleChange() {
-    this.configurationService.updateEnableTracking(this.applicationSettingsForm.get('enableTracking').value);
   }
 }

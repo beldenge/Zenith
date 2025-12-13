@@ -97,8 +97,6 @@ export class ConfigurationService {
     displayName: 'Random'
   }];
 
-  private enableTracking$ = new BehaviorSubject<boolean>(true);
-  private enablePageTransitions$ = new BehaviorSubject<boolean>(true);
   private epochs$ = new BehaviorSubject<number>(1);
   private availableCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
   private appliedCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
@@ -125,8 +123,8 @@ export class ConfigurationService {
       this.features$.next(featureResponse);
     });
 
-    let fitnessFunctionsPromise = fitnessFunctionService.getFitnessFunctions().then(fitnessFunctionResponse => {
-      let availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
+    const fitnessFunctionsPromise = fitnessFunctionService.getFitnessFunctions().then(fitnessFunctionResponse => {
+      const availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
         return t1.order - t2.order;
       });
 
@@ -139,16 +137,16 @@ export class ConfigurationService {
       this.updateAvailableFitnessFunctions(availableFitnessFunctions);
     });
 
-    let plaintextTransformerPromise = plaintextTransformerService.getTransformers().then(transformerResponse => {
-      let availablePlaintextTransformers = transformerResponse.transformers.sort((t1, t2) => {
+    const plaintextTransformerPromise = plaintextTransformerService.getTransformers().then(transformerResponse => {
+      const availablePlaintextTransformers = transformerResponse.transformers.sort((t1, t2) => {
         return t1.order - t2.order;
       });
 
       this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
     });
 
-    let ciphertextTransformerPromise = ciphertextTransformerService.getTransformers().then(transformerResponse => {
-      let availableCiphertextTransformers = transformerResponse.transformers.sort((t1, t2) => {
+    const ciphertextTransformerPromise = ciphertextTransformerService.getTransformers().then(transformerResponse => {
+      const availableCiphertextTransformers = transformerResponse.transformers.sort((t1, t2) => {
         return t1.order - t2.order;
       });
 
@@ -172,15 +170,6 @@ export class ConfigurationService {
 
   getConfigurationLoadedNotification() {
     return this.configurationLoadedNotification$.asObservable();
-  }
-
-  getEnableTrackingAsObservable(): Observable<boolean> {
-    return this.enableTracking$.asObservable();
-  }
-
-  updateEnableTracking(enabled: boolean) {
-    localStorage.setItem(LocalStorageKeys.ENABLE_TRACKING, enabled.toString());
-    this.enableTracking$.next(enabled);
   }
 
   getSelectedCipherAsObservable(): Observable<Cipher> {
@@ -427,7 +416,7 @@ export class ConfigurationService {
       });
     }
 
-    let fitnessFunction = this.selectedFitnessFunction$.getValue();
+    const fitnessFunction = this.selectedFitnessFunction$.getValue();
 
     configuration.selectedFitnessFunction = {
       name: fitnessFunction.name,
