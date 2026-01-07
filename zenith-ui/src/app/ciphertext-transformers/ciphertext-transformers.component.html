@@ -68,7 +68,7 @@
             <div>Drop transformers here</div>
           }
           @for (item of appliedTransformers; track item; let i = $index) {
-            <div class="col-xl-12 mb-4 transformer" [@simpleFadeAnimation]>
+            <div class="col-xl-12 mb-4 transformer" animate.leave="fade-out">
               <div class="card border-left-primary shadow h-100 py-2 pl-3">
                 <div class="card-body p-2">
                   <div class="row no-gutters align-items-center">

@@ -49,7 +49,7 @@ export class CipherStatsSummaryComponent implements OnInit, OnDestroy {
 
       let skipStatistics = false;
 
-      if (this.selectedCipher && this.selectedCipher.ciphertext === selectedCipher.ciphertext) {
+      if (this.selectedCipher && this.selectedCipher.name === selectedCipher.name) {
         skipStatistics = true;
       }
 

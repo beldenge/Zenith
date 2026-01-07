@@ -129,15 +129,15 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   }
 
   cloneCipher(cipher: Cipher) {
-    let suffix = '-copy';
+    const suffix = '-copy';
     let name = cipher.name + suffix;
     let isUnique = false;
 
     while (!isUnique) {
       isUnique = true;
 
-      for (let i = 0; i < this.ciphers.length; i++) {
-        if (name === this.ciphers[i].name) {
+      for (const item of this.ciphers) {
+        if (name === item.name) {
           name = name + suffix;
           isUnique = false;
           break;
@@ -145,7 +145,7 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
       }
     }
 
-    let clone = new Cipher(name, cipher.rows, cipher.columns, cipher.ciphertext);
+    const clone = new Cipher(name, cipher.rows, cipher.columns, cipher.ciphertext);
 
     this.ciphers.push(clone);
     this.cipherService.updateCiphers(this.ciphers);

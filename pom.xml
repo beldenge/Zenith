@@ -47,7 +47,6 @@
         <module>zenith-mutation-search</module>
         <module>zenith-genetic-algorithm</module>
         <module>zenith-roulette</module>
-        <module>zenith-mutator</module>
         <module>zenith-ui</module>
 		<module>zenith-api</module>
 		<module>zenith-package</module>

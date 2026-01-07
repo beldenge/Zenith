@@ -1,0 +1,14 @@
+scalar Object
+
+type Query {
+    ciphers: [Cipher]
+}
+
+type Cipher {
+    name: ID!
+    rows: Int!
+    columns: Int!
+    readOnly: Boolean!
+    ciphertext: [String!]!
+    knownSolutionKey: Object!
+}

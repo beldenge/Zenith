@@ -44,7 +44,7 @@ public class RemoveMiddleColumnCipherTransformer implements CipherTransformer {
 
         // Remove the middle ciphertext character starting from the last row
         for (int i = cipher.getRows() - 1; i >= 0; i--) {
-            transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get((i * cipher.getColumns()) + middleColumn));
+            transformed.removeCiphertextCharacter((i * cipher.getColumns()) + middleColumn);
         }
 
         transformed.setColumns(transformed.getColumns() - 1);

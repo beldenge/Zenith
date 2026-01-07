@@ -65,3 +65,8 @@ input[type=number] {
 .mat-form-field.ng-valid .mat-form-field-wrapper {
   padding-bottom: 0 !important;
 }
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}

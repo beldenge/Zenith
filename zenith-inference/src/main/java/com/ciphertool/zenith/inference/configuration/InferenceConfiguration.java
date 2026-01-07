@@ -34,12 +34,17 @@ import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.scalars.ExtendedScalars;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Min;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,14 +58,11 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.graphql.execution.RuntimeWiringConfigurer;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.Min;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,7 +88,7 @@ public class InferenceConfiguration {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String CONFIG_FILE_NAME = "zenith-config.json";
+    private static final String CONFIG_FILE_NAME = "zenith.json";
 
     @Autowired
     private Validator validator;
@@ -112,6 +114,12 @@ public class InferenceConfiguration {
 
     @Value("${language-model.word-ngram.total-token-count}")
     private long wordGramTotalTokenCount;
+
+    // Allows us to use `Object` in the GraphQL schema
+    @Bean
+    public RuntimeWiringConfigurer runtimeWiringConfigurer() {
+        return wiringBuilder -> wiringBuilder.scalar(ExtendedScalars.Object);
+    }
 
     @Bean
     public ApplicationConfiguration configuration() {

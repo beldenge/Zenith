@@ -25,14 +25,14 @@ import { SolutionRequestFitnessFunction } from "./SolutionRequestFitnessFunction
 export class SolutionRequest {
   rows: number;
   columns: number;
-  ciphertext: string;
+  ciphertext: string[];
   epochs: number;
   plaintextTransformers: SolutionRequestTransformer[] = [];
   fitnessFunction: SolutionRequestFitnessFunction;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
 
-  constructor(rows: number, columns: number, ciphertext: string, epochs: number) {
+  constructor(rows: number, columns: number, ciphertext: string[], epochs: number) {
     this.rows = rows;
     this.columns = columns;
     this.ciphertext = ciphertext;

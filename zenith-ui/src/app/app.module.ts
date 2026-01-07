@@ -34,7 +34,6 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { CiphertextTransformersComponent } from './ciphertext-transformers/ciphertext-transformers.component';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor";
 import { CipherModalComponent } from './cipher-modal/cipher-modal.component';
@@ -66,25 +65,26 @@ import { NgramsTableComponent } from './ngrams-table/ngrams-table.component';
 import { TopNavComponent } from './top-nav/top-nav.component';
 import { FormlyFieldTextArea } from "@ngx-formly/material/textarea";
 import {SortablejsModule} from "./sortable/sortablejs.module";
+import { GraphQLModule } from './graphql.module';
 
 export function minValidationMessage(err, field) {
-  return `This field has a minimum value of ${field.templateOptions.min}`;
+  return `This field has a minimum value of ${field.props.min}`;
 }
 
 export function maxValidationMessage(err, field) {
-  return `This field has a maximum value of ${field.templateOptions.max}`;
+  return `This field has a maximum value of ${field.props.max}`;
 }
 
 export function minLengthValidationMessage(err, field) {
-  return `This field has a minimum length of ${field.templateOptions.minLength}`;
+  return `This field has a minimum length of ${field.props.minLength}`;
 }
 
 export function maxLengthValidationMessage(err, field) {
-  return `This field has a maximum length of ${field.templateOptions.maxLength}`;
+  return `This field has a maximum length of ${field.props.maxLength}`;
 }
 
 export function patternValidationMessage(err, field) {
-  return `This field must match the pattern ${field.templateOptions.pattern}`;
+  return `This field must match the pattern ${field.props.pattern}`;
 }
 
 export function registerValidationMessages() {
@@ -140,12 +140,12 @@ export function registerValidationMessages() {
         NgramsTableComponent,
         TopNavComponent
     ],
-    bootstrap: [AppComponent], imports: [BrowserModule,
+    bootstrap: [AppComponent],
+    imports: [BrowserModule,
         AppRoutingModule,
         FormsModule,
         ReactiveFormsModule,
         SortablejsModule.forRoot({ animation: 150 }),
-        BrowserAnimationsModule,
         MatTooltipModule,
         MatDialogModule,
         MatButtonModule,
@@ -187,7 +187,8 @@ export function registerValidationMessages() {
         MatRadioModule,
         MatSelectModule,
         MatExpansionModule,
-        MatSlideToggleModule], providers: [
+        MatSlideToggleModule,
+        GraphQLModule], providers: [
         JsonPipe,
         {
             provide: HTTP_INTERCEPTORS,

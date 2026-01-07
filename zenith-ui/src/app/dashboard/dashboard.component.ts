@@ -32,40 +32,31 @@ import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingCon
 import { SelectOption } from "../models/SelectOption";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
-import { SafeUrl } from "@angular/platform-browser";
-import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
 import { SolutionService } from "../solution.service";
 import { SolutionResponse } from "../models/SolutionResponse";
 import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
 import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 import { LocalStorageKeys } from "../models/LocalStorageKeys";
 import { animate, style, transition, trigger } from "@angular/animations";
-import { SidebarService } from "../sidebar.service";
 
 @Component({
     selector: 'app-dashboard',
     templateUrl: './dashboard.component.html',
     styleUrls: ['./dashboard.component.css'],
-    animations: [
-        // the fade-in/fade-out animation.
-        trigger('simpleFadeAnimation', [
-            transition(':leave', animate(300, style({ opacity: 0 })))
-        ])
-    ],
     standalone: false
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  showApplicationDownloadInfo: boolean = false;
+  showApplicationDownloadInfo = false;
   showIntroDashboardSubscription: Subscription;
   webSocketAPI: WebSocketAPI;
   selectedCipher: Cipher;
-  isRunning: boolean = false;
-  progressPercentage: number = 0;
+  isRunning = false;
+  progressPercentage = 0;
   isRunningSubscription: Subscription;
   progressPercentageSubscription: Subscription;
-  epochsValidationMessageDefault: string = 'Must be a number greater than zero';
+  epochsValidationMessageDefault = 'Must be a number greater than zero';
   epochsValidationMessage: string = this.epochsValidationMessageDefault;
-  epochsValidatorsDefault = [Validators.min(1), Validators.pattern("^[0-9]*$")];
+  epochsValidatorsDefault = [Validators.min(1), Validators.pattern('^[0-9]*$')];
   hyperparametersForm = this.fb.group({
     epochs: [null, this.epochsValidatorsDefault]
   });
@@ -95,7 +86,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.webSocketAPI = new WebSocketAPI();
 
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher
+      this.selectedCipher = selectedCipher;
     });
 
     this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
@@ -184,12 +175,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let request;
+    let request: SolutionRequest;
 
     if (!this.selectedCipher.transformed) {
-      request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
+      request = new SolutionRequest(
+        this.selectedCipher.rows,
+        this.selectedCipher.columns,
+        this.selectedCipher.ciphertext,
+        this.hyperparametersForm.get('epochs').value
+      );
     } else {
-      request = new SolutionRequest(this.selectedCipher.transformed.rows, this.selectedCipher.transformed.columns, this.selectedCipher.transformed.ciphertext, this.hyperparametersForm.get('epochs').value);
+      request = new SolutionRequest(
+        this.selectedCipher.transformed.rows,
+        this.selectedCipher.transformed.columns,
+        this.selectedCipher.transformed.ciphertext,
+        this.hyperparametersForm.get('epochs').value
+      );
     }
 
     if (this.optimizer.name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
@@ -229,10 +230,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.solutionService.updateRunState(true);
     this.solutionService.updateProgressPercentage(0);
 
-    let self = this;
+    const self = this;
     this.webSocketAPI.connectAndSend(request, function (response) {
       if (response.headers.type === 'SOLUTION') {
-        let json = JSON.parse(response.body);
+        const json = JSON.parse(response.body);
 
         self.solutionService.updateSolution(new SolutionResponse(json.plaintext, json.score))
 
@@ -240,12 +241,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
         self.solutionService.updateProgressPercentage(100);
         self.webSocketAPI.disconnect();
       } else if (response.headers.type === 'EPOCH_COMPLETE') {
-        let responseBody = JSON.parse(response.body);
+        const responseBody = JSON.parse(response.body);
         self.solutionService.updateProgressPercentage((responseBody.epochsCompleted / responseBody.epochsTotal) * 100);
       } else if (response.headers.type === 'ERROR') {
         self.solverError();
       }
-    }, function(error) {
+    }, error => {
       self.solverError();
     });
   }
@@ -264,6 +265,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   disableApplicationDownloadInfo() {
     this.showApplicationDownloadInfo = false;
-    localStorage.setItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO, "false");
+    localStorage.setItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO, 'false');
   }
 }

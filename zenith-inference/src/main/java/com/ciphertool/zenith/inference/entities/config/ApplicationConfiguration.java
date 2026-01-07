@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.inference.entities.config;
 
-import com.ciphertool.zenith.inference.entities.CipherJson;
 import com.ciphertool.zenith.inference.entities.ZenithFitnessFunction;
 import com.ciphertool.zenith.inference.entities.ZenithTransformer;
 import lombok.Getter;
@@ -38,5 +37,4 @@ public class ApplicationConfiguration {
     private ZenithFitnessFunction selectedFitnessFunction;
     private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
     private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
-    private List<CipherJson> ciphers;
 }

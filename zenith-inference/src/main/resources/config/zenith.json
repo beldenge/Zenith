@@ -1,0 +1,37 @@
+{
+  "selectedCipher" : "zodiac408",
+  "epochs": 10,
+  "selectedOptimizer": {
+    "name": "SimulatedAnnealing"
+  },
+  "selectedFitnessFunction": {
+    "name": "NgramAndIndexOfCoincidence"
+  },
+  "simulatedAnnealingConfiguration": {
+    "samplerIterations": 5000,
+    "annealingTemperatureMin": 0.006,
+    "annealingTemperatureMax": 0.012
+  },
+  "geneticAlgorithmConfiguration": {
+    "populationSize": 1000,
+    "numberOfGenerations": 4,
+    "elitism": 0,
+    "populationName": "StandardPopulation",
+    "latticeRows": 1,
+    "latticeColumns": 1000,
+    "latticeWrapAround": false,
+    "latticeRadius": 1,
+    "breederName": "ProbabilisticCipherKeyBreeder",
+    "crossoverOperatorName": "UniformCrossoverOperator",
+    "mutationOperatorName": "PointMutationOperator",
+    "mutationRate": 0.01,
+    "maxMutationsPerIndividual": 5,
+    "selectorName": "TournamentSelector",
+    "tournamentSelectorAccuracy": 0.9,
+    "tournamentSize": 5,
+    "minPopulations": 64,
+    "speciationEvents": 1,
+    "speciationFactor": 2,
+    "extinctionCycles": 100
+  }
+}

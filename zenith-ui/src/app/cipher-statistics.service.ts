@@ -43,71 +43,75 @@ export class CipherStatisticsService {
   getUniqueSymbols(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.uniqueSymbolsObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.uniqueSymbolsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/uniqueSymbols', cipher).pipe(shareReplay(1));
+    if (!this.uniqueSymbolsObservables.hasOwnProperty(cipher.name)) {
+      this.uniqueSymbolsObservables[cipher.name] = this.http.post<NumberResponse>(ENDPOINT_URL + '/uniqueSymbols', cipher).pipe(shareReplay(1));
     }
 
-    return this.uniqueSymbolsObservables[cipher.ciphertext];
+    return this.uniqueSymbolsObservables[cipher.name];
   }
 
   getMultiplicity(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.multiplicityObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.multiplicityObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/multiplicity', cipher).pipe(shareReplay(1));
+    if (!this.multiplicityObservables.hasOwnProperty(cipher.name)) {
+      this.multiplicityObservables[cipher.name] = this.http.post<NumberResponse>(ENDPOINT_URL + '/multiplicity', cipher).pipe(shareReplay(1));
     }
 
-    return this.multiplicityObservables[cipher.ciphertext];
+    return this.multiplicityObservables[cipher.name];
   }
 
   getEntropy(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.entropyObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.entropyObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/entropy', cipher).pipe(shareReplay(1));
+    if (!this.entropyObservables.hasOwnProperty(cipher.name)) {
+      this.entropyObservables[cipher.name] = this.http.post<NumberResponse>(ENDPOINT_URL + '/entropy', cipher).pipe(shareReplay(1));
     }
 
-    return this.entropyObservables[cipher.ciphertext];
+    return this.entropyObservables[cipher.name];
   }
 
   getIndexOfCoincidence(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.indexOfCoincidenceObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.indexOfCoincidenceObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/indexOfCoincidence', cipher).pipe(shareReplay(1));
+    if (!this.indexOfCoincidenceObservables.hasOwnProperty(cipher.name)) {
+      this.indexOfCoincidenceObservables[cipher.name] = this.http.post<NumberResponse>(ENDPOINT_URL + '/indexOfCoincidence', cipher).pipe(shareReplay(1));
     }
 
-    return this.indexOfCoincidenceObservables[cipher.ciphertext];
+    return this.indexOfCoincidenceObservables[cipher.name];
   }
 
   getBigramRepeats(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.bigramRepeatsObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.bigramRepeatsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/bigramRepeats', cipher).pipe(shareReplay(1));
+    if (!this.bigramRepeatsObservables.hasOwnProperty(cipher.name)) {
+      this.bigramRepeatsObservables[cipher.name] = this.http.post<NumberResponse>(ENDPOINT_URL + '/bigramRepeats', cipher).pipe(shareReplay(1));
     }
 
-    return this.bigramRepeatsObservables[cipher.ciphertext];
+    return this.bigramRepeatsObservables[cipher.name];
   }
 
   getCycleScore(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.cycleScoreObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.cycleScoreObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/cycleScore', cipher).pipe(shareReplay(1));
+    if (!this.cycleScoreObservables.hasOwnProperty(cipher.name)) {
+      this.cycleScoreObservables[cipher.name] = this.http.post<NumberResponse>(ENDPOINT_URL + '/cycleScore', cipher).pipe(shareReplay(1));
     }
 
-    return this.cycleScoreObservables[cipher.ciphertext];
+    return this.cycleScoreObservables[cipher.name];
   }
 
   getNgramStatistics(cipher: Cipher, statsPage: number) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
-    cipher.statsPage = statsPage;
 
-    if (!this.ngramStatisticsObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.ngramStatisticsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/ngrams', cipher).pipe();
+    if (!this.ngramStatisticsObservables.hasOwnProperty(cipher.name)) {
+      const request = {
+        ...cipher,
+        statsPage
+      };
+
+      this.ngramStatisticsObservables[cipher.name] = this.http.post<NumberResponse>(ENDPOINT_URL + '/ngrams', request).pipe();
     }
 
-    return this.ngramStatisticsObservables[cipher.ciphertext];
+    return this.ngramStatisticsObservables[cipher.name];
   }
 }

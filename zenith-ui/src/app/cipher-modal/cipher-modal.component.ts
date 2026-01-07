@@ -61,10 +61,9 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     this.cipher = this.data.cipher;
     this.mode = this.data.mode;
 
-    let blockCiphertext = '';
+    let blockCiphertext: string;
     if (this.cipher) {
-      blockCiphertext = this.cipher.ciphertext.replace(WHITESPACE_REGEX, ' ');
-      blockCiphertext = this.blockifyPipe.transform(blockCiphertext, this.cipher.columns).toString();
+      blockCiphertext = this.blockifyPipe.transform(this.cipher.ciphertext, this.cipher.columns).toString();
     }
 
     this.newCipherForm = this.fb.group({
@@ -75,9 +74,9 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       ciphertext: [blockCiphertext]
     });
 
-    let self = this;
-    let cipherNameValidator: ValidatorFn = (control: AbstractControl): {[key: string]: any} | null => {
-      let proposedName = control.value;
+    const self = this;
+    const cipherNameValidator: ValidatorFn = (control: AbstractControl): {[key: string]: any} | null => {
+      const proposedName = control.value;
 
       let error = null;
 
@@ -94,8 +93,8 @@ export class CipherModalComponent implements OnInit, OnDestroy {
 
     this.newCipherForm.get('name').setValidators([cipherNameValidator]);
 
-    let cipherRowLengthValidator: ValidatorFn = () => {
-      let dimensions = this.determineDimensions(this.newCipherForm.get('ciphertext').value);
+    const cipherRowLengthValidator: ValidatorFn = () => {
+      const dimensions = this.determineDimensions(this.newCipherForm.get('ciphertext').value);
 
       this.rows = dimensions.rows > 0 ? dimensions.rows : null;
       this.columns = dimensions.columns > 0 ? dimensions.columns : null;
@@ -111,12 +110,12 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   }
 
   save() {
-    let name = this.newCipherForm.get('name').value;
-    let rawCiphertext = this.newCipherForm.get('ciphertext').value;
-    let dimensions = this.determineDimensions(rawCiphertext);
+    const name = this.newCipherForm.get('name').value;
+    const rawCiphertext = this.newCipherForm.get('ciphertext').value;
+    const dimensions = this.determineDimensions(rawCiphertext);
     // Remove newlines from blockify pipe
-    let ciphertext = rawCiphertext.replace(WHITESPACE_REGEX, ' ');
-    let request = new CipherRequest(name, dimensions.rows, dimensions.columns, ciphertext);
+    const ciphertext = rawCiphertext.replace(WHITESPACE_REGEX, ' ');
+    const request = new CipherRequest(name, dimensions.rows, dimensions.columns, ciphertext);
 
     if (this.mode === 'CREATE') {
       this.create(request);
@@ -130,7 +129,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       return { rows: -1, columns: -1 };
     }
 
-    let rows = ciphertext.trim().split(NEWLINE_REGEX);
+    const rows = ciphertext.trim().split(NEWLINE_REGEX);
     let columns = -1;
 
     for (let i = 0; i < rows.length; i ++) {
@@ -146,7 +145,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   }
 
   create(request: CipherRequest) {
-    let cipher = new Cipher(request.name, request.rows, request.columns, request.ciphertext);
+    const cipher = new Cipher(request.name, request.rows, request.columns, request.ciphertext);
 
     this.ciphers.push(cipher);
 
@@ -177,8 +176,8 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   }
 
   injectSpaces() {
-    let rawCiphertext = this.newCipherForm.get('ciphertext').value.replace(SPACES_TABS_REGEX, '');
-    let rawRows = rawCiphertext.split(NEWLINE_REGEX);
+    const rawCiphertext = this.newCipherForm.get('ciphertext').value.replace(SPACES_TABS_REGEX, '');
+    const rawRows = rawCiphertext.split(NEWLINE_REGEX);
     let newCiphertext = '';
 
     let firstRow = true;

@@ -51,7 +51,7 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
             Ciphertext next = transformed.getCiphertextCharacters().get(i);
 
             if (symbolToRemove.equals(next.getValue())) {
-                transformed.removeCiphertextCharacter(next);
+                transformed.removeCiphertextCharacter(i);
                 length --;
             }
         }

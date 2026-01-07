@@ -32,9 +32,7 @@ import { MatExpansionPanel } from "@angular/material/expansion";
     styleUrls: ['./cipher-ngram-stats.component.css'],
     standalone: false
 })
-export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewInit {
-  // Workaround for angular component issue #13870
-  disableAnimation = true;
+export class CipherNgramStatsComponent implements OnInit, OnDestroy {
   selectedCipher: Cipher;
   selectedCipherSubscription: Subscription;
   ngramsDataSources: MatTableDataSource<any>[][] = [];
@@ -57,11 +55,6 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewIn
 
   ngOnDestroy() {
     this.selectedCipherSubscription.unsubscribe();
-  }
-
-  ngAfterViewInit(): void {
-    // timeout required to avoid the dreaded 'ExpressionChangedAfterItHasBeenCheckedError'
-    setTimeout(() => this.disableAnimation = false);
   }
 
   onCollapse() {

@@ -26,16 +26,8 @@ import { IntroductionService } from "../introduction.service";
     styleUrls: ['./help.component.css'],
     standalone: false
 })
-export class HelpComponent implements AfterViewInit {
-  // Workaround for angular component issue #13870
-  disableAnimation = true;
-
+export class HelpComponent {
   constructor(private introductionService: IntroductionService) {}
-
-  ngAfterViewInit(): void {
-    // timeout required to avoid the dreaded 'ExpressionChangedAfterItHasBeenCheckedError'
-    setTimeout(() => this.disableAnimation = false);
-  }
 
   replayIntroduction() {
     this.introductionService.startIntro();

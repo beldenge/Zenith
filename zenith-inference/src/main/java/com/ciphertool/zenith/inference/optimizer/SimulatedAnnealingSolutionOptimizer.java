@@ -227,8 +227,8 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             solution.replaceMapping(nextKey, letter);
 
             int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(nextKey);
-            for (int j = 0; j < cipherSymbolIndices.length; j ++) {
-                solutionCharArray[cipherSymbolIndices[j]] = letter;
+            for (int cipherSymbolIndex : cipherSymbolIndices) {
+                solutionCharArray[cipherSymbolIndex] = letter;
             }
 
             String proposalString = new String(solutionCharArray);
@@ -260,8 +260,8 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                     solution.replaceLogProbability((int) ngramProbabilitiesUpdated[0][j], ngramProbabilitiesUpdated[1][j]);
                 }
 
-                for (int j = 0; j < cipherSymbolIndices.length; j ++) {
-                    solutionCharArray[cipherSymbolIndices[j]] = originalMapping;
+                for (int cipherSymbolIndex : cipherSymbolIndices) {
+                    solutionCharArray[cipherSymbolIndex] = originalMapping;
                 }
             }
         }

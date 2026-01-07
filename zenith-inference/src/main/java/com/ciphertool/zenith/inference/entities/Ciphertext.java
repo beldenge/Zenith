@@ -28,11 +28,9 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class Ciphertext {
-    private int ciphertextId;
-
     private String value;
 
     public Ciphertext clone() {
-        return new Ciphertext(this.ciphertextId, this.value);
+        return new Ciphertext(this.value);
     }
 }

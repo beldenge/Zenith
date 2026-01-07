@@ -26,6 +26,8 @@ import lombok.Setter;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -39,8 +41,8 @@ public class SolutionRequest {
     @Min(0)
     private int columns;
 
-    @NotBlank
-    private String ciphertext;
+    @NotEmpty
+    private List<String> ciphertext = new ArrayList<>();
 
     @Min(1)
     private int epochs = 1;
@@ -59,7 +61,7 @@ public class SolutionRequest {
 
     @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
     public boolean isLengthValid() {
-        return (rows * columns) == ciphertext.split(" ").length;
+        return (rows * columns) == ciphertext.size();
     }
 
     @AssertTrue(message = "One and only one of simulatedAnnealingConfiguration or geneticAlgorithmConfiguration must be set")

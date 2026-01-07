@@ -52,8 +52,8 @@ export class CiphertextComponent implements OnInit, OnDestroy {
     this.cipherSubscription.unsubscribe();
   }
 
-  copyCiphertext(tooltip : MatTooltip) {
-    var ciphertextElement = document.createElement("textarea");
+  copyCiphertext(tooltip: MatTooltip) {
+    const ciphertextElement = document.createElement('textarea');
     ciphertextElement.id = 'txt';
     ciphertextElement.style.position = 'fixed';
     ciphertextElement.style.top = '0';

@@ -18,7 +18,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import { SimulatedAnnealingConfiguration } from "./models/SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./models/GeneticAlgorithmConfiguration";
 import { SelectOption } from "./models/SelectOption";
@@ -37,6 +37,12 @@ import { environment } from "../environments/environment";
 import { debounceTime } from "rxjs/operators";
 import { FeatureService } from "./feature.service";
 import { FeatureResponse } from "./models/FeatureResponse";
+import {Apollo, gql} from "apollo-angular";
+import { firstValueFrom } from "rxjs";
+
+interface GetCiphersQuery {
+  ciphers: Cipher[];
+}
 
 const ENDPOINT_URL = environment.apiUrlBase + '/configurations';
 
@@ -118,54 +124,72 @@ export class ConfigurationService {
               private fitnessFunctionService: FitnessFunctionService,
               private plaintextTransformerService: PlaintextTransformerService,
               private ciphertextTransformerService: CiphertextTransformerService,
-              private featureService: FeatureService) {
+              private featureService: FeatureService,
+              private apollo: Apollo) {
     featureService.getFeatures().subscribe(featureResponse => {
       this.features$.next(featureResponse);
     });
 
-    const fitnessFunctionsPromise = fitnessFunctionService.getFitnessFunctions().then(fitnessFunctionResponse => {
-      const availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
-        return t1.order - t2.order;
-      });
+    this.loadInitialData();
+  }
 
-      for (let i = 0; i < availableFitnessFunctions.length; i ++) {
-        if (availableFitnessFunctions[i].form) {
-          availableFitnessFunctions[i].form.form = new UntypedFormGroup({});
+  private async loadInitialData() {
+    const [fitnessFunctionResponse, plaintextTransformerResponse, ciphertextTransformerResponse, ciphersData] = await Promise.all([
+      this.fitnessFunctionService.getFitnessFunctions(),
+      this.plaintextTransformerService.getTransformers(),
+      this.ciphertextTransformerService.getTransformers(),
+      firstValueFrom(this.apollo.query<GetCiphersQuery>({ query: gql`
+        query GetCiphers {
+          ciphers {
+            name,
+            rows,
+            columns,
+            readOnly,
+            ciphertext,
+            knownSolutionKey
+          }
         }
+      `
+      }))
+    ]);
+
+    this.updateCiphers(ciphersData.data.ciphers, true);
+
+    const availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
+      return t1.order - t2.order;
+    });
+
+    availableFitnessFunctions.forEach(item => {
+      if (item.form) {
+        item.form.form = new UntypedFormGroup({});
       }
-
-      this.updateAvailableFitnessFunctions(availableFitnessFunctions);
     });
 
-    const plaintextTransformerPromise = plaintextTransformerService.getTransformers().then(transformerResponse => {
-      const availablePlaintextTransformers = transformerResponse.transformers.sort((t1, t2) => {
-        return t1.order - t2.order;
+    this.updateAvailableFitnessFunctions(availableFitnessFunctions);
+
+    const availablePlaintextTransformers = plaintextTransformerResponse.transformers.sort((t1, t2) => {
+      return t1.order - t2.order;
+    });
+
+    this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
+
+    const availableCiphertextTransformers = ciphertextTransformerResponse.transformers.sort((t1, t2) => {
+      return t1.order - t2.order;
+    });
+
+    this.updateAvailableCiphertextTransformers(availableCiphertextTransformers);
+
+    if (!localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)) {
+      this.http.get<ApplicationConfiguration>(ENDPOINT_URL).subscribe(configurationResponse => {
+        localStorage.setItem(LocalStorageKeys.APPLICATION_CONFIGURATION, JSON.stringify(configurationResponse));
+
+        this.import(configurationResponse);
       });
+    } else {
+      this.import(JSON.parse(localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)));
+    }
 
-      this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
-    });
-
-    const ciphertextTransformerPromise = ciphertextTransformerService.getTransformers().then(transformerResponse => {
-      const availableCiphertextTransformers = transformerResponse.transformers.sort((t1, t2) => {
-        return t1.order - t2.order;
-      });
-
-      this.updateAvailableCiphertextTransformers(availableCiphertextTransformers);
-    });
-
-    Promise.all([fitnessFunctionsPromise, plaintextTransformerPromise, ciphertextTransformerPromise]).then(() => {
-      if (!localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)) {
-        this.http.get<ApplicationConfiguration>(ENDPOINT_URL).subscribe(configurationResponse => {
-          localStorage.setItem(LocalStorageKeys.APPLICATION_CONFIGURATION, JSON.stringify(configurationResponse));
-
-          this.import(configurationResponse);
-        });
-      } else {
-        this.import(JSON.parse(localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)));
-      }
-
-      this.configurationLoadedNotification$.next(true);
-    });
+    this.configurationLoadedNotification$.next(true);
   }
 
   getConfigurationLoadedNotification() {
@@ -358,7 +382,7 @@ export class ConfigurationService {
     this.updateAppliedPlaintextTransformers(configuration.appliedPlaintextTransformers, true);
     this.updateSelectedOptimizer(configuration.selectedOptimizer, true);
 
-    let selectedFitnessFunction = this.availableFitnessFunctions$.getValue().find(fitnessFunction =>
+    const selectedFitnessFunction = this.availableFitnessFunctions$.getValue().find(fitnessFunction =>
       fitnessFunction.name === configuration.selectedFitnessFunction.name
     );
 
@@ -370,8 +394,7 @@ export class ConfigurationService {
     this.updateSelectedFitnessFunction(selectedFitnessFunction, true);
     this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration, true);
     this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration, true);
-    this.updateCiphers(configuration.ciphers, true);
-    this.updateSelectedCipher(configuration.ciphers.find(cipher => cipher.name === configuration.selectedCipher), true);
+    this.updateSelectedCipher(this.ciphers$.getValue().find(cipher => cipher.name === configuration.selectedCipher), true);
     this.saveConfigurationToLocalStorage();
   }
 
@@ -381,7 +404,8 @@ export class ConfigurationService {
     configuration.epochs = this.epochs$.getValue();
 
     if (this.appliedCiphertextTransformers$.getValue()) {
-      // The FormGroup attribute is causing cyclic references when serializing to JSON, so we have to manually instantiate the transformers to skip copying the FormGroup
+      // The FormGroup attribute is causing cyclic references when serializing to JSON,
+      // so we have to manually instantiate the transformers to skip copying the FormGroup
       configuration.appliedCiphertextTransformers = [];
 
       this.appliedCiphertextTransformers$.getValue().forEach(transformer => {
@@ -399,7 +423,8 @@ export class ConfigurationService {
     }
 
     if (this.appliedPlaintextTransformers$.getValue()) {
-      // The FormGroup attribute is causing cyclic references when serializing to JSON, so we have to manually instantiate the transformers to skip copying the FormGroup
+      // The FormGroup attribute is causing cyclic references when serializing to JSON,
+      // so we have to manually instantiate the transformers to skip copying the FormGroup
       configuration.appliedPlaintextTransformers = [];
 
       this.appliedPlaintextTransformers$.getValue().forEach(transformer => {
@@ -432,7 +457,6 @@ export class ConfigurationService {
     configuration.selectedOptimizer = this.selectedOptimizer$.getValue();
     configuration.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration$.getValue();
     configuration.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration$.getValue();
-    configuration.ciphers = this.ciphers$.getValue();
     configuration.selectedCipher = this.selectedCipher$.getValue().name;
 
     return JSON.stringify(configuration, null, 2);

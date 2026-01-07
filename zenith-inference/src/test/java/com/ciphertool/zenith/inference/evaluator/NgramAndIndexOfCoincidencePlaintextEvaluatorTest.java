@@ -61,7 +61,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
 
         // Remove the last row altogether
         for (int i = lastRowBegin; i < totalCharacters; i++) {
-            zodiac408.removeCiphertextCharacter(zodiac408.getCiphertextCharacters().get(lastRowBegin));
+            zodiac408.removeCiphertextCharacter(lastRowBegin);
         }
 
         actualSolution.putMapping("tri", 'i');

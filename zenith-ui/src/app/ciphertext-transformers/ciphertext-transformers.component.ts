@@ -34,12 +34,6 @@ import { TransformerUtil } from "../util/transformer-util";
     selector: 'app-ciphertext-transformers',
     templateUrl: './ciphertext-transformers.component.html',
     styleUrls: ['./ciphertext-transformers.component.css'],
-    animations: [
-        // the fade-in/fade-out animation.
-        trigger('simpleFadeAnimation', [
-            transition(':leave', animate(300, style({ opacity: 0 })))
-        ])
-    ],
     standalone: false
 })
 export class CiphertextTransformersComponent implements OnInit, OnDestroy {
@@ -69,7 +63,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let transformationRequest: CiphertextTransformationRequest = {
+    const transformationRequest: CiphertextTransformationRequest = {
       cipher: this.cipher,
       steps: []
     };
@@ -77,7 +71,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     let satisfied = true;
 
     for (let i = 0; i < this.appliedTransformers.length; i ++) {
-      let transformer = this.appliedTransformers[i];
+      const transformer = this.appliedTransformers[i];
 
       if (transformer.form && ((event && event.type === 'add' && event.newIndex === i) || !transformer.form.form.valid)) {
         satisfied = false;
@@ -105,7 +99,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
         this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
       }
     }
-  };
+  }
 
   appliedTransformersOptions = {
     group: 'clone-group',
@@ -155,7 +149,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   }
 
   cloneTransformer = (item) => {
-    let clone = {
+    const clone = {
       name: item.name,
       displayName: item.displayName,
       form: item.form ? JSON.parse(JSON.stringify(item.form)) : null

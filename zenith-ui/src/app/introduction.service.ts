@@ -39,11 +39,11 @@ export class IntroductionService {
   introPlaintextTransformers: any;
 
   constructor(private router: Router) {
-    this.introDashboard = introJs();
-    this.introManageCiphers = introJs();
-    this.introSettings = introJs();
-    this.introCiphertextTransformers = introJs();
-    this.introPlaintextTransformers = introJs();
+    this.introDashboard = introJs.tour();
+    this.introManageCiphers = introJs.tour();
+    this.introSettings = introJs.tour();
+    this.introCiphertextTransformers = introJs.tour();
+    this.introPlaintextTransformers = introJs.tour();
   }
 
   startIntro(): void {

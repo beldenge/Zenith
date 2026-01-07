@@ -36,7 +36,7 @@ public class RemoveLastRowCipherTransformer implements CipherTransformer {
 
         // Remove the last row altogether
         for (int i = totalCharacters - 1; i >= lastRowBegin; i--) {
-            transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(i));
+            transformed.removeCiphertextCharacter(i);
         }
 
         transformed.setRows(transformed.getRows() - 1);

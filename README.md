@@ -52,8 +52,6 @@ This module is a framework for implementing genetic algorithms.  The zenith-infe
 This module is both a dependency and a runnable application on its own.  Its purpose is to build a language model by reading in a corpus of english texts, so that the language model can be used to score solution proposals.
 ### [zenith-mutation-search](zenith-mutation-search/README.md)
 This module is currently not recommended for general use.  It performs hill climbing using mutations of the original cipher to try to detect what sorts of mutations were used to create the cipher.
-### [zenith-mutator](zenith-mutator/README.md)
-This module is currently not recommended for general use.  It is a simple utility to transform an existing cipher and write it to a file for testing purposes.
 ### [zenith-package](zenith-package/README.md)
 This module simply packages the runnable portions of the project for distribution.
 ### [zenith-roulette](zenith-roulette/README.md)

@@ -26,21 +26,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CiphertextTest {
     @Test
     public void testConstructor() {
-        int ciphertextIdToSet = new Integer(123);
         String valueToSet = "ciphertextValue";
-        Ciphertext ciphertext = new Ciphertext(ciphertextIdToSet, valueToSet);
+        Ciphertext ciphertext = new Ciphertext(valueToSet);
 
-        assertEquals(ciphertextIdToSet, ciphertext.getCiphertextId());
         assertEquals(valueToSet, ciphertext.getValue());
-    }
-
-    @Test
-    public void testSetCiphertextId() {
-        int ciphertextIdToSet = new Integer(123);
-        Ciphertext ciphertext = new Ciphertext();
-        ciphertext.setCiphertextId(ciphertextIdToSet);
-
-        assertEquals(ciphertextIdToSet, ciphertext.getCiphertextId());
     }
 
     @Test
@@ -54,19 +43,15 @@ public class CiphertextTest {
 
     @Test
     public void testEquals() {
-        Integer baseCiphertextId = new Integer(123);
         String baseValue = "baseValue";
 
-        Ciphertext base = new Ciphertext(baseCiphertextId, baseValue);
+        Ciphertext base = new Ciphertext(baseValue);
 
-        Ciphertext ciphertextEqualToBase = new Ciphertext(baseCiphertextId, baseValue);
+        Ciphertext ciphertextEqualToBase = new Ciphertext(baseValue);
         assertEquals(base, ciphertextEqualToBase);
 
-        Ciphertext ciphertextWithDifferentCiphertextId = new Ciphertext(321, baseValue);
-        assertFalse(base.equals(ciphertextWithDifferentCiphertextId));
-
-        Ciphertext ciphertextWithDifferentValue = new Ciphertext(baseCiphertextId, "differentValue");
-        assertFalse(base.equals(ciphertextWithDifferentValue));
+        Ciphertext ciphertextWithDifferentValue = new Ciphertext("differentValue");
+        assertNotEquals(base, ciphertextWithDifferentValue);
 
         Ciphertext ciphertextWithNullPropertiesA = new Ciphertext();
         Ciphertext ciphertextWithNullPropertiesB = new Ciphertext();

@@ -35,7 +35,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     standalone: false
 })
 export class TopNavComponent implements OnInit, OnDestroy {
-  configFilename = 'zenith-config.json';
+  configFilename = 'zenith.json';
   selectHasFocus: boolean = false;
   exportUri: SafeUrl;
   ciphers: Cipher[];
@@ -53,11 +53,11 @@ export class TopNavComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher
+      this.selectedCipher = selectedCipher;
     });
 
     this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
-      this.ciphers = ciphers
+      this.ciphers = ciphers;
     });
 
     this.isRunningSubscription = this.solutionService.getRunStateAsObservable().subscribe(runState => {
@@ -122,7 +122,7 @@ export class TopNavComponent implements OnInit, OnDestroy {
   }
 
   importConfiguration(event) {
-    let input = event.target;
+    const input = event.target;
 
     if (!input.value.endsWith(this.configFilename)) {
       this._snackBar.open('Error: invalid filename.  Expected ' + this.configFilename + '.', '',{
@@ -133,23 +133,23 @@ export class TopNavComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let reader = new FileReader();
+    const reader = new FileReader();
 
-    let self = this;
+    const self = this;
 
     reader.onload = () => {
-      let text = reader.result.toString();
-      let configuration: ApplicationConfiguration = Object.assign(new ApplicationConfiguration, JSON.parse(text));
+      const text = reader.result.toString();
+      const configuration: ApplicationConfiguration = Object.assign(new ApplicationConfiguration(), JSON.parse(text));
       self.configurationService.import(configuration);
 
-      this._snackBar.open('Configuration imported successfully.', '',{
+      this._snackBar.open('Configuration imported successfully.', '', {
         duration: 2000,
         verticalPosition: 'top'
       });
     };
 
     reader.onerror = () => {
-      this._snackBar.open('Error: could not load configuration.', '',{
+      this._snackBar.open('Error: could not load configuration.', '', {
         duration: 5000,
         verticalPosition: 'top'
       });

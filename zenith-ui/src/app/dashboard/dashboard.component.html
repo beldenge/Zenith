@@ -20,7 +20,7 @@
 <div class="container-fluid mt-4">
 
   @if (showApplicationDownloadInfo) {
-    <div class="w-100 mb-4 alert alert-warning d-inline-block" role="alert" [@simpleFadeAnimation]>
+    <div class="w-100 mb-4 alert alert-warning d-inline-block" role="alert" animate.leave="fade-out">
       <i class="fas fa-info-circle mr-2"></i>Thank you for using Project Zenith!   It is free and open source, and it can be run locally or hosted.  Please check out the <a href="https://github.com/beldenge/Zenith/releases" target="_blank">releases page</a> to download the latest version.
       <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="disableApplicationDownloadInfo()">
         <span aria-hidden="true">&times;</span>

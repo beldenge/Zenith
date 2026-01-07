@@ -20,27 +20,40 @@
 package com.ciphertool.zenith.inference.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.*;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Cipher {
+    @NotBlank
     private String name;
 
+    @Min(1)
     private int columns;
 
+    @Min(1)
     private int rows;
 
     private boolean readOnly;
 
-    private List<Ciphertext> ciphertextCharacters = new ArrayList<>();
+    @NotEmpty
+    private List<String> ciphertext = new ArrayList<>();
 
     private Map<String, String> knownSolutionKey = new HashMap<>();
 
     @JsonIgnore
-    private Map<String, int[]> cipherSymbolIndicesMap = new HashMap<>();
+    private List<Ciphertext> ciphertextCharacters = new ArrayList<>();
 
-    public Cipher() {
-    }
+    @JsonIgnore
+    private Map<String, int[]> cipherSymbolIndicesMap = new HashMap<>();
 
     public Cipher(String name, int rows, int columns) {
         this.name = name;
@@ -55,20 +68,11 @@ public class Cipher {
         this.readOnly = readOnly;
     }
 
-    public Cipher(CipherJson cipherJson) {
-        this(cipherJson.getName(), cipherJson.getRows(), cipherJson.getColumns());
-        this.readOnly = cipherJson.isReadOnly();
+    public void setCiphertext(List<String> ciphertext) {
+        this.ciphertext = ciphertext;
 
-        String[] ciphertexts = cipherJson.getCiphertext().split("\\s+");
-
-        for (int i = 0; i < ciphertexts.length; i ++) {
-            ciphertextCharacters.add(new Ciphertext(i, ciphertexts[i]));
-        }
-
-        if (cipherJson.getKnownSolutionKey() != null && !cipherJson.getKnownSolutionKey().isEmpty()) {
-            for (Map.Entry<String, String> entry : cipherJson.getKnownSolutionKey().entrySet()) {
-                knownSolutionKey.put(entry.getKey(), entry.getValue());
-            }
+        for (String next : ciphertext) {
+            ciphertextCharacters.add(new Ciphertext(next));
         }
     }
 
@@ -78,10 +82,6 @@ public class Cipher {
 
     public boolean hasKnownSolution() {
         return !knownSolutionKey.isEmpty();
-    }
-
-    public String getName() {
-        return name;
     }
 
     public Map<String, int[]> getCipherSymbolIndicesMap() {
@@ -104,9 +104,10 @@ public class Cipher {
             cipherSymbolIndicesMap.put(symbol, new int[count]);
 
             int i = 0;
-            for (Ciphertext ciphertextMatch : ciphertextCharacters) {
+            for (int j = 0; j < ciphertextCharacters.size(); j ++) {
+                Ciphertext ciphertextMatch = ciphertextCharacters.get(j);
                 if (ciphertextMatch.getValue().equals(symbol)) {
-                    cipherSymbolIndicesMap.get(symbol)[i] = ciphertextMatch.getCiphertextId();
+                    cipherSymbolIndicesMap.get(symbol)[i] = j;
                     i++;
                 }
             }
@@ -115,56 +116,28 @@ public class Cipher {
         return cipherSymbolIndicesMap;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getColumns() {
-        return columns;
-    }
-
-    public void setColumns(int columns) {
-        this.columns = columns;
-    }
-
-    public int getRows() {
-        return rows;
-    }
-
-    public void setRows(int rows) {
-        this.rows = rows;
-    }
-
-    public boolean isReadOnly() {
-        return readOnly;
-    }
-
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
     public List<Ciphertext> getCiphertextCharacters() {
         return Collections.unmodifiableList(ciphertextCharacters);
     }
 
     public void addCiphertextCharacter(Ciphertext ciphertext) {
         this.ciphertextCharacters.add(ciphertext);
+        this.ciphertext.add(ciphertext.getValue());
         this.cipherSymbolIndicesMap.clear();
     }
 
-    public void removeCiphertextCharacter(Ciphertext ciphertext) {
-        this.ciphertextCharacters.remove(ciphertext);
-        this.ciphertextCharacters.stream()
-                .filter(nextCiphertext -> nextCiphertext.getCiphertextId() > ciphertext.getCiphertextId())
-                .forEach(nextCiphertext -> nextCiphertext.setCiphertextId(nextCiphertext.getCiphertextId() - 1));
+    public void removeCiphertextCharacter(int i) {
+        this.ciphertextCharacters.remove(i);
+        this.ciphertext.remove(i);
         this.cipherSymbolIndicesMap.clear();
     }
 
     public void replaceCiphertextCharacter(int index, Ciphertext ciphertext) {
         Ciphertext toReplace = this.ciphertextCharacters.get(index);
 
-        toReplace.setCiphertextId(index);
         toReplace.setValue(ciphertext.getValue());
+        this.ciphertextCharacters.set(index, ciphertext);
+        this.ciphertext.set(index, ciphertext.getValue());
         this.cipherSymbolIndicesMap.clear();
     }
 

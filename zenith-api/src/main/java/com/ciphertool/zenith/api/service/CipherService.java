@@ -23,7 +23,6 @@ import com.ciphertool.zenith.api.model.CipherResponse;
 import com.ciphertool.zenith.api.model.CiphertextTransformationRequest;
 import com.ciphertool.zenith.api.model.CiphertextTransformationRequestStep;
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.CipherJson;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +53,7 @@ public class CipherService {
 
         cipher = ciphertextTransformationManager.transform(cipher, steps);
 
-        CipherJson cipherResponseItem = new CipherJson(cipher.getName(), cipher.getRows(), cipher.getColumns(), cipher.asSingleLineString(), cipher.isReadOnly());
-
-        cipherResponse.getCiphers().add(cipherResponseItem);
+        cipherResponse.getCiphers().add(cipher);
 
         return cipherResponse;
     }

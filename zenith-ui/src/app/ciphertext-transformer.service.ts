@@ -21,6 +21,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { TransformerResponse } from "./models/TransformerResponse";
 import { environment } from "../environments/environment";
+import { firstValueFrom } from "rxjs";
 
 const ENDPOINT_URL = environment.apiUrlBase + '/transformers/ciphertext';
 
@@ -31,6 +32,6 @@ export class CiphertextTransformerService {
   constructor(private http: HttpClient) {}
 
   getTransformers() {
-    return this.http.get<TransformerResponse>(ENDPOINT_URL).toPromise();
+    return firstValueFrom(this.http.get<TransformerResponse>(ENDPOINT_URL));
   }
 }

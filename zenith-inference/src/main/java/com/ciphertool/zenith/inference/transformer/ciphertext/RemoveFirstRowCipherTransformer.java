@@ -33,7 +33,7 @@ public class RemoveFirstRowCipherTransformer implements CipherTransformer {
 
         // Remove the first row altogether
         for (int i = cipher.getColumns() - 1; i >= 0; i--) {
-            transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(i));
+            transformed.removeCiphertextCharacter(i);
         }
 
         transformed.setRows(transformed.getRows() - 1);

@@ -19,7 +19,7 @@
 
 package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.inference.entities.CipherJson;
+import com.ciphertool.zenith.inference.entities.Cipher;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,5 +29,5 @@ import java.util.List;
 @Getter
 @Setter
 public class CipherResponse {
-    private List<CipherJson> ciphers = new ArrayList<>();
+    private List<Cipher> ciphers = new ArrayList<>();
 }

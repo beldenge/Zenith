@@ -21,12 +21,15 @@ package com.ciphertool.zenith.api.model;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,23 +43,21 @@ public class CipherRequest {
     @Min(0)
     private int columns;
 
-    @NotBlank
-    private String ciphertext;
+    @NotEmpty
+    private List<String> ciphertext = new ArrayList<>();
 
     private int statsPage;
 
     @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
     public boolean isLengthValid() {
-        return (rows * columns) == ciphertext.split(" ").length;
+        return (rows * columns) == ciphertext.size();
     }
 
     public Cipher asCipher() {
         Cipher cipher = new Cipher(this.name, this.rows, this.columns);
 
-        String[] split = this.ciphertext.split(" ");
-
-        for (int i = 0; i < split.length; i ++) {
-            cipher.addCiphertextCharacter(new Ciphertext(i, split[i]));
+        for (String s : ciphertext) {
+            cipher.addCiphertextCharacter(new Ciphertext(s));
         }
 
         return cipher;

@@ -60,13 +60,13 @@ export class PlaintextComponent implements OnInit, OnDestroy {
   }
 
   copyPlaintext(tooltip : MatTooltip) {
-    var plaintextElement = document.createElement("textarea");
+    const plaintextElement = document.createElement("textarea");
     plaintextElement.id = 'txt';
     plaintextElement.style.position = 'fixed';
     plaintextElement.style.top = '0';
     plaintextElement.style.left = '0';
     plaintextElement.style.opacity = '0';
-    plaintextElement.value = this.blockifyPipe.transform(this.solution.plaintext, this.cipher.columns).toString();
+    plaintextElement.value = this.blockifyPipe.transform(this.solution.plaintext.split(' '), this.cipher.columns).toString();
     document.body.appendChild(plaintextElement);
     plaintextElement.select();
     document.execCommand('copy');
