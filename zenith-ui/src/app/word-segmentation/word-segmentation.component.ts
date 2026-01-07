@@ -52,8 +52,8 @@ export class WordSegmentationComponent implements OnInit, OnDestroy {
     this.solutionSubscription.unsubscribe();
   }
 
-  copyPlaintext(tooltip : MatTooltip) {
-    var plaintextElement = document.createElement("textarea");
+  copyPlaintext(tooltip: MatTooltip) {
+    const plaintextElement = document.createElement('textarea');
     plaintextElement.id = 'txt';
     plaintextElement.style.position = 'fixed';
     plaintextElement.style.top = '0';

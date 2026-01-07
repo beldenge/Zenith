@@ -18,7 +18,6 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { animate, style, transition, trigger } from "@angular/animations";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";

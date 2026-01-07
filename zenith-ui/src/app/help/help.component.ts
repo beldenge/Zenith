@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { IntroductionService } from "../introduction.service";
 
 @Component({

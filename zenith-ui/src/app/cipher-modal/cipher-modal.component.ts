@@ -19,7 +19,7 @@
 
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from "@angular/forms";
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn } from "@angular/forms";
 import { CipherService } from "../cipher.service";
 import { CipherRequest } from "../models/CipherRequest";
 import { Cipher } from "../models/Cipher";
@@ -51,7 +51,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
               @Inject(MAT_DIALOG_DATA) public data: any,
               private fb: UntypedFormBuilder,
               private cipherService: CipherService,
-              private _snackBar: MatSnackBar) { }
+              private snackBar: MatSnackBar) { }
 
   ngOnInit() {
     this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
@@ -132,16 +132,19 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     const rows = ciphertext.trim().split(NEWLINE_REGEX);
     let columns = -1;
 
-    for (let i = 0; i < rows.length; i ++) {
+    for (const item of rows) {
       if (columns < 0) {
-        columns = rows[i].trim().split(WHITESPACE_REGEX).length;
-      } else if (columns !== rows[i].trim().split(WHITESPACE_REGEX).length) {
+        columns = item.trim().split(WHITESPACE_REGEX).length;
+      } else if (columns !== item.trim().split(WHITESPACE_REGEX).length) {
         columns = -1;
         break;
       }
     }
 
-    return { rows: rows.length, columns: columns };
+    return {
+      rows: rows.length,
+      columns
+    };
   }
 
   create(request: CipherRequest) {
@@ -153,7 +156,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
 
     this.dialogRef.close();
 
-    this._snackBar.open('Created "' + cipher.name + '"', '',{
+    this.snackBar.open('Created "' + cipher.name + '"', '', {
       duration: 2000,
       verticalPosition: 'top'
     });
@@ -169,7 +172,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
 
     this.dialogRef.close();
 
-    this._snackBar.open('Updated "' + request.name + '"', '',{
+    this.snackBar.open('Updated "' + request.name + '"', '', {
       duration: 2000,
       verticalPosition: 'top'
     });
@@ -181,7 +184,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     let newCiphertext = '';
 
     let firstRow = true;
-    for (let i = 0; i < rawRows.length; i ++) {
+    for (const item of rawRows) {
       if (!firstRow) {
         newCiphertext += '\n';
       }
@@ -189,14 +192,14 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       firstRow = false;
 
       let first = true;
-      for (let j = 0; j < rawRows[i].length; j ++) {
+      for (let j = 0; j < item.length; j ++) {
         if (!first) {
           newCiphertext += ' ';
         }
 
         first = false;
 
-        newCiphertext += rawRows[i].charAt(j);
+        newCiphertext += item.charAt(j);
       }
     }
 

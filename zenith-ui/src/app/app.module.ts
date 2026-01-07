@@ -67,23 +67,23 @@ import { FormlyFieldTextArea } from "@ngx-formly/material/textarea";
 import {SortablejsModule} from "./sortable/sortablejs.module";
 import { GraphQLModule } from './graphql.module';
 
-export function minValidationMessage(err, field) {
+export function minValidationMessage(err: any, field: any) {
   return `This field has a minimum value of ${field.props.min}`;
 }
 
-export function maxValidationMessage(err, field) {
+export function maxValidationMessage(err: any, field: any) {
   return `This field has a maximum value of ${field.props.max}`;
 }
 
-export function minLengthValidationMessage(err, field) {
+export function minLengthValidationMessage(err: any, field: any) {
   return `This field has a minimum length of ${field.props.minLength}`;
 }
 
-export function maxLengthValidationMessage(err, field) {
+export function maxLengthValidationMessage(err: any, field: any) {
   return `This field has a maximum length of ${field.props.maxLength}`;
 }
 
-export function patternValidationMessage(err, field) {
+export function patternValidationMessage(err: any, field: any) {
   return `This field must match the pattern ${field.props.pattern}`;
 }
 
@@ -208,4 +208,4 @@ export function registerValidationMessages() {
         },
         provideHttpClient(withInterceptorsFromDi())
     ] })
-export class AppModule { }
+export class AppModule {}

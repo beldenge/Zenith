@@ -8,7 +8,6 @@ import {Options} from 'sortablejs';
   exports: [SortablejsDirective],
 })
 export class SortablejsModule {
-
   public static forRoot(globalOptions: Options): ModuleWithProviders<SortablejsModule> {
     return {
       ngModule: SortablejsModule,
@@ -17,5 +16,4 @@ export class SortablejsModule {
       ],
     };
   }
-
 }

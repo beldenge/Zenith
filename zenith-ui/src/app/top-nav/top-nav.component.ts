@@ -36,16 +36,16 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 })
 export class TopNavComponent implements OnInit, OnDestroy {
   configFilename = 'zenith.json';
-  selectHasFocus: boolean = false;
+  selectHasFocus = false;
   exportUri: SafeUrl;
   ciphers: Cipher[];
   selectedCipher: Cipher;
-  isRunning: boolean = false;
+  isRunning = false;
   selectedCipherSubscription: Subscription;
   ciphersSubscription: Subscription;
   isRunningSubscription: Subscription;
 
-  constructor(private _snackBar: MatSnackBar,
+  constructor(private snackBar: MatSnackBar,
               private cipherService: CipherService,
               private configurationService: ConfigurationService,
               private solutionService: SolutionService,
@@ -125,7 +125,7 @@ export class TopNavComponent implements OnInit, OnDestroy {
     const input = event.target;
 
     if (!input.value.endsWith(this.configFilename)) {
-      this._snackBar.open('Error: invalid filename.  Expected ' + this.configFilename + '.', '',{
+      this.snackBar.open('Error: invalid filename.  Expected ' + this.configFilename + '.', '', {
         duration: 5000,
         verticalPosition: 'top'
       });
@@ -142,14 +142,14 @@ export class TopNavComponent implements OnInit, OnDestroy {
       const configuration: ApplicationConfiguration = Object.assign(new ApplicationConfiguration(), JSON.parse(text));
       self.configurationService.import(configuration);
 
-      this._snackBar.open('Configuration imported successfully.', '', {
+      this.snackBar.open('Configuration imported successfully.', '', {
         duration: 2000,
         verticalPosition: 'top'
       });
     };
 
     reader.onerror = () => {
-      this._snackBar.open('Error: could not load configuration.', '', {
+      this.snackBar.open('Error: could not load configuration.', '', {
         duration: 5000,
         verticalPosition: 'top'
       });

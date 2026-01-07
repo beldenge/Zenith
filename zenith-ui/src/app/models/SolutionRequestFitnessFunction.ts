@@ -18,7 +18,7 @@
  */
 
 export class SolutionRequestFitnessFunction {
-  fitnessFunctionName : string;
+  fitnessFunctionName: string;
   data: any;
 
   constructor(fitnessFunctionName: string, data: any) {

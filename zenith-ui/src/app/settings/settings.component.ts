@@ -19,7 +19,6 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormBuilder } from '@angular/forms';
-import { JsonPipe } from '@angular/common';
 import { Validators } from '@angular/forms';
 import { ConfigurationService } from "../configuration.service";
 import { SelectOption } from "../models/SelectOption";
@@ -29,8 +28,8 @@ import { Subscription } from "rxjs";
 import { IntroductionService } from "../introduction.service";
 import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 
-const INTEGER_PATTERN: string = "^[0-9]+$";
-const DECIMAL_PATTERN: string = "^[0-9]+(.[0-9]+)?$";
+const INTEGER_PATTERN = '^[0-9]+$';
+const DECIMAL_PATTERN = '^[0-9]+(.[0-9]+)?$';
 
 @Component({
     selector: 'app-settings',
@@ -55,7 +54,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   selectedFitnessFunction: ZenithFitnessFunction;
   featuresSubscription: Subscription;
   samplerIterationsValidatorsDefault = [Validators.min(1), Validators.pattern(INTEGER_PATTERN)];
-  samplerIterationsValidationMessageDefault: string = "A number 1 or greater is required";
+  samplerIterationsValidationMessageDefault = 'A number 1 or greater is required';
   samplerIterationsValidationMessage: string = this.samplerIterationsValidationMessageDefault;
 
   simulatedAnnealingFormGroup = this.fb.group({
@@ -90,7 +89,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup
   });
 
-  constructor(private fb: UntypedFormBuilder, private json: JsonPipe, private configurationService: ConfigurationService, private introductionService: IntroductionService) { }
+  constructor(private fb: UntypedFormBuilder,
+              private configurationService: ConfigurationService,
+              private introductionService: IntroductionService) {}
 
   ngOnInit() {
     this.configurationService.getConfigurationLoadedNotification().subscribe((loaded) => {
@@ -110,7 +111,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         return;
       }
 
-      let patch = {
+      const patch = {
         samplerIterations: configuration.samplerIterations,
         annealingTemperatureMin: configuration.annealingTemperatureMin,
         annealingTemperatureMax: configuration.annealingTemperatureMax,
@@ -127,7 +128,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         return;
       }
 
-      let patch = {
+      const patch = {
         populationSize: configuration.populationSize,
         numberOfGenerations: configuration.numberOfGenerations,
         elitism: configuration.elitism,
@@ -158,7 +159,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
 
       if (this.generalSettingsForm.get('optimizer').value !== optimizer) {
-        let optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === optimizer.name);
+        const optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === optimizer.name);
         this.generalSettingsForm.patchValue({ optimizer: optimizerToUse });
       }
     });
@@ -188,10 +189,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
 
       if (featureResponse.simulatedAnnealingMaxIterations > 0) {
-        this.simulatedAnnealingFormGroup.get("samplerIterations").setValidators(this.samplerIterationsValidatorsDefault.concat([Validators.max(featureResponse.simulatedAnnealingMaxIterations)]));
+        this.simulatedAnnealingFormGroup.get('samplerIterations').setValidators(this.samplerIterationsValidatorsDefault.concat([Validators.max(featureResponse.simulatedAnnealingMaxIterations)]));
         this.samplerIterationsValidationMessage = 'Must be a number between 1 and ' + featureResponse.simulatedAnnealingMaxIterations;
       } else {
-        this.simulatedAnnealingFormGroup.get("samplerIterations").setValidators(this.samplerIterationsValidatorsDefault);
+        this.simulatedAnnealingFormGroup.get('samplerIterations').setValidators(this.samplerIterationsValidatorsDefault);
         this.samplerIterationsValidationMessage = this.samplerIterationsValidationMessageDefault;
       }
     });
@@ -230,7 +231,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
         this.configurationService.updateSimulatedAnnealingConfiguration(configuration);
       } else {
-        let configuration: GeneticAlgorithmConfiguration = {
+        const configuration: GeneticAlgorithmConfiguration = {
           populationSize: this.geneticAlgorithmFormGroup.get('populationSize').value,
           numberOfGenerations: this.geneticAlgorithmFormGroup.get('numberOfGenerations').value,
           elitism: this.geneticAlgorithmFormGroup.get('elitism').value,

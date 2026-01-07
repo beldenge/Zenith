@@ -31,7 +31,7 @@ import { Subscription } from "rxjs";
 export class SideNavComponent implements OnInit, OnDestroy {
   applicationVersion: string = environment.applicationVersion;
   sidebarToggleSubscription: Subscription;
-  toggled: boolean = true;
+  toggled = true;
 
   constructor(private sidebarService: SidebarService, private renderer: Renderer2) {}
 

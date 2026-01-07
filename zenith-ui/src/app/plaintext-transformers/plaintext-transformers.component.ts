@@ -19,7 +19,6 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from "rxjs";
-import { animate, style, transition, trigger } from "@angular/animations";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { ZenithTransformer } from "../models/ZenithTransformer";
 import { UntypedFormGroup } from "@angular/forms";
@@ -59,7 +58,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   onAppliedTransformersChange = (event: any) => {
     this.solutionService.updateSolution(null);
 
-    let transformationRequest: SamplePlaintextTransformationRequest = {
+    const transformationRequest: SamplePlaintextTransformationRequest = {
       plaintext: this.sample,
       plaintextTransformers: []
     };
@@ -67,7 +66,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     let satisfied = !!this.sample;
 
     for (let i = 0; i < this.appliedTransformers.length; i ++) {
-      let transformer = this.appliedTransformers[i];
+      const transformer = this.appliedTransformers[i];
 
       if (transformer.form && ((event && event.type === 'add' && event.newIndex === i) || !transformer.form.form.valid)) {
         satisfied = false;
@@ -143,7 +142,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   }
 
   cloneTransformer = (item) => {
-    let clone = {
+    const clone = {
       name: item.name,
       displayName: item.displayName,
       form: item.form ? JSON.parse(JSON.stringify(item.form)) : null
@@ -154,7 +153,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     }
 
     return clone;
-  };
+  }
 
   removeTransformer(transformerIndex: number): void {
     this.hoverClasses = [];

@@ -18,7 +18,7 @@
  */
 
 export class SolutionRequestTransformer {
-  transformerName : string;
+  transformerName: string;
   data: any;
 
   constructor(transformerName: string, data: any) {

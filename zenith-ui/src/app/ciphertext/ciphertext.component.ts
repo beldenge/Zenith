@@ -19,7 +19,7 @@
 
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Cipher } from "../models/Cipher";
-import { BehaviorSubject, Observable, Subscription } from "rxjs";
+import { BehaviorSubject, Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
 import { CipherService } from "../cipher.service";
 import { MatTooltip } from "@angular/material/tooltip";

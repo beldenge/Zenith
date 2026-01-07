@@ -30,7 +30,7 @@ export class AppComponent {
   constructor(private sidebarService: SidebarService) {}
 
   @HostListener('window:resize', ['$event'])
-  onResize(event) {
+  onResize(event: any) {
     if (event.target.innerWidth >= 768) {
       this.sidebarService.updateSidebarToggle(true);
     }

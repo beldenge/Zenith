@@ -37,7 +37,6 @@ import { SolutionResponse } from "../models/SolutionResponse";
 import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
 import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 import { LocalStorageKeys } from "../models/LocalStorageKeys";
-import { animate, style, transition, trigger } from "@angular/animations";
 
 @Component({
     selector: 'app-dashboard',
@@ -76,7 +75,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(private fb: UntypedFormBuilder,
               private cipherService: CipherService,
-              private _snackBar: MatSnackBar,
+              private snackBar: MatSnackBar,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
               private solutionService: SolutionService) {
@@ -140,7 +139,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.progressPercentage = progress;
     });
 
-    let showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
+    const showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
 
     this.showApplicationDownloadInfo = !showApplicationDownloadInfoLocal || showApplicationDownloadInfoLocal === 'true';
   }
@@ -204,7 +203,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     let allValid = true;
 
     if (this.appliedPlaintextTransformers.length) {
-      let plaintextTransformers = [];
+      const plaintextTransformers = [];
 
       this.appliedPlaintextTransformers.forEach((transformer) => {
         plaintextTransformers.push(new SolutionRequestTransformer(transformer.name, transformer.form.model));
@@ -218,7 +217,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     if (!allValid) {
-      this._snackBar.open('Errors exist in plaintext transformers.  Please correct them before solving.', '',{
+      this.snackBar.open('Errors exist in plaintext transformers.  Please correct them before solving.', '',{
         duration: 2000,
         verticalPosition: 'top'
       });
@@ -255,7 +254,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.solutionService.updateRunState(false);
     this.solutionService.updateProgressPercentage(0);
 
-    this._snackBar.open('Error: unable to complete solve due to server error.', '',{
+    this.snackBar.open('Error: unable to complete solve due to server error.', '',{
       duration: 5000,
       verticalPosition: 'top'
     });

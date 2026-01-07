@@ -28,7 +28,6 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
-import { BlockifyPipe } from "../blockify.pipe";
 
 @Component({
     selector: 'app-manage-ciphers',
@@ -37,7 +36,6 @@ import { BlockifyPipe } from "../blockify.pipe";
     standalone: false
 })
 export class ManageCiphersComponent implements OnInit, OnDestroy {
-  blockifyPipe = new BlockifyPipe();
   showIntroManageCiphersSubscription: Subscription;
   displayedColumns: string[] = ['name', 'rows', 'columns', 'ciphertext', 'actions'];
   ciphersDataSource: MatTableDataSource<any>;
@@ -50,7 +48,10 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
 
-  constructor(private cipherService: CipherService, private dialog: MatDialog, private _snackBar: MatSnackBar, private introductionService: IntroductionService) { }
+  constructor(private cipherService: CipherService,
+              private dialog: MatDialog,
+              private snackBar: MatSnackBar,
+              private introductionService: IntroductionService) {}
 
   ngOnInit() {
     this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe((ciphers) => {
@@ -104,14 +105,14 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
       disableClose: true,
       width: '50%',
       data: {
-        cipher: cipher,
+        cipher,
         mode: 'EDIT'
       }
     });
   }
 
   deleteCipher(cipher: Cipher) {
-    let filteredCiphers = this.ciphers.filter((next) => {
+    const filteredCiphers = this.ciphers.filter((next) => {
       return next.name !== cipher.name;
     });
 
@@ -122,7 +123,7 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
 
     this.cipherService.updateCiphers(filteredCiphers);
 
-    this._snackBar.open('Deleted "' + cipher.name + '"', '',{
+    this.snackBar.open('Deleted "' + cipher.name + '"', '',{
       duration: 2000,
       verticalPosition: 'top'
     });
@@ -150,7 +151,7 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
     this.ciphers.push(clone);
     this.cipherService.updateCiphers(this.ciphers);
 
-    this._snackBar.open('Cloned "' + cipher.name + '"', '',{
+    this.snackBar.open('Cloned "' + cipher.name + '"', '',{
       duration: 2000,
       verticalPosition: 'top'
     });

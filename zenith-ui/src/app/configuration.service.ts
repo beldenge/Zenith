@@ -126,7 +126,7 @@ export class ConfigurationService {
               private ciphertextTransformerService: CiphertextTransformerService,
               private featureService: FeatureService,
               private apollo: Apollo) {
-    featureService.getFeatures().subscribe(featureResponse => {
+    this.featureService.getFeatures().subscribe(featureResponse => {
       this.features$.next(featureResponse);
     });
 
@@ -399,7 +399,7 @@ export class ConfigurationService {
   }
 
   buildConfigurationAsString(): string {
-    let configuration = new ApplicationConfiguration();
+    const configuration = new ApplicationConfiguration();
 
     configuration.epochs = this.epochs$.getValue();
 

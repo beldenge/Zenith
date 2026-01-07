@@ -24,15 +24,15 @@ export class WebSocketAPI {
   stompClient: any;
 
   connectAndSend(request, successHandler, errorHandler) {
-    let socket = new SockJS('ws'); // relative URL
+    const socket = new SockJS('ws'); // relative URL
     const self = this;
     self.stompClient = Stomp.over(socket);
-    self.stompClient.connect({}, function (frame) {
+    self.stompClient.connect({}, frame => {
       self.send(request);
 
       self.stompClient.subscribe('/topic/solutions', successHandler, errorHandler);
     });
-  };
+  }
 
   disconnect() {
     if (this.stompClient !== null) {
@@ -40,7 +40,7 @@ export class WebSocketAPI {
     }
   }
 
-  send(message) {
+  send(message: any) {
     this.stompClient.send('/app/solutions', {}, JSON.stringify(message));
   }
 }

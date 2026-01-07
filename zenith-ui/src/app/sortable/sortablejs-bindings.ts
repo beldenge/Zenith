@@ -2,7 +2,6 @@ import { SortablejsBinding } from './sortablejs-binding';
 import {SortableData} from './sortablejs.directive';
 
 export class SortablejsBindings {
-
   bindings: SortablejsBinding[];
 
   constructor(bindingTargets: SortableData[]) {
@@ -24,5 +23,4 @@ export class SortablejsBindings {
   get provided() {
     return !!this.bindings.length;
   }
-
 }
