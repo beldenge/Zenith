@@ -2,6 +2,22 @@ scalar Object
 
 type Query {
     ciphers: [Cipher]
+    ciphertextTransformers: [Transformer]
+    plaintextTransformers: [Transformer]
+    uniqueSymbols(cipher: CipherRequest): DoubleResponse!
+    multiplicity(cipher: CipherRequest): DoubleResponse!
+    entropy(cipher: CipherRequest): DoubleResponse!
+    indexOfCoincidence(cipher: CipherRequest): DoubleResponse!
+    bigramRepeats(cipher: CipherRequest): IntResponse!
+    cycleScore(cipher: CipherRequest): IntResponse!
+    nGramStatistics(request: CipherRequest, statsPage: Int!): NGramStatistics
+}
+
+input CipherRequest {
+    name: ID!
+    rows: Int!
+    columns: Int!
+    ciphertext: [String!]!
 }
 
 type Cipher {
@@ -11,4 +27,57 @@ type Cipher {
     readOnly: Boolean!
     ciphertext: [String!]!
     knownSolutionKey: Object!
+}
+
+type FormlyFieldProps {
+    label: String
+    placeholder: String
+    required: Boolean!
+    type: String
+    rows: Int
+    cols: Int
+    max: Float
+    min: Float
+    maxLength: Int
+    minLength: Int
+    pattern: String
+}
+
+type FormlyFormField {
+    key: String!
+    type: String
+    props: FormlyFieldProps
+    defaultValue: String
+}
+
+type FormlyForm {
+    model: Object
+    fields: [FormlyFormField]
+}
+
+type Transformer {
+    name: ID!
+    displayName: String
+    form: FormlyForm
+    order: Int
+    helpText: String
+}
+
+type DoubleResponse {
+    value: Float!
+}
+
+type IntResponse {
+    value: Int!
+}
+
+type NGramCount {
+    ngram: String!
+    count: Int!
+}
+
+type NGramStatistics {
+    firstNGramCounts: [NGramCount!]!
+    secondNGramCounts: [NGramCount!]!
+    thirdNGramCounts: [NGramCount!]!
 }

@@ -23,7 +23,6 @@ import { Cipher } from "../models/Cipher";
 import { Subscription } from "rxjs";
 import { CipherStatisticsService } from "../cipher-statistics.service";
 import { MatTableDataSource } from "@angular/material/table";
-import { NgramStatisticsResponse } from "../models/NgramStatisticsResponse";
 import { MatExpansionPanel } from "@angular/material/expansion";
 
 @Component({
@@ -69,12 +68,13 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy {
   }
 
   onMore(): void {
-    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher, this.ngramsDataSources?.length).subscribe((response: NgramStatisticsResponse) => {
+    const statsPage = this.ngramsDataSources?.length;
+    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher, statsPage).subscribe((response) => {
       const sortFunction = (a, b) => a.count < b.count ? 1 : (a.count > b.count ? -1 : 0);
       this.ngramsDataSources.push([]);
-      this.ngramsDataSources[0].push(new MatTableDataSource(response.firstNGramCounts.sort(sortFunction)));
-      this.ngramsDataSources[0].push(new MatTableDataSource(response.secondNGramCounts.sort(sortFunction)));
-      this.ngramsDataSources[0].push(new MatTableDataSource(response.thirdNGramCounts.sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.data.nGramStatistics.firstNGramCounts].sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.data.nGramStatistics.secondNGramCounts].sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.data.nGramStatistics.thirdNGramCounts].sort(sortFunction)));
     });
   }
 }

@@ -29,6 +29,6 @@ import lombok.Setter;
 public class FormlyFormField {
     private String key;
     private String type;
-    private FormlyTemplateOptions templateOptions;
+    private FormlyFieldProps props;
     private String defaultValue;
 }

@@ -17,16 +17,25 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+package com.ciphertool.zenith.inference.entities;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
-public class NgramCount {
-    private String ngram;
-    private Integer count;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class FormlyFieldProps {
+    private String label;
+    private String placeholder;
+    private boolean required;
+    private String type;
+    private Integer rows;
+    private Integer cols;
+    private Double max;
+    private Double min;
+    private Integer minLength;
+    private Integer maxLength;
+    private String pattern;
 }

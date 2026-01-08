@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
-import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
+import com.ciphertool.zenith.inference.entities.FormlyFieldProps;
 import com.ciphertool.zenith.model.LanguageConstants;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -80,7 +80,7 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
 
         List<FormlyFormField> fields = new ArrayList<>(1);
 
-        FormlyTemplateOptions vigenereSquareOptions = new FormlyTemplateOptions();
+        FormlyFieldProps vigenereSquareOptions = new FormlyFieldProps();
         vigenereSquareOptions.setLabel("Vigenere Square");
         vigenereSquareOptions.setRequired(true);
         vigenereSquareOptions.setPattern("[A-Za-z]+");
@@ -92,12 +92,12 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         FormlyFormField vigenereSquare = new FormlyFormField();
         vigenereSquare.setKey(VIGENERE_SQUARE);
         vigenereSquare.setType("textarea");
-        vigenereSquare.setTemplateOptions(vigenereSquareOptions);
+        vigenereSquare.setProps(vigenereSquareOptions);
         vigenereSquare.setDefaultValue(defaultVigenereSquare);
 
         fields.add(vigenereSquare);
 
-        FormlyTemplateOptions keyOptions = new FormlyTemplateOptions();
+        FormlyFieldProps keyOptions = new FormlyFieldProps();
         keyOptions.setLabel("Key");
         keyOptions.setRequired(true);
         keyOptions.setPattern("[A-Za-z]+");
@@ -105,7 +105,7 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);
         key.setType("input");
-        key.setTemplateOptions(keyOptions);
+        key.setProps(keyOptions);
 
         fields.add(key);
 

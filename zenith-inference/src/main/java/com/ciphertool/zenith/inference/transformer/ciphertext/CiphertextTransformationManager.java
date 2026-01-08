@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.transformer.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class CiphertextTransformationManager {
     @PostConstruct
     public void init() {
         existentCipherTransformers = cipherTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), ""))
+                .map(Transformer::getName)
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +59,7 @@ public class CiphertextTransformationManager {
             }
 
             for (CipherTransformer cipherTransformer : cipherTransformers) {
-                if (cipherTransformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), "").equals(transformerName)) {
+                if (cipherTransformer.getName().equals(transformerName)) {
                     toUse.add(cipherTransformer.getInstance(step.getData()));
 
                     break;

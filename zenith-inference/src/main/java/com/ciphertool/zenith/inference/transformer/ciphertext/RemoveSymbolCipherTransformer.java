@@ -72,7 +72,7 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
 
-        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        FormlyFieldProps templateOptions = new FormlyFieldProps();
         templateOptions.setLabel("Symbol");
         templateOptions.setRequired(true);
         templateOptions.setType("text");
@@ -80,7 +80,7 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
         FormlyFormField key = new FormlyFormField();
         key.setKey(SYMBOL);
         key.setType("input");
-        key.setTemplateOptions(templateOptions);
+        key.setProps(templateOptions);
 
         form.setFields(Collections.singletonList(key));
 

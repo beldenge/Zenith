@@ -25,12 +25,14 @@ import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransforme
 import org.apache.commons.lang3.StringUtils;
 
 public interface Transformer {
-    default String getDisplayName() {
-        String displayName = getClass().getSimpleName()
+    default String getName() {
+        return getClass().getSimpleName()
                 .replace(PlaintextTransformer.class.getSimpleName(), "")
                 .replace(CipherTransformer.class.getSimpleName(), "");
+    }
 
-        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(displayName), ' ');
+    default String getDisplayName() {
+        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(getName()), ' ');
     }
 
     FormlyForm getForm();

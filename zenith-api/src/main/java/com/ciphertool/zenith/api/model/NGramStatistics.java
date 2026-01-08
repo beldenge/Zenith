@@ -28,8 +28,8 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-public class NgramStatisticsResponse {
-    private List<NgramCount> firstNGramCounts;
-    private List<NgramCount> secondNGramCounts;
-    private List<NgramCount> thirdNGramCounts;
+public class NGramStatistics {
+    private List<NGramCount> firstNGramCounts;
+    private List<NGramCount> secondNGramCounts;
+    private List<NGramCount> thirdNGramCounts;
 }

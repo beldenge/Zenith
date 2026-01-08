@@ -22,7 +22,7 @@ package com.ciphertool.zenith.inference.transformer.ciphertext;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
-import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
+import com.ciphertool.zenith.inference.entities.FormlyFieldProps;
 import com.ciphertool.zenith.model.LanguageConstants;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -115,7 +115,7 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
 
-        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        FormlyFieldProps templateOptions = new FormlyFieldProps();
         templateOptions.setLabel("Key");
         templateOptions.setRequired(true);
         templateOptions.setType("text");
@@ -124,7 +124,7 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);
         key.setType("input");
-        key.setTemplateOptions(templateOptions);
+        key.setProps(templateOptions);
 
         form.setFields(Collections.singletonList(key));
 

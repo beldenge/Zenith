@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
+import com.ciphertool.zenith.inference.transformer.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class PlaintextTransformationManager {
     @PostConstruct
     public void init() {
         existentPlaintextTransformers = plaintextTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), ""))
+                .map(Transformer::getName)
                 .collect(Collectors.toList());
     }
 
@@ -59,7 +60,7 @@ public class PlaintextTransformationManager {
             }
 
             for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                if (plaintextTransformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), "").equals(transformerName)) {
+                if (plaintextTransformer.getName().equals(transformerName)) {
                     toUse.add(plaintextTransformer.getInstance(step.getData()));
 
                     break;

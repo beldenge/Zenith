@@ -46,8 +46,6 @@ public class CipherRequest {
     @NotEmpty
     private List<String> ciphertext = new ArrayList<>();
 
-    private int statsPage;
-
     @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
     public boolean isLengthValid() {
         return (rows * columns) == ciphertext.size();

@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
-import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
+import com.ciphertool.zenith.inference.entities.FormlyFieldProps;
 import lombok.NoArgsConstructor;
 
 import java.util.Collections;
@@ -41,7 +41,7 @@ public abstract class AbstractOneTimePadPlaintextTransformer implements Plaintex
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
 
-        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        FormlyFieldProps templateOptions = new FormlyFieldProps();
         templateOptions.setLabel("Key");
         templateOptions.setRequired(true);
         templateOptions.setPattern("[A-Za-z]+");
@@ -49,7 +49,7 @@ public abstract class AbstractOneTimePadPlaintextTransformer implements Plaintex
         FormlyFormField key = new FormlyFormField();
         key.setKey(KEY);
         key.setType("textarea");
-        key.setTemplateOptions(templateOptions);
+        key.setProps(templateOptions);
 
         form.setFields(Collections.singletonList(key));
 

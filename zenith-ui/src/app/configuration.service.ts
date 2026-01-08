@@ -29,8 +29,6 @@ import { UntypedFormGroup } from "@angular/forms";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
 import { ZenithFitnessFunction } from "./models/ZenithFitnessFunction";
 import { FitnessFunctionService } from "./fitness-function.service";
-import { PlaintextTransformerService } from "./plaintext-transformer.service";
-import { CiphertextTransformerService } from "./ciphertext-transformer.service";
 import { HttpClient } from "@angular/common/http";
 import { Cipher } from "./models/Cipher";
 import { environment } from "../environments/environment";
@@ -39,6 +37,7 @@ import { FeatureService } from "./feature.service";
 import { FeatureResponse } from "./models/FeatureResponse";
 import {Apollo, gql} from "apollo-angular";
 import { firstValueFrom } from "rxjs";
+import {TransformerService} from "./transformer.service";
 
 interface GetCiphersQuery {
   ciphers: Cipher[];
@@ -122,10 +121,9 @@ export class ConfigurationService {
   constructor(private http: HttpClient,
               private sanitizer: DomSanitizer,
               private fitnessFunctionService: FitnessFunctionService,
-              private plaintextTransformerService: PlaintextTransformerService,
-              private ciphertextTransformerService: CiphertextTransformerService,
               private featureService: FeatureService,
-              private apollo: Apollo) {
+              private apollo: Apollo,
+              private transformerService: TransformerService) {
     this.featureService.getFeatures().subscribe(featureResponse => {
       this.features$.next(featureResponse);
     });
@@ -136,8 +134,8 @@ export class ConfigurationService {
   private async loadInitialData() {
     const [fitnessFunctionResponse, plaintextTransformerResponse, ciphertextTransformerResponse, ciphersData] = await Promise.all([
       this.fitnessFunctionService.getFitnessFunctions(),
-      this.plaintextTransformerService.getTransformers(),
-      this.ciphertextTransformerService.getTransformers(),
+      this.transformerService.getPlaintextTransformers(),
+      this.transformerService.getCiphertextTransformers(),
       firstValueFrom(this.apollo.query<GetCiphersQuery>({ query: gql`
         query GetCiphers {
           ciphers {
@@ -167,13 +165,13 @@ export class ConfigurationService {
 
     this.updateAvailableFitnessFunctions(availableFitnessFunctions);
 
-    const availablePlaintextTransformers = plaintextTransformerResponse.transformers.sort((t1, t2) => {
+    const availablePlaintextTransformers = [...plaintextTransformerResponse.data.plaintextTransformers].sort((t1, t2) => {
       return t1.order - t2.order;
     });
 
     this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
 
-    const availableCiphertextTransformers = ciphertextTransformerResponse.transformers.sort((t1, t2) => {
+    const availableCiphertextTransformers = [...ciphertextTransformerResponse.data.ciphertextTransformers].sort((t1, t2) => {
       return t1.order - t2.order;
     });
 

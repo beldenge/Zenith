@@ -101,7 +101,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
 
-        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        FormlyFieldProps templateOptions = new FormlyFieldProps();
         templateOptions.setLabel("REST Service URL");
         templateOptions.setRequired(true);
         templateOptions.setType("url");
@@ -109,7 +109,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
         FormlyFormField restServiceUrl = new FormlyFormField();
         restServiceUrl.setKey(REST_SERVICE_URL);
         restServiceUrl.setType("input");
-        restServiceUrl.setTemplateOptions(templateOptions);
+        restServiceUrl.setProps(templateOptions);
 
         form.setFields(Collections.singletonList(restServiceUrl));
 
