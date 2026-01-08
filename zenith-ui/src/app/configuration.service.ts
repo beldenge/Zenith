@@ -33,8 +33,6 @@ import { HttpClient } from "@angular/common/http";
 import { Cipher } from "./models/Cipher";
 import { environment } from "../environments/environment";
 import { debounceTime } from "rxjs/operators";
-import { FeatureService } from "./feature.service";
-import { FeatureResponse } from "./models/FeatureResponse";
 import {Apollo, gql} from "apollo-angular";
 import { firstValueFrom } from "rxjs";
 import {TransformerService} from "./transformer.service";
@@ -116,18 +114,12 @@ export class ConfigurationService {
   private ciphers$ = new BehaviorSubject<Cipher[]>([]);
   private selectedCipher$ = new BehaviorSubject<Cipher>(null);
   private configurationLoadedNotification$ = new BehaviorSubject<boolean>(false);
-  private features$ = new BehaviorSubject<FeatureResponse>(new FeatureResponse(false, 100, 100000));
 
   constructor(private http: HttpClient,
               private sanitizer: DomSanitizer,
               private fitnessFunctionService: FitnessFunctionService,
-              private featureService: FeatureService,
               private apollo: Apollo,
               private transformerService: TransformerService) {
-    this.featureService.getFeatures().subscribe(featureResponse => {
-      this.features$.next(featureResponse);
-    });
-
     this.loadInitialData();
   }
 
@@ -332,14 +324,6 @@ export class ConfigurationService {
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
-  }
-
-  getFeaturesAsObservable(): Observable<FeatureResponse> {
-    return this.features$.asObservable();
-  }
-
-  updateFeatures(featureResponse: FeatureResponse) {
-    this.features$.next(featureResponse);
   }
 
   restoreGeneralSettings() {

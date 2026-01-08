@@ -52,13 +52,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   mutationOperatorNames: SelectOption[] = ConfigurationService.MUTATION_OPERATOR_NAMES;
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
   selectedFitnessFunction: ZenithFitnessFunction;
-  featuresSubscription: Subscription;
-  samplerIterationsValidatorsDefault = [Validators.min(1), Validators.pattern(INTEGER_PATTERN)];
-  samplerIterationsValidationMessageDefault = 'A number 1 or greater is required';
-  samplerIterationsValidationMessage: string = this.samplerIterationsValidationMessageDefault;
+  samplerIterationsValidators = [Validators.min(1), Validators.max(100000)];
+  samplerIterationsValidationMessage = 'Must be a number between 1 and 100000';
 
   simulatedAnnealingFormGroup = this.fb.group({
-    samplerIterations: [null, this.samplerIterationsValidatorsDefault],
+    samplerIterations: [null, this.samplerIterationsValidators],
     annealingTemperatureMin: [null, [Validators.pattern(DECIMAL_PATTERN)]],
     annealingTemperatureMax: [null, [Validators.pattern(DECIMAL_PATTERN)]],
   });
@@ -178,22 +176,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           this.introductionService.startIntroSettings();
           this.introductionService.updateShowIntroSettings(false);
-        }, 500);
-      }
-    });
-
-    this.featuresSubscription = this.configurationService.getFeaturesAsObservable().subscribe(featureResponse => {
-      if (!featureResponse.geneticAlgorithmEnabled) {
-        this.geneticAlgorithmFormGroup.disable();
-        this.geneticAlgorithmConfigurationSubscription.unsubscribe();
-      }
-
-      if (featureResponse.simulatedAnnealingMaxIterations > 0) {
-        this.simulatedAnnealingFormGroup.get('samplerIterations').setValidators(this.samplerIterationsValidatorsDefault.concat([Validators.max(featureResponse.simulatedAnnealingMaxIterations)]));
-        this.samplerIterationsValidationMessage = 'Must be a number between 1 and ' + featureResponse.simulatedAnnealingMaxIterations;
-      } else {
-        this.simulatedAnnealingFormGroup.get('samplerIterations').setValidators(this.samplerIterationsValidatorsDefault);
-        this.samplerIterationsValidationMessage = this.samplerIterationsValidationMessageDefault;
+        }, 0);
       }
     });
   }
@@ -205,7 +188,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.selectedOptimizerSubscription.unsubscribe();
     this.selectedFitnessFunctionSubscription.unsubscribe();
     this.generalSettingsFormValueChangesSubscription.unsubscribe();
-    this.featuresSubscription.unsubscribe();
   }
 
   // For some reason this doesn't even get called if we don't specify the event parameter

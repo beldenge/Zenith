@@ -66,10 +66,10 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
 
     this.showIntroManageCiphersSubscription = this.introductionService.getShowIntroManageCiphersAsObservable().subscribe(showIntro => {
       if (showIntro) {
-        setTimeout(() =>{
+        setTimeout(() => {
           this.introductionService.startIntroManageCiphers();
           this.introductionService.updateShowIntroManageCiphers(false);
-        }, 500);
+        }, 0);
       }
     });
 

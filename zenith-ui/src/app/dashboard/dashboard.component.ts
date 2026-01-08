@@ -53,11 +53,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   progressPercentage = 0;
   isRunningSubscription: Subscription;
   progressPercentageSubscription: Subscription;
-  epochsValidationMessageDefault = 'Must be a number greater than zero';
-  epochsValidationMessage: string = this.epochsValidationMessageDefault;
-  epochsValidatorsDefault = [Validators.min(1), Validators.pattern('^[0-9]*$')];
+  epochsValidators = [Validators.min(1), Validators.max(100)];
+  epochsValidationMessage = 'Must be a number between 1 and 100';
   hyperparametersForm = this.fb.group({
-    epochs: [null, this.epochsValidatorsDefault]
+    epochs: [null, this.epochsValidators]
   });
   appliedPlaintextTransformers: ZenithTransformer[] = [];
   optimizer: SelectOption;
@@ -71,15 +70,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedFitnessFunctionSubscription: Subscription;
   simulatedAnnealingConfigurationSubscription: Subscription;
   geneticAlgorithmConfigurationSubscription: Subscription;
-  featuresSubscription: Subscription;
 
   constructor(private fb: UntypedFormBuilder,
               private cipherService: CipherService,
               private snackBar: MatSnackBar,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {
-  }
+              private solutionService: SolutionService) {}
 
   ngOnInit() {
     this.webSocketAPI = new WebSocketAPI();
@@ -121,16 +118,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.featuresSubscription = this.configurationService.getFeaturesAsObservable().subscribe(featureResponse => {
-      if (featureResponse.maxEpochs > 0) {
-        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidatorsDefault.concat([Validators.max(featureResponse.maxEpochs)]));
-        this.epochsValidationMessage = 'Must be a number between 1 and ' + featureResponse.maxEpochs;
-      } else {
-        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidatorsDefault);
-        this.epochsValidationMessage = this.epochsValidationMessageDefault;
-      }
-    });
-
     this.isRunningSubscription = this.solutionService.getRunStateAsObservable().subscribe(runState => {
       this.isRunning = runState;
     });
@@ -153,7 +140,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.simulatedAnnealingConfigurationSubscription.unsubscribe();
     this.geneticAlgorithmConfigurationSubscription.unsubscribe();
     this.showIntroDashboardSubscription.unsubscribe();
-    this.featuresSubscription.unsubscribe();
     this.isRunningSubscription.unsubscribe();
     this.progressPercentageSubscription.unsubscribe();
   }

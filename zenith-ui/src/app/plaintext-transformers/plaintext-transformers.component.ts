@@ -130,7 +130,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           this.introductionService.startIntroPlaintextTransformers();
           this.introductionService.updateShowIntroPlaintextTransformers(false);
-        }, 500);
+        }, 0);
       }
     });
   }

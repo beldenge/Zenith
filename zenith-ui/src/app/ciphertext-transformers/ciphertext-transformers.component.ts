@@ -136,7 +136,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           this.introductionService.startIntroCiphertextTransformers();
           this.introductionService.updateShowIntroCiphertextTransformers(false);
-        }, 500);
+        }, 0);
       }
     });
   }

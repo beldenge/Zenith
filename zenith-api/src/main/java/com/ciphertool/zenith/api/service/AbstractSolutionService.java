@@ -49,10 +49,10 @@ public abstract class AbstractSolutionService {
     @Value("${features.genetic-algorithm.enabled:true}")
     private boolean geneticAlgorithmEnabled;
 
-    @Value("${features.epochs.max:-1}")
+    @Value("${features.epochs.max:100}")
     private int maxEpochs;
 
-    @Value("${features.simulated-annealing.max-iterations:-1}")
+    @Value("${features.simulated-annealing.max-iterations:100000}")
     private int simulatedAnnealingMaxIterations;
 
     @Autowired

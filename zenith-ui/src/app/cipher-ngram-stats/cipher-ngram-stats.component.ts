@@ -64,7 +64,10 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy {
   onExpand(): void {
     this.shown = true;
     this.headerText = this.headerTextOpened;
-    this.onMore();
+
+    if (!this.ngramsDataSources?.length) {
+      this.onMore();
+    }
   }
 
   onMore(): void {
