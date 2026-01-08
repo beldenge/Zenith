@@ -2,8 +2,8 @@ scalar Object
 
 type Query {
     ciphers: [Cipher]
-    ciphertextTransformers: [Transformer]
-    plaintextTransformers: [Transformer]
+    ciphertextTransformers: [FormComponent]
+    plaintextTransformers: [FormComponent]
     uniqueSymbols(cipher: CipherRequest): DoubleResponse!
     multiplicity(cipher: CipherRequest): DoubleResponse!
     entropy(cipher: CipherRequest): DoubleResponse!
@@ -11,6 +11,7 @@ type Query {
     bigramRepeats(cipher: CipherRequest): IntResponse!
     cycleScore(cipher: CipherRequest): IntResponse!
     nGramStatistics(request: CipherRequest, statsPage: Int!): NGramStatistics
+    fitnessFunctions: [FormComponent]
 }
 
 input CipherRequest {
@@ -55,7 +56,7 @@ type FormlyForm {
     fields: [FormlyFormField]
 }
 
-type Transformer {
+type FormComponent {
     name: ID!
     displayName: String
     form: FormlyForm

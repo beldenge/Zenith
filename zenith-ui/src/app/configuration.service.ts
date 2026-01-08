@@ -23,11 +23,10 @@ import { SimulatedAnnealingConfiguration } from "./models/SimulatedAnnealingConf
 import { GeneticAlgorithmConfiguration } from "./models/GeneticAlgorithmConfiguration";
 import { SelectOption } from "./models/SelectOption";
 import { ApplicationConfiguration } from "./models/ApplicationConfiguration";
-import { ZenithTransformer } from "./models/ZenithTransformer";
+import { FormComponent } from "./models/FormComponent";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { UntypedFormGroup } from "@angular/forms";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
-import { ZenithFitnessFunction } from "./models/ZenithFitnessFunction";
 import { FitnessFunctionService } from "./fitness-function.service";
 import { HttpClient } from "@angular/common/http";
 import { Cipher } from "./models/Cipher";
@@ -101,14 +100,14 @@ export class ConfigurationService {
   }];
 
   private epochs$ = new BehaviorSubject<number>(1);
-  private availableCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
-  private appliedCiphertextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
-  private availablePlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
-  private appliedPlaintextTransformers$ = new BehaviorSubject<ZenithTransformer[]>([]);
+  private availableCiphertextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
+  private appliedCiphertextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
+  private availablePlaintextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
+  private appliedPlaintextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
   private samplePlaintext$ = new BehaviorSubject<string>(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
   private selectedOptimizer$ = new BehaviorSubject<SelectOption>(null);
-  private availableFitnessFunctions$ = new BehaviorSubject<ZenithFitnessFunction[]>([]);
-  private selectedFitnessFunction$ = new BehaviorSubject<ZenithFitnessFunction>(null);
+  private availableFitnessFunctions$ = new BehaviorSubject<FormComponent[]>([]);
+  private selectedFitnessFunction$ = new BehaviorSubject<FormComponent>(null);
   private simulatedAnnealingConfiguration$ = new BehaviorSubject<SimulatedAnnealingConfiguration>(null);
   private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(null);
   private ciphers$ = new BehaviorSubject<Cipher[]>([]);
@@ -145,14 +144,8 @@ export class ConfigurationService {
 
     this.updateCiphers(ciphersData.data.ciphers, true);
 
-    const availableFitnessFunctions = fitnessFunctionResponse.fitnessFunctions.sort((t1, t2) => {
+    const availableFitnessFunctions = [...fitnessFunctionResponse.data.fitnessFunctions].sort((t1, t2) => {
       return t1.order - t2.order;
-    });
-
-    availableFitnessFunctions.forEach(item => {
-      if (item.form) {
-        item.form.form = new UntypedFormGroup({});
-      }
     });
 
     this.updateAvailableFitnessFunctions(availableFitnessFunctions);
@@ -210,19 +203,19 @@ export class ConfigurationService {
     }
   }
 
-  getAvailableCiphertextTransformersAsObservable(): Observable<ZenithTransformer[]> {
+  getAvailableCiphertextTransformersAsObservable(): Observable<FormComponent[]> {
     return this.availableCiphertextTransformers$.asObservable();
   }
 
-  updateAvailableCiphertextTransformers(appliedTransformers: ZenithTransformer[]): void {
+  updateAvailableCiphertextTransformers(appliedTransformers: FormComponent[]): void {
     this.availableCiphertextTransformers$.next(appliedTransformers);
   }
 
-  getAppliedCiphertextTransformersAsObservable(): Observable<ZenithTransformer[]> {
+  getAppliedCiphertextTransformersAsObservable(): Observable<FormComponent[]> {
     return this.appliedCiphertextTransformers$.asObservable();
   }
 
-  updateAppliedCiphertextTransformers(appliedTransformers: ZenithTransformer[], skipSave?: boolean): void {
+  updateAppliedCiphertextTransformers(appliedTransformers: FormComponent[], skipSave?: boolean): void {
     this.appliedCiphertextTransformers$.next(appliedTransformers);
 
     if (!skipSave) {
@@ -230,19 +223,19 @@ export class ConfigurationService {
     }
   }
 
-  getAvailablePlaintextTransformersAsObservable(): Observable<ZenithTransformer[]> {
+  getAvailablePlaintextTransformersAsObservable(): Observable<FormComponent[]> {
     return this.availablePlaintextTransformers$.asObservable();
   }
 
-  updateAvailablePlaintextTransformers(appliedTransformers: ZenithTransformer[]): void {
+  updateAvailablePlaintextTransformers(appliedTransformers: FormComponent[]): void {
     this.availablePlaintextTransformers$.next(appliedTransformers);
   }
 
-  getAppliedPlaintextTransformersAsObservable(): Observable<ZenithTransformer[]> {
+  getAppliedPlaintextTransformersAsObservable(): Observable<FormComponent[]> {
     return this.appliedPlaintextTransformers$.asObservable();
   }
 
-  updateAppliedPlaintextTransformers(appliedTransformers: ZenithTransformer[], skipSave?: boolean): void {
+  updateAppliedPlaintextTransformers(appliedTransformers: FormComponent[], skipSave?: boolean): void {
     this.appliedPlaintextTransformers$.next(appliedTransformers);
 
     if (!skipSave) {
@@ -270,19 +263,19 @@ export class ConfigurationService {
     }
   }
 
-  getAvailableFitnessFunctionsAsObservable(): Observable<ZenithFitnessFunction[]> {
+  getAvailableFitnessFunctionsAsObservable(): Observable<FormComponent[]> {
     return this.availableFitnessFunctions$.asObservable();
   }
 
-  updateAvailableFitnessFunctions(fitnessFunctions: ZenithFitnessFunction[]) {
+  updateAvailableFitnessFunctions(fitnessFunctions: FormComponent[]) {
     this.availableFitnessFunctions$.next(fitnessFunctions);
   }
 
-  getSelectedFitnessFunctionAsObservable(): Observable<ZenithFitnessFunction> {
+  getSelectedFitnessFunctionAsObservable(): Observable<FormComponent> {
     return this.selectedFitnessFunction$.asObservable();
   }
 
-  updateSelectedFitnessFunction(fitnessFunction: ZenithFitnessFunction, skipSave?: boolean) {
+  updateSelectedFitnessFunction(fitnessFunction: FormComponent, skipSave?: boolean) {
     this.selectedFitnessFunction$.next(fitnessFunction);
 
     if (!skipSave) {

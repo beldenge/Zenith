@@ -20,15 +20,17 @@
 package com.ciphertool.zenith.inference.transformer;
 
 import com.ciphertool.zenith.inference.entities.FormlyForm;
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import org.apache.commons.lang3.StringUtils;
 
-public interface Transformer {
+public interface FormComponent {
     default String getName() {
         return getClass().getSimpleName()
                 .replace(PlaintextTransformer.class.getSimpleName(), "")
-                .replace(CipherTransformer.class.getSimpleName(), "");
+                .replace(CipherTransformer.class.getSimpleName(), "")
+                .replace(PlaintextEvaluator.class.getSimpleName(), "");
     }
 
     default String getDisplayName() {

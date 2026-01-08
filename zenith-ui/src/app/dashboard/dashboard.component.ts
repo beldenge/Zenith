@@ -23,7 +23,7 @@ import { Cipher } from "../models/Cipher";
 import { UntypedFormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
-import { ZenithTransformer } from "../models/ZenithTransformer";
+import { FormComponent } from "../models/FormComponent";
 import { SolutionRequestTransformer } from "../models/SolutionRequestTransformer";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ConfigurationService } from "../configuration.service";
@@ -35,7 +35,6 @@ import { Subscription } from "rxjs";
 import { SolutionService } from "../solution.service";
 import { SolutionResponse } from "../models/SolutionResponse";
 import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
-import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 import { LocalStorageKeys } from "../models/LocalStorageKeys";
 
 @Component({
@@ -58,9 +57,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   hyperparametersForm = this.fb.group({
     epochs: [null, this.epochsValidators]
   });
-  appliedPlaintextTransformers: ZenithTransformer[] = [];
+  appliedPlaintextTransformers: FormComponent[] = [];
   optimizer: SelectOption;
-  fitnessFunction: ZenithFitnessFunction;
+  fitnessFunction: FormComponent;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   selectedCipherSubscription: Subscription;

@@ -18,7 +18,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ZenithTransformer } from "../models/ZenithTransformer";
+import { FormComponent } from "../models/FormComponent";
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { Subscription } from "rxjs";
@@ -42,7 +42,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   selectedCipherSubscription: Subscription;
   appliedCiphertextTransformersSubscription: Subscription;
 
-  availableTransformers: ZenithTransformer[] = [];
+  availableTransformers: FormComponent[] = [];
 
   availableTransformersOptions = {
     group: {
@@ -53,7 +53,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     sort: false
   };
 
-  appliedTransformers: ZenithTransformer[] = [];
+  appliedTransformers: FormComponent[] = [];
 
   onAppliedTransformersChange = (event: any) => {
     this.solutionService.updateSolution(null);

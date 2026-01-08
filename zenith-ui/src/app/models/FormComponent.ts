@@ -17,17 +17,12 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+import { DynamicForm } from "./DynamicForm";
 
-import com.ciphertool.zenith.inference.entities.ZenithFitnessFunction;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Getter
-@Setter
-public class FitnessFunctionResponse {
-    private List<ZenithFitnessFunction> fitnessFunctions = new ArrayList<>();
+export class FormComponent {
+  name: string;
+  displayName: string;
+  form?: DynamicForm;
+  order: number;
+  helpText: string;
 }

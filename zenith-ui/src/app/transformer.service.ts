@@ -20,14 +20,14 @@
 import { Injectable } from '@angular/core';
 import {firstValueFrom} from "rxjs";
 import {Apollo, gql} from "apollo-angular";
-import {ZenithTransformer} from "./models/ZenithTransformer";
+import {FormComponent} from "./models/FormComponent";
 
 interface GetCiphertextTransformersQuery {
-  ciphertextTransformers: ZenithTransformer[];
+  ciphertextTransformers: FormComponent[];
 }
 
 interface GetPlaintextTransformersQuery {
-  plaintextTransformers: ZenithTransformer[];
+  plaintextTransformers: FormComponent[];
 }
 
 @Injectable({

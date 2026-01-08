@@ -20,7 +20,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from "rxjs";
 import { PlaintextTransformerService } from "../plaintext-transformer.service";
-import { ZenithTransformer } from "../models/ZenithTransformer";
+import { FormComponent } from "../models/FormComponent";
 import { UntypedFormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
 import { ConfigurationService } from "../configuration.service";
@@ -42,7 +42,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   appliedPlaintextTransformersSubscription: Subscription;
   samplePlaintextSubscription: Subscription;
 
-  availableTransformers: ZenithTransformer[] = [];
+  availableTransformers: FormComponent[] = [];
 
   availableTransformersOptions = {
     group: {
@@ -53,7 +53,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     sort: false
   };
 
-  appliedTransformers: ZenithTransformer[] = [];
+  appliedTransformers: FormComponent[] = [];
 
   onAppliedTransformersChange = (event: any) => {
     this.solutionService.updateSolution(null);

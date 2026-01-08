@@ -26,7 +26,7 @@ import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingCon
 import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
 import { Subscription } from "rxjs";
 import { IntroductionService } from "../introduction.service";
-import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
+import {FormComponent} from "../models/FormComponent";
 
 const INTEGER_PATTERN = '^[0-9]+$';
 const DECIMAL_PATTERN = '^[0-9]+(.[0-9]+)?$';
@@ -45,13 +45,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   geneticAlgorithmConfigurationSubscription: Subscription;
   generalSettingsFormValueChangesSubscription: Subscription;
   optimizerNames: SelectOption[] = ConfigurationService.OPTIMIZER_NAMES;
-  availableFitnessFunctions: ZenithFitnessFunction[] = [];
+  availableFitnessFunctions: FormComponent[] = [];
   populationNames: SelectOption[] = ConfigurationService.POPULATION_NAMES;
   breederNames: SelectOption[] = ConfigurationService.BREEDER_NAMES;
   crossoverOperatorNames: SelectOption[] = ConfigurationService.CROSSOVER_OPERATOR_NAMES;
   mutationOperatorNames: SelectOption[] = ConfigurationService.MUTATION_OPERATOR_NAMES;
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
-  selectedFitnessFunction: ZenithFitnessFunction;
+  selectedFitnessFunction: FormComponent;
   samplerIterationsValidators = [Validators.min(1), Validators.max(100000)];
   samplerIterationsValidationMessage = 'Must be a number between 1 and 100000';
 

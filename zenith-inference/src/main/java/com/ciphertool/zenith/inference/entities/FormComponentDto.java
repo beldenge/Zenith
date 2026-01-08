@@ -28,7 +28,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ZenithFitnessFunction {
+public class FormComponentDto {
     private String name;
     private String displayName;
     private FormlyForm form;

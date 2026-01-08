@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.configuration;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.ZenithTransformer;
+import com.ciphertool.zenith.inference.entities.FormComponentDto;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
@@ -188,7 +188,7 @@ public class InferenceConfiguration {
         if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedCiphertextTransformers())) {
             List<CiphertextTransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
 
-            for (ZenithTransformer transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
+            for (FormComponentDto transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
                 transformationSteps.add(new CiphertextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
             }
 
@@ -293,7 +293,7 @@ public class InferenceConfiguration {
                 .collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedPlaintextTransformers())) {
-            for (ZenithTransformer transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
+            for (FormComponentDto transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
                 String transformerName = transformer.getName();
 
                 if (!existentPlaintextTransformers.contains(transformer.getName())) {

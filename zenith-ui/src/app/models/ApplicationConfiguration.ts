@@ -17,20 +17,19 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ZenithTransformer } from "./ZenithTransformer";
+import { FormComponent } from "./FormComponent";
 import { SelectOption } from "./SelectOption";
 import { SimulatedAnnealingConfiguration } from "./SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./GeneticAlgorithmConfiguration";
-import { ZenithFitnessFunction } from "./ZenithFitnessFunction";
 import { Cipher } from "./Cipher";
 
 export class ApplicationConfiguration {
   selectedCipher: string;
   epochs: number;
-  appliedCiphertextTransformers: ZenithTransformer[];
-  appliedPlaintextTransformers: ZenithTransformer[];
+  appliedCiphertextTransformers: FormComponent[];
+  appliedPlaintextTransformers: FormComponent[];
   selectedOptimizer: SelectOption;
-  selectedFitnessFunction: ZenithFitnessFunction;
+  selectedFitnessFunction: FormComponent;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
   ciphers: Cipher[];

@@ -17,10 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ZenithTransformer } from "../models/ZenithTransformer";
+import { FormComponent } from "../models/FormComponent";
 
 export class TransformerUtil {
-  static transformersAreEqual(first: ZenithTransformer[], second: ZenithTransformer[]) {
+  static transformersAreEqual(first: FormComponent[], second: FormComponent[]) {
     if (!first && !second) {
       return true;
     }

@@ -20,11 +20,11 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.transformer.Transformer;
+import com.ciphertool.zenith.inference.transformer.FormComponent;
 
 import java.util.Map;
 
-public interface CipherTransformer extends Transformer {
+public interface CipherTransformer extends FormComponent {
     Cipher transform(Cipher cipher);
 
     CipherTransformer getInstance(Map<String, Object> data);

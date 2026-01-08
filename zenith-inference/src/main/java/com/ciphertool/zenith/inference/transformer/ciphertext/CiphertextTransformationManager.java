@@ -20,7 +20,7 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.transformer.Transformer;
+import com.ciphertool.zenith.inference.transformer.FormComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class CiphertextTransformationManager {
     @PostConstruct
     public void init() {
         existentCipherTransformers = cipherTransformers.stream()
-                .map(Transformer::getName)
+                .map(FormComponent::getName)
                 .collect(Collectors.toList());
     }
 

@@ -17,8 +17,22 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ZenithFitnessFunction } from "./ZenithFitnessFunction";
+package com.ciphertool.zenith.api.graphql;
 
-export class FitnessFunctionResponse {
-  fitnessFunctions: ZenithFitnessFunction[]
+import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.stereotype.Controller;
+
+import java.util.List;
+
+@Controller
+public class FitnessFunctionController {
+    @Autowired
+    private List<PlaintextEvaluator> plaintextEvaluators;
+
+    @QueryMapping
+    public List<PlaintextEvaluator> fitnessFunctions() {
+        return plaintextEvaluators;
+    }
 }

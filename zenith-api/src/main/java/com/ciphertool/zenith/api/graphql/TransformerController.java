@@ -22,7 +22,6 @@ package com.ciphertool.zenith.api.graphql;
 import com.ciphertool.zenith.inference.entities.FormlyFieldProps;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
-import com.ciphertool.zenith.inference.transformer.Transformer;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CipherTransformer;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,31 +48,6 @@ public class TransformerController {
     @QueryMapping
     public List<PlaintextTransformer> plaintextTransformers() {
         return plaintextTransformers;
-    }
-
-    @SchemaMapping
-    public String name(Transformer transformer) {
-        return transformer.getName();
-    }
-
-    @SchemaMapping
-    public String displayName(Transformer transformer) {
-        return transformer.getDisplayName();
-    }
-
-    @SchemaMapping
-    public FormlyForm form(Transformer transformer) {
-        return transformer.getForm();
-    }
-
-    @SchemaMapping
-    public int order(Transformer transformer) {
-        return transformer.getOrder();
-    }
-
-    @SchemaMapping
-    public String helpText(Transformer transformer) {
-        return transformer.getHelpText();
     }
 
     @SchemaMapping
