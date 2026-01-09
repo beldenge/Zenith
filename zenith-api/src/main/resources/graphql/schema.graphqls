@@ -13,8 +13,16 @@ type Query {
     nGramStatistics(request: CipherRequest!, statsPage: Int!): NGramStatistics
     fitnessFunctions: [FormComponent]
     segmentPlaintext(plaintext: String!): WordSegmentationResponse
+}
+
+type Mutation {
     transformPlaintext(request: PlaintextTransformationRequest!): SolutionResponse
     transformCipher(request: CiphertextTransformationRequest!): Cipher
+    solveSolution(input: SolutionRequest!): String!
+}
+
+type Subscription {
+    solutionUpdates(requestId: ID!): SolutionUpdate!
 }
 
 input CipherRequest {
@@ -109,4 +117,39 @@ type SolutionResponse {
 input CiphertextTransformationRequest {
     cipher: CipherRequest!
     steps: [TransformationStep]
+}
+
+input FitnessFunction {
+    name: String!
+    data: Object
+}
+
+input SolutionRequest {
+    requestId: String
+    rows: Int!
+    columns: Int!
+    ciphertext: [String!]!
+    epochs: Int
+    plaintextTransformers: [TransformationStep]
+    fitnessFunction: FitnessFunction
+    simulatedAnnealingConfiguration: Object
+    geneticAlgorithmConfiguration: Object
+}
+
+enum WebSocketResponseType {
+    EPOCH_COMPLETE
+    SOLUTION
+    ERROR
+}
+
+type EpochCompleteResponse {
+    epochsCompleted: Int!
+    epochsTotal: Int!
+}
+
+type SolutionUpdate {
+    requestId: ID!
+    type: WebSocketResponseType!
+    epochData: EpochCompleteResponse
+    solutionData: SolutionResponse
 }

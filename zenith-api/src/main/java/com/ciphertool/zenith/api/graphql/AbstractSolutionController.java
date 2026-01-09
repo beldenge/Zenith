@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.service;
+package com.ciphertool.zenith.api.graphql;
 
 import com.ciphertool.zenith.api.model.SolutionRequest;
 import com.ciphertool.zenith.api.model.SolutionRequestFitnessFunction;
@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AbstractSolutionService {
+public abstract class AbstractSolutionController {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @Value("${features.genetic-algorithm.enabled:true}")
@@ -135,7 +135,7 @@ public abstract class AbstractSolutionService {
                 .map(evaluator -> evaluator.getClass().getSimpleName())
                 .collect(Collectors.toList());
 
-        String plaintextEvaluatorName = requestFitnessFunction.getFitnessFunctionName();
+        String plaintextEvaluatorName = requestFitnessFunction.getName();
 
         PlaintextEvaluator plaintextEvaluator = null;
 

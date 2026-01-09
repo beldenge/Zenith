@@ -19,18 +19,18 @@
 
 package com.ciphertool.zenith.api.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import jakarta.validation.constraints.NotBlank;
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter
 @Setter
-public class SolutionRequestFitnessFunction {
-    @NotBlank
-    private String name;
-
-    private Map<String, Object> data = new HashMap<>();
+@NoArgsConstructor
+@AllArgsConstructor
+public class SolutionUpdate {
+    private String requestId;
+    private WebSocketResponseType type;
+    private EpochCompleteResponse epochData;
+    private SolutionResponse solutionData;
 }

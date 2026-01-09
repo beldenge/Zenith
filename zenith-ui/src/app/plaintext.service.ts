@@ -46,9 +46,9 @@ export class PlaintextService {
   }
 
   transformSample(request: SamplePlaintextTransformationRequest) {
-    return this.apollo.query<SolutionResponse>({
-      query: gql`
-          query TransformPlaintext($request: PlaintextTransformationRequest!) {
+    return this.apollo.mutate<SolutionResponse>({
+      mutation: gql`
+        mutation TransformPlaintext($request: PlaintextTransformationRequest!) {
             transformPlaintext(request: $request) {
               plaintext
               scores

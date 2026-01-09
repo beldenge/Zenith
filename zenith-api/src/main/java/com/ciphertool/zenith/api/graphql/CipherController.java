@@ -26,6 +26,7 @@ import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransfor
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
@@ -46,7 +47,7 @@ public class CipherController {
         return cipherDao.findAll();
     }
 
-    @QueryMapping
+    @MutationMapping
     public Cipher transformCipher(@Argument @Valid CiphertextTransformationRequest request) {
         Cipher cipher = request.getCipher().asCipher();
 

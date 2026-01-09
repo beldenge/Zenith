@@ -33,7 +33,6 @@ import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphql.scalars.ExtendedScalars;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -57,7 +56,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.graphql.execution.RuntimeWiringConfigurer;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
@@ -113,12 +111,6 @@ public class InferenceConfiguration {
 
     @Value("${language-model.word-ngram.total-token-count}")
     private long wordGramTotalTokenCount;
-
-    // Allows us to use `Object` in the GraphQL schema
-    @Bean
-    public RuntimeWiringConfigurer runtimeWiringConfigurer() {
-        return wiringBuilder -> wiringBuilder.scalar(ExtendedScalars.Object);
-    }
 
     @Bean
     public ApplicationConfiguration configuration() {

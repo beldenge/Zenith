@@ -17,20 +17,14 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
+import { EpochCompleteResponse } from './EpochCompleteResponse';
+import { SolutionResponse } from './SolutionResponse';
 
-import lombok.Getter;
-import lombok.Setter;
+export type WebSocketResponseType = 'EPOCH_COMPLETE' | 'SOLUTION' | 'ERROR';
 
-import jakarta.validation.constraints.NotBlank;
-import java.util.HashMap;
-import java.util.Map;
-
-@Getter
-@Setter
-public class SolutionRequestFitnessFunction {
-    @NotBlank
-    private String name;
-
-    private Map<String, Object> data = new HashMap<>();
+export interface SolutionUpdate {
+  requestId: string;
+  type: WebSocketResponseType;
+  epochData?: EpochCompleteResponse;
+  solutionData?: SolutionResponse;
 }

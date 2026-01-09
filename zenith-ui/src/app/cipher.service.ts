@@ -56,9 +56,9 @@ export class CipherService {
   }
 
   transformCipher(request: CiphertextTransformationRequest) {
-    return this.apollo.query<Cipher>({
-      query: gql`
-          query TransformCipher($request: CiphertextTransformationRequest!) {
+    return this.apollo.mutate<Cipher>({
+      mutation: gql`
+          mutation TransformCipher($request: CiphertextTransformationRequest!) {
             transformCipher(request: $request) {
               name
               rows

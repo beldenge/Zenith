@@ -21,8 +21,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CipherService } from "../cipher.service";
 import { Cipher } from "../models/Cipher";
 import { UntypedFormBuilder, Validators } from "@angular/forms";
-import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
+import { SolutionUpdate } from "../models/SolutionUpdate";
 import { FormComponent } from "../models/FormComponent";
 import { TransformationStep } from "../models/TransformationStep";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -33,7 +33,6 @@ import { SelectOption } from "../models/SelectOption";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
 import { SolutionService } from "../solution.service";
-import { SolutionResponse } from "../models/SolutionResponse";
 import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
 import { LocalStorageKeys } from "../models/LocalStorageKeys";
 
@@ -46,7 +45,7 @@ import { LocalStorageKeys } from "../models/LocalStorageKeys";
 export class DashboardComponent implements OnInit, OnDestroy {
   showApplicationDownloadInfo = false;
   showIntroDashboardSubscription: Subscription;
-  webSocketAPI: WebSocketAPI;
+  solutionSubscription?: Subscription;
   selectedCipher: Cipher;
   isRunning = false;
   progressPercentage = 0;
@@ -78,8 +77,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
               private solutionService: SolutionService) {}
 
   ngOnInit() {
-    this.webSocketAPI = new WebSocketAPI();
-
     this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
       this.selectedCipher = selectedCipher;
     });
@@ -90,7 +87,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.epochsSubscription = this.configurationService.getEpochsAsObservable().subscribe(epochs => {
       if (this.hyperparametersForm.get('epochs').value !== epochs) {
-        this.hyperparametersForm.patchValue({ 'epochs': epochs });
+        this.hyperparametersForm.patchValue({ epochs });
       }
     });
 
@@ -131,6 +128,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.solutionSubscription?.unsubscribe();
     this.selectedCipherSubscription.unsubscribe();
     this.appliedPlaintextTransformersSubscription.unsubscribe();
     this.epochsSubscription.unsubscribe();
@@ -202,7 +200,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     if (!allValid) {
-      this.snackBar.open('Errors exist in plaintext transformers.  Please correct them before solving.', '',{
+      this.snackBar.open('Errors exist in plaintext transformers.  Please correct them before solving.', '', {
         duration: 2000,
         verticalPosition: 'top'
       });
@@ -214,24 +212,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.solutionService.updateRunState(true);
     this.solutionService.updateProgressPercentage(0);
 
-    const self = this;
-    this.webSocketAPI.connectAndSend(request, function (response) {
-      if (response.headers.type === 'SOLUTION') {
-        const json = JSON.parse(response.body);
-
-        self.solutionService.updateSolution(new SolutionResponse(json.plaintext, json.score))
-
-        self.solutionService.updateRunState(false);
-        self.solutionService.updateProgressPercentage(100);
-        self.webSocketAPI.disconnect();
-      } else if (response.headers.type === 'EPOCH_COMPLETE') {
-        const responseBody = JSON.parse(response.body);
-        self.solutionService.updateProgressPercentage((responseBody.epochsCompleted / responseBody.epochsTotal) * 100);
-      } else if (response.headers.type === 'ERROR') {
-        self.solverError();
+    this.solutionService.solveSolution(request).subscribe({
+      next: (requestId: string) => {
+        this.solutionSubscription = this.solutionService.solutionUpdates(requestId).subscribe({
+          next: (update: SolutionUpdate) => {
+            this.solutionService.handleSolutionUpdate(update);
+            if (update.type === 'SOLUTION' || update.type === 'ERROR') {
+              this.solutionSubscription.unsubscribe();
+            }
+            if (update.type === 'ERROR') {
+              this.solverError();
+            }
+          },
+          error: () => {
+            this.solverError();
+          }
+        });
+      },
+      error: () => {
+        this.solverError();
       }
-    }, error => {
-      self.solverError();
     });
   }
 
@@ -239,12 +239,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.solutionService.updateRunState(false);
     this.solutionService.updateProgressPercentage(0);
 
-    this.snackBar.open('Error: unable to complete solve due to server error.', '',{
+    this.snackBar.open('Error: unable to complete solve due to server error.', '', {
       duration: 5000,
       verticalPosition: 'top'
     });
-
-    this.webSocketAPI.disconnect();
   }
 
   disableApplicationDownloadInfo() {

@@ -20,13 +20,41 @@
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject, NgModule } from '@angular/core';
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import {ApolloClient, InMemoryCache} from '@apollo/client';
+import { ApolloLink } from '@apollo/client';
+import {GraphQLWsLink} from "@apollo/client/link/subscriptions";
+import {getMainDefinition} from "@apollo/client/utilities";
+import {createClient} from "graphql-ws";
+
 
 export function createApollo(): ApolloClient.Options {
   const httpLink = inject(HttpLink);
 
+  const http = httpLink.create({
+    uri: '/graphql',
+  });
+
+  const ws = new GraphQLWsLink(
+    createClient({
+      url: '/graphql'
+    })
+  );
+
+  // Allow subscriptions to use websockets and other operations to use HTTP
+  const splitLink = ApolloLink.split(
+    ({ query }) => {
+      const definition = getMainDefinition(query);
+      return (
+        definition.kind === 'OperationDefinition' &&
+        definition.operation === 'subscription'
+      );
+    },
+    ws,
+    http
+  );
+
   return {
-    link: httpLink.create({ uri: '/graphql' }),
+    link: splitLink,
     cache: new InMemoryCache()
   };
 }

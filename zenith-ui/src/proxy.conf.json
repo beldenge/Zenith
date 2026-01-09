@@ -9,7 +9,8 @@
   },
   "/graphql": {
     "target": "http://localhost:8080",
-    "secure": false
+    "secure": false,
+    "ws": true
   },
   "/css": {
     "target": "http://localhost:8080",

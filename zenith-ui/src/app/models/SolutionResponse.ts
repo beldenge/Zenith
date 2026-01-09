@@ -19,10 +19,10 @@
 
 export class SolutionResponse {
   plaintext: string;
-  score: number;
+  scores: number[];
 
-  constructor(plaintext: string, score: number) {
+  constructor(plaintext: string, scores: number[]) {
     this.plaintext = plaintext;
-    this.score = score;
+    this.scores = scores;
   }
 }

@@ -34,6 +34,8 @@ import java.util.List;
 @Getter
 @Setter
 public class SolutionRequest {
+    private String requestId;
+
     @NotNull
     @Min(0)
     private int rows;

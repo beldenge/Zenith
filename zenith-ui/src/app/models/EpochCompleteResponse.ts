@@ -17,20 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
-
-import lombok.Getter;
-import lombok.Setter;
-
-import jakarta.validation.constraints.NotBlank;
-import java.util.HashMap;
-import java.util.Map;
-
-@Getter
-@Setter
-public class SolutionRequestFitnessFunction {
-    @NotBlank
-    private String name;
-
-    private Map<String, Object> data = new HashMap<>();
+export interface EpochCompleteResponse {
+  epochsCompleted: number;
+  epochsTotal: number;
 }

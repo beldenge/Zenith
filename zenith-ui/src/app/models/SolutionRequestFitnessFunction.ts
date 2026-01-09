@@ -18,11 +18,11 @@
  */
 
 export class SolutionRequestFitnessFunction {
-  fitnessFunctionName: string;
+  name: string;
   data: any;
 
-  constructor(fitnessFunctionName: string, data: any) {
-    this.fitnessFunctionName = fitnessFunctionName;
+  constructor(name: string, data: any) {
+    this.name = name;
     this.data = data;
   }
 }
