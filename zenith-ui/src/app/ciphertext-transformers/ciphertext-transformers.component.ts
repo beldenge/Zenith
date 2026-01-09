@@ -63,7 +63,12 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     }
 
     const transformationRequest: CiphertextTransformationRequest = {
-      cipher: this.cipher,
+      cipher: {
+        name: this.cipher.name,
+        rows: this.cipher.rows,
+        columns: this.cipher.columns,
+        ciphertext: this.cipher.ciphertext
+      },
       steps: []
     };
 
@@ -88,8 +93,8 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
         delete this.cipher.transformed;
         this.cipherService.updateSelectedCipher(this.cipher);
       } else {
-        this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
-          this.cipher.transformed = cipherResponse.ciphers[0];
+        this.cipherService.transformCipher(transformationRequest).subscribe((cipherResponse: any) => {
+          this.cipher.transformed = cipherResponse.data.transformCipher;
           this.cipherService.updateSelectedCipher(this.cipher);
         });
       }
@@ -127,8 +132,15 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
-        this.cipher = cipher;
+    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe((cipher: Cipher) => {
+        this.cipher = {
+          name: cipher?.name,
+          rows: cipher?.rows,
+          columns: cipher?.columns,
+          ciphertext: cipher?.ciphertext,
+          transformed: cipher?.transformed,
+          readOnly: cipher?.readOnly
+        };
     });
 
     this.showIntroCiphertextTransformersSubscription = this.introductionService.getShowIntroCiphertextTransformersAsObservable().subscribe(showIntro => {

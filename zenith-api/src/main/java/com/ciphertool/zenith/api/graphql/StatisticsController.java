@@ -22,6 +22,8 @@ package com.ciphertool.zenith.api.graphql;
 import com.ciphertool.zenith.api.model.*;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.statistics.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -58,42 +60,42 @@ public class StatisticsController {
 
     @QueryMapping
     @Cacheable(value = "uniqueSymbols", key = "#cipher.name")
-    public DoubleResponse uniqueSymbols(@Argument CipherRequest cipher) {
+    public DoubleResponse uniqueSymbols(@Argument @Valid CipherRequest cipher) {
         return new DoubleResponse(uniqueSymbolsEvaluator.evaluate(cipher.asCipher()));
     }
 
     @QueryMapping
     @Cacheable(value = "multiplicities", key = "#cipher.name")
-    public DoubleResponse multiplicity(@Argument CipherRequest cipher) {
+    public DoubleResponse multiplicity(@Argument @Valid CipherRequest cipher) {
         return new DoubleResponse(multiplicityEvaluator.evaluate(cipher.asCipher()));
     }
 
     @QueryMapping
     @Cacheable(value = "entropies", key = "#cipher.name")
-    public DoubleResponse entropy(@Argument CipherRequest cipher) {
+    public DoubleResponse entropy(@Argument @Valid CipherRequest cipher) {
         return new DoubleResponse(entropyEvaluator.evaluate(cipher.asCipher()));
     }
 
     @QueryMapping
     @Cacheable(value = "indexesOfCoincidence", key = "#cipher.name")
-    public DoubleResponse indexOfCoincidence(@Argument CipherRequest cipher) {
+    public DoubleResponse indexOfCoincidence(@Argument @Valid CipherRequest cipher) {
         return new DoubleResponse(indexOfCoincidenceEvaluator.evaluate(cipher.asCipher()));
     }
 
     @QueryMapping
     @Cacheable(value = "bigramRepeats", key = "#cipher.name")
-    public IntResponse bigramRepeats(@Argument CipherRequest cipher) {
+    public IntResponse bigramRepeats(@Argument @Valid CipherRequest cipher) {
         return new IntResponse(bigramEvaluator.evaluate(cipher.asCipher()));
     }
 
     @QueryMapping
     @Cacheable(value = "cycleScores", key = "#cipher.name")
-    public IntResponse cycleScore(@Argument CipherRequest cipher) {
+    public IntResponse cycleScore(@Argument @Valid CipherRequest cipher) {
         return new IntResponse(cycleCountEvaluator.evaluate(cipher.asCipher()));
     }
 
     @QueryMapping
-    public NGramStatistics nGramStatistics(@Argument CipherRequest request, @Argument int statsPage) {
+    public NGramStatistics nGramStatistics(@Argument @Valid CipherRequest request, @Argument @Min(0) int statsPage) {
         Cipher cipher = request.asCipher();
 
         List<NGramCount> firstNGramCounts = getNGramCounts(cipher, statsPage, 1);

@@ -24,7 +24,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +34,7 @@ import java.util.Map;
 @Component
 public class CiphertextLanguageModelEvaluator {
     @Autowired
-    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
+    protected List<TransformationStep> plaintextTransformationSteps;
 
     @Autowired
     private Cipher originalCipher;

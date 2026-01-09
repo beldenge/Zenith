@@ -17,9 +17,9 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SolutionRequestTransformer } from "./SolutionRequestTransformer";
+import { TransformationStep } from "./TransformationStep";
 
 export class SamplePlaintextTransformationRequest {
   plaintext: string;
-  plaintextTransformers: SolutionRequestTransformer[];
+  plaintextTransformers: TransformationStep[];
 }

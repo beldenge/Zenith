@@ -18,11 +18,8 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Cipher } from "./models/Cipher";
-import {Apollo, gql} from "apollo-angular";
-import {Observable} from "rxjs";
-import {ApolloClient} from "@apollo/client";
-import QueryResult = ApolloClient.QueryResult;
+import { Cipher } from './models/Cipher';
+import {Apollo, gql} from 'apollo-angular';
 
 interface GetScalarQuery {
   value: number;

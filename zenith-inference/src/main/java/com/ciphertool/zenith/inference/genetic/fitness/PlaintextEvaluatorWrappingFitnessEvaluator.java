@@ -29,8 +29,8 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
@@ -38,11 +38,11 @@ import java.util.Map;
 
 public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
     private PlaintextEvaluator plaintextEvaluator;
-    private List<PlaintextTransformationStep> plaintextTransformationSteps;
+    private List<TransformationStep> plaintextTransformationSteps;
     private PlaintextTransformationManager plaintextTransformationManager;
     private Map<String, Object> precomputedCounterweightData;
 
-    public PlaintextEvaluatorWrappingFitnessEvaluator(Map<String, Object> precomputedCounterweightData, PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<PlaintextTransformationStep> plaintextTransformationSteps) {
+    public PlaintextEvaluatorWrappingFitnessEvaluator(Map<String, Object> precomputedCounterweightData, PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<TransformationStep> plaintextTransformationSteps) {
         this.precomputedCounterweightData = precomputedCounterweightData;
         this.plaintextEvaluator = plaintextEvaluator;
         this.plaintextTransformationManager = plaintextTransformationManager;

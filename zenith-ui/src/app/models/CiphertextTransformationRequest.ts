@@ -17,10 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CiphertextTransformationRequestStep } from "./CiphertextTransformationRequestStep";
-import { Cipher } from "./Cipher";
+import {TransformationStep} from "./TransformationStep";
+import {CipherRequest} from "./CipherRequest";
 
 export class CiphertextTransformationRequest {
-  cipher: Cipher;
-  steps: CiphertextTransformationRequestStep[];
+  cipher: CipherRequest;
+  steps: TransformationStep[];
 }

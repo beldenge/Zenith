@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from "rxjs";
 import { MatTooltip } from "@angular/material/tooltip";
 import { SolutionService } from "../solution.service";
-import { WordSegmentationService } from "../word-segmentation.service";
 import { SolutionResponse } from "../models/SolutionResponse";
+import {PlaintextService} from "../plaintext.service";
 
 const originalTooltipText = 'Copy to clipboard';
 
@@ -20,7 +20,8 @@ export class WordSegmentationComponent implements OnInit, OnDestroy {
   score: number;
   segmentation: string;
 
-  constructor(private solutionService: SolutionService, private wordSegmentationService: WordSegmentationService) {}
+  constructor(private solutionService: SolutionService,
+              private plaintextService: PlaintextService) {}
 
   ngOnInit(): void {
     this.solutionSubscription = this.solutionService.getSolutionAsObservable().subscribe(solution => {
@@ -32,18 +33,18 @@ export class WordSegmentationComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.wordSegmentationService.getWordSegmentation(solution.plaintext).subscribe((response) => {
+      this.plaintextService.getWordSegmentation(solution.plaintext).subscribe((response: any) => {
         let partialSegmentation = '';
-        for (let i = 0; i < response.segmentedPlaintext.length; i++) {
-          partialSegmentation += response.segmentedPlaintext[i];
+        for (let i = 0; i < response.data.segmentPlaintext.segmentedPlaintext.length; i++) {
+          partialSegmentation += response.data.segmentPlaintext.segmentedPlaintext[i];
 
-          if (i < response.segmentedPlaintext.length - 1) {
+          if (i < response.data.segmentPlaintext.segmentedPlaintext.length - 1) {
             partialSegmentation += ' ';
           }
         }
 
         this.segmentation = partialSegmentation;
-        this.score = response.probability;
+        this.score = response.data.segmentPlaintext.probability;
       });
     });
   }

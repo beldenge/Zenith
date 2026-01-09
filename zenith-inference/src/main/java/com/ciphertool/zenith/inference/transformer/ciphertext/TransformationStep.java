@@ -17,27 +17,20 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.api.model;
-
-import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import jakarta.validation.constraints.NotBlank;
-import java.util.HashMap;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Map;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class CiphertextTransformationRequestStep {
+@AllArgsConstructor
+public class TransformationStep {
     @NotBlank
     private String transformerName;
-
-    private Map<String, Object> data = new HashMap<>();
-
-    public CiphertextTransformationStep asStep() {
-        return new CiphertextTransformationStep(transformerName, data);
-    }
+    private Map<String, Object> data;
 }

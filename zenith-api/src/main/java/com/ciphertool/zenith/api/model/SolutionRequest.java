@@ -21,6 +21,7 @@ package com.ciphertool.zenith.api.model;
 
 import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
 import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,7 +49,7 @@ public class SolutionRequest {
     private int epochs = 1;
 
     @Valid
-    private List<SolutionRequestTransformer> plaintextTransformers;
+    private List<TransformationStep> plaintextTransformers;
 
     @Valid
     private SolutionRequestFitnessFunction fitnessFunction;

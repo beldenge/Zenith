@@ -4,14 +4,17 @@ type Query {
     ciphers: [Cipher]
     ciphertextTransformers: [FormComponent]
     plaintextTransformers: [FormComponent]
-    uniqueSymbols(cipher: CipherRequest): DoubleResponse!
-    multiplicity(cipher: CipherRequest): DoubleResponse!
-    entropy(cipher: CipherRequest): DoubleResponse!
-    indexOfCoincidence(cipher: CipherRequest): DoubleResponse!
-    bigramRepeats(cipher: CipherRequest): IntResponse!
-    cycleScore(cipher: CipherRequest): IntResponse!
-    nGramStatistics(request: CipherRequest, statsPage: Int!): NGramStatistics
+    uniqueSymbols(cipher: CipherRequest!): DoubleResponse!
+    multiplicity(cipher: CipherRequest!): DoubleResponse!
+    entropy(cipher: CipherRequest!): DoubleResponse!
+    indexOfCoincidence(cipher: CipherRequest!): DoubleResponse!
+    bigramRepeats(cipher: CipherRequest!): IntResponse!
+    cycleScore(cipher: CipherRequest!): IntResponse!
+    nGramStatistics(request: CipherRequest!, statsPage: Int!): NGramStatistics
     fitnessFunctions: [FormComponent]
+    segmentPlaintext(plaintext: String!): WordSegmentationResponse
+    transformPlaintext(request: PlaintextTransformationRequest!): SolutionResponse
+    transformCipher(request: CiphertextTransformationRequest!): Cipher
 }
 
 input CipherRequest {
@@ -81,4 +84,29 @@ type NGramStatistics {
     firstNGramCounts: [NGramCount!]!
     secondNGramCounts: [NGramCount!]!
     thirdNGramCounts: [NGramCount!]!
+}
+
+type WordSegmentationResponse {
+    probability: Float!
+    segmentedPlaintext: [String!]!
+}
+
+input TransformationStep {
+    transformerName: String!
+    data: Object
+}
+
+input PlaintextTransformationRequest {
+    plaintext: String!
+    plaintextTransformers: [TransformationStep]
+}
+
+type SolutionResponse {
+    plaintext: String!
+    scores: [Float]
+}
+
+input CiphertextTransformationRequest {
+    cipher: CipherRequest!
+    steps: [TransformationStep]
 }

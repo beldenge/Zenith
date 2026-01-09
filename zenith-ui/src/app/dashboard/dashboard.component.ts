@@ -24,7 +24,7 @@ import { UntypedFormBuilder, Validators } from "@angular/forms";
 import { WebSocketAPI } from "../websocket.api";
 import { SolutionRequest } from "../models/SolutionRequest";
 import { FormComponent } from "../models/FormComponent";
-import { SolutionRequestTransformer } from "../models/SolutionRequestTransformer";
+import { TransformationStep } from "../models/TransformationStep";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ConfigurationService } from "../configuration.service";
 import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
@@ -191,7 +191,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const plaintextTransformers = [];
 
       this.appliedPlaintextTransformers.forEach((transformer) => {
-        plaintextTransformers.push(new SolutionRequestTransformer(transformer.name, transformer.form.model));
+        plaintextTransformers.push(new TransformationStep(transformer.name, transformer.form.model));
 
         allValid = allValid && transformer.form.form.valid;
       });

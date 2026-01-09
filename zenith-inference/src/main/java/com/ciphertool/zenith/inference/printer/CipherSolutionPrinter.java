@@ -21,8 +21,8 @@ package com.ciphertool.zenith.inference.printer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
 import com.ciphertool.zenith.inference.util.EntropyEvaluator;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
@@ -52,7 +52,7 @@ public class CipherSolutionPrinter {
     @Autowired
     protected PlaintextTransformationManager plaintextTransformationManager;
 
-    public void print(CipherSolution solution, List<PlaintextTransformationStep> plaintextTransformationSteps) {
+    public void print(CipherSolution solution, List<TransformationStep> plaintextTransformationSteps) {
         String plaintext = solution.asSingleLineString();
         if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
             plaintext = plaintextTransformationManager.transform(plaintext, plaintextTransformationSteps);

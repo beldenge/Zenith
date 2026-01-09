@@ -18,21 +18,18 @@
  */
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { CipherResponse } from "./models/CipherResponse";
 import { Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
 import { CiphertextTransformationRequest } from "./models/CiphertextTransformationRequest";
-import { environment } from "../environments/environment";
 import { ConfigurationService } from "./configuration.service";
-
-const ENDPOINT_URL = environment.apiUrlBase + '/ciphers';
+import {Apollo, gql} from "apollo-angular";
 
 @Injectable({
   providedIn: 'root'
 })
 export class CipherService {
-  constructor(private http: HttpClient, private configurationService: ConfigurationService) {}
+  constructor(private configurationService: ConfigurationService,
+              private apollo: Apollo) {}
 
   selected: Cipher;
 
@@ -58,7 +55,23 @@ export class CipherService {
     return this.configurationService.updateCiphers(ciphers);
   }
 
-  transformCipher(transformationRequest: CiphertextTransformationRequest) {
-    return this.http.post<CipherResponse>(ENDPOINT_URL, transformationRequest);
+  transformCipher(request: CiphertextTransformationRequest) {
+    return this.apollo.query<Cipher>({
+      query: gql`
+          query TransformCipher($request: CiphertextTransformationRequest!) {
+            transformCipher(request: $request) {
+              name
+              rows
+              columns
+              readOnly
+              ciphertext
+              knownSolutionKey
+            }
+          }
+        `,
+      variables: {
+        request
+      }
+    });
   }
 }

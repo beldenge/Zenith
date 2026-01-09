@@ -19,7 +19,6 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from "rxjs";
-import { PlaintextTransformerService } from "../plaintext-transformer.service";
 import { FormComponent } from "../models/FormComponent";
 import { UntypedFormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
@@ -27,6 +26,7 @@ import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
 import { SolutionService } from "../solution.service";
 import { TransformerUtil } from "../util/transformer-util";
+import {PlaintextService} from "../plaintext.service";
 
 @Component({
     selector: 'app-plaintext-transformers',
@@ -83,8 +83,8 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
       if (!this.appliedTransformers || !this.appliedTransformers.length) {
         this.transformedSample = null;
       } else {
-        this.transformerService.transformSample(transformationRequest).subscribe(response => {
-          this.transformedSample = response.plaintext;
+        this.plaintextService.transformSample(transformationRequest).subscribe((response: any) => {
+          this.transformedSample = response.data.transformPlaintext.plaintext;
         });
       }
 
@@ -101,10 +101,10 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     onEnd: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: PlaintextTransformerService,
-              private configurationService: ConfigurationService,
+  constructor(private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {}
+              private solutionService: SolutionService,
+              private plaintextService: PlaintextService) {}
 
   ngOnInit(): void {
     this.configurationService.getAvailablePlaintextTransformersAsObservable().subscribe(transformerResponse => {

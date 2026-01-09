@@ -21,7 +21,6 @@ package com.ciphertool.zenith.api.service;
 
 import com.ciphertool.zenith.api.model.SolutionRequest;
 import com.ciphertool.zenith.api.model.SolutionRequestFitnessFunction;
-import com.ciphertool.zenith.api.model.SolutionRequestTransformer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
@@ -31,13 +30,12 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.GeneticAlgorithmSolutionOptimizer;
 import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
 import com.ciphertool.zenith.inference.optimizer.SimulatedAnnealingSolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,14 +75,7 @@ public abstract class AbstractSolutionService {
             cipher.addCiphertextCharacter(new Ciphertext(ciphertext));
         }
 
-        List<SolutionRequestTransformer> transformers = request.getPlaintextTransformers();
-
-        List<PlaintextTransformationStep> steps = new ArrayList<>();
-        if (transformers != null && !transformers.isEmpty()) {
-            steps = transformers.stream()
-                    .map(SolutionRequestTransformer::asStep)
-                    .collect(Collectors.toList());
-        }
+        List<TransformationStep> steps = request.getPlaintextTransformers();
 
         PlaintextEvaluator plaintextEvaluator = resolvePlaintextEvaluator(request.getFitnessFunction());
 

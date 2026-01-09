@@ -19,23 +19,20 @@
 
 package com.ciphertool.zenith.api.model;
 
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.validation.constraints.NotBlank;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Getter
 @Setter
-public class SolutionRequestTransformer {
+public class PlaintextTransformationRequest {
     @NotBlank
-    private String transformerName;
+    private String plaintext;
 
-    private Map<String, Object> data = new HashMap<>();
-
-    public PlaintextTransformationStep asStep() {
-        return new PlaintextTransformationStep(transformerName, data);
-    }
+    @Valid
+    private List<TransformationStep> plaintextTransformers;
 }

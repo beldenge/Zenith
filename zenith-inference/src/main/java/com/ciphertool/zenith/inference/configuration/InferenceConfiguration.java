@@ -24,8 +24,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.FormComponentDto;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.dao.WordNGramDao;
@@ -186,10 +185,10 @@ public class InferenceConfiguration {
         Cipher cipher = cipherDao.findByCipherName(applicationConfiguration.getSelectedCipher());
 
         if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedCiphertextTransformers())) {
-            List<CiphertextTransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
+            List<TransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
 
             for (FormComponentDto transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
-                transformationSteps.add(new CiphertextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
+                transformationSteps.add(new TransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
             }
 
             cipher = ciphertextTransformationManager.transform(cipher, transformationSteps);
@@ -285,8 +284,8 @@ public class InferenceConfiguration {
     }
 
     @Bean
-    public List<PlaintextTransformationStep> plaintextTransformationSteps(ApplicationConfiguration applicationConfiguration, List<PlaintextTransformer> plaintextTransformers) {
-        List<PlaintextTransformationStep> plaintextTransformationSteps = new ArrayList<>();
+    public List<TransformationStep> plaintextTransformationSteps(ApplicationConfiguration applicationConfiguration, List<PlaintextTransformer> plaintextTransformers) {
+        List<TransformationStep> plaintextTransformationSteps = new ArrayList<>();
 
         List<String> existentPlaintextTransformers = plaintextTransformers.stream()
                 .map(transformer -> transformer.getClass().getSimpleName())
@@ -301,7 +300,7 @@ public class InferenceConfiguration {
                     throw new IllegalArgumentException("The PlaintextTransformer with name " + transformerName + " does not exist.");
                 }
 
-                plaintextTransformationSteps.add(new PlaintextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
+                plaintextTransformationSteps.add(new TransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
             }
         }
 

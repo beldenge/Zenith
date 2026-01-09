@@ -19,10 +19,11 @@
 
 package com.ciphertool.zenith.api.model;
 
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 @Getter
@@ -32,5 +33,5 @@ public class CiphertextTransformationRequest {
     private CipherRequest cipher;
 
     @Valid
-    private List<CiphertextTransformationRequestStep> steps;
+    private List<TransformationStep> steps;
 }

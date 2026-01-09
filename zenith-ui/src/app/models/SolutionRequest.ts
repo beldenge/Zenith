@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SolutionRequestTransformer } from "./SolutionRequestTransformer";
+import { TransformationStep } from "./TransformationStep";
 import { SimulatedAnnealingConfiguration } from "./SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./GeneticAlgorithmConfiguration";
 import { SolutionRequestFitnessFunction } from "./SolutionRequestFitnessFunction";
@@ -27,7 +27,7 @@ export class SolutionRequest {
   columns: number;
   ciphertext: string[];
   epochs: number;
-  plaintextTransformers: SolutionRequestTransformer[] = [];
+  plaintextTransformers: TransformationStep[] = [];
   fitnessFunction: SolutionRequestFitnessFunction;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;

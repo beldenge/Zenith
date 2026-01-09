@@ -24,16 +24,16 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +81,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
         int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
         float annealingTemperatureMin = (float) configuration.get(ANNEALING_TEMPERATURE_MIN);
         float annealingTemperatureMax = (float) configuration.get(ANNEALING_TEMPERATURE_MAX);
@@ -158,7 +158,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         return solutionProposal;
     }
 
-    private CipherSolution performEpoch(Map<String, Object> precomputedCounterweightData, Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+    private CipherSolution performEpoch(Map<String, Object> precomputedCounterweightData, Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         String solutionString = initialSolution.asSingleLineString();
 
         if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
@@ -206,7 +206,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                                             CipherSolution solution,
                                             char[] solutionCharArray,
                                             String[] mappingKeys,
-                                            List<PlaintextTransformationStep> plaintextTransformationSteps,
+                                            List<TransformationStep> plaintextTransformationSteps,
                                             PlaintextEvaluator plaintextEvaluator) {
         String nextKey;
 

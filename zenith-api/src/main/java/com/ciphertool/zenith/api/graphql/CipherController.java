@@ -19,9 +19,13 @@
 
 package com.ciphertool.zenith.api.graphql;
 
+import com.ciphertool.zenith.api.model.CiphertextTransformationRequest;
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
@@ -34,9 +38,21 @@ public class CipherController {
     @Autowired
     private CipherDao cipherDao;
 
+    @Autowired
+    private CiphertextTransformationManager ciphertextTransformationManager;
+
     @QueryMapping
     public List<Cipher> ciphers() {
         return cipherDao.findAll();
+    }
+
+    @QueryMapping
+    public Cipher transformCipher(@Argument @Valid CiphertextTransformationRequest request) {
+        Cipher cipher = request.getCipher().asCipher();
+
+        cipher = ciphertextTransformationManager.transform(cipher, request.getSteps());
+
+        return cipher;
     }
 
     @SchemaMapping

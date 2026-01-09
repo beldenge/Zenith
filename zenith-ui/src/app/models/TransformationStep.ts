@@ -17,21 +17,12 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
-import { HttpClient } from "@angular/common/http";
-import { environment } from "../environments/environment";
-import { SamplePlaintextTransformationRequest } from "./models/SamplePlaintextTransformationRequest";
-import { SolutionResponse } from "./models/SolutionResponse";
+export class TransformationStep {
+  transformerName: string;
+  data: any;
 
-const SAMPLE_ENDPOINT_URL = environment.apiUrlBase + '/plaintext-samples';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class PlaintextTransformerService {
-  constructor(private http: HttpClient) {}
-
-  transformSample(request: SamplePlaintextTransformationRequest) {
-    return this.http.post<SolutionResponse>(SAMPLE_ENDPOINT_URL, request);
+  constructor(transformerName: string, data: any) {
+    this.transformerName = transformerName;
+    this.data = data;
   }
 }

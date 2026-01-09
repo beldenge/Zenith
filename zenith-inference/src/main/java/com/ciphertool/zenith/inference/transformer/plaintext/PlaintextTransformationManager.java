@@ -20,12 +20,13 @@
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import com.ciphertool.zenith.inference.transformer.FormComponent;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,12 +47,12 @@ public class PlaintextTransformationManager {
                 .collect(Collectors.toList());
     }
 
-    public String transform(String plaintext, List<PlaintextTransformationStep> steps) {
+    public String transform(String plaintext, List<TransformationStep> steps) {
         plaintext = plaintext.toLowerCase();
 
         List<PlaintextTransformer> toUse = new ArrayList<>(steps.size());
 
-        for (PlaintextTransformationStep step : steps) {
+        for (TransformationStep step : steps) {
             String transformerName = step.getTransformerName();
 
             if (!existentPlaintextTransformers.contains(transformerName)) {

@@ -24,7 +24,7 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -39,7 +39,7 @@ public class InferenceApplication implements CommandLineRunner {
     private Cipher cipher;
 
     @Autowired
-    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
+    protected List<TransformationStep> plaintextTransformationSteps;
 
     @Autowired
     private List<SolutionOptimizer> optimizers;

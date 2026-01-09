@@ -47,10 +47,10 @@ public class CiphertextTransformationManager {
                 .collect(Collectors.toList());
     }
 
-    public Cipher transform(Cipher cipher, List<CiphertextTransformationStep> steps) {
+    public Cipher transform(Cipher cipher, List<TransformationStep> steps) {
         List<CipherTransformer> toUse = new ArrayList<>(steps.size());
 
-        for (CiphertextTransformationStep step : steps) {
+        for (TransformationStep step : steps) {
             String transformerName = step.getTransformerName();
 
             if (!existentCipherTransformers.contains(transformerName)) {
