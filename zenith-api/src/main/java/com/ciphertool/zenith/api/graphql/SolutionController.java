@@ -24,6 +24,8 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
@@ -33,11 +35,13 @@ import reactor.core.publisher.Sinks;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 @Controller
 public class SolutionController extends AbstractSolutionController {
-
-    private static final Sinks.Many<SolutionUpdate> SOLUTION_UPDATES_SINK = Sinks.many().multicast().onBackpressureBuffer();
+    private static final Logger log = LoggerFactory.getLogger(SolutionController.class);
+    private static final Map<String, Sinks.Many<SolutionUpdate>> REQUEST_SINKS = new ConcurrentHashMap<>();
 
     @Override
     public OnEpochComplete getCallback(SolutionRequest request) {
@@ -47,7 +51,7 @@ public class SolutionController extends AbstractSolutionController {
             update.setRequestId(request.getRequestId());
             update.setType(WebSocketResponseType.EPOCH_COMPLETE);
             update.setEpochData(epochResponse);
-            SOLUTION_UPDATES_SINK.tryEmitNext(update);
+            REQUEST_SINKS.computeIfAbsent(request.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer()).tryEmitNext(update);
         };
     }
 
@@ -65,7 +69,7 @@ public class SolutionController extends AbstractSolutionController {
                 SolutionUpdate errorUpdate = new SolutionUpdate();
                 errorUpdate.setRequestId(input.getRequestId());
                 errorUpdate.setType(WebSocketResponseType.ERROR);
-                SOLUTION_UPDATES_SINK.tryEmitNext(errorUpdate);
+                REQUEST_SINKS.computeIfAbsent(input.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer()).tryEmitNext(errorUpdate);
                 return;
             }
 
@@ -79,14 +83,23 @@ public class SolutionController extends AbstractSolutionController {
             update.setRequestId(input.getRequestId());
             update.setType(WebSocketResponseType.SOLUTION);
             update.setSolutionData(solutionResp);
-            SOLUTION_UPDATES_SINK.tryEmitNext(update);
+            REQUEST_SINKS.computeIfAbsent(input.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer()).tryEmitNext(update);
         });
         return CompletableFuture.completedFuture(input.getRequestId());
     }
 
     @SubscriptionMapping
     public Flux<SolutionUpdate> solutionUpdates(@Argument String requestId) {
-        return SOLUTION_UPDATES_SINK.asFlux()
-            .filter(update -> requestId.equals(update.getRequestId()));
+        log.info("Subscription requested for requestId: {}", requestId);
+        Sinks.Many<SolutionUpdate> sink = REQUEST_SINKS.computeIfAbsent(requestId, k -> Sinks.many().multicast().onBackpressureBuffer());
+        return sink.asFlux()
+            .doOnSubscribe(s -> log.info("Subscriber attached for requestId: {}", requestId))
+            .doOnNext(update -> log.info("Delivering {} to requestId: {}", update.getType(), requestId))
+            .doOnError(e -> {
+                log.error("Error for requestId {}: {}", requestId, e.getMessage());
+                REQUEST_SINKS.remove(requestId);
+            })
+            .doOnComplete(() -> REQUEST_SINKS.remove(requestId))
+            .doOnCancel(() -> REQUEST_SINKS.remove(requestId));
     }
 }
