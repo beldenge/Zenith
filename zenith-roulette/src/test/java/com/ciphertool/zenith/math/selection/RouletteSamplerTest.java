@@ -27,7 +27,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RouletteSamplerTest {
-    public class DummyProbability implements Probability<Character>, Comparable<DummyProbability> {
+    public static class DummyProbability implements Probability<Character>, Comparable<DummyProbability> {
         private Character value;
         private Double probability;
 

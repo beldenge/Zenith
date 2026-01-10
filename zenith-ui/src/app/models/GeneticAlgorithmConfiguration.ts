@@ -34,4 +34,8 @@ export class GeneticAlgorithmConfiguration {
   selectorName: string;
   tournamentSelectorAccuracy: number;
   tournamentSize: number;
+  minPopulations: number;
+  speciationEvents: number;
+  speciationFactor: number;
+  extinctionCycles: number;
 }

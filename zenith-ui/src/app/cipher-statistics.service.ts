@@ -20,6 +20,7 @@
 import { Injectable } from '@angular/core';
 import { Cipher } from './models/Cipher';
 import {Apollo, gql} from 'apollo-angular';
+import {map} from "rxjs/operators";
 
 interface GetScalarQuery {
   value: number;
@@ -78,7 +79,7 @@ export class CipherStatisticsService {
         variables: {
           cipher: cipherRequest
         }
-      });
+      }).pipe(map((response: any) => response.data.uniqueSymbols));
     }
 
     return this.uniqueSymbolsObservables[cipher.name];
@@ -106,7 +107,7 @@ export class CipherStatisticsService {
         variables: {
           cipher: cipherRequest
         }
-      });
+      }).pipe(map((response: any) => response.data.multiplicity));
     }
 
     return this.multiplicityObservables[cipher.name];
@@ -134,7 +135,7 @@ export class CipherStatisticsService {
         variables: {
           cipher: cipherRequest
         }
-      });
+      }).pipe(map((response: any) => response.data.entropy));
     }
 
     return this.entropyObservables[cipher.name];
@@ -162,7 +163,7 @@ export class CipherStatisticsService {
         variables: {
           cipher: cipherRequest
         }
-      });
+      }).pipe(map((response: any) => response.data.indexOfCoincidence));
     }
 
     return this.indexOfCoincidenceObservables[cipher.name];
@@ -190,7 +191,7 @@ export class CipherStatisticsService {
         variables: {
           cipher: cipherRequest
         }
-      });
+      }).pipe(map((response: any) => response.data.bigramRepeats));
     }
 
     return this.bigramRepeatsObservables[cipher.name];
@@ -218,7 +219,7 @@ export class CipherStatisticsService {
         variables: {
           cipher: cipherRequest
         }
-      });
+      }).pipe(map((response: any) => response.data.cycleScore));
     }
 
     return this.cycleScoreObservables[cipher.name];
@@ -257,6 +258,6 @@ export class CipherStatisticsService {
         request,
         statsPage
       }
-    });
+    }).pipe(map((response: any) => response.data.nGramStatistics));
   }
 }

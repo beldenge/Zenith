@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.entities;
 
+import com.ciphertool.zenith.inference.transformer.FormComponent;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +29,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FormComponentDto {
+public class FormComponentDto implements FormComponent {
     private String name;
     private String displayName;
     private FormlyForm form;

@@ -75,9 +75,9 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy {
     this.cipherStatisticsService.getNgramStatistics(this.selectedCipher, statsPage).subscribe((response) => {
       const sortFunction = (a, b) => a.count < b.count ? 1 : (a.count > b.count ? -1 : 0);
       this.ngramsDataSources.push([]);
-      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.data.nGramStatistics.firstNGramCounts].sort(sortFunction)));
-      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.data.nGramStatistics.secondNGramCounts].sort(sortFunction)));
-      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.data.nGramStatistics.thirdNGramCounts].sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.firstNGramCounts].sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.secondNGramCounts].sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.thirdNGramCounts].sort(sortFunction)));
     });
   }
 }

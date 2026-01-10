@@ -94,7 +94,7 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
         this.cipherService.updateSelectedCipher(this.cipher);
       } else {
         this.cipherService.transformCipher(transformationRequest).subscribe((cipherResponse: any) => {
-          this.cipher.transformed = cipherResponse.data.transformCipher;
+          this.cipher.transformed = cipherResponse;
           this.cipherService.updateSelectedCipher(this.cipher);
         });
       }

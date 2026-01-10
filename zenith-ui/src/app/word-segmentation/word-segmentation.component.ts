@@ -35,16 +35,16 @@ export class WordSegmentationComponent implements OnInit, OnDestroy {
 
       this.plaintextService.getWordSegmentation(solution.plaintext).subscribe((response: any) => {
         let partialSegmentation = '';
-        for (let i = 0; i < response.data.segmentPlaintext.segmentedPlaintext.length; i++) {
-          partialSegmentation += response.data.segmentPlaintext.segmentedPlaintext[i];
+        for (let i = 0; i < response.segmentedPlaintext.length; i++) {
+          partialSegmentation += response.segmentedPlaintext[i];
 
-          if (i < response.data.segmentPlaintext.segmentedPlaintext.length - 1) {
+          if (i < response.segmentedPlaintext.length - 1) {
             partialSegmentation += ' ';
           }
         }
 
         this.segmentation = partialSegmentation;
-        this.score = response.data.segmentPlaintext.probability;
+        this.score = response.probability;
       });
     });
   }

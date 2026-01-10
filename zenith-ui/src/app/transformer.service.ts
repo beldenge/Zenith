@@ -21,6 +21,7 @@ import { Injectable } from '@angular/core';
 import {firstValueFrom} from "rxjs";
 import {Apollo, gql} from "apollo-angular";
 import {FormComponent} from "./models/FormComponent";
+import {map} from "rxjs/operators";
 
 interface GetCiphertextTransformersQuery {
   ciphertextTransformers: FormComponent[];
@@ -68,7 +69,7 @@ export class TransformerService {
           }
         }
       `
-    }));
+    }).pipe(map((response: any) => response.data.ciphertextTransformers)));
   }
 
   getPlaintextTransformers() {
@@ -103,6 +104,6 @@ export class TransformerService {
           }
         }
       `
-    }));
+    }).pipe(map((response: any) => response.data.plaintextTransformers)));
   }
 }

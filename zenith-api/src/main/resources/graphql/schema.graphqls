@@ -1,6 +1,7 @@
 scalar Object
 
 type Query {
+    configuration: ApplicationConfiguration
     ciphers: [Cipher]
     ciphertextTransformers: [FormComponent]
     plaintextTransformers: [FormComponent]
@@ -23,6 +24,52 @@ type Mutation {
 
 type Subscription {
     solutionUpdates(requestId: ID!): SolutionUpdate!
+}
+
+type SelectOption {
+    name: String!
+    displayName: String
+}
+
+type SimulatedAnnealingConfiguration {
+    samplerIterations: Int!
+    annealingTemperatureMin: Float!
+    annealingTemperatureMax: Float!
+}
+
+type GeneticAlgorithmConfiguration {
+    populationSize: Int!
+    numberOfGenerations: Int!
+    elitism: Int
+    populationName: String!
+    latticeRows: Int
+    latticeColumns: Int
+    latticeWrapAround: Boolean
+    latticeRadius: Int
+    breederName: String!
+    crossoverOperatorName: String!
+    mutationOperatorName: String!
+    mutationRate: Float!
+    maxMutationsPerIndividual: Int
+    selectorName: String!
+    tournamentSelectorAccuracy: Float
+    tournamentSize: Int
+    minPopulations: Int
+    speciationEvents: Int
+    speciationFactor: Int
+    extinctionCycles: Int
+}
+
+type ApplicationConfiguration {
+    selectedCipher: String
+    epochs: Int
+    appliedCiphertextTransformers: [FormComponent]
+    appliedPlaintextTransformers: [FormComponent]
+    selectedOptimizer: SelectOption
+    selectedFitnessFunction: FormComponent
+    simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration
+    geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration
+    ciphers: [Cipher]
 }
 
 input CipherRequest {

@@ -23,6 +23,7 @@ import { Cipher } from "./models/Cipher";
 import { CiphertextTransformationRequest } from "./models/CiphertextTransformationRequest";
 import { ConfigurationService } from "./configuration.service";
 import {Apollo, gql} from "apollo-angular";
+import {map} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root'
@@ -72,6 +73,6 @@ export class CipherService {
       variables: {
         request
       }
-    });
+    }).pipe(map((response: any) => response.data.transformCipher));
   }
 }

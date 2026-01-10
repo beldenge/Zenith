@@ -84,7 +84,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
         this.transformedSample = null;
       } else {
         this.plaintextService.transformSample(transformationRequest).subscribe((response: any) => {
-          this.transformedSample = response.data.transformPlaintext.plaintext;
+          this.transformedSample = response.plaintext;
         });
       }
 

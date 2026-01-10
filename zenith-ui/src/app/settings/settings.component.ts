@@ -165,7 +165,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.selectedFitnessFunctionSubscription = this.configurationService.getSelectedFitnessFunctionAsObservable().subscribe(fitnessFunction => {
       if (fitnessFunction && (!this.selectedFitnessFunction || this.selectedFitnessFunction !== fitnessFunction)) {
         this.selectedFitnessFunction = fitnessFunction;
-        this.generalSettingsForm.patchValue({ fitnessFunction: fitnessFunction });
+        this.generalSettingsForm.patchValue({ fitnessFunction });
       }
     });
 
@@ -205,7 +205,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.configurationService.updateSelectedFitnessFunction(this.generalSettingsForm.get('fitnessFunction').value);
 
       if (this.generalSettingsForm.get('optimizer').value === this.optimizerNames[0]) {
-        let configuration: SimulatedAnnealingConfiguration = {
+        const configuration: SimulatedAnnealingConfiguration = {
           samplerIterations: this.simulatedAnnealingFormGroup.get('samplerIterations').value,
           annealingTemperatureMin: this.simulatedAnnealingFormGroup.get('annealingTemperatureMin').value,
           annealingTemperatureMax: this.simulatedAnnealingFormGroup.get('annealingTemperatureMax').value
@@ -229,7 +229,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
           maxMutationsPerIndividual: this.geneticAlgorithmFormGroup.get('maxMutationsPerIndividual').value,
           selectorName: this.geneticAlgorithmFormGroup.get('selectorName').value.name,
           tournamentSelectorAccuracy: this.geneticAlgorithmFormGroup.get('tournamentSelectorAccuracy').value,
-          tournamentSize: this.geneticAlgorithmFormGroup.get('tournamentSize').value
+          tournamentSize: this.geneticAlgorithmFormGroup.get('tournamentSize').value,
+          minPopulations: null,
+          speciationEvents: null,
+          speciationFactor: null,
+          extinctionCycles: null
         };
 
         this.configurationService.updateGeneticAlgorithmConfiguration(configuration);

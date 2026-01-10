@@ -22,6 +22,7 @@ import {Apollo, gql} from "apollo-angular";
 import {WordSegmentationResponse} from "./models/WordSegmentationResponse";
 import {SamplePlaintextTransformationRequest} from "./models/SamplePlaintextTransformationRequest";
 import {SolutionResponse} from "./models/SolutionResponse";
+import {map} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root',
@@ -42,7 +43,7 @@ export class PlaintextService {
       variables: {
         plaintext
       }
-    });
+    }).pipe(map((response: any) => response.data.segmentPlaintext));
   }
 
   transformSample(request: SamplePlaintextTransformationRequest) {
@@ -58,6 +59,6 @@ export class PlaintextService {
       variables: {
         request
       }
-    });
+    }).pipe(map((response: any) => response.data.transformPlaintext));
   }
 }

@@ -21,6 +21,7 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom } from "rxjs";
 import {Apollo, gql} from "apollo-angular";
 import {FormComponent} from "./models/FormComponent";
+import {map} from "rxjs/operators";
 
 interface GetFitnessFunctionsQuery {
   fitnessFunctions: FormComponent[];
@@ -64,6 +65,6 @@ export class FitnessFunctionService {
           }
         }
       `
-    }));
+    }).pipe(map((response: any) => response.data.fitnessFunctions)));
   }
 }

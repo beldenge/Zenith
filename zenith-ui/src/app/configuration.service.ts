@@ -28,10 +28,9 @@ import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { UntypedFormGroup } from "@angular/forms";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
 import { FitnessFunctionService } from "./fitness-function.service";
-import { HttpClient } from "@angular/common/http";
 import { Cipher } from "./models/Cipher";
 import { environment } from "../environments/environment";
-import { debounceTime } from "rxjs/operators";
+import {debounceTime, map} from "rxjs/operators";
 import {Apollo, gql} from "apollo-angular";
 import { firstValueFrom } from "rxjs";
 import {TransformerService} from "./transformer.service";
@@ -114,12 +113,143 @@ export class ConfigurationService {
   private selectedCipher$ = new BehaviorSubject<Cipher>(null);
   private configurationLoadedNotification$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private http: HttpClient,
-              private sanitizer: DomSanitizer,
+  constructor(private sanitizer: DomSanitizer,
               private fitnessFunctionService: FitnessFunctionService,
               private apollo: Apollo,
               private transformerService: TransformerService) {
     this.loadInitialData();
+  }
+
+  private loadConfiguration() {
+    return this.apollo.query<ApplicationConfiguration>({ query: gql`
+        query configuration {
+          configuration {
+            selectedCipher
+            epochs
+            appliedCiphertextTransformers {
+              name
+              displayName
+              form {
+                model,
+                fields {
+                  key,
+                  type,
+                  props {
+                    label,
+                    placeholder,
+                    required,
+                    type,
+                    rows,
+                    cols,
+                    max,
+                    min,
+                    maxLength,
+                    minLength,
+                    pattern
+                  }
+                  defaultValue
+                }
+              }
+              order
+              helpText
+            }
+            appliedPlaintextTransformers {
+              name
+              displayName
+              form {
+                model,
+                fields {
+                  key,
+                  type,
+                  props {
+                    label,
+                    placeholder,
+                    required,
+                    type,
+                    rows,
+                    cols,
+                    max,
+                    min,
+                    maxLength,
+                    minLength,
+                    pattern
+                  }
+                  defaultValue
+                }
+              }
+              order
+              helpText
+            }
+            selectedOptimizer {
+              name
+              displayName
+            }
+            selectedFitnessFunction {
+              name
+              displayName
+              form {
+                model,
+                fields {
+                  key,
+                  type,
+                  props {
+                    label,
+                    placeholder,
+                    required,
+                    type,
+                    rows,
+                    cols,
+                    max,
+                    min,
+                    maxLength,
+                    minLength,
+                    pattern
+                  }
+                  defaultValue
+                }
+              }
+              order
+              helpText
+            }
+            simulatedAnnealingConfiguration {
+              samplerIterations
+              annealingTemperatureMin
+              annealingTemperatureMax
+            }
+            geneticAlgorithmConfiguration {
+              populationSize
+              numberOfGenerations
+              elitism
+              populationName
+              latticeRows
+              latticeColumns
+              latticeWrapAround
+              latticeRadius
+              breederName
+              crossoverOperatorName
+              mutationOperatorName
+              mutationRate
+              maxMutationsPerIndividual
+              selectorName
+              tournamentSelectorAccuracy
+              tournamentSize
+              minPopulations
+              speciationEvents
+              speciationFactor
+              extinctionCycles
+            }
+            ciphers {
+              name
+              rows
+              columns
+              readOnly
+              ciphertext
+              knownSolutionKey
+            }
+          }
+        }
+      `
+    }).pipe(map((response: any) => response.data.configuration));
   }
 
   private async loadInitialData() {
@@ -139,31 +269,31 @@ export class ConfigurationService {
           }
         }
       `
-      }))
+      }).pipe(map((response: any) => response.data.ciphers)))
     ]);
 
-    this.updateCiphers(ciphersData.data.ciphers, true);
+    this.updateCiphers(ciphersData, true);
 
-    const availableFitnessFunctions = [...fitnessFunctionResponse.data.fitnessFunctions].sort((t1, t2) => {
+    const availableFitnessFunctions = [...fitnessFunctionResponse].sort((t1, t2) => {
       return t1.order - t2.order;
     });
 
     this.updateAvailableFitnessFunctions(availableFitnessFunctions);
 
-    const availablePlaintextTransformers = [...plaintextTransformerResponse.data.plaintextTransformers].sort((t1, t2) => {
+    const availablePlaintextTransformers = [...plaintextTransformerResponse].sort((t1, t2) => {
       return t1.order - t2.order;
     });
 
     this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
 
-    const availableCiphertextTransformers = [...ciphertextTransformerResponse.data.ciphertextTransformers].sort((t1, t2) => {
+    const availableCiphertextTransformers = [...ciphertextTransformerResponse].sort((t1, t2) => {
       return t1.order - t2.order;
     });
 
     this.updateAvailableCiphertextTransformers(availableCiphertextTransformers);
 
     if (!localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)) {
-      this.http.get<ApplicationConfiguration>(ENDPOINT_URL).subscribe(configurationResponse => {
+      this.loadConfiguration().subscribe(configurationResponse => {
         localStorage.setItem(LocalStorageKeys.APPLICATION_CONFIGURATION, JSON.stringify(configurationResponse));
 
         this.import(configurationResponse);
@@ -320,7 +450,7 @@ export class ConfigurationService {
   }
 
   restoreGeneralSettings() {
-    this.http.get<ApplicationConfiguration>(ENDPOINT_URL).subscribe(configurationResponse => {
+    this.loadConfiguration().subscribe(configurationResponse => {
       this.updateSelectedOptimizer(configurationResponse.selectedOptimizer, true);
       this.updateSelectedFitnessFunction(this.availableFitnessFunctions$.getValue().find(fitnessFunction => fitnessFunction.name === configurationResponse.selectedFitnessFunction.name), true);
       this.updateSimulatedAnnealingConfiguration(configurationResponse.simulatedAnnealingConfiguration, true);
