@@ -165,6 +165,10 @@ export class CipherModalComponent implements OnInit {
   }
 
   injectSpaces() {
+    if (!this.newCipherForm.get('ciphertext').value) {
+      return;
+    }
+
     const rawCiphertext = this.newCipherForm.get('ciphertext').value.replace(SPACES_TABS_REGEX, '');
     const rawRows = rawCiphertext.split(NEWLINE_REGEX);
     let newCiphertext = '';

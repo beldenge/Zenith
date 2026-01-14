@@ -296,6 +296,63 @@
               <div class="col-xl-6 mx-auto">
                 <div class="card shadow mb-4">
                   <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Speciation</h6>
+                  </div>
+                  <div class="card-body mx-4">
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Minimum Populations</mat-label>
+                          <input matInput formControlName="minPopulations">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Speciation Events</mat-label>
+                          <input matInput formControlName="speciationEvents">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Speciation Factor</mat-label>
+                          <input matInput formControlName="speciationFactor">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Extinction Cycles</mat-label>
+                          <input matInput formControlName="extinctionCycles">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-6 mx-auto">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Mutation</h6>
                   </div>
                   <div class="card-body mx-4">

@@ -73,7 +73,11 @@ export class SettingsComponent implements OnDestroy {
     maxMutationsPerIndividual: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     selectorName: [null],
     tournamentSelectorAccuracy: [null, [Validators.min(0.0), Validators.max(1.0), Validators.pattern(DECIMAL_PATTERN)]],
-    tournamentSize: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]]
+    tournamentSize: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    minPopulations: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
+    speciationEvents: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
+    speciationFactor: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
+    extinctionCycles: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]]
   });
 
   generalSettingsForm = this.fb.group({
@@ -150,7 +154,11 @@ export class SettingsComponent implements OnDestroy {
         maxMutationsPerIndividual: geneticAlgorithmConfiguration.maxMutationsPerIndividual,
         selectorName: this.selectorNames.find(name => name.name === geneticAlgorithmConfiguration.selectorName),
         tournamentSelectorAccuracy: geneticAlgorithmConfiguration.tournamentSelectorAccuracy,
-        tournamentSize: geneticAlgorithmConfiguration.tournamentSize
+        tournamentSize: geneticAlgorithmConfiguration.tournamentSize,
+        minPopulations: geneticAlgorithmConfiguration.minPopulations,
+        speciationEvents: geneticAlgorithmConfiguration.speciationEvents,
+        speciationFactor: geneticAlgorithmConfiguration.speciationFactor,
+        extinctionCycles: geneticAlgorithmConfiguration.extinctionCycles
       };
 
       if (JSON.stringify(this.geneticAlgorithmFormGroup.value) !== JSON.stringify(patch)) {
@@ -206,10 +214,10 @@ export class SettingsComponent implements OnDestroy {
           selectorName: this.geneticAlgorithmFormGroup.get('selectorName').value.name,
           tournamentSelectorAccuracy: this.geneticAlgorithmFormGroup.get('tournamentSelectorAccuracy').value,
           tournamentSize: this.geneticAlgorithmFormGroup.get('tournamentSize').value,
-          minPopulations: null,
-          speciationEvents: null,
-          speciationFactor: null,
-          extinctionCycles: null
+          minPopulations: this.geneticAlgorithmFormGroup.get('minPopulations').value,
+          speciationEvents: this.geneticAlgorithmFormGroup.get('speciationEvents').value,
+          speciationFactor: this.geneticAlgorithmFormGroup.get('speciationFactor').value,
+          extinctionCycles: this.geneticAlgorithmFormGroup.get('extinctionCycles').value
         };
 
         this.configurationService.updateGeneticAlgorithmConfiguration(configuration);
