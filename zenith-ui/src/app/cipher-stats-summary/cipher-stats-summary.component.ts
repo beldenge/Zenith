@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,44 +17,30 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Cipher } from "../models/Cipher";
-import { CipherService } from "../cipher.service";
+import {Component, effect} from '@angular/core';
 import { CipherStatisticsService } from "../cipher-statistics.service";
-import { Subscription } from "rxjs";
+import {ConfigurationService} from "../configuration.service";
 
 @Component({
-  selector: 'app-cipher-stats-summary',
-  templateUrl: './cipher-stats-summary.component.html',
-  styleUrls: ['./cipher-stats-summary.component.css']
+    selector: 'app-cipher-stats-summary',
+    templateUrl: './cipher-stats-summary.component.html',
+    styleUrls: ['./cipher-stats-summary.component.css'],
+    standalone: false
 })
-export class CipherStatsSummaryComponent implements OnInit, OnDestroy {
+export class CipherStatsSummaryComponent {
   uniqueSymbols: number = null;
   multiplicity: number = null;
   entropy: number = null;
   indexOfCoincidence: number = null;
   bigramRepeats: number = null;
   cycleScore: number = null;
-  selectedCipher: Cipher;
-  selectedCipherSubscription: Subscription;
+  selectedCipher = this.configurationService.selectedCipher;
 
-  constructor(private cipherService: CipherService, private statisticsService: CipherStatisticsService) { }
-
-  ngOnInit() {
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      if (selectedCipher == null) {
-        return;
-      }
-
-      let skipStatistics = false;
-
-      if (this.selectedCipher && this.selectedCipher.ciphertext === selectedCipher.ciphertext) {
-        skipStatistics = true;
-      }
-
-      this.selectedCipher = selectedCipher;
-
-      if (skipStatistics) {
+  constructor(private statisticsService: CipherStatisticsService,
+              private configurationService: ConfigurationService) {
+    effect(() => {
+      const selected = this.selectedCipher();
+      if (selected == null) {
         return;
       }
 
@@ -65,33 +51,29 @@ export class CipherStatsSummaryComponent implements OnInit, OnDestroy {
       this.bigramRepeats = null;
       this.cycleScore = null;
 
-      this.statisticsService.getUniqueSymbols(selectedCipher).subscribe((response) => {
+      this.statisticsService.getUniqueSymbols(selected).subscribe((response) => {
         this.uniqueSymbols = response.value;
       });
 
-      this.statisticsService.getMultiplicity(selectedCipher).subscribe((response) => {
+      this.statisticsService.getMultiplicity(selected).subscribe((response) => {
         this.multiplicity = response.value;
       });
 
-      this.statisticsService.getEntropy(selectedCipher).subscribe((response) => {
+      this.statisticsService.getEntropy(selected).subscribe((response) => {
         this.entropy = response.value;
       });
 
-      this.statisticsService.getIndexOfCoincidence(selectedCipher).subscribe((response) => {
+      this.statisticsService.getIndexOfCoincidence(selected).subscribe((response) => {
         this.indexOfCoincidence = response.value;
       });
 
-      this.statisticsService.getBigramRepeats(selectedCipher).subscribe((response) => {
+      this.statisticsService.getBigramRepeats(selected).subscribe((response) => {
         this.bigramRepeats = response.value;
       });
 
-      this.statisticsService.getCycleScore(selectedCipher).subscribe((response) => {
+      this.statisticsService.getCycleScore(selected).subscribe((response) => {
         this.cycleScore = response.value;
       });
     });
-  }
-
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
   }
 }

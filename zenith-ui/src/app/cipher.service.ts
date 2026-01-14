@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -18,47 +18,34 @@
  */
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { CipherResponse } from "./models/CipherResponse";
-import { Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
 import { CiphertextTransformationRequest } from "./models/CiphertextTransformationRequest";
-import { environment } from "../environments/environment";
-import { ConfigurationService } from "./configuration.service";
-
-const ENDPOINT_URL = environment.apiUrlBase + '/ciphers';
+import {Apollo, gql} from "apollo-angular";
+import {map} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root'
 })
 export class CipherService {
-  constructor(private http: HttpClient, private configurationService: ConfigurationService) {}
+  constructor(private apollo: Apollo) {}
 
-  selected: Cipher;
-
-  getSelectedCipherAsObservable(): Observable<Cipher> {
-    return this.configurationService.getSelectedCipherAsObservable();
-  }
-
-  updateSelectedCipher(cipher: Cipher): void {
-    this.selected = cipher;
-    this.configurationService.updateSelectedCipher(cipher);
-  }
-
-  getCiphersAsObservable(): Observable<Cipher[]> {
-    return this.configurationService.getCiphersAsObservable();
-  }
-
-  updateCiphers(ciphers: Cipher[]): void {
-    if (this.selected !== undefined && !ciphers.find(cipher => cipher.name === this.selected.name)) {
-      // If the selected cipher has been deleted, pick a different one
-      this.updateSelectedCipher(ciphers[0]);
-    }
-
-    return this.configurationService.updateCiphers(ciphers);
-  }
-
-  transformCipher(transformationRequest: CiphertextTransformationRequest) {
-    return this.http.post<CipherResponse>(ENDPOINT_URL, transformationRequest);
+  transformCipher(request: CiphertextTransformationRequest) {
+    return this.apollo.mutate<Cipher>({
+      mutation: gql`
+          mutation TransformCipher($request: CiphertextTransformationRequest!) {
+            transformCipher(request: $request) {
+              name
+              rows
+              columns
+              readOnly
+              ciphertext
+              knownSolutionKey
+            }
+          }
+        `,
+      variables: {
+        request
+      }
+    }).pipe(map((response: any) => response.data.transformCipher));
   }
 }

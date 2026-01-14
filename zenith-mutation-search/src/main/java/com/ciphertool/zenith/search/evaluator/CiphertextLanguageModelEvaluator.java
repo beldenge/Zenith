@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -24,7 +24,7 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.optimizer.SolutionOptimizer;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,12 +34,12 @@ import java.util.Map;
 @Component
 public class CiphertextLanguageModelEvaluator {
     @Autowired
-    protected List<PlaintextTransformationStep> plaintextTransformationSteps;
+    protected List<TransformationStep> plaintextTransformationSteps;
 
     @Autowired
     private Cipher originalCipher;
 
-    public float evaluate(Map<String, Object> configuration, SolutionOptimizer optimizer, PlaintextEvaluator plaintextEvaluator, int epochs, Cipher mutatedCipher) {
+    public float[] evaluate(Map<String, Object> configuration, SolutionOptimizer optimizer, PlaintextEvaluator plaintextEvaluator, int epochs, Cipher mutatedCipher) {
         /*
          * Backup the originalCipher and then overwrite it from the mutatedCipher so that it's transformed in memory
          * across all places where it was initially injected.
@@ -51,7 +51,13 @@ public class CiphertextLanguageModelEvaluator {
 
         overwriteCipher(backupOfOriginalCipher, originalCipher);
 
-        return cipherSolution.getScore();
+        float[] scores = new float[cipherSolution.getScores().length];
+
+        for (int i = 0; i < cipherSolution.getScores().length; i ++) {
+            scores[i] = (float) cipherSolution.getScores()[i].getValue();
+        }
+
+        return scores;
     }
 
     private void overwriteCipher(Cipher source, Cipher target) {

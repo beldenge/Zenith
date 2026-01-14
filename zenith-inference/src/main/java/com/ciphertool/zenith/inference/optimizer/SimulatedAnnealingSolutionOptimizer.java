@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,20 +19,21 @@
 
 package com.ciphertool.zenith.inference.optimizer;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
         int samplerIterations = (int) configuration.get(SAMPLER_ITERATIONS);
         float annealingTemperatureMin = (float) configuration.get(ANNEALING_TEMPERATURE_MIN);
         float annealingTemperatureMax = (float) configuration.get(ANNEALING_TEMPERATURE_MAX);
@@ -128,7 +129,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 correctSolutions ++;
             }
 
-            overallBest = (overallBest == null) ? best : (best.getScore() > overallBest.getScore() ? best : overallBest);
+            overallBest = (overallBest == null) ? best : (best.compareTo(overallBest) > 0 ? best : overallBest);
 
             if (onEpochComplete != null) {
                 onEpochComplete.fire(epoch + 1);
@@ -157,7 +158,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         return solutionProposal;
     }
 
-    private CipherSolution performEpoch(Map<String, Object> precomputedCounterweightData, Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+    private CipherSolution performEpoch(Map<String, Object> precomputedCounterweightData, Cipher cipher, CipherSolution initialSolution, String[] mappingKeys, int samplerIterations, float annealingTemperatureMin, float annealingTemperatureMax, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         String solutionString = initialSolution.asSingleLineString();
 
         if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
@@ -165,7 +166,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         }
 
         SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, initialSolution, solutionString, null);
-        initialSolution.setScore(score.getScore());
+        initialSolution.setScores(score.getScores());
 
         if (log.isDebugEnabled()) {
             cipherSolutionPrinter.print(initialSolution, plaintextTransformationSteps);
@@ -205,7 +206,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                                             CipherSolution solution,
                                             char[] solutionCharArray,
                                             String[] mappingKeys,
-                                            List<PlaintextTransformationStep> plaintextTransformationSteps,
+                                            List<TransformationStep> plaintextTransformationSteps,
                                             PlaintextEvaluator plaintextEvaluator) {
         String nextKey;
 
@@ -221,12 +222,13 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                 continue;
             }
 
-            float originalScore = solution.getScore();
+            // TODO: this needs to be refactored in order to support multi objective scoring functions
+            Fitness[] originalScores = solution.getScores();
             solution.replaceMapping(nextKey, letter);
 
             int[] cipherSymbolIndices = cipher.getCipherSymbolIndicesMap().get(nextKey);
-            for (int j = 0; j < cipherSymbolIndices.length; j ++) {
-                solutionCharArray[cipherSymbolIndices[j]] = letter;
+            for (int cipherSymbolIndex : cipherSymbolIndices) {
+                solutionCharArray[cipherSymbolIndex] = letter;
             }
 
             String proposalString = new String(solutionCharArray);
@@ -236,10 +238,15 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             }
 
             SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, solution, proposalString, nextKey);
-            solution.setScore(score.getScore());
+            solution.setScores(score.getScores());
 
-            if (!selectNext(temperature, originalScore, solution.getScore())) {
-                solution.setScore(originalScore);
+            if (originalScores.length > 1) {
+                throw new IllegalStateException("SimulatedAnnealing currently only supports single-objective scoring functions.");
+            }
+
+            // TODO: these next few lines need to be refactored in order to support multi objective scoring functions
+            if (!selectNext(temperature, (float) originalScores[0].getValue(), (float) solution.getScores()[0].getValue())) {
+                solution.setScores(new Fitness[] { originalScores[0] });
                 solution.replaceMapping(nextKey, originalMapping);
 
                 float[][] ngramProbabilitiesUpdated = score.getNgramProbabilitiesUpdated();
@@ -253,8 +260,8 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
                     solution.replaceLogProbability((int) ngramProbabilitiesUpdated[0][j], ngramProbabilitiesUpdated[1][j]);
                 }
 
-                for (int j = 0; j < cipherSymbolIndices.length; j ++) {
-                    solutionCharArray[cipherSymbolIndices[j]] = originalMapping;
+                for (int cipherSymbolIndex : cipherSymbolIndices) {
+                    solutionCharArray[cipherSymbolIndex] = originalMapping;
                 }
             }
         }

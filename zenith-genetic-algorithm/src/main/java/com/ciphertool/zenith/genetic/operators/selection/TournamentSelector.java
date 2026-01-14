@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -20,17 +20,19 @@ package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.operators.sort.ParetoSorter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Component
 public class TournamentSelector implements Selector {
@@ -64,23 +66,44 @@ public class TournamentSelector implements Selector {
         double selectionAccuracy = strategy.getTournamentSelectorAccuracy();
         int tournamentSize = strategy.getTournamentSize();
 
-        SortedMap<Integer, Genome> competitors = new TreeMap<>(Comparator.reverseOrder());
+        List<IndexedIndividual> indexedCompetitors = new ArrayList<>(tournamentSize);
 
         for (int i = 0; i < Math.min(tournamentSize, individuals.size()); i ++) {
             int chosenIndex = randomSelector.getNextIndex(individuals, strategy);
 
             // TODO: How to handle whether we've chosen the same individual more than once? -- since it's a map, the tournament size just suffers
-            // Even though we don't use the map value, it is necessary since we use a SortedMap to order by fitness
-            competitors.put(chosenIndex, individuals.get(chosenIndex));
+            indexedCompetitors.add(new IndexedIndividual(chosenIndex, individuals.get(chosenIndex)));
         }
 
-        for (Integer index : competitors.keySet()) {
+        List<Genome> competitors = indexedCompetitors.stream()
+                .map(IndexedIndividual::getIndividual)
+                .collect(Collectors.toList());
+        ParetoSorter.sort(competitors);
+
+        List<IndexedIndividual> sortedIndexedCompetitors = new ArrayList<>(indexedCompetitors.size());
+        for (Genome competitor : competitors) {
+            for (IndexedIndividual indexedCompetitor : indexedCompetitors) {
+                if (competitor == indexedCompetitor.getIndividual()) {
+                    sortedIndexedCompetitors.add(indexedCompetitor);
+                    break;
+                }
+            }
+        }
+
+        for (int i = sortedIndexedCompetitors.size() - 1; i >= 0; i --) {
             if (ThreadLocalRandom.current().nextDouble() <= selectionAccuracy) {
-                return index;
+                return sortedIndexedCompetitors.get(i).getIndex();
             }
         }
 
         // return the least fit individual since it won the tournament
-        return competitors.lastKey();
+        return indexedCompetitors.get(indexedCompetitors.size() - 1).getIndex();
+    }
+
+    @AllArgsConstructor
+    @Getter
+    private class IndexedIndividual {
+        private int index;
+        private Genome individual;
     }
 }

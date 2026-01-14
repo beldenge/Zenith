@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -27,7 +27,6 @@ import java.util.Map;
 
 @Component
 public class EntropyEvaluator implements CounterweightEvaluator {
-    private static final String LETTER_COUNTS_KEY = "letterCounts";
     private static final String PRECOMPUTED_ENTROPIES_KEY = "precomputedEntropies";
 
     private static float BASE = 2f; // Assuming we want the unit of entropy to be 'bit'

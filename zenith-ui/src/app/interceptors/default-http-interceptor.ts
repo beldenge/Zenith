@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,7 +21,7 @@ import { Injectable } from "@angular/core";
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
 import { Observable } from "rxjs";
 
-const APPLICATION_JSON: string = 'application/json';
+const APPLICATION_JSON = 'application/json';
 
 @Injectable()
 export class DefaultHttpInterceptor implements HttpInterceptor {

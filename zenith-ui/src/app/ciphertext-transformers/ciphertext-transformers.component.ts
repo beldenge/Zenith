@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,13 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { animate, style, transition, trigger } from "@angular/animations";
-import { ZenithTransformer } from "../models/ZenithTransformer";
+import {Component, effect} from '@angular/core';
+import { FormComponent } from "../models/FormComponent";
 import { CipherService } from "../cipher.service";
-import { Cipher } from "../models/Cipher";
-import { Subscription } from "rxjs";
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
 import { CiphertextTransformationRequest } from "../models/CiphertextTransformationRequest";
@@ -31,25 +28,16 @@ import { SolutionService } from "../solution.service";
 import { TransformerUtil } from "../util/transformer-util";
 
 @Component({
-  selector: 'app-ciphertext-transformers',
-  templateUrl: './ciphertext-transformers.component.html',
-  styleUrls: ['./ciphertext-transformers.component.css'],
-  animations: [
-    // the fade-in/fade-out animation.
-    trigger('simpleFadeAnimation', [
-      transition(':leave',
-        animate(300, style({ opacity: 0 })))
-    ])
-  ]
+    selector: 'app-ciphertext-transformers',
+    templateUrl: './ciphertext-transformers.component.html',
+    styleUrls: ['./ciphertext-transformers.component.css'],
+    standalone: false
 })
-export class CiphertextTransformersComponent implements OnInit, OnDestroy {
-  showIntroCiphertextTransformersSubscription: Subscription;
-  cipher: Cipher;
+export class CiphertextTransformersComponent {
+  showIntro = this.introductionService.showIntroCiphertextTransformers;
+  cipher = this.configurationService.selectedCipher;
   public hoverClasses: string[] = [];
-  selectedCipherSubscription: Subscription;
-  appliedCiphertextTransformersSubscription: Subscription;
-
-  availableTransformers: ZenithTransformer[] = [];
+  availableTransformers = this.configurationService.availableCiphertextTransformers;
 
   availableTransformersOptions = {
     group: {
@@ -60,24 +48,31 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     sort: false
   };
 
-  appliedTransformers: ZenithTransformer[] = [];
+  appliedTransformersLocal: FormComponent[] = [];
+  appliedTransformersSignal = this.configurationService.appliedCiphertextTransformers;
 
   onAppliedTransformersChange = (event: any) => {
     this.solutionService.updateSolution(null);
 
-    if (!this.cipher) {
+    const localCipher = {...this.cipher()};
+    if (!localCipher) {
       return;
     }
 
-    let transformationRequest: CiphertextTransformationRequest = {
-      cipher: this.cipher,
+    const transformationRequest: CiphertextTransformationRequest = {
+      cipher: {
+        name: localCipher.name,
+        rows: localCipher.rows,
+        columns: localCipher.columns,
+        ciphertext: localCipher.ciphertext
+      },
       steps: []
     };
 
     let satisfied = true;
 
-    for (let i = 0; i < this.appliedTransformers.length; i ++) {
-      let transformer = this.appliedTransformers[i];
+    for (let i = 0; i < this.appliedTransformersLocal.length; i ++) {
+      const transformer = this.appliedTransformersLocal[i];
 
       if (transformer.form && ((event && event.type === 'add' && event.newIndex === i) || !transformer.form.form.valid)) {
         satisfied = false;
@@ -91,88 +86,71 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     }
 
     if (satisfied) {
-      if (!this.appliedTransformers.length) {
-        delete this.cipher.transformed;
-        this.cipherService.updateSelectedCipher(this.cipher);
+      if (!this.appliedTransformersLocal.length) {
+        delete localCipher.transformed;
+        this.configurationService.updateSelectedCipher(localCipher);
       } else {
-        this.cipherService.transformCipher(transformationRequest).subscribe(cipherResponse => {
-          this.cipher.transformed = cipherResponse.ciphers[0];
-          this.cipherService.updateSelectedCipher(this.cipher);
+        this.cipherService.transformCipher(transformationRequest).subscribe((cipherResponse: any) => {
+          localCipher.transformed = cipherResponse;
+          this.configurationService.updateSelectedCipher(localCipher);
         });
       }
 
-      if (!event || !event.skipUpdate) {
-        this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
+      if (!event?.skipUpdate) {
+        this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformersLocal);
       }
     }
-  };
+  }
 
   appliedTransformersOptions = {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChange,
-    onRemove: this.onAppliedTransformersChange,
     onEnd: this.onAppliedTransformersChange
   };
 
   constructor(private cipherService: CipherService,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {}
-
-  ngOnInit(): void {
-    this.configurationService.getAvailableCiphertextTransformersAsObservable().subscribe(transformerResponse => {
-      this.availableTransformers = transformerResponse;
+              private solutionService: SolutionService) {
+    effect(() => {
+      if (this.showIntro()) {
+        setTimeout(() => {
+          this.introductionService.startIntroCiphertextTransformers();
+          this.introductionService.updateShowIntroCiphertextTransformers(false);
+        }, 0);
+      }
     });
 
-    this.appliedCiphertextTransformersSubscription = this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
-      if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
-        this.appliedTransformers = appliedTransformers;
+    effect(() => {
+      if (!TransformerUtil.transformersAreEqual(this.appliedTransformersLocal, this.appliedTransformersSignal())) {
+        this.appliedTransformersLocal = this.appliedTransformersSignal();
 
-        if (this.appliedTransformers.length) {
+        if (this.appliedTransformersLocal?.length) {
           this.onAppliedTransformersChange({ skipUpdate: true });
         }
       }
     });
-
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
-        this.cipher = cipher;
-    });
-
-    this.showIntroCiphertextTransformersSubscription = this.introductionService.getShowIntroCiphertextTransformersAsObservable().subscribe(showIntro => {
-      if (showIntro) {
-        setTimeout(() => {
-          this.introductionService.startIntroCiphertextTransformers();
-          this.introductionService.updateShowIntroCiphertextTransformers(false);
-        }, 500);
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
-    this.appliedCiphertextTransformersSubscription.unsubscribe();
-    this.showIntroCiphertextTransformersSubscription.unsubscribe();
   }
 
   cloneTransformer = (item) => {
-    let clone = {
+    const clone = {
       name: item.name,
       displayName: item.displayName,
       form: item.form ? JSON.parse(JSON.stringify(item.form)) : null
     };
 
     if (clone.form) {
-      clone.form.form = new FormGroup({});
+      clone.form.form = new UntypedFormGroup({});
     }
 
     return clone;
-  };
+  }
 
   removeTransformer(transformerIndex: number): void {
     this.hoverClasses = [];
 
-    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformers.length) {
-      this.appliedTransformers.splice(transformerIndex, 1);
+    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformersLocal.length) {
+      this.appliedTransformersLocal.splice(transformerIndex, 1);
     }
 
     this.onAppliedTransformersChange(null);

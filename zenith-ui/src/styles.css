@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -64,4 +64,16 @@ input[type=number] {
 
 .mat-form-field.ng-valid .mat-form-field-wrapper {
   padding-bottom: 0 !important;
+}
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+.dropdown-toggle {
+  color: #4e73df;
+  text-decoration: none;
+  background-color: transparent;
+  border: 0;
 }

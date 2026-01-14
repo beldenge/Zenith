@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -51,7 +51,7 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
             Ciphertext next = transformed.getCiphertextCharacters().get(i);
 
             if (symbolToRemove.equals(next.getValue())) {
-                transformed.removeCiphertextCharacter(next);
+                transformed.removeCiphertextCharacter(i);
                 length --;
             }
         }
@@ -72,7 +72,7 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
 
-        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        FormlyFieldProps templateOptions = new FormlyFieldProps();
         templateOptions.setLabel("Symbol");
         templateOptions.setRequired(true);
         templateOptions.setType("text");
@@ -80,7 +80,7 @@ public class RemoveSymbolCipherTransformer implements CipherTransformer {
         FormlyFormField key = new FormlyFormField();
         key.setKey(SYMBOL);
         key.setType("input");
-        key.setTemplateOptions(templateOptions);
+        key.setProps(templateOptions);
 
         form.setFields(Collections.singletonList(key));
 

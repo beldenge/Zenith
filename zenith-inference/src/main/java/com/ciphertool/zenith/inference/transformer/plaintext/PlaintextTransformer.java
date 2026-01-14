@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,11 +19,11 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
-import com.ciphertool.zenith.inference.transformer.Transformer;
+import com.ciphertool.zenith.inference.transformer.FormComponent;
 
 import java.util.Map;
 
-public interface PlaintextTransformer extends Transformer {
+public interface PlaintextTransformer extends FormComponent {
     String transform(String plaintext);
 
     PlaintextTransformer getInstance(Map<String, Object> data);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -22,5 +22,5 @@ package com.ciphertool.zenith.genetic.fitness;
 import com.ciphertool.zenith.genetic.entities.Genome;
 
 public interface FitnessEvaluator {
-    Double evaluate(Genome genome);
+    Fitness[] evaluate(Genome genome);
 }

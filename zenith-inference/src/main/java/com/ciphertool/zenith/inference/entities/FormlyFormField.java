@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -29,6 +29,6 @@ import lombok.Setter;
 public class FormlyFormField {
     private String key;
     private String type;
-    private FormlyTemplateOptions templateOptions;
+    private FormlyFieldProps props;
     private String defaultValue;
 }

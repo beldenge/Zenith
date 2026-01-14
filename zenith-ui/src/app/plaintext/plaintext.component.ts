@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,65 +17,45 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Cipher } from "../models/Cipher";
-import { BehaviorSubject, Subscription } from "rxjs";
+import {Component, signal} from '@angular/core';
 import { BlockifyPipe } from "../blockify.pipe";
-import { CipherService } from "../cipher.service";
 import { MatTooltip } from "@angular/material/tooltip";
 import { SolutionService } from "../solution.service";
-import { SolutionResponse } from "../models/SolutionResponse";
+import {ConfigurationService} from "../configuration.service";
 
 const originalTooltipText = 'Copy to clipboard';
 
 @Component({
-  selector: 'app-plaintext',
-  templateUrl: './plaintext.component.html',
-  styleUrls: ['./plaintext.component.css']
+    selector: 'app-plaintext',
+    templateUrl: './plaintext.component.html',
+    styleUrls: ['./plaintext.component.css'],
+    standalone: false
 })
-export class PlaintextComponent implements OnInit, OnDestroy {
-  cipher: Cipher;
-  solution: SolutionResponse;
-  tooltipText = new BehaviorSubject<string>(originalTooltipText);
+export class PlaintextComponent {
+  cipher = this.configurationService.selectedCipher;
+  solution = this.solutionService.solution;
+  tooltipText = signal(originalTooltipText);
   blockifyPipe = new BlockifyPipe();
-  selectedCipherSubscription: Subscription;
-  solutionSubscription: Subscription;
 
-  constructor(private cipherService: CipherService, private solutionService: SolutionService) {}
+  constructor(private solutionService: SolutionService,
+              private configurationService: ConfigurationService) {}
 
-  ngOnInit() {
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
-      this.cipher = cipher;
-    });
+  async copyPlaintext(tooltip: MatTooltip) {
+    if (!this.solution()?.plaintext) {
+      return;
+    }
 
-    this.solutionSubscription = this.solutionService.getSolutionAsObservable().subscribe(solution => {
-      this.solution = solution;
-    });
-  }
-
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
-    this.solutionSubscription.unsubscribe();
-  }
-
-  copyPlaintext(tooltip : MatTooltip) {
-    var plaintextElement = document.createElement("textarea");
-    plaintextElement.id = 'txt';
-    plaintextElement.style.position = 'fixed';
-    plaintextElement.style.top = '0';
-    plaintextElement.style.left = '0';
-    plaintextElement.style.opacity = '0';
-    plaintextElement.value = this.blockifyPipe.transform(this.solution.plaintext, this.cipher.columns).toString();
-    document.body.appendChild(plaintextElement);
-    plaintextElement.select();
-    document.execCommand('copy');
+    const textToCopy = this.blockifyPipe.transform(this.solution().plaintext.split(' '), this.cipher().columns).toString();
+    await navigator.clipboard.writeText(textToCopy);
 
     tooltip.hide();
-    this.tooltipText.next('Copied!');
-    tooltip.show();
+    this.tooltipText.update(() => 'Copied!');
+    setTimeout(() => {
+      tooltip.show();
+    }, 0);
   }
 
   resetTooltipText() {
-    this.tooltipText.next(originalTooltipText);
+    this.tooltipText.update(() => originalTooltipText);
   }
 }

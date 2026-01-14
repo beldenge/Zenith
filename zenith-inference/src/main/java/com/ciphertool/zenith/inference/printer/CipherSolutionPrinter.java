@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,8 +21,8 @@ package com.ciphertool.zenith.inference.printer;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import com.ciphertool.zenith.inference.util.ChiSquaredEvaluator;
 import com.ciphertool.zenith.inference.util.EntropyEvaluator;
 import com.ciphertool.zenith.inference.util.IndexOfCoincidenceEvaluator;
@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public class CipherSolutionPrinter {
     @Autowired
     protected PlaintextTransformationManager plaintextTransformationManager;
 
-    public void print(CipherSolution solution, List<PlaintextTransformationStep> plaintextTransformationSteps) {
+    public void print(CipherSolution solution, List<TransformationStep> plaintextTransformationSteps) {
         String plaintext = solution.asSingleLineString();
         if (CollectionUtils.isNotEmpty(plaintextTransformationSteps)) {
             plaintext = plaintextTransformationManager.transform(plaintext, plaintextTransformationSteps);
@@ -60,7 +61,7 @@ public class CipherSolutionPrinter {
         Cipher cipher = solution.getCipher();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Solution [probability=" + solution.getProbability() + ", logProbability=" + solution.getLogProbability() + ", score=" + solution.getScore()
+        sb.append("Solution [probability=" + solution.getProbability() + ", logProbability=" + solution.getLogProbability() + ", scores=" + Arrays.toString(solution.getScores())
                 + ", indexOfCoincidence=" + indexOfCoincidenceEvaluator.evaluate(null, cipher, plaintext) + ", entropy=" + entropyEvaluator.evaluate(null, cipher, plaintext)
                 + ", chiSquared=" + chiSquaredEvaluator.evaluate(null, cipher, plaintext) + (cipher.hasKnownSolution() ? ", proximity="
                 + String.format("%1$,.2f", solution.evaluateKnownSolution() * 100.0) + "%" : "") + "]\n");

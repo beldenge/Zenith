@@ -1,21 +1,21 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2026 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div class="container-fluid">
 
@@ -35,21 +35,23 @@
           <h6 class="m-0 font-weight-bold text-primary">Available Transformers</h6>
         </div>
         <!-- Card Body -->
-        <div id="available_transformers_list" class="card-body" [sortablejs]="availableTransformers" [sortablejsOptions]="availableTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
-          <div class="col-xl-12 mb-4 transformer" *ngFor="let item of availableTransformers">
-            <div class="card border-left-primary shadow h-100 py-2 pl-3">
-              <div class="card-body p-2">
-                <div class="row no-gutters align-items-center">
-                  <div class="col-md-10">
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
-                  </div>
-                  <div class="col-md-2 text-right">
-                    <i class="far fa-question-circle" matTooltip="{{item.helpText}}" matTooltipPosition="right"></i>
+        <div id="available_transformers_list" class="card-body" [sortablejs]="availableTransformers()" [sortablejsOptions]="availableTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
+          @for (item of availableTransformers(); track item) {
+            <div class="col-xl-12 mb-4 transformer">
+              <div class="card border-left-primary shadow h-100 py-2 pl-3">
+                <div class="card-body p-2">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col-md-10">
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
+                    </div>
+                    <div class="col-md-2 text-right">
+                      <i class="far fa-question-circle" matTooltip="{{item.helpText}}" matTooltipPosition="right"></i>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          }
         </div>
       </div>
     </div>
@@ -61,27 +63,33 @@
           <h6 class="m-0 font-weight-bold text-primary">Transformer Pipeline</h6>
         </div>
         <!-- Card Body -->
-        <div class="card-body" [sortablejs]="appliedTransformers" [sortablejsOptions]="appliedTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
-          <div *ngIf="!appliedTransformers || !appliedTransformers.length">Drop transformers here</div>
-          <div class="col-xl-12 mb-4 transformer" *ngFor="let item of appliedTransformers; let i = index" [@simpleFadeAnimation]>
-            <div class="card border-left-primary shadow h-100 py-2 pl-3">
-              <div class="card-body p-2">
-                <div class="row no-gutters align-items-center">
-                  <div class="col-md-6">
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
-                  </div>
-                  <div class="col-md-4" *ngIf="item.form">
-                    <form [formGroup]="item.form.form">
-                      <formly-form [form]="item.form.form" [fields]="item.form.fields" [model]="item.form.model" (modelChange)="onAppliedTransformersChange(null)"></formly-form>
-                    </form>
-                  </div>
-                  <div class="col-md-{{item.form ? 2 : 6}} text-right">
-                    <i class="fas fa-times-circle fa-lg" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>
+        <div class="card-body" [sortablejs]="appliedTransformersLocal" [sortablejsOptions]="appliedTransformersOptions">
+          @if (!appliedTransformersLocal?.length) {
+            <div>Drop transformers here</div>
+          }
+          @for (item of appliedTransformersLocal; track item; let i = $index) {
+            <div class="col-xl-12 mb-4 transformer" animate.leave="fade-out">
+              <div class="card border-left-primary shadow h-100 py-2 pl-3">
+                <div class="card-body p-2">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col-md-6">
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{item.displayName}}</div>
+                    </div>
+                    @if (item.form) {
+                      <div class="col-md-4">
+                        <form [formGroup]="item.form.form">
+                          <formly-form [form]="item.form.form" [fields]="item.form.fields" [model]="item.form.model" (modelChange)="onAppliedTransformersChange(null)"></formly-form>
+                        </form>
+                      </div>
+                    }
+                    <div class="col-md-{{item.form ? 2 : 6}} text-right">
+                      <i class="fas fa-times-circle fa-lg" [ngClass]="hoverClasses[i]" (mouseover)="hoverClasses[i]='text-gray-900 cursor-pointer'" (mouseout)="hoverClasses[i]=''" (click)="removeTransformer(i)"></i>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          }
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -20,6 +20,5 @@
 export const environment = {
   production: true,
   apiUrlBase: 'api', // relative URL
-  applicationVersion: '2.1.4-SNAPSHOT',
-  googleAnalyticsTrackingId: 'UA-159370258-1'
+  applicationVersion: '2.1.4-SNAPSHOT'
 };

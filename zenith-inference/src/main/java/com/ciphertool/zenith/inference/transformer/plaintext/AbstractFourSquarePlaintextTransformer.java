@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.transformer.plaintext;
 
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
-import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
+import com.ciphertool.zenith.inference.entities.FormlyFieldProps;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -93,7 +93,7 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
 
         List<FormlyFormField> fields = new ArrayList<>(4);
 
-        FormlyTemplateOptions keyTopLeftOptions = new FormlyTemplateOptions();
+        FormlyFieldProps keyTopLeftOptions = new FormlyFieldProps();
         keyTopLeftOptions.setLabel("Top Left Key");
         keyTopLeftOptions.setRequired(true);
         keyTopLeftOptions.setCols(5);
@@ -105,12 +105,12 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         FormlyFormField keyTopLeft = new FormlyFormField();
         keyTopLeft.setKey(KEY_TOP_LEFT);
         keyTopLeft.setType("textarea");
-        keyTopLeft.setTemplateOptions(keyTopLeftOptions);
+        keyTopLeft.setProps(keyTopLeftOptions);
         keyTopLeft.setDefaultValue("abcdefghiklmnopqrstuvwxyz");
 
         fields.add(keyTopLeft);
 
-        FormlyTemplateOptions keyTopRightOptions = new FormlyTemplateOptions();
+        FormlyFieldProps keyTopRightOptions = new FormlyFieldProps();
         keyTopRightOptions.setLabel("Top Right Key");
         keyTopRightOptions.setRequired(true);
         keyTopRightOptions.setCols(5);
@@ -122,11 +122,11 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         FormlyFormField keyTopRight = new FormlyFormField();
         keyTopRight.setKey(KEY_TOP_RIGHT);
         keyTopRight.setType("textarea");
-        keyTopRight.setTemplateOptions(keyTopRightOptions);
+        keyTopRight.setProps(keyTopRightOptions);
 
         fields.add(keyTopRight);
 
-        FormlyTemplateOptions keyBottomLeftOptions = new FormlyTemplateOptions();
+        FormlyFieldProps keyBottomLeftOptions = new FormlyFieldProps();
         keyBottomLeftOptions.setLabel("Bottom Left Key");
         keyBottomLeftOptions.setRequired(true);
         keyBottomLeftOptions.setCols(5);
@@ -138,11 +138,11 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         FormlyFormField keyBottomLeft = new FormlyFormField();
         keyBottomLeft.setKey(KEY_BOTTOM_LEFT);
         keyBottomLeft.setType("textarea");
-        keyBottomLeft.setTemplateOptions(keyBottomLeftOptions);
+        keyBottomLeft.setProps(keyBottomLeftOptions);
 
         fields.add(keyBottomLeft);
 
-        FormlyTemplateOptions keyBottomRightOptions = new FormlyTemplateOptions();
+        FormlyFieldProps keyBottomRightOptions = new FormlyFieldProps();
         keyBottomRightOptions.setLabel("Bottom Right Key");
         keyBottomRightOptions.setRequired(true);
         keyBottomRightOptions.setCols(5);
@@ -154,7 +154,7 @@ public abstract class AbstractFourSquarePlaintextTransformer implements Plaintex
         FormlyFormField keyBottomRight = new FormlyFormField();
         keyBottomRight.setKey(KEY_BOTTOM_RIGHT);
         keyBottomRight.setType("textarea");
-        keyBottomRight.setTemplateOptions(keyBottomRightOptions);
+        keyBottomRight.setProps(keyBottomRightOptions);
         keyBottomRight.setDefaultValue("abcdefghiklmnopqrstuvwxyz");
 
         fields.add(keyBottomRight);

@@ -1,21 +1,21 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2026 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div class="row mt-4">
   <div class="col-md-6 text-left py-0 px-4">
@@ -24,12 +24,12 @@
 
   <div class="col-md-6 text-right">
     <div class="px-2 py-0">
-      <a id="restore_button" href="javascript:void(0);" class="btn btn-danger btn-icon-split m-2 float-right ml-auto" (click)="restore()">
+      <button id="restore_button" class="btn btn-danger btn-icon-split m-2 float-right ml-auto" (click)="restore()">
         <span class="icon text-white-50">
           <i class="fas fa-undo"></i>
         </span>
         <span class="text">Restore defaults</span>
-      </a>
+      </button>
     </div>
   </div>
 </div>
@@ -43,232 +43,267 @@
           <div class="text-center">
             <h1 class="h4 text-gray-900 mb-4">Optimization Strategy</h1>
           </div>
-          <div *ngIf="!geneticAlgorithmFormGroup.disabled" class="form-group row">
-            <div class="col-sm-4 mx-auto">
-              <mat-radio-group formControlName="optimizer" aria-label="Select an option" class="row">
-                <mat-radio-button [value]="optimizerNames[0]" class="col-md-6">{{optimizerNames[0].displayName}}</mat-radio-button>
-                <mat-radio-button [value]="optimizerNames[1]" class="col-md-6">{{optimizerNames[1].displayName}} <sup class="font-weight-bold">(BETA)</sup></mat-radio-button>
-              </mat-radio-group>
+          @if (!geneticAlgorithmFormGroup.disabled) {
+            <div class="form-group row">
+              <div class="col-sm-4 mx-auto">
+                <mat-radio-group formControlName="optimizer" aria-label="Select an option" class="row">
+                  <mat-radio-button [value]="optimizerNames[0]" class="col-md-6">{{optimizerNames[0].displayName}}</mat-radio-button>
+                  <mat-radio-button [value]="optimizerNames[1]" class="col-md-6">{{optimizerNames[1].displayName}} <sup class="font-weight-bold">(BETA)</sup></mat-radio-button>
+                </mat-radio-group>
+              </div>
             </div>
-          </div>
+          }
           <div class="form-group row">
             <div class="col-sm-4 mx-auto">
               <mat-form-field appearance="outline">
                 <mat-label>Fitness Function</mat-label>
                 <mat-select formControlName="fitnessFunction" (selectionChange)="onFitnessFunctionChange($event)">
-                  <mat-option *ngFor="let fitnessFunction of availableFitnessFunctions" [value]="fitnessFunction">
-                    {{fitnessFunction.displayName}}
-                  </mat-option>
+                  @for (fitnessFunction of availableFitnessFunctions(); track fitnessFunction) {
+                    <mat-option [value]="fitnessFunction">
+                      {{fitnessFunction.displayName}}
+                    </mat-option>
+                  }
                 </mat-select>
               </mat-form-field>
             </div>
           </div>
-          <div class="form-group row" *ngIf="selectedFitnessFunction?.form">
-            <div class="col-md-4 mx-auto">
-              <form [formGroup]="generalSettingsForm.get('fitnessFunction').value.form.form">
-                <formly-form [form]="generalSettingsForm.get('fitnessFunction').value.form.form" [fields]="generalSettingsForm.get('fitnessFunction').value.form.fields" [model]="generalSettingsForm.get('fitnessFunction').value.form.model"></formly-form>
-              </form>
+          @if (selectedFitnessFunction()?.form) {
+            <div class="form-group row">
+              <div class="col-md-4 mx-auto">
+                <form [formGroup]="generalSettingsForm.get('fitnessFunction').value.form.form">
+                  <formly-form [form]="generalSettingsForm.get('fitnessFunction').value.form.form" [fields]="generalSettingsForm.get('fitnessFunction').value.form.fields" [model]="generalSettingsForm.get('fitnessFunction').value.form.model"></formly-form>
+                </form>
+              </div>
             </div>
-          </div>
+          }
         </div>
       </div>
     </div>
     <div id="optimizer_settings_form_group">
-      <div *ngIf="generalSettingsForm.get('optimizer').value === optimizerNames[0]" class="card o-hidden border-0 shadow-lg h-100 mt-5">
-        <div class="card-body p-0" formGroupName="simulatedAnnealingConfiguration">
-          <!-- Nested Row within Card Body -->
-          <div class="py-5 px-2">
-            <div class="text-center">
-              <h1 class="h4 text-gray-900 mb-4">Simulated Annealing Settings</h1>
-            </div>
-            <div class="form-group row">
-              <div class="col-sm-4"></div>
-              <div class="col-sm-4 mx-auto">
-                <mat-form-field appearance="outline">
-                  <mat-label>Sampler Iterations</mat-label>
-                  <input matInput formControlName="samplerIterations">
-                  <mat-error>{{samplerIterationsValidationMessage}}</mat-error>
-                </mat-form-field>
+      @if (generalSettingsForm.get('optimizer').value === optimizerNames[0]) {
+        <div class="card o-hidden border-0 shadow-lg h-100 mt-5">
+          <div class="card-body p-0" formGroupName="simulatedAnnealingConfiguration">
+            <!-- Nested Row within Card Body -->
+            <div class="py-5 px-2">
+              <div class="text-center">
+                <h1 class="h4 text-gray-900 mb-4">Simulated Annealing Settings</h1>
               </div>
-              <div class="col-sm-4">
-                <i class="far fa-question-circle mt-2" matTooltip="The number of times to run the sampler over the entire ciphertext.  The solver will have a higher chance of finding the correct solution with more iterations, with the downside of taking longer to complete." matTooltipPosition="right"></i>
+              <div class="form-group row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4 mx-auto">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Sampler Iterations</mat-label>
+                    <input matInput formControlName="samplerIterations">
+                    <mat-error>{{samplerIterationsValidationMessage}}</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="col-sm-4">
+                  <i class="far fa-question-circle mt-2" matTooltip="The number of times to run the sampler over the entire ciphertext.  The solver will have a higher chance of finding the correct solution with more iterations, with the downside of taking longer to complete." matTooltipPosition="right"></i>
+                </div>
               </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-sm-4"></div>
-              <div class="col-sm-4 mx-auto">
-                <mat-form-field appearance="outline">
-                  <mat-label>Annealing Temperature Minimum</mat-label>
-                  <input matInput formControlName="annealingTemperatureMin">
-                  <mat-error>A number is required</mat-error>
-                </mat-form-field>
+              <div class="form-group row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4 mx-auto">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Annealing Temperature Minimum</mat-label>
+                    <input matInput formControlName="annealingTemperatureMin">
+                    <mat-error>A number is required</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="col-sm-4">
+                  <i class="far fa-question-circle mt-2" matTooltip="The starting annealing temperature.  The algorithm is highly sensitive to the temperature hyperparameters.  Tune these with caution." matTooltipPosition="right"></i>
+                </div>
               </div>
-              <div class="col-sm-4">
-                <i class="far fa-question-circle mt-2" matTooltip="The starting annealing temperature.  The algorithm is highly sensitive to the temperature hyperparameters.  Tune these with caution." matTooltipPosition="right"></i>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-sm-4"></div>
-              <div class="col-sm-4 mx-auto">
-                <mat-form-field appearance="outline">
-                  <mat-label>Annealing Temperature Maximum</mat-label>
-                  <input matInput formControlName="annealingTemperatureMax">
-                  <mat-error>A number is required</mat-error>
-                </mat-form-field>
-              </div>
-              <div class="col-sm-4">
-                <i class="far fa-question-circle mt-2" matTooltip="The ending annealing temperature.  The algorithm is highly sensitive to the temperature hyperparameters.  Tune these with caution." matTooltipPosition="right"></i>
+              <div class="form-group row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4 mx-auto">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Annealing Temperature Maximum</mat-label>
+                    <input matInput formControlName="annealingTemperatureMax">
+                    <mat-error>A number is required</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="col-sm-4">
+                  <i class="far fa-question-circle mt-2" matTooltip="The ending annealing temperature.  The algorithm is highly sensitive to the temperature hyperparameters.  Tune these with caution." matTooltipPosition="right"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div *ngIf="!geneticAlgorithmFormGroup.disabled && generalSettingsForm.get('optimizer').value === optimizerNames[1]" class="card o-hidden border-0 shadow-lg h-100 mt-5">
-        <div class="card-body p-0 beta" formGroupName="geneticAlgorithmConfiguration">
-          <!-- Nested Row within Card Body -->
-          <div class="py-5">
-            <div class="text-center">
-              <h1 class="h4 text-gray-900 mb-4">Genetic Algorithm Settings</h1>
-            </div>
-
-            <div class="col-xl-6 mx-auto">
-              <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">General</h6>
-                </div>
-                <div class="card-body mx-4">
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Population Size</mat-label>
-                        <input matInput formControlName="populationSize">
-                        <mat-error>A number 1 or greater is required</mat-error>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The number of individuals to evolve" matTooltipPosition="right"></i>
-                    </div>
+      }
+      @if (!geneticAlgorithmFormGroup.disabled && generalSettingsForm.get('optimizer').value === optimizerNames[1]) {
+        <div class="card o-hidden border-0 shadow-lg h-100 mt-5">
+          <div class="card-body p-0 beta" formGroupName="geneticAlgorithmConfiguration">
+            <!-- Nested Row within Card Body -->
+            <div class="py-5">
+              <div class="text-center">
+                <h1 class="h4 text-gray-900 mb-4">Genetic Algorithm Settings</h1>
+              </div>
+              <div class="col-xl-6 mx-auto">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">General</h6>
                   </div>
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Number of Generations</mat-label>
-                        <input matInput formControlName="numberOfGenerations">
-                        <mat-error>A number 1 or greater is required</mat-error>
-                      </mat-form-field>
+                  <div class="card-body mx-4">
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Population Size</mat-label>
+                          <input matInput formControlName="populationSize">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals to evolve" matTooltipPosition="right"></i>
+                      </div>
                     </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The number of generations to evolve for" matTooltipPosition="right"></i>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Number of Generations</mat-label>
+                          <input matInput formControlName="numberOfGenerations">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of generations to evolve for" matTooltipPosition="right"></i>
+                      </div>
                     </div>
-                  </div>
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Elitism</mat-label>
-                        <input matInput formControlName="elitism">
-                        <mat-error>A number 1 or greater is required</mat-error>
-                      </mat-form-field>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Elitism</mat-label>
+                          <input matInput formControlName="elitism">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals to exempt from selection" matTooltipPosition="right"></i>
+                      </div>
                     </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The number of individuals to exempt from selection" matTooltipPosition="right"></i>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Breeder Name</mat-label>
+                          <mat-select formControlName="breederName">
+                            @for (breederName of breederNames; track breederName) {
+                              <mat-option [value]="breederName">
+                                {{breederName.displayName}}
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The algorithm which seeds individuals into the population" matTooltipPosition="right"></i>
+                      </div>
                     </div>
-                  </div>
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Breeder Name</mat-label>
-                        <mat-select formControlName="breederName">
-                          <mat-option *ngFor="let breederName of breederNames" [value]="breederName">
-                            {{breederName.displayName}}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The algorithm which seeds individuals into the population" matTooltipPosition="right"></i>
-                    </div>
-                  </div>
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Crossover Operator Name</mat-label>
-                        <mat-select formControlName="crossoverOperatorName">
-                          <mat-option *ngFor="let crossoverOperatorName of crossoverOperatorNames" [value]="crossoverOperatorName">
-                            {{crossoverOperatorName.displayName}}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The algorithm for performing crossover among selected individuals" matTooltipPosition="right"></i>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Crossover Operator Name</mat-label>
+                          <mat-select formControlName="crossoverOperatorName">
+                            @for (crossoverOperatorName of crossoverOperatorNames; track crossoverOperatorName) {
+                              <mat-option [value]="crossoverOperatorName">
+                                {{crossoverOperatorName.displayName}}
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The algorithm for performing crossover among selected individuals" matTooltipPosition="right"></i>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div class="col-xl-6 mx-auto">
-              <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">Population</h6>
-                </div>
-                <div class="card-body mx-4">
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Population Name</mat-label>
-                        <mat-select formControlName="populationName">
-                          <mat-option *ngFor="let populationName of populationNames" [value]="populationName">
-                            {{populationName.displayName}}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The type of population to perform selection over" matTooltipPosition="right"></i>
-                    </div>
+              <div class="col-xl-6 mx-auto">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Population</h6>
                   </div>
-                  <ng-container *ngIf="geneticAlgorithmFormGroup.get('populationName').value === populationNames[1]">
+                  <div class="card-body mx-4">
                     <div class="form-group row">
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
-                          <mat-label>Lattice Rows</mat-label>
-                          <input matInput formControlName="latticeRows">
-                          <mat-error>A number 1 or greater is required</mat-error>
+                          <mat-label>Population Name</mat-label>
+                          <mat-select formControlName="populationName">
+                            @for (populationName of populationNames; track populationName) {
+                              <mat-option [value]="populationName">
+                                {{populationName.displayName}}
+                              </mat-option>
+                            }
+                          </mat-select>
                         </mat-form-field>
                       </div>
                       <div class="col-sm-1">
-                        <i class="far fa-question-circle mt-2" matTooltip="The number of rows in the two-dimensional lattice" matTooltipPosition="right"></i>
+                        <i class="far fa-question-circle mt-2" matTooltip="The type of population to perform selection over" matTooltipPosition="right"></i>
                       </div>
                     </div>
+                    @if (geneticAlgorithmFormGroup.get('populationName').value === populationNames[1]) {
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Lattice Rows</mat-label>
+                            <input matInput formControlName="latticeRows">
+                            <mat-error>A number 1 or greater is required</mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="The number of rows in the two-dimensional lattice" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Lattice Columns</mat-label>
+                            <input matInput formControlName="latticeColumns">
+                            <mat-error>A number 1 or greater is required</mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="The number of columns in the two-dimensional lattice" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Lattice Wrap-around</mat-label>
+                            <input matInput formControlName="latticeWrapAround">
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="Whether to allow the selection radius to wrap around edges to the opposite side" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Lattice Selection Radius</mat-label>
+                            <input matInput formControlName="latticeRadius">
+                            <mat-error>A number 1 or greater is required</mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-6 mx-auto">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Speciation</h6>
+                  </div>
+                  <div class="card-body mx-4">
                     <div class="form-group row">
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
-                          <mat-label>Lattice Columns</mat-label>
-                          <input matInput formControlName="latticeColumns">
-                          <mat-error>A number 1 or greater is required</mat-error>
-                        </mat-form-field>
-                      </div>
-                      <div class="col-sm-1">
-                        <i class="far fa-question-circle mt-2" matTooltip="The number of columns in the two-dimensional lattice" matTooltipPosition="right"></i>
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <div class="col-sm-11 mx-auto">
-                        <mat-form-field appearance="outline">
-                          <mat-label>Lattice Wrap-around</mat-label>
-                          <input matInput formControlName="latticeWrapAround">
-                        </mat-form-field>
-                      </div>
-                      <div class="col-sm-1">
-                        <i class="far fa-question-circle mt-2" matTooltip="Whether to allow the selection radius to wrap around edges to the opposite side" matTooltipPosition="right"></i>
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <div class="col-sm-11 mx-auto">
-                        <mat-form-field appearance="outline">
-                          <mat-label>Lattice Selection Radius</mat-label>
-                          <input matInput formControlName="latticeRadius">
+                          <mat-label>Minimum Populations</mat-label>
+                          <input matInput formControlName="minPopulations">
                           <mat-error>A number 1 or greater is required</mat-error>
                         </mat-form-field>
                       </div>
@@ -276,113 +311,155 @@
                         <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
                       </div>
                     </div>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-xl-6 mx-auto">
-              <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">Mutation</h6>
-                </div>
-                <div class="card-body mx-4">
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Mutation Operator Name</mat-label>
-                        <mat-select formControlName="mutationOperatorName">
-                          <mat-option *ngFor="let mutationOperatorName of mutationOperatorNames" [value]="mutationOperatorName">
-                            {{mutationOperatorName.displayName}}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The algorithm for performing mutation on selected individuals" matTooltipPosition="right"></i>
-                    </div>
-                  </div>
-                  <div class="form-group row" *ngIf="geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[0]">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Mutation Rate</mat-label>
-                        <input matInput formControlName="mutationRate">
-                        <mat-error>A number between 0.0 and 1.0 is required</mat-error>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The rate of mutation for each gene within each individual" matTooltipPosition="right"></i>
-                    </div>
-                  </div>
-                  <div class="form-group row" *ngIf="geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[1]">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Maximum Mutations Per Individual</mat-label>
-                        <input matInput formControlName="maxMutationsPerIndividual">
-                        <mat-error>A positive integer is required</mat-error>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The maximum number of mutations to constrain per individual" matTooltipPosition="right"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-xl-6 mx-auto">
-              <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">Selection</h6>
-                </div>
-                <div class="card-body mx-4">
-                  <div class="form-group row">
-                    <div class="col-sm-11 mx-auto">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Selector Name</mat-label>
-                        <mat-select formControlName="selectorName">
-                          <mat-option *ngFor="let selectorName of selectorNames" [value]="selectorName">
-                            {{selectorName.displayName}}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </div>
-                    <div class="col-sm-1">
-                      <i class="far fa-question-circle mt-2" matTooltip="The selection method to use" matTooltipPosition="right"></i>
-                    </div>
-                  </div>
-                  <ng-container *ngIf="geneticAlgorithmFormGroup.get('selectorName').value === selectorNames[0]">
                     <div class="form-group row">
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
-                          <mat-label>Tournament Selector Accuracy</mat-label>
-                          <input matInput formControlName="tournamentSelectorAccuracy">
-                          <mat-error>A number between 0.0 and 1.0 is required</mat-error>
-                        </mat-form-field>
-                      </div>
-                      <div class="col-sm-1">
-                        <i class="far fa-question-circle mt-2" matTooltip="The chance of selecting a given individual in tournament seleciton" matTooltipPosition="right"></i>
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <div class="col-sm-11 mx-auto">
-                        <mat-form-field appearance="outline">
-                          <mat-label>Tournament Size</mat-label>
-                          <input matInput formControlName="tournamentSize">
+                          <mat-label>Speciation Events</mat-label>
+                          <input matInput formControlName="speciationEvents">
                           <mat-error>A number 1 or greater is required</mat-error>
                         </mat-form-field>
                       </div>
                       <div class="col-sm-1">
-                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals to allow in each tournament" matTooltipPosition="right"></i>
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
                       </div>
                     </div>
-                  </ng-container>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Speciation Factor</mat-label>
+                          <input matInput formControlName="speciationFactor">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Extinction Cycles</mat-label>
+                          <input matInput formControlName="extinctionCycles">
+                          <mat-error>A number 1 or greater is required</mat-error>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The number of individuals away from the first individual to allow crossover with" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-6 mx-auto">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Mutation</h6>
+                  </div>
+                  <div class="card-body mx-4">
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Mutation Operator Name</mat-label>
+                          <mat-select formControlName="mutationOperatorName">
+                            @for (mutationOperatorName of mutationOperatorNames; track mutationOperatorName) {
+                              <mat-option [value]="mutationOperatorName">
+                                {{mutationOperatorName.displayName}}
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The algorithm for performing mutation on selected individuals" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                    @if (geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[0]) {
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Mutation Rate</mat-label>
+                            <input matInput formControlName="mutationRate">
+                            <mat-error>A number between 0.0 and 1.0 is required</mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="The rate of mutation for each gene within each individual" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                    }
+                    @if (geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[1]) {
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Maximum Mutations Per Individual</mat-label>
+                            <input matInput formControlName="maxMutationsPerIndividual">
+                            <mat-error>A positive integer is required</mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="The maximum number of mutations to constrain per individual" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-6 mx-auto">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Selection</h6>
+                  </div>
+                  <div class="card-body mx-4">
+                    <div class="form-group row">
+                      <div class="col-sm-11 mx-auto">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Selector Name</mat-label>
+                          <mat-select formControlName="selectorName">
+                            @for (selectorName of selectorNames; track selectorName) {
+                              <mat-option [value]="selectorName">
+                                {{selectorName.displayName}}
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-1">
+                        <i class="far fa-question-circle mt-2" matTooltip="The selection method to use" matTooltipPosition="right"></i>
+                      </div>
+                    </div>
+                    @if (geneticAlgorithmFormGroup.get('selectorName').value === selectorNames[0]) {
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Tournament Selector Accuracy</mat-label>
+                            <input matInput formControlName="tournamentSelectorAccuracy">
+                            <mat-error>A number between 0.0 and 1.0 is required</mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="The chance of selecting a given individual in tournament seleciton" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <div class="col-sm-11 mx-auto">
+                          <mat-form-field appearance="outline">
+                            <mat-label>Tournament Size</mat-label>
+                            <input matInput formControlName="tournamentSize">
+                            <mat-error>A number 1 or greater is required</mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-1">
+                          <i class="far fa-question-circle mt-2" matTooltip="The number of individuals to allow in each tournament" matTooltipPosition="right"></i>
+                        </div>
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      }
     </div>
   </form>
 </div>

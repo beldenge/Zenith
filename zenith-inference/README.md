@@ -33,7 +33,7 @@ There are three main areas of configuration.
 
 2. **Solver Configuration**
 
-    There are sensible defaults, but if you would like to customize how the solver runs, a file with the name zenith-config.json needs to be put in a /config directory within the same directory as where you are running the application from.
+    There are sensible defaults, but if you would like to customize how the solver runs, a file with the name zenith.json needs to be put in a /config directory within the same directory as where you are running the application from.
 
     Below lists the defaults and serves as an example of the JSON structure.
 

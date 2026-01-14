@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -22,13 +22,15 @@ package com.ciphertool.zenith.genetic.operators;
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
+import com.ciphertool.zenith.genetic.fitness.Fitness;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.genetic.operators.algorithm.StandardGeneticAlgorithm;
 import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
 import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.task.TaskExecutor;
 
 import java.time.LocalDateTime;
@@ -36,8 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class StandardGeneticAlgorithmTest {
@@ -67,18 +69,18 @@ public class StandardGeneticAlgorithmTest {
 
         List<Genome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new Genome(true, 0d, populationMock));
+            individuals.add(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock));
         }
 
         List<Parents> allParents = new ArrayList<>(initialPopulationSize);
 
         for (int i = 0; i < initialPopulationSize; i ++) {
-            allParents.add(new Parents(new Genome(true, 0d, populationMock), new Genome(true, 0d, populationMock)));
+            allParents.add(new Parents(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock), new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock)));
         }
 
         when(populationMock.select()).thenReturn(allParents);
         when(populationMock.getIndividuals()).thenReturn(individuals);
-        when(populationMock.removeIndividual(anyInt())).thenReturn(new Genome(true, 0d, populationMock));
+        when(populationMock.removeIndividual(anyInt())).thenReturn(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock));
         when(populationMock.size()).thenReturn(initialPopulationSize);
 
         MutationOperator mutationOperatorMock = mock(MutationOperator.class);
@@ -101,7 +103,7 @@ public class StandardGeneticAlgorithmTest {
                 .elitism(0)
                 .build();
 
-        Genome genomeToReturn = new Genome(true, 0d, populationMock);
+        Genome genomeToReturn = new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock);
         when(crossoverOperatorMock.crossover(any(Genome.class), any(Genome.class))).thenReturn(genomeToReturn);
 
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
@@ -146,7 +148,7 @@ public class StandardGeneticAlgorithmTest {
 
         List<Genome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new Genome(true, 0d, populationMock));
+            individuals.add(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock));
         }
 
         TaskExecutor taskExecutorMock = mock(TaskExecutor.class);
@@ -158,7 +160,7 @@ public class StandardGeneticAlgorithmTest {
 
         CrossoverOperator crossoverOperatorMock = mock(CrossoverOperator.class);
 
-        Genome genomeToReturn = new Genome(true, 0d, populationMock);
+        Genome genomeToReturn = new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock);
         when(crossoverOperatorMock.crossover(any(Genome.class), any(Genome.class))).thenReturn(genomeToReturn);
 
         GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
@@ -195,7 +197,7 @@ public class StandardGeneticAlgorithmTest {
 
         int initialPopulationSize = 10;
 
-        Genome genome = new Genome(true, 0d, population);
+        Genome genome = new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population);
         population.addIndividual(genome);
 
         CrossoverOperator crossoverOperatorMock = mock(CrossoverOperator.class);
@@ -208,7 +210,7 @@ public class StandardGeneticAlgorithmTest {
         List<Parents> allParents = new ArrayList<>();
 
         for (int i = initialPopulationSize / 2; i < initialPopulationSize; i++) {
-            allParents.add(new Parents(new Genome(true, 0d, population), new Genome(true, 0d, population)));
+            allParents.add(new Parents(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population), new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population)));
         }
 
         List<Genome> children = standardGeneticAlgorithm.crossover(strategyToSet, allParents);
@@ -229,7 +231,7 @@ public class StandardGeneticAlgorithmTest {
 
         List<Genome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new Genome(true, 0d, populationMock));
+            individuals.add(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock));
         }
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
@@ -271,7 +273,7 @@ public class StandardGeneticAlgorithmTest {
 
         List<Genome> individuals = new ArrayList<>();
         for (int i = 0; i < initialPopulationSize; i++) {
-            individuals.add(new Genome(true, 0d, populationMock));
+            individuals.add(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock));
         }
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
@@ -316,7 +318,7 @@ public class StandardGeneticAlgorithmTest {
 
         // Setting the individuals to something non-empty so the calculateEntropy() method won't fail
         List<Genome> individuals = new ArrayList<>();
-        individuals.add(new Genome(true, 0d, populationMock));
+        individuals.add(new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, populationMock));
         when(populationMock.getIndividuals()).thenReturn(individuals);
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();

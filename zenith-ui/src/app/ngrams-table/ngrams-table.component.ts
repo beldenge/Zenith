@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -23,9 +23,10 @@ import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 
 @Component({
-  selector: 'app-ngrams-table',
-  templateUrl: './ngrams-table.component.html',
-  styleUrls: ['./ngrams-table.component.css']
+    selector: 'app-ngrams-table',
+    templateUrl: './ngrams-table.component.html',
+    styleUrls: ['./ngrams-table.component.css'],
+    standalone: false
 })
 export class NgramsTableComponent implements OnInit {
   @Input() ngramsDataSource: MatTableDataSource<any>;

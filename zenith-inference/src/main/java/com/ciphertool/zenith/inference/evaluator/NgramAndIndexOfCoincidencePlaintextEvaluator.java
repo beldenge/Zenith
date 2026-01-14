@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.entities.FormlyForm;
@@ -62,7 +64,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluator extends AbstractNgramE
         // This has been determined through haphazard experimentation
         float score = (solution.getLogProbability() / (float) solution.getLogProbabilities().length) * MathUtils.powSixthRoot(indexOfCoincidenceEvaluator.evaluate(precomputedData, cipher, solutionString));
 
-        return new SolutionScore(logProbabilitiesUpdated, score);
+        return new SolutionScore(logProbabilitiesUpdated, new Fitness[] { new MaximizingFitness(score) });
     }
 
     @Override

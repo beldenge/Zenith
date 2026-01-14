@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -20,15 +20,15 @@
 package com.ciphertool.zenith.inference.dao;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CipherDaoTest {
     private static CipherDao cipherDao;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         cipherDao = new CipherDao();
     }

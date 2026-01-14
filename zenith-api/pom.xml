@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
+  ~ Copyright 2017-2026 George Belden
   ~
   ~ This file is part of Zenith.
   ~
@@ -31,10 +31,6 @@
 
     <artifactId>zenith-api</artifactId>
 
-    <properties>
-        <springfox.version>2.9.2</springfox.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.ciphertool.zenith</groupId>
@@ -50,19 +46,13 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${springfox.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-graphql</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-bean-validators</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java-extended-scalars</artifactId>
+            <version>24.0</version>
         </dependency>
     </dependencies>
 
@@ -80,6 +70,10 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -22,11 +22,11 @@ package com.ciphertool.zenith.inference.optimizer;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 
 import java.util.List;
 import java.util.Map;
 
 public interface SolutionOptimizer {
-    CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete);
+    CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete);
 }

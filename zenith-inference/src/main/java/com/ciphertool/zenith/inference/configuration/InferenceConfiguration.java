@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,11 +21,10 @@ package com.ciphertool.zenith.inference.configuration;
 
 import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.ZenithTransformer;
+import com.ciphertool.zenith.inference.entities.FormComponentDto;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationStep;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.dao.WordNGramDao;
@@ -34,10 +33,17 @@ import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Min;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +60,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validator;
-import javax.validation.constraints.Min;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,7 +85,7 @@ public class InferenceConfiguration {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String CONFIG_FILE_NAME = "zenith-config.json";
+    private static final String CONFIG_FILE_NAME = "zenith.json";
 
     @Autowired
     private Validator validator;
@@ -175,10 +177,10 @@ public class InferenceConfiguration {
         Cipher cipher = cipherDao.findByCipherName(applicationConfiguration.getSelectedCipher());
 
         if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedCiphertextTransformers())) {
-            List<CiphertextTransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
+            List<TransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
 
-            for (ZenithTransformer transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
-                transformationSteps.add(new CiphertextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
+            for (FormComponentDto transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
+                transformationSteps.add(new TransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
             }
 
             cipher = ciphertextTransformationManager.transform(cipher, transformationSteps);
@@ -274,15 +276,15 @@ public class InferenceConfiguration {
     }
 
     @Bean
-    public List<PlaintextTransformationStep> plaintextTransformationSteps(ApplicationConfiguration applicationConfiguration, List<PlaintextTransformer> plaintextTransformers) {
-        List<PlaintextTransformationStep> plaintextTransformationSteps = new ArrayList<>();
+    public List<TransformationStep> plaintextTransformationSteps(ApplicationConfiguration applicationConfiguration, List<PlaintextTransformer> plaintextTransformers) {
+        List<TransformationStep> plaintextTransformationSteps = new ArrayList<>();
 
         List<String> existentPlaintextTransformers = plaintextTransformers.stream()
                 .map(transformer -> transformer.getClass().getSimpleName())
                 .collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedPlaintextTransformers())) {
-            for (ZenithTransformer transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
+            for (FormComponentDto transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
                 String transformerName = transformer.getName();
 
                 if (!existentPlaintextTransformers.contains(transformer.getName())) {
@@ -290,7 +292,7 @@ public class InferenceConfiguration {
                     throw new IllegalArgumentException("The PlaintextTransformer with name " + transformerName + " does not exist.");
                 }
 
-                plaintextTransformationSteps.add(new PlaintextTransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
+                plaintextTransformationSteps.add(new TransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
             }
         }
 
@@ -300,17 +302,22 @@ public class InferenceConfiguration {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         builder.customizers((restTemplate) -> {
-            PoolingHttpClientConnectionManager connectionManager = new
-                    PoolingHttpClientConnectionManager();
-            connectionManager.setMaxTotal(10);
-            connectionManager.setDefaultMaxPerRoute(10);
+            PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                    .setMaxConnTotal(10)
+                    .setMaxConnPerRoute(10)
+                    .build();
 
-            CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(connectionManager).build();
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setResponseTimeout(Timeout.ofMilliseconds(5000))
+                    .setConnectionRequestTimeout(Timeout.ofMilliseconds(5000))
+                    .build();
+
+            HttpClient httpclient = HttpClients.custom()
+                    .setConnectionManager(connectionManager)
+                    .setDefaultRequestConfig(requestConfig)
+                    .build();
 
             HttpComponentsClientHttpRequestFactory httpReqFactory = new HttpComponentsClientHttpRequestFactory(httpclient);
-            httpReqFactory.setReadTimeout(5000);
-            httpReqFactory.setConnectionRequestTimeout(5000);
-            httpReqFactory.setConnectTimeout(5000);
 
             restTemplate.setRequestFactory(httpReqFactory);
         });

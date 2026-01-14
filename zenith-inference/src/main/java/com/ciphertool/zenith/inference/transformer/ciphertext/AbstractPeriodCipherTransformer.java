@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,7 +21,7 @@ package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.FormlyForm;
 import com.ciphertool.zenith.inference.entities.FormlyFormField;
-import com.ciphertool.zenith.inference.entities.FormlyTemplateOptions;
+import com.ciphertool.zenith.inference.entities.FormlyFieldProps;
 import lombok.NoArgsConstructor;
 
 import java.util.Collections;
@@ -45,7 +45,7 @@ public abstract class AbstractPeriodCipherTransformer implements CipherTransform
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
 
-        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        FormlyFieldProps templateOptions = new FormlyFieldProps();
         templateOptions.setLabel("Length");
         templateOptions.setRequired(true);
         templateOptions.setType("number");
@@ -53,7 +53,7 @@ public abstract class AbstractPeriodCipherTransformer implements CipherTransform
         FormlyFormField key = new FormlyFormField();
         key.setKey(LENGTH);
         key.setType("input");
-        key.setTemplateOptions(templateOptions);
+        key.setProps(templateOptions);
 
         form.setFields(Collections.singletonList(key));
 

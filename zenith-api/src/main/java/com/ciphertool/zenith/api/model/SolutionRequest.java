@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,16 +21,21 @@ package com.ciphertool.zenith.api.model;
 
 import com.ciphertool.zenith.inference.entities.config.GeneticAlgorithmConfiguration;
 import com.ciphertool.zenith.inference.entities.config.SimulatedAnnealingConfiguration;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 public class SolutionRequest {
+    private String requestId;
+
     @NotNull
     @Min(0)
     private int rows;
@@ -39,14 +44,14 @@ public class SolutionRequest {
     @Min(0)
     private int columns;
 
-    @NotBlank
-    private String ciphertext;
+    @NotEmpty
+    private List<String> ciphertext = new ArrayList<>();
 
     @Min(1)
     private int epochs = 1;
 
     @Valid
-    private List<SolutionRequestTransformer> plaintextTransformers;
+    private List<TransformationStep> plaintextTransformers;
 
     @Valid
     private SolutionRequestFitnessFunction fitnessFunction;
@@ -59,7 +64,7 @@ public class SolutionRequest {
 
     @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
     public boolean isLengthValid() {
-        return (rows * columns) == ciphertext.split(" ").length;
+        return (rows * columns) == ciphertext.size();
     }
 
     @AssertTrue(message = "One and only one of simulatedAnnealingConfiguration or geneticAlgorithmConfiguration must be set")

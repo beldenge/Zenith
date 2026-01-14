@@ -1,4 +1,10 @@
 set JAVA_OPTS=%JAVA_OPTS% -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M
+
+if "%1"=="--debug" (
+    set JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    shift
+)
+
 set JAR_FILENAME=zenith-ui-2.1.4-SNAPSHOT.jar
 set JAR_PATH=
 

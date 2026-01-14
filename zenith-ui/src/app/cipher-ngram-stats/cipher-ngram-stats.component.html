@@ -1,46 +1,50 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2026 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div id="cipher_ngram_statistics" class="row">
   <div class="col-xl-12 mb-4">
     <div class="form-group row">
       <div class="col-sm-12 mx-auto">
-        <mat-expansion-panel [@.disabled]="disableAnimation" (opened)="onExpand()" (closed)="onCollapse()">
+        <mat-expansion-panel (opened)="onExpand()" (closed)="onCollapse()">
           <mat-expansion-panel-header>
             <mat-panel-title>
               <h6 class="text-primary mb-0 font-weight-bold">{{headerText}}</h6>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <div *ngIf="shown" class="row">
-            <div class="col-md-4">
-              <h6 class="text-primary">Unigram Counts</h6>
-              <app-ngrams-table [ngramsDataSource]="unigramsDataSource"></app-ngrams-table>
-            </div>
-            <div class="col-md-4">
-              <h6 class="text-primary">Bigram Counts</h6>
-              <app-ngrams-table [ngramsDataSource]="bigramsDataSource"></app-ngrams-table>
-            </div>
-            <div class="col-md-4">
-              <h6 class="text-primary">Trigram Counts</h6>
-              <app-ngrams-table [ngramsDataSource]="trigramsDataSource"></app-ngrams-table>
-            </div>
-          </div>
+          @if (shown) {
+            @for (nextDataSourcePage of ngramsDataSources; track nextDataSourcePage; let i = $index) {
+              <div class="row">
+                @for (nextDataSource of nextDataSourcePage; track nextDataSource; let j = $index) {
+                  <div class="col-md-4">
+                    <h6 class="text-primary">{{(i * nextDataSourcePage.length) + j + 1}}-gram Counts</h6>
+                    <app-ngrams-table [ngramsDataSource]="nextDataSource"></app-ngrams-table>
+                  </div>
+                }
+              </div>
+            }
+            <button id="more_button" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true}" (click)="onMore()">
+              <span class="icon text-white-50">
+                <i [ngClass]="{'fas': true, 'fa-chevron-down' : true}"></i>
+              </span>
+              <span class="text">More</span>
+            </button>
+          }
         </mat-expansion-panel>
       </div>
     </div>

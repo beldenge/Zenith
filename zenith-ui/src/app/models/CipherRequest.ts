@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,9 +21,9 @@ export class CipherRequest {
   name: string;
   rows: number;
   columns: number;
-  ciphertext: string;
+  ciphertext: string[];
 
-  constructor(name: string, rows: number, columns: number, ciphertext: string) {
+  constructor(name: string, rows: number, columns: number, ciphertext: string[]) {
     this.name = name;
     this.rows = rows;
     this.columns = columns;

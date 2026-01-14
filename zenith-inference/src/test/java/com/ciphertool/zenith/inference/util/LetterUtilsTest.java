@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,10 +19,11 @@
 
 package com.ciphertool.zenith.inference.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LetterUtilsTest {
     @Test
@@ -85,14 +86,18 @@ public class LetterUtilsTest {
         assertEquals(LetterUtils.ordinalToChar(25), 'z');
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testOrdinalToCharTooLow() {
-        LetterUtils.ordinalToChar(-1);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            LetterUtils.ordinalToChar(-1);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testOrdinalToCharTooHigh() {
-        LetterUtils.ordinalToChar(26);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            LetterUtils.ordinalToChar(26);
+        });
     }
 
     @Test

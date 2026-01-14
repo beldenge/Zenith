@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -33,7 +33,7 @@ public class RemoveFirstRowCipherTransformer implements CipherTransformer {
 
         // Remove the first row altogether
         for (int i = cipher.getColumns() - 1; i >= 0; i--) {
-            transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(i));
+            transformed.removeCiphertextCharacter(i);
         }
 
         transformed.setRows(transformed.getRows() - 1);

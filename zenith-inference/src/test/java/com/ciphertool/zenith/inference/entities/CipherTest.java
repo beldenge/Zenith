@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,11 +19,12 @@
 
 package com.ciphertool.zenith.inference.entities;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CipherTest {
     @Test
@@ -73,15 +74,18 @@ public class CipherTest {
         assertTrue(cipher.hasKnownSolution());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testCiphertextCharactersUnmodifiable() {
         Cipher cipher = new Cipher();
-        cipher.addCiphertextCharacter(new Ciphertext(1, "a"));
-        cipher.addCiphertextCharacter(new Ciphertext(2, "b"));
-        cipher.addCiphertextCharacter(new Ciphertext(3, "c"));
+        cipher.addCiphertextCharacter(new Ciphertext("a"));
+        cipher.addCiphertextCharacter(new Ciphertext("b"));
+        cipher.addCiphertextCharacter(new Ciphertext("c"));
 
         List<Ciphertext> ciphertextCharacters = cipher.getCiphertextCharacters();
-        ciphertextCharacters.remove(0); // should throw exception
+
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            ciphertextCharacters.remove(0); // should throw exception
+        });
     }
 
     @Test
@@ -95,11 +99,11 @@ public class CipherTest {
         Cipher cipher = new Cipher();
         assertEquals(0, cipher.getCiphertextCharacters().size());
 
-        Ciphertext ciphertext1 = new Ciphertext(1, "a");
+        Ciphertext ciphertext1 = new Ciphertext("a");
         cipher.addCiphertextCharacter(ciphertext1);
-        Ciphertext ciphertext2 = new Ciphertext(2, "b");
+        Ciphertext ciphertext2 = new Ciphertext("b");
         cipher.addCiphertextCharacter(ciphertext2);
-        Ciphertext ciphertext3 = new Ciphertext(3, "c");
+        Ciphertext ciphertext3 = new Ciphertext("c");
         cipher.addCiphertextCharacter(ciphertext3);
 
         assertEquals(3, cipher.getCiphertextCharacters().size());
@@ -112,16 +116,16 @@ public class CipherTest {
     public void testRemoveCiphertextCharacter() {
         Cipher cipher = new Cipher();
 
-        Ciphertext ciphertext1 = new Ciphertext(1, "a");
+        Ciphertext ciphertext1 = new Ciphertext("a");
         cipher.addCiphertextCharacter(ciphertext1);
-        Ciphertext ciphertext2 = new Ciphertext(2, "b");
+        Ciphertext ciphertext2 = new Ciphertext("b");
         cipher.addCiphertextCharacter(ciphertext2);
-        Ciphertext ciphertext3 = new Ciphertext(3, "c");
+        Ciphertext ciphertext3 = new Ciphertext("c");
         cipher.addCiphertextCharacter(ciphertext3);
 
         assertEquals(3, cipher.getCiphertextCharacters().size());
 
-        cipher.removeCiphertextCharacter(ciphertext2);
+        cipher.removeCiphertextCharacter(1);
 
         assertEquals(2, cipher.getCiphertextCharacters().size());
         assertSame(ciphertext1, cipher.getCiphertextCharacters().get(0));
@@ -144,9 +148,9 @@ public class CipherTest {
         String baseName = "baseName";
         int baseRows = 10;
         int baseColumns = 5;
-        Ciphertext ciphertext1 = new Ciphertext(1, "a");
-        Ciphertext ciphertext2 = new Ciphertext(2, "b");
-        Ciphertext ciphertext3 = new Ciphertext(3, "c");
+        Ciphertext ciphertext1 = new Ciphertext("a");
+        Ciphertext ciphertext2 = new Ciphertext("b");
+        Ciphertext ciphertext3 = new Ciphertext("c");
 
         Cipher base = new Cipher(baseName, baseRows, baseColumns);
         base.addCiphertextCharacter(ciphertext1);

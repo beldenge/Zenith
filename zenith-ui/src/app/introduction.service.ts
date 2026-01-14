@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,45 +17,54 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
-import { Router } from "@angular/router";
-import * as introJs from "intro.js/intro";
-import { BehaviorSubject } from "rxjs";
+import {Injectable, Signal, signal, WritableSignal} from '@angular/core';
+import { Router } from '@angular/router';
+import introJs from 'intro.js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IntroductionService {
-  showIntroDashboard = new BehaviorSubject(false);
-  showIntroManageCiphers = new BehaviorSubject(false);
-  showIntroSettings = new BehaviorSubject(false);
-  showIntroCiphertextTransformers = new BehaviorSubject(false);
-  showIntroPlaintextTransformers = new BehaviorSubject(false);
+  private showIntroDashboardInternal: WritableSignal<boolean> = signal(false);
+  public showIntroDashboard: Signal<boolean> = this.showIntroDashboardInternal.asReadonly();
+  private showIntroManageCiphersInternal: WritableSignal<boolean> = signal(false);
+  public showIntroManageCiphers: Signal<boolean> = this.showIntroManageCiphersInternal.asReadonly();
+  private showIntroSettingsInternal: WritableSignal<boolean> = signal(false);
+  public showIntroSettings: Signal<boolean> = this.showIntroSettingsInternal.asReadonly();
+  private showIntroCiphertextTransformersInternal: WritableSignal<boolean> = signal(false);
+  public showIntroCiphertextTransformers: Signal<boolean> = this.showIntroCiphertextTransformersInternal.asReadonly();
+  private showIntroPlaintextTransformersInternal: WritableSignal<boolean> = signal(false);
+  public showIntroPlaintextTransformers: Signal<boolean> = this.showIntroPlaintextTransformersInternal.asReadonly();
 
-  introDashboard: introJs = new introJs();
-  introManageCiphers: introJs = new introJs();
-  introSettings: introJs = new introJs();
-  introCiphertextTransformers: introJs = new introJs();
-  introPlaintextTransformers: introJs = new introJs();
+  introDashboard: any;
+  introManageCiphers: any;
+  introSettings: any;
+  introCiphertextTransformers: any;
+  introPlaintextTransformers: any;
 
   constructor(private router: Router) {
+    this.introDashboard = introJs.tour();
+    this.introManageCiphers = introJs.tour();
+    this.introSettings = introJs.tour();
+    this.introCiphertextTransformers = introJs.tour();
+    this.introPlaintextTransformers = introJs.tour();
   }
 
   startIntro(): void {
-    this.showIntroDashboard.next(true);
-    this.showIntroManageCiphers.next(true);
-    this.showIntroSettings.next(true);
-    this.showIntroCiphertextTransformers.next(true);
-    this.showIntroPlaintextTransformers.next(true);
+    this.showIntroDashboardInternal.update(() => true);
+    this.showIntroManageCiphersInternal.update(() => true);
+    this.showIntroSettingsInternal.update(() => true);
+    this.showIntroCiphertextTransformersInternal.update(() => true);
+    this.showIntroPlaintextTransformersInternal.update(() => true);
     this.router.navigate(['/dashboard']);
   }
 
   stopIntro(): void {
-    this.showIntroDashboard.next(false);
-    this.showIntroManageCiphers.next(false);
-    this.showIntroSettings.next(false);
-    this.showIntroCiphertextTransformers.next(false);
-    this.showIntroPlaintextTransformers.next(false);
+    this.showIntroDashboardInternal.update(() => false);
+    this.showIntroManageCiphersInternal.update(() => false);
+    this.showIntroSettingsInternal.update(() => false);
+    this.showIntroCiphertextTransformersInternal.update(() => false);
+    this.showIntroPlaintextTransformersInternal.update(() => false);
   }
 
   startIntroDashboard(): void {
@@ -96,15 +105,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introDashboard.oncomplete(function() {
+    const self = this;
+    this.introDashboard.oncomplete(() => {
       self.router.navigate(['/ciphers']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introDashboard.onexit(function() {});
+      self.introDashboard.onexit(() => {});
     });
 
-    this.introDashboard.onexit(function() {
+    this.introDashboard.onexit(() => {
       self.stopIntro();
     });
 
@@ -139,15 +148,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introManageCiphers.oncomplete(function() {
+    const self = this;
+    this.introManageCiphers.oncomplete(() => {
       self.router.navigate(['/settings']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introManageCiphers.onexit(function() {});
+      self.introManageCiphers.onexit(() => {});
     });
 
-    this.introManageCiphers.onexit(function() {
+    this.introManageCiphers.onexit(() => {
       self.stopIntro();
     });
 
@@ -186,15 +195,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introSettings.oncomplete(function() {
+    const self = this;
+    this.introSettings.oncomplete(() => {
       self.router.navigate(['/transformers/ciphertext']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introSettings.onexit(function() {});
+      self.introSettings.onexit(() => {});
     });
 
-    this.introSettings.onexit(function() {
+    this.introSettings.onexit(() => {
       self.stopIntro();
     });
 
@@ -233,15 +242,15 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introCiphertextTransformers.oncomplete(function() {
+    const self = this;
+    this.introCiphertextTransformers.oncomplete(() => {
       self.router.navigate(['/transformers/plaintext']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introCiphertextTransformers.onexit(function() {});
+      self.introCiphertextTransformers.onexit(() => {});
     });
 
-    this.introCiphertextTransformers.onexit(function() {
+    this.introCiphertextTransformers.onexit(() => {
       self.stopIntro();
     });
 
@@ -280,58 +289,38 @@ export class IntroductionService {
       }]
     });
 
-    let self = this;
-    this.introPlaintextTransformers.oncomplete(function() {
+    const self = this;
+    this.introPlaintextTransformers.oncomplete(() => {
       self.router.navigate(['/dashboard']);
 
       // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introPlaintextTransformers.onexit(function() {});
+      self.introPlaintextTransformers.onexit(() => {});
     });
 
-    this.introPlaintextTransformers.onexit(function() {
+    this.introPlaintextTransformers.onexit(() => {
       self.stopIntro();
     });
 
     this.introPlaintextTransformers.start();
   }
 
-  getShowIntroDashboardAsObservable() {
-    return this.showIntroDashboard.asObservable();
-  }
-
   updateShowIntroDashboard(showIntro: boolean) {
-    this.showIntroDashboard.next(showIntro);
-  }
-
-  getShowIntroManageCiphersAsObservable() {
-    return this.showIntroManageCiphers.asObservable();
+    this.showIntroDashboardInternal.update(() => showIntro);
   }
 
   updateShowIntroManageCiphers(showIntro: boolean) {
-    this.showIntroManageCiphers.next(showIntro);
-  }
-
-  getShowIntroSettingsAsObservable() {
-    return this.showIntroSettings.asObservable();
+    this.showIntroManageCiphersInternal.update(() => showIntro);
   }
 
   updateShowIntroSettings(showIntro: boolean) {
-    this.showIntroSettings.next(showIntro);
-  }
-
-  getShowIntroCiphertextTransformersAsObservable() {
-    return this.showIntroCiphertextTransformers.asObservable();
+    this.showIntroSettingsInternal.update(() => showIntro);
   }
 
   updateShowIntroCiphertextTransformers(showIntro: boolean) {
-    this.showIntroCiphertextTransformers.next(showIntro);
-  }
-
-  getShowIntroPlaintextTransformersAsObservable() {
-    return this.showIntroPlaintextTransformers.asObservable();
+    this.showIntroCiphertextTransformersInternal.update(() => showIntro);
   }
 
   updateShowIntroPlaintextTransformers(showIntro: boolean) {
-    this.showIntroPlaintextTransformers.next(showIntro);
+    this.showIntroPlaintextTransformersInternal.update(() => showIntro);
   }
 }

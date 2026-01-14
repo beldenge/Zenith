@@ -8,7 +8,7 @@ A cipher solver application that is:
  - extensible
  - flexible: can be used as a web UI, command-line app, or REST API
 
-The aim of this project is to provide a complete tool with that is easy to use for somewhat technical people in solving ciphers.  It is highly configurable but has sensible defaults.  The specific motivation for this project is in deciphering the Zodiac 340 cipher.
+The aim of this project is to provide a complete tool with that is easy to use for somewhat technical people in solving ciphers.  It is highly configurable but has sensible defaults.
 
 # How-to
 ### Prerequisites
@@ -28,7 +28,7 @@ Check out [zenith-ui](zenith-ui/README.md) for more information.
 For specifics on the command-line and REST API, please check out the [zenith-inference](zenith-inference/README.md) and [zenith-api](zenith-api/README.md) modules respectively.
 
 ### Stopping
-In order to stop Zenith, you'll have to type `ctrl + z` in the terminal where zenith is running.
+In order to stop Zenith, you'll have to type `ctrl + c` in the terminal where zenith is running.
 
 # Benchmarks
 When using the simulated annealing optimizer, it successfully solves the Zodiac 408 cipher with varying probability and speed depending on the hyperparameters chosen.  It is especially sensitive to the annealing temperatures and number of sampler iterations.
@@ -52,8 +52,6 @@ This module is a framework for implementing genetic algorithms.  The zenith-infe
 This module is both a dependency and a runnable application on its own.  Its purpose is to build a language model by reading in a corpus of english texts, so that the language model can be used to score solution proposals.
 ### [zenith-mutation-search](zenith-mutation-search/README.md)
 This module is currently not recommended for general use.  It performs hill climbing using mutations of the original cipher to try to detect what sorts of mutations were used to create the cipher.
-### [zenith-mutator](zenith-mutator/README.md)
-This module is currently not recommended for general use.  It is a simple utility to transform an existing cipher and write it to a file for testing purposes.
 ### [zenith-package](zenith-package/README.md)
 This module simply packages the runnable portions of the project for distribution.
 ### [zenith-roulette](zenith-roulette/README.md)

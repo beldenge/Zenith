@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
+  ~ Copyright 2017-2026 George Belden
   ~
   ~ This file is part of Zenith.
   ~
@@ -46,7 +46,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.2.0</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/assembly/bin.xml</descriptor>

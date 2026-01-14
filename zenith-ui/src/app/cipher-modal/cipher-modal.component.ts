@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,53 +17,47 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
-import { CipherService } from "../cipher.service";
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn } from "@angular/forms";
 import { CipherRequest } from "../models/CipherRequest";
 import { Cipher } from "../models/Cipher";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
+import {ConfigurationService} from "../configuration.service";
 
 const SPACES_TABS_REGEX = /\t| /g;
 const WHITESPACE_REGEX = /\s+/g;
 const NEWLINE_REGEX = /\r?\n/g;
 
 @Component({
-  selector: 'app-cipher-modal',
-  templateUrl: './cipher-modal.component.html',
-  styleUrls: ['./cipher-modal.component.css']
+    selector: 'app-cipher-modal',
+    templateUrl: './cipher-modal.component.html',
+    styleUrls: ['./cipher-modal.component.css'],
+    standalone: false
 })
-export class CipherModalComponent implements OnInit, OnDestroy {
+export class CipherModalComponent implements OnInit {
   blockifyPipe = new BlockifyPipe();
-  ciphers: Cipher[];
+  ciphers = this.configurationService.ciphers;
   cipher: Cipher;
   mode: string;
-  newCipherForm: FormGroup;
-  ciphersSubscription: Subscription;
+  newCipherForm: UntypedFormGroup;
   rows: number = null;
   columns: number = null;
 
   constructor(public dialogRef: MatDialogRef<CipherModalComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any,
-              private fb: FormBuilder,
-              private cipherService: CipherService,
-              private _snackBar: MatSnackBar) { }
+              private fb: UntypedFormBuilder,
+              private snackBar: MatSnackBar,
+              private configurationService: ConfigurationService) { }
 
   ngOnInit() {
-    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
-      this.ciphers = ciphers;
-    });
-
     this.cipher = this.data.cipher;
     this.mode = this.data.mode;
 
-    let blockCiphertext = '';
+    let blockCiphertext: string;
     if (this.cipher) {
-      blockCiphertext = this.cipher.ciphertext.replace(WHITESPACE_REGEX, ' ');
-      blockCiphertext = this.blockifyPipe.transform(blockCiphertext, this.cipher.columns).toString();
+      blockCiphertext = this.blockifyPipe.transform(this.cipher.ciphertext, this.cipher.columns).toString();
     }
 
     this.newCipherForm = this.fb.group({
@@ -74,14 +68,14 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       ciphertext: [blockCiphertext]
     });
 
-    let self = this;
-    let cipherNameValidator: ValidatorFn = (control: AbstractControl): {[key: string]: any} | null => {
-      let proposedName = control.value;
+    const self = this;
+    const cipherNameValidator: ValidatorFn = (control: AbstractControl): {[key: string]: any} | null => {
+      const proposedName = control.value;
 
       let error = null;
 
       if (!this.cipher || proposedName !== this.cipher.name) {
-        self.ciphers.forEach(cipher => {
+        self.ciphers().forEach(cipher => {
           if (cipher.name === proposedName) {
             error = { name: false };
           }
@@ -93,8 +87,8 @@ export class CipherModalComponent implements OnInit, OnDestroy {
 
     this.newCipherForm.get('name').setValidators([cipherNameValidator]);
 
-    let cipherRowLengthValidator: ValidatorFn = () => {
-      let dimensions = this.determineDimensions(this.newCipherForm.get('ciphertext').value);
+    const cipherRowLengthValidator: ValidatorFn = () => {
+      const dimensions = this.determineDimensions(this.newCipherForm.get('ciphertext').value);
 
       this.rows = dimensions.rows > 0 ? dimensions.rows : null;
       this.columns = dimensions.columns > 0 ? dimensions.columns : null;
@@ -105,17 +99,13 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     this.newCipherForm.get('ciphertext').setValidators([cipherRowLengthValidator]);
   }
 
-  ngOnDestroy() {
-    this.ciphersSubscription.unsubscribe();
-  }
-
   save() {
-    let name = this.newCipherForm.get('name').value;
-    let rawCiphertext = this.newCipherForm.get('ciphertext').value;
-    let dimensions = this.determineDimensions(rawCiphertext);
+    const name = this.newCipherForm.get('name').value;
+    const rawCiphertext = this.newCipherForm.get('ciphertext').value;
+    const dimensions = this.determineDimensions(rawCiphertext);
     // Remove newlines from blockify pipe
-    let ciphertext = rawCiphertext.replace(WHITESPACE_REGEX, ' ');
-    let request = new CipherRequest(name, dimensions.rows, dimensions.columns, ciphertext);
+    const ciphertext = rawCiphertext.replace(WHITESPACE_REGEX, ' ');
+    const request = new CipherRequest(name, dimensions.rows, dimensions.columns, ciphertext);
 
     if (this.mode === 'CREATE') {
       this.create(request);
@@ -125,35 +115,36 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   }
 
   determineDimensions(ciphertext: string) {
-    if (!ciphertext.length) {
+    if (!ciphertext?.length) {
       return { rows: -1, columns: -1 };
     }
 
-    let rows = ciphertext.trim().split(NEWLINE_REGEX);
+    const rows = ciphertext.trim().split(NEWLINE_REGEX);
     let columns = -1;
 
-    for (let i = 0; i < rows.length; i ++) {
+    for (const item of rows) {
       if (columns < 0) {
-        columns = rows[i].trim().split(WHITESPACE_REGEX).length;
-      } else if (columns !== rows[i].trim().split(WHITESPACE_REGEX).length) {
+        columns = item.trim().split(WHITESPACE_REGEX).length;
+      } else if (columns !== item.trim().split(WHITESPACE_REGEX).length) {
         columns = -1;
         break;
       }
     }
 
-    return { rows: rows.length, columns: columns };
+    return {
+      rows: rows.length,
+      columns
+    };
   }
 
   create(request: CipherRequest) {
-    let cipher = new Cipher(request.name, request.rows, request.columns, request.ciphertext);
+    const cipher = new Cipher(request.name, request.rows, request.columns, request.ciphertext);
 
-    this.ciphers.push(cipher);
-
-    this.cipherService.updateCiphers(this.ciphers);
+    this.configurationService.updateCiphers([...this.ciphers(), cipher]);
 
     this.dialogRef.close();
 
-    this._snackBar.open('Created "' + cipher.name + '"', '',{
+    this.snackBar.open('Created "' + cipher.name + '"', '', {
       duration: 2000,
       verticalPosition: 'top'
     });
@@ -165,23 +156,25 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     this.cipher.columns = request.columns;
     this.cipher.ciphertext = request.ciphertext;
 
-    this.cipherService.updateCiphers(this.ciphers);
-
     this.dialogRef.close();
 
-    this._snackBar.open('Updated "' + request.name + '"', '',{
+    this.snackBar.open('Updated "' + request.name + '"', '', {
       duration: 2000,
       verticalPosition: 'top'
     });
   }
 
   injectSpaces() {
-    let rawCiphertext = this.newCipherForm.get('ciphertext').value.replace(SPACES_TABS_REGEX, '');
-    let rawRows = rawCiphertext.split(NEWLINE_REGEX);
+    if (!this.newCipherForm.get('ciphertext').value) {
+      return;
+    }
+
+    const rawCiphertext = this.newCipherForm.get('ciphertext').value.replace(SPACES_TABS_REGEX, '');
+    const rawRows = rawCiphertext.split(NEWLINE_REGEX);
     let newCiphertext = '';
 
     let firstRow = true;
-    for (let i = 0; i < rawRows.length; i ++) {
+    for (const item of rawRows) {
       if (!firstRow) {
         newCiphertext += '\n';
       }
@@ -189,14 +182,14 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       firstRow = false;
 
       let first = true;
-      for (let j = 0; j < rawRows[i].length; j ++) {
+      for (let j = 0; j < item.length; j ++) {
         if (!first) {
           newCiphertext += ' ';
         }
 
         first = false;
 
-        newCiphertext += rawRows[i].charAt(j);
+        newCiphertext += item.charAt(j);
       }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,7 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SolutionRequestTransformer } from "./SolutionRequestTransformer";
+import { TransformationStep } from "./TransformationStep";
 import { SimulatedAnnealingConfiguration } from "./SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./GeneticAlgorithmConfiguration";
 import { SolutionRequestFitnessFunction } from "./SolutionRequestFitnessFunction";
@@ -25,14 +25,14 @@ import { SolutionRequestFitnessFunction } from "./SolutionRequestFitnessFunction
 export class SolutionRequest {
   rows: number;
   columns: number;
-  ciphertext: string;
+  ciphertext: string[];
   epochs: number;
-  plaintextTransformers: SolutionRequestTransformer[] = [];
+  plaintextTransformers: TransformationStep[] = [];
   fitnessFunction: SolutionRequestFitnessFunction;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
   geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
 
-  constructor(rows: number, columns: number, ciphertext: string, epochs: number) {
+  constructor(rows: number, columns: number, ciphertext: string[], epochs: number) {
     this.rows = rows;
     this.columns = columns;
     this.ciphertext = ciphertext;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -39,7 +39,7 @@ public class MarkovModelTest {
     private static LetterNGramMarkovImporter importer;
     private static TreeMarkovModel model;
 
-    // @BeforeClass
+    // @BeforeAll
     public static void setUp() {
         ThreadPoolTaskExecutor taskExecutorSpy = spy(new ThreadPoolTaskExecutor());
         taskExecutorSpy.setCorePoolSize(4);

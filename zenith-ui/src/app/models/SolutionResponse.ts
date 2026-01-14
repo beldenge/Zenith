@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,10 +19,10 @@
 
 export class SolutionResponse {
   plaintext: string;
-  score: number;
+  scores: number[];
 
-  constructor(plaintext: string, score: number) {
+  constructor(plaintext: string, scores: number[]) {
     this.plaintext = plaintext;
-    this.score = score;
+    this.scores = scores;
   }
 }

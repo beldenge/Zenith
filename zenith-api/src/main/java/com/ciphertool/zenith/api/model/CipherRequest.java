@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,12 +21,15 @@ package com.ciphertool.zenith.api.model;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,21 +43,19 @@ public class CipherRequest {
     @Min(0)
     private int columns;
 
-    @NotBlank
-    private String ciphertext;
+    @NotEmpty
+    private List<String> ciphertext = new ArrayList<>();
 
     @AssertTrue(message = "The ciphertext length must match the product of rows and columns.")
     public boolean isLengthValid() {
-        return (rows * columns) == ciphertext.split(" ").length;
+        return (rows * columns) == ciphertext.size();
     }
 
     public Cipher asCipher() {
         Cipher cipher = new Cipher(this.name, this.rows, this.columns);
 
-        String[] split = this.ciphertext.split(" ");
-
-        for (int i = 0; i < split.length; i ++) {
-            cipher.addCiphertextCharacter(new Ciphertext(i, split[i]));
+        for (String s : ciphertext) {
+            cipher.addCiphertextCharacter(new Ciphertext(s));
         }
 
         return cipher;

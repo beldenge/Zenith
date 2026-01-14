@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,38 +17,17 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Component } from '@angular/core';
 import { environment } from "../../environments/environment";
-import { SidebarService } from "../sidebar.service";
-import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'app-side-nav',
-  templateUrl: './side-nav.component.html',
-  styleUrls: ['./side-nav.component.css']
+    selector: 'app-side-nav',
+    templateUrl: './side-nav.component.html',
+    styleUrls: ['./side-nav.component.css'],
+    standalone: false
 })
-export class SideNavComponent implements OnInit, OnDestroy {
+export class SideNavComponent {
   applicationVersion: string = environment.applicationVersion;
-  sidebarToggleSubscription: Subscription;
-  toggled: boolean = true;
 
-  constructor(private sidebarService: SidebarService, private renderer: Renderer2) {}
-
-  ngOnInit() {
-    this.sidebarToggleSubscription = this.sidebarService.getSidebarToggleAsObservable().subscribe(toggled => {
-      this.toggled = toggled;
-
-      if (toggled) {
-        if (!document.body.classList.contains('sidebar-toggled')) {
-          this.renderer.addClass(document.body, 'sidebar-toggled');
-        }
-      } else {
-        this.renderer.removeClass(document.body, 'sidebar-toggled');
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    this.sidebarToggleSubscription.unsubscribe();
-  }
+  constructor() {}
 }

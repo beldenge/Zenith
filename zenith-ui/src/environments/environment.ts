@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -24,8 +24,7 @@
 export const environment = {
   production: false,
   apiUrlBase: 'api', // relative URL
-  applicationVersion: '2.1.4-SNAPSHOT',
-  googleAnalyticsTrackingId: 'UA-159370258-1'
+  applicationVersion: '2.1.4-SNAPSHOT'
 };
 
 /*
@@ -35,4 +34,4 @@ export const environment = {
  * This import should be commented out in production mode because it will have a negative impact
  * on performance if an error is thrown.
  */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.
+// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.

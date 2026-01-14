@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -261,7 +261,7 @@ public class TranspositionSearcher {
 //        int repeatingBigramScore = repeatingBigramEvaluator.evaluate(cipher);
         int cycleScore = cycleCountEvaluator.evaluate(cipher);
 //        double rowLevelEntropyPenalty = rowLevelEntropyEvaluator.evaluate(cipherSolution);
-        float languageModelScore = languageModelEvaluator.evaluate(configuration, optimizer, plaintextEvaluator, epochs, cipherSolution.getCipher());
+        float languageModelScore = languageModelEvaluator.evaluate(configuration, optimizer, plaintextEvaluator, epochs, cipherSolution.getCipher())[0];
 
         float scaledScore = languageModelScore + (cycleScore / 25f);
 

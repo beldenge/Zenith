@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,39 +17,29 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from "rxjs";
-import { animate, style, transition, trigger } from "@angular/animations";
-import { PlaintextTransformerService } from "../plaintext-transformer.service";
-import { ZenithTransformer } from "../models/ZenithTransformer";
-import { FormGroup } from "@angular/forms";
+import {Component, effect} from '@angular/core';
+import { FormComponent } from "../models/FormComponent";
+import { UntypedFormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
 import { SolutionService } from "../solution.service";
 import { TransformerUtil } from "../util/transformer-util";
+import {PlaintextService} from "../plaintext.service";
 
 @Component({
-  selector: 'app-plaintext-transformers',
-  templateUrl: './plaintext-transformers.component.html',
-  styleUrls: ['./plaintext-transformers.component.css'],
-  animations: [
-    // the fade-in/fade-out animation.
-    trigger('simpleFadeAnimation', [
-      transition(':leave',
-        animate(300, style({ opacity: 0 })))
-    ])
-  ]
+    selector: 'app-plaintext-transformers',
+    templateUrl: './plaintext-transformers.component.html',
+    styleUrls: ['./plaintext-transformers.component.css'],
+    standalone: false
 })
-export class PlaintextTransformersComponent implements OnInit, OnDestroy {
-  showIntroPlaintextTransformersSubscription: Subscription;
+export class PlaintextTransformersComponent {
+  showIntro = this.introductionService.showIntroPlaintextTransformers;
   public hoverClasses: string[] = [];
-  sample: string;
+  sample = this.configurationService.samplePlaintext;
   transformedSample: string;
-  appliedPlaintextTransformersSubscription: Subscription;
-  samplePlaintextSubscription: Subscription;
 
-  availableTransformers: ZenithTransformer[] = [];
+  availableTransformers = this.configurationService.availablePlaintextTransformers;
 
   availableTransformersOptions = {
     group: {
@@ -60,20 +50,21 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     sort: false
   };
 
-  appliedTransformers: ZenithTransformer[] = [];
+  appliedTransformersLocal: FormComponent[] = [];
+  appliedTransformersSignal = this.configurationService.appliedPlaintextTransformers;
 
   onAppliedTransformersChange = (event: any) => {
     this.solutionService.updateSolution(null);
 
-    let transformationRequest: SamplePlaintextTransformationRequest = {
-      plaintext: this.sample,
+    const transformationRequest: SamplePlaintextTransformationRequest = {
+      plaintext: this.sample(),
       plaintextTransformers: []
     };
 
-    let satisfied = !!this.sample;
+    let satisfied = !!this.sample();
 
-    for (let i = 0; i < this.appliedTransformers.length; i ++) {
-      let transformer = this.appliedTransformers[i];
+    for (let i = 0; i < this.appliedTransformersLocal.length; i ++) {
+      const transformer = this.appliedTransformersLocal[i];
 
       if (transformer.form && ((event && event.type === 'add' && event.newIndex === i) || !transformer.form.form.valid)) {
         satisfied = false;
@@ -87,86 +78,69 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     }
 
     if (satisfied) {
-      if (!this.appliedTransformers || !this.appliedTransformers.length) {
+      if (!this.appliedTransformersLocal?.length) {
         this.transformedSample = null;
       } else {
-        this.transformerService.transformSample(transformationRequest).subscribe(response => {
+        this.plaintextService.transformSample(transformationRequest).subscribe((response: any) => {
           this.transformedSample = response.plaintext;
         });
       }
 
-      if (!event || !event.skipUpdate) {
-        this.configurationService.updateAppliedPlaintextTransformers(this.appliedTransformers);
+      if (!event?.skipUpdate) {
+        this.configurationService.updateAppliedPlaintextTransformers(this.appliedTransformersLocal);
       }
     }
-  };
+  }
 
   appliedTransformersOptions = {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChange,
-    onRemove: this.onAppliedTransformersChange,
     onEnd: this.onAppliedTransformersChange
   };
 
-  constructor(private transformerService: PlaintextTransformerService,
-              private configurationService: ConfigurationService,
+  constructor(private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {}
-
-  ngOnInit(): void {
-    this.configurationService.getAvailablePlaintextTransformersAsObservable().subscribe(transformerResponse => {
-      this.availableTransformers = transformerResponse;
-    });
-
-    this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
-      if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
-        this.appliedTransformers = appliedTransformers;
-        this.onAppliedTransformersChange({ skipUpdate: true });
-      }
-    });
-
-    this.samplePlaintextSubscription = this.configurationService.getSamplePlaintextAsObservable().subscribe(sample => {
-      if (!this.sample || this.sample !== sample) {
-        this.sample = sample;
-        this.onAppliedTransformersChange(null);
-      }
-    });
-
-    this.showIntroPlaintextTransformersSubscription = this.introductionService.getShowIntroPlaintextTransformersAsObservable().subscribe(showIntro => {
-      if (showIntro) {
+              private solutionService: SolutionService,
+              private plaintextService: PlaintextService) {
+    effect(() => {
+      if (this.showIntro()) {
         setTimeout(() => {
           this.introductionService.startIntroPlaintextTransformers();
           this.introductionService.updateShowIntroPlaintextTransformers(false);
-        }, 500);
+        }, 0);
+      }
+    });
+
+    effect(() => {
+      if (!TransformerUtil.transformersAreEqual(this.appliedTransformersLocal, this.appliedTransformersSignal())) {
+        this.appliedTransformersLocal = this.appliedTransformersSignal();
+
+        if (this.appliedTransformersLocal?.length) {
+          this.onAppliedTransformersChange({skipUpdate: true});
+        }
       }
     });
   }
 
-  ngOnDestroy() {
-    this.appliedPlaintextTransformersSubscription.unsubscribe();
-    this.samplePlaintextSubscription.unsubscribe();
-    this.showIntroPlaintextTransformersSubscription.unsubscribe();
-  }
-
   cloneTransformer = (item) => {
-    let clone = {
+    const clone = {
       name: item.name,
       displayName: item.displayName,
       form: item.form ? JSON.parse(JSON.stringify(item.form)) : null
     };
 
     if (clone.form) {
-      clone.form.form = new FormGroup({});
+      clone.form.form = new UntypedFormGroup({});
     }
 
     return clone;
-  };
+  }
 
   removeTransformer(transformerIndex: number): void {
     this.hoverClasses = [];
 
-    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformers.length) {
-      this.appliedTransformers.splice(transformerIndex, 1);
+    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformersLocal.length) {
+      this.appliedTransformersLocal.splice(transformerIndex, 1);
     }
 
     this.onAppliedTransformersChange(null);

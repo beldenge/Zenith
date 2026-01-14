@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,6 +19,8 @@
 
 package com.ciphertool.zenith.inference.evaluator;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
+import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
 import com.ciphertool.zenith.inference.entities.*;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluation;
 import com.ciphertool.zenith.inference.evaluator.model.RestServiceEvaluationRequest;
@@ -82,7 +84,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
             solution.addLogProbability(i, response.getProbabilities().get(i).getLogProbability());
         }
 
-        return new SolutionScore(logProbabilitiesUpdated, solution.getLogProbability());
+        return new SolutionScore(logProbabilitiesUpdated, new Fitness[] { new MaximizingFitness(solution.getLogProbability()) });
     }
 
     @Override
@@ -99,7 +101,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     public FormlyForm getForm() {
         FormlyForm form = new FormlyForm();
 
-        FormlyTemplateOptions templateOptions = new FormlyTemplateOptions();
+        FormlyFieldProps templateOptions = new FormlyFieldProps();
         templateOptions.setLabel("REST Service URL");
         templateOptions.setRequired(true);
         templateOptions.setType("url");
@@ -107,7 +109,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
         FormlyFormField restServiceUrl = new FormlyFormField();
         restServiceUrl.setKey(REST_SERVICE_URL);
         restServiceUrl.setType("input");
-        restServiceUrl.setTemplateOptions(templateOptions);
+        restServiceUrl.setProps(templateOptions);
 
         form.setFields(Collections.singletonList(restServiceUrl));
 
@@ -116,7 +118,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
 
     @Override
     public int getOrder() {
-        return 4;
+        return 7;
     }
 
     @Override

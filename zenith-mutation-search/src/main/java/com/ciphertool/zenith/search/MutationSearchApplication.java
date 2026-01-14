@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -25,7 +25,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ciphertool.zenith.search",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -23,21 +23,21 @@ import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
-@Ignore
+@Disabled
 @SpringBootTest
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEvaluatorTestBase {
     private static Logger log = LoggerFactory.getLogger(NgramAndIndexOfCoincidencePlaintextEvaluatorTest.class);
 
@@ -61,7 +61,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
 
         // Remove the last row altogether
         for (int i = lastRowBegin; i < totalCharacters; i++) {
-            zodiac408.removeCiphertextCharacter(zodiac408.getCiphertextCharacters().get(lastRowBegin));
+            zodiac408.removeCiphertextCharacter(lastRowBegin);
         }
 
         actualSolution.putMapping("tri", 'i');
@@ -236,7 +236,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
         solution3.setCipher(zodiac408);
     }
 
-    @Before
+    @BeforeEach
     public void initializeMarkovModel() {
         if (letterMarkovModel != null) {
             return;

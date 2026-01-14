@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,58 +17,46 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { Cipher } from "../models/Cipher";
-import { BehaviorSubject, Observable, Subscription } from "rxjs";
+import {ChangeDetectorRef, Component, effect, signal} from '@angular/core';
 import { BlockifyPipe } from "../blockify.pipe";
-import { CipherService } from "../cipher.service";
 import { MatTooltip } from "@angular/material/tooltip";
+import {ConfigurationService} from "../configuration.service";
 
 const originalTooltipText = 'Copy to clipboard';
 
 @Component({
-  selector: 'app-ciphertext',
-  templateUrl: './ciphertext.component.html',
-  styleUrls: ['./ciphertext.component.css']
+    selector: 'app-ciphertext',
+    templateUrl: './ciphertext.component.html',
+    styleUrls: ['./ciphertext.component.css'],
+    standalone: false
 })
-export class CiphertextComponent implements OnInit, OnDestroy {
-  cipher: Cipher;
-  tooltipText = new BehaviorSubject<string>(originalTooltipText);
+export class CiphertextComponent {
+  cipher = this.configurationService.selectedCipher;
+  tooltipText = signal(originalTooltipText);
   blockifyPipe = new BlockifyPipe();
-  cipherSubscription: Subscription;
 
-  constructor(private cipherService: CipherService, private cdRef: ChangeDetectorRef) {}
-
-  ngOnInit() {
-    this.cipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(cipher => {
-      this.cipher = cipher;
-      // I don't understand why, but change detection is not occurring here in some odd scenarios
-      this.cdRef.detectChanges();
+  constructor(private cdRef: ChangeDetectorRef,
+              private configurationService: ConfigurationService) {
+    effect(() => {
+        if (!!this.cipher()) {
+          // I don't understand why, but change detection is not occurring here in some odd scenarios
+          this.cdRef.detectChanges();
+        }
     });
   }
 
-  ngOnDestroy() {
-    this.cipherSubscription.unsubscribe();
-  }
-
-  copyCiphertext(tooltip : MatTooltip) {
-    var ciphertextElement = document.createElement("textarea");
-    ciphertextElement.id = 'txt';
-    ciphertextElement.style.position = 'fixed';
-    ciphertextElement.style.top = '0';
-    ciphertextElement.style.left = '0';
-    ciphertextElement.style.opacity = '0';
-    ciphertextElement.value = this.blockifyPipe.transform(this.cipher.ciphertext, this.cipher.columns).toString();
-    document.body.appendChild(ciphertextElement);
-    ciphertextElement.select();
-    document.execCommand('copy');
+  async copyCiphertext(tooltip: MatTooltip) {
+    const textToCopy = this.blockifyPipe.transform(this.cipher().ciphertext, this.cipher().columns).toString();
+    await navigator.clipboard.writeText(textToCopy);
 
     tooltip.hide();
-    this.tooltipText.next('Copied!');
-    tooltip.show();
+    this.tooltipText.update(() => 'Copied!');
+    setTimeout(() => {
+      tooltip.show();
+    }, 0);
   }
 
   resetTooltipText() {
-    this.tooltipText.next(originalTooltipText);
+    this.tooltipText.update(() => originalTooltipText);
   }
 }

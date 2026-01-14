@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,11 +17,11 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { FormlyFieldConfig } from "@ngx-formly/core/lib/components/formly.field.config";
-import { FormGroup } from "@angular/forms";
+import { FormlyFieldConfig } from "@ngx-formly/core";
+import { UntypedFormGroup } from "@angular/forms";
 
 export class DynamicForm {
   model: any;
   fields: FormlyFieldConfig[];
-  form?: FormGroup;
+  form?: UntypedFormGroup;
 }

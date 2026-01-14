@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -20,7 +20,7 @@
 import { NgramCount } from "./NgramCount";
 
 export class NgramStatisticsResponse {
-  unigramCounts: NgramCount[];
-  bigramCounts: NgramCount[];
-  trigramCounts: NgramCount[];
+  firstNGramCounts: NgramCount[];
+  secondNGramCounts: NgramCount[];
+  thirdNGramCounts: NgramCount[];
 }

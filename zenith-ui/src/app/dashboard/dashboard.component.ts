@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,155 +17,70 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CipherService } from "../cipher.service";
-import { Cipher } from "../models/Cipher";
-import { FormBuilder, Validators } from "@angular/forms";
-import { WebSocketAPI } from "../websocket.api";
+import {Component, effect, OnDestroy, OnInit} from '@angular/core';
+import { UntypedFormBuilder, Validators } from "@angular/forms";
 import { SolutionRequest } from "../models/SolutionRequest";
-import { ZenithTransformer } from "../models/ZenithTransformer";
-import { SolutionRequestTransformer } from "../models/SolutionRequestTransformer";
+import { SolutionUpdate } from "../models/SolutionUpdate";
+import { TransformationStep } from "../models/TransformationStep";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ConfigurationService } from "../configuration.service";
-import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
-import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
-import { SelectOption } from "../models/SelectOption";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
-import { SafeUrl } from "@angular/platform-browser";
-import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
 import { SolutionService } from "../solution.service";
-import { SolutionResponse } from "../models/SolutionResponse";
 import { SolutionRequestFitnessFunction } from "../models/SolutionRequestFitnessFunction";
-import { ZenithFitnessFunction } from "../models/ZenithFitnessFunction";
 import { LocalStorageKeys } from "../models/LocalStorageKeys";
-import { animate, style, transition, trigger } from "@angular/animations";
-import { SidebarService } from "../sidebar.service";
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
-  animations: [
-    // the fade-in/fade-out animation.
-    trigger('simpleFadeAnimation', [
-      transition(':leave',
-        animate(300, style({ opacity: 0 })))
-    ])
-  ]
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.css'],
+    standalone: false
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  showApplicationDownloadInfo: boolean = false;
-  showIntroDashboardSubscription: Subscription;
-  webSocketAPI: WebSocketAPI;
-  selectedCipher: Cipher;
-  isRunning: boolean = false;
-  progressPercentage: number = 0;
-  isRunningSubscription: Subscription;
-  progressPercentageSubscription: Subscription;
-  epochsValidationMessageDefault: string = 'Must be a number greater than zero';
-  epochsValidationMessage: string = this.epochsValidationMessageDefault;
-  epochsValidatorsDefault = [Validators.min(1), Validators.pattern("^[0-9]*$")];
+  showApplicationDownloadInfo = false;
+  showIntro = this.introductionService.showIntroDashboard;
+  solutionSubscription?: Subscription;
+  selectedCipher = this.configurationService.selectedCipher;
+  isRunning = this.solutionService.runState;
+  epochsValidators = [Validators.min(1), Validators.max(100)];
+  epochsValidationMessage = 'Must be a number between 1 and 100';
   hyperparametersForm = this.fb.group({
-    epochs: [null, this.epochsValidatorsDefault]
+    epochs: [null, this.epochsValidators]
   });
-  appliedPlaintextTransformers: ZenithTransformer[] = [];
-  optimizer: SelectOption;
-  fitnessFunction: ZenithFitnessFunction;
-  geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
-  simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
-  selectedCipherSubscription: Subscription;
-  appliedPlaintextTransformersSubscription: Subscription;
-  epochsSubscription: Subscription;
-  selectedOptimizerSubscription: Subscription;
-  selectedFitnessFunctionSubscription: Subscription;
-  simulatedAnnealingConfigurationSubscription: Subscription;
-  geneticAlgorithmConfigurationSubscription: Subscription;
-  featuresSubscription: Subscription;
+  appliedPlaintextTransformers = this.configurationService.appliedPlaintextTransformers;
+  optimizer = this.configurationService.selectedOptimizer;
+  fitnessFunction = this.configurationService.selectedFitnessFunction;
+  geneticAlgorithmConfiguration = this.configurationService.geneticAlgorithmConfiguration;
+  simulatedAnnealingConfiguration = this.configurationService.simulatedAnnealingConfiguration;
+  epochs = this.configurationService.epochs;
 
-  constructor(private fb: FormBuilder,
-              private cipherService: CipherService,
-              private _snackBar: MatSnackBar,
+  constructor(private fb: UntypedFormBuilder,
+              private snackBar: MatSnackBar,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {
-  }
-
-  ngOnInit() {
-    this.webSocketAPI = new WebSocketAPI();
-
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher
-    });
-
-    this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
-      this.appliedPlaintextTransformers = appliedTransformers;
-    });
-
-    this.epochsSubscription = this.configurationService.getEpochsAsObservable().subscribe(epochs => {
-      if (this.hyperparametersForm.get('epochs').value !== epochs) {
-        this.hyperparametersForm.patchValue({ 'epochs': epochs });
-      }
-    });
-
-    this.selectedOptimizerSubscription = this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
-      this.optimizer = optimizer;
-    });
-
-    this.selectedFitnessFunctionSubscription = this.configurationService.getSelectedFitnessFunctionAsObservable().subscribe(fitnessFunction => {
-      this.fitnessFunction = fitnessFunction;
-    });
-
-    this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
-      this.simulatedAnnealingConfiguration = configuration;
-    });
-
-    this.geneticAlgorithmConfigurationSubscription = this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
-      this.geneticAlgorithmConfiguration = configuration;
-    });
-
-    this.showIntroDashboardSubscription = this.introductionService.getShowIntroDashboardAsObservable().subscribe(showIntro => {
-      if (showIntro) {
+              public solutionService: SolutionService) {
+    effect(() => {
+      if (this.showIntro()) {
         this.introductionService.startIntroDashboard();
         this.introductionService.updateShowIntroDashboard(false);
       }
     });
 
-    this.featuresSubscription = this.configurationService.getFeaturesAsObservable().subscribe(featureResponse => {
-      if (featureResponse.maxEpochs > 0) {
-        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidatorsDefault.concat([Validators.max(featureResponse.maxEpochs)]));
-        this.epochsValidationMessage = 'Must be a number between 1 and ' + featureResponse.maxEpochs;
-      } else {
-        this.hyperparametersForm.get('epochs').setValidators(this.epochsValidatorsDefault);
-        this.epochsValidationMessage = this.epochsValidationMessageDefault;
+    effect(() => {
+      if (this.hyperparametersForm.get('epochs').value !== this.epochs()) {
+        this.hyperparametersForm.patchValue({ epochs: this.epochs() });
       }
     });
+  }
 
-    this.isRunningSubscription = this.solutionService.getRunStateAsObservable().subscribe(runState => {
-      this.isRunning = runState;
-    });
-
-    this.progressPercentageSubscription = this.solutionService.getProgressPercentageAsObservable().subscribe(progress => {
-      this.progressPercentage = progress;
-    });
-
-    let showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
+  ngOnInit() {
+    const showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
 
     this.showApplicationDownloadInfo = !showApplicationDownloadInfoLocal || showApplicationDownloadInfoLocal === 'true';
   }
 
   ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
-    this.appliedPlaintextTransformersSubscription.unsubscribe();
-    this.epochsSubscription.unsubscribe();
-    this.selectedOptimizerSubscription.unsubscribe();
-    this.selectedFitnessFunctionSubscription.unsubscribe();
-    this.simulatedAnnealingConfigurationSubscription.unsubscribe();
-    this.geneticAlgorithmConfigurationSubscription.unsubscribe();
-    this.showIntroDashboardSubscription.unsubscribe();
-    this.featuresSubscription.unsubscribe();
-    this.isRunningSubscription.unsubscribe();
-    this.progressPercentageSubscription.unsubscribe();
+    this.solutionSubscription?.unsubscribe();
   }
 
   onEpochsChange() {
@@ -180,33 +95,44 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isRunning) {
+    if (this.isRunning()) {
       return;
     }
 
-    let request;
+    let request: SolutionRequest;
 
-    if (!this.selectedCipher.transformed) {
-      request = new SolutionRequest(this.selectedCipher.rows, this.selectedCipher.columns, this.selectedCipher.ciphertext, this.hyperparametersForm.get('epochs').value);
+    const selectedCipherLocal = this.selectedCipher();
+    if (!selectedCipherLocal.transformed) {
+      request = new SolutionRequest(
+        selectedCipherLocal.rows,
+        selectedCipherLocal.columns,
+        selectedCipherLocal.ciphertext,
+        this.hyperparametersForm.get('epochs').value
+      );
     } else {
-      request = new SolutionRequest(this.selectedCipher.transformed.rows, this.selectedCipher.transformed.columns, this.selectedCipher.transformed.ciphertext, this.hyperparametersForm.get('epochs').value);
+      request = new SolutionRequest(
+        selectedCipherLocal.transformed.rows,
+        selectedCipherLocal.transformed.columns,
+        selectedCipherLocal.transformed.ciphertext,
+        this.hyperparametersForm.get('epochs').value
+      );
     }
 
-    if (this.optimizer.name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
-      request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration;
+    if (this.optimizer().name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
+      request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration();
     } else {
-      request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration;
+      request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration();
     }
 
-    request.fitnessFunction = new SolutionRequestFitnessFunction(this.fitnessFunction.name, this.fitnessFunction.form ? this.fitnessFunction.form.model : null);
+    request.fitnessFunction = new SolutionRequestFitnessFunction(this.fitnessFunction().name, this.fitnessFunction().form ? this.fitnessFunction().form.model : null);
 
     let allValid = true;
 
-    if (this.appliedPlaintextTransformers.length) {
-      let plaintextTransformers = [];
+    if (this.appliedPlaintextTransformers().length) {
+      const plaintextTransformers = [];
 
-      this.appliedPlaintextTransformers.forEach((transformer) => {
-        plaintextTransformers.push(new SolutionRequestTransformer(transformer.name, transformer.form.model));
+      this.appliedPlaintextTransformers().forEach((transformer) => {
+        plaintextTransformers.push(new TransformationStep(transformer.name, transformer.form.model));
 
         allValid = allValid && transformer.form.form.valid;
       });
@@ -217,7 +143,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     if (!allValid) {
-      this._snackBar.open('Errors exist in plaintext transformers.  Please correct them before solving.', '',{
+      this.snackBar.open('Errors exist in plaintext transformers.  Please correct them before solving.', '', {
         duration: 2000,
         verticalPosition: 'top'
       });
@@ -229,24 +155,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.solutionService.updateRunState(true);
     this.solutionService.updateProgressPercentage(0);
 
-    let self = this;
-    this.webSocketAPI.connectAndSend(request, function (response) {
-      if (response.headers.type === 'SOLUTION') {
-        let json = JSON.parse(response.body);
-
-        self.solutionService.updateSolution(new SolutionResponse(json.plaintext, json.score))
-
-        self.solutionService.updateRunState(false);
-        self.solutionService.updateProgressPercentage(100);
-        self.webSocketAPI.disconnect();
-      } else if (response.headers.type === 'EPOCH_COMPLETE') {
-        let responseBody = JSON.parse(response.body);
-        self.solutionService.updateProgressPercentage((responseBody.epochsCompleted / responseBody.epochsTotal) * 100);
-      } else if (response.headers.type === 'ERROR') {
-        self.solverError();
+    this.solutionService.solveSolution(request).subscribe({
+      next: (requestId: string) => {
+        this.solutionSubscription = this.solutionService.solutionUpdates(requestId).subscribe({
+          next: (update: SolutionUpdate) => {
+            this.solutionService.handleSolutionUpdate(update);
+            if (update.type === 'SOLUTION' || update.type === 'ERROR') {
+              this.solutionSubscription.unsubscribe();
+            }
+            if (update.type === 'ERROR') {
+              this.solverError();
+            }
+          },
+          error: () => {
+            this.solverError();
+          }
+        });
+      },
+      error: () => {
+        this.solverError();
       }
-    }, function(error) {
-      self.solverError();
     });
   }
 
@@ -254,16 +182,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.solutionService.updateRunState(false);
     this.solutionService.updateProgressPercentage(0);
 
-    this._snackBar.open('Error: unable to complete solve due to server error.', '',{
+    this.snackBar.open('Error: unable to complete solve due to server error.', '', {
       duration: 5000,
       verticalPosition: 'top'
     });
-
-    this.webSocketAPI.disconnect();
   }
 
   disableApplicationDownloadInfo() {
     this.showApplicationDownloadInfo = false;
-    localStorage.setItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO, "false");
+    localStorage.setItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO, 'false');
   }
 }

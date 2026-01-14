@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -28,5 +28,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SolutionResponse {
     private String plaintext;
-    private Double score;
+    private float[] scores;
 }

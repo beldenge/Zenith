@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -20,27 +20,26 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'blockify'
+    name: 'blockify',
+    standalone: false
 })
 export class BlockifyPipe implements PipeTransform {
-  transform(value: String, columns: number): String {
-    let block: String = '';
+  transform(value: string[], columns: number): string {
+    let block = '';
 
-    if (value) {
-      let split = value.split(' ');
-
+    if (value?.length) {
       let first = true;
 
-      for (let i = 0; i < split.length; i++) {
+      for (let i = 0; i < value.length; i++) {
         if (!first) {
           block += ' ';
         }
 
         first = false;
 
-        block += split[i];
+        block += value[i];
 
-        if (i != split.length - 1 && (i + 1) % columns == 0) {
+        if (i !== value.length - 1 && (i + 1) % columns === 0) {
           block += '\n';
           first = true;
         }

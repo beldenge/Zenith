@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,57 +17,34 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, effect} from '@angular/core';
 import { Cipher } from "../models/Cipher";
 import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
-import { SidebarService } from "../sidebar.service";
 import { SafeUrl } from "@angular/platform-browser";
 import {SolutionService} from "../solution.service";
 import {ConfigurationService} from "../configuration.service";
-import {CipherService} from "../cipher.service";
-import {Subscription} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
-  selector: 'app-top-nav',
-  templateUrl: './top-nav.component.html',
-  styleUrls: ['./top-nav.component.css']
+    selector: 'app-top-nav',
+    templateUrl: './top-nav.component.html',
+    styleUrls: ['./top-nav.component.css'],
+    standalone: false
 })
-export class TopNavComponent implements OnInit, OnDestroy {
-  configFilename = 'zenith-config.json';
-  selectHasFocus: boolean = false;
+export class TopNavComponent {
+  configFilename = 'zenith.json';
+  selectHasFocus = false;
   exportUri: SafeUrl;
-  ciphers: Cipher[];
+  ciphers = this.configurationService.ciphers;
   selectedCipher: Cipher;
-  isRunning: boolean = false;
-  selectedCipherSubscription: Subscription;
-  ciphersSubscription: Subscription;
-  isRunningSubscription: Subscription;
+  isRunning = this.solutionService.runState;
 
-  constructor(private _snackBar: MatSnackBar,
-              private cipherService: CipherService,
+  constructor(private snackBar: MatSnackBar,
               private configurationService: ConfigurationService,
-              private solutionService: SolutionService,
-              private sidebarService: SidebarService) {}
-
-  ngOnInit(): void {
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher
+              private solutionService: SolutionService) {
+    effect (() => {
+      this.selectedCipher = this.configurationService.selectedCipher();
     });
-
-    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
-      this.ciphers = ciphers
-    });
-
-    this.isRunningSubscription = this.solutionService.getRunStateAsObservable().subscribe(runState => {
-      this.isRunning = runState;
-    });
-  }
-
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
-    this.isRunningSubscription.unsubscribe();
-    this.ciphersSubscription.unsubscribe();
   }
 
   onMouseDownSelect(element: HTMLElement) {
@@ -90,14 +67,6 @@ export class TopNavComponent implements OnInit, OnDestroy {
     this.selectHasFocus = false;
   }
 
-  onSidebarToggleClick() {
-    if (document.body.classList.contains('sidebar-toggled')) {
-      this.sidebarService.updateSidebarToggle(false);
-    } else {
-      this.sidebarService.updateSidebarToggle(true);
-    }
-  }
-
   byName(c1: Cipher, c2: Cipher): boolean {
     return c1 && c2 ? c1.name === c2.name : c1 === c2;
   }
@@ -108,8 +77,8 @@ export class TopNavComponent implements OnInit, OnDestroy {
     this.solutionService.updateProgressPercentage(0);
     delete this.selectedCipher.transformed;
     this.configurationService.updateAppliedCiphertextTransformers([]);
-    this.configurationService.updateAppliedPlaintextTransformers([])
-    this.cipherService.updateSelectedCipher(this.selectedCipher);
+    this.configurationService.updateAppliedPlaintextTransformers([]);
+    this.configurationService.updateSelectedCipher(this.selectedCipher);
   }
 
   setExportUri() {
@@ -121,10 +90,10 @@ export class TopNavComponent implements OnInit, OnDestroy {
   }
 
   importConfiguration(event) {
-    let input = event.target;
+    const input = event.target;
 
     if (!input.value.endsWith(this.configFilename)) {
-      this._snackBar.open('Error: invalid filename.  Expected ' + this.configFilename + '.', '',{
+      this.snackBar.open('Error: invalid filename.  Expected ' + this.configFilename + '.', '', {
         duration: 5000,
         verticalPosition: 'top'
       });
@@ -132,23 +101,23 @@ export class TopNavComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let reader = new FileReader();
+    const reader = new FileReader();
 
-    let self = this;
+    const self = this;
 
     reader.onload = () => {
-      let text = reader.result.toString();
-      let configuration: ApplicationConfiguration = Object.assign(new ApplicationConfiguration, JSON.parse(text));
+      const text = reader.result.toString();
+      const configuration: ApplicationConfiguration = Object.assign(new ApplicationConfiguration(), JSON.parse(text));
       self.configurationService.import(configuration);
 
-      this._snackBar.open('Configuration imported successfully.', '',{
+      this.snackBar.open('Configuration imported successfully.', '', {
         duration: 2000,
         verticalPosition: 'top'
       });
     };
 
     reader.onerror = () => {
-      this._snackBar.open('Error: could not load configuration.', '',{
+      this.snackBar.open('Error: could not load configuration.', '', {
         duration: 5000,
         verticalPosition: 'top'
       });

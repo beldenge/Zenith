@@ -1,0 +1,202 @@
+scalar Object
+
+type Query {
+    configuration: ApplicationConfiguration
+    ciphers: [Cipher]
+    ciphertextTransformers: [FormComponent]
+    plaintextTransformers: [FormComponent]
+    uniqueSymbols(cipher: CipherRequest!): DoubleResponse!
+    multiplicity(cipher: CipherRequest!): DoubleResponse!
+    entropy(cipher: CipherRequest!): DoubleResponse!
+    indexOfCoincidence(cipher: CipherRequest!): DoubleResponse!
+    bigramRepeats(cipher: CipherRequest!): IntResponse!
+    cycleScore(cipher: CipherRequest!): IntResponse!
+    nGramStatistics(request: CipherRequest!, statsPage: Int!): NGramStatistics
+    fitnessFunctions: [FormComponent]
+    segmentPlaintext(plaintext: String!): WordSegmentationResponse
+}
+
+type Mutation {
+    transformPlaintext(request: PlaintextTransformationRequest!): SolutionResponse
+    transformCipher(request: CiphertextTransformationRequest!): Cipher
+    solveSolution(input: SolutionRequest!): String!
+}
+
+type Subscription {
+    solutionUpdates(requestId: ID!): SolutionUpdate!
+}
+
+type SelectOption {
+    name: String!
+    displayName: String
+}
+
+type SimulatedAnnealingConfiguration {
+    samplerIterations: Int!
+    annealingTemperatureMin: Float!
+    annealingTemperatureMax: Float!
+}
+
+type GeneticAlgorithmConfiguration {
+    populationSize: Int!
+    numberOfGenerations: Int!
+    elitism: Int
+    populationName: String!
+    latticeRows: Int
+    latticeColumns: Int
+    latticeWrapAround: Boolean
+    latticeRadius: Int
+    breederName: String!
+    crossoverOperatorName: String!
+    mutationOperatorName: String!
+    mutationRate: Float!
+    maxMutationsPerIndividual: Int
+    selectorName: String!
+    tournamentSelectorAccuracy: Float
+    tournamentSize: Int
+    minPopulations: Int
+    speciationEvents: Int
+    speciationFactor: Int
+    extinctionCycles: Int
+}
+
+type ApplicationConfiguration {
+    selectedCipher: String
+    epochs: Int
+    appliedCiphertextTransformers: [FormComponent]
+    appliedPlaintextTransformers: [FormComponent]
+    selectedOptimizer: SelectOption
+    selectedFitnessFunction: FormComponent
+    simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration
+    geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration
+    ciphers: [Cipher]
+}
+
+input CipherRequest {
+    name: ID!
+    rows: Int!
+    columns: Int!
+    ciphertext: [String!]!
+}
+
+type Cipher {
+    name: ID!
+    rows: Int!
+    columns: Int!
+    readOnly: Boolean!
+    ciphertext: [String!]!
+    knownSolutionKey: Object!
+}
+
+type FormlyFieldProps {
+    label: String
+    placeholder: String
+    required: Boolean!
+    type: String
+    rows: Int
+    cols: Int
+    max: Float
+    min: Float
+    maxLength: Int
+    minLength: Int
+    pattern: String
+}
+
+type FormlyFormField {
+    key: String!
+    type: String
+    props: FormlyFieldProps
+    defaultValue: String
+}
+
+type FormlyForm {
+    model: Object
+    fields: [FormlyFormField]
+}
+
+type FormComponent {
+    name: ID!
+    displayName: String
+    form: FormlyForm
+    order: Int
+    helpText: String
+}
+
+type DoubleResponse {
+    value: Float!
+}
+
+type IntResponse {
+    value: Int!
+}
+
+type NGramCount {
+    ngram: String!
+    count: Int!
+}
+
+type NGramStatistics {
+    firstNGramCounts: [NGramCount!]!
+    secondNGramCounts: [NGramCount!]!
+    thirdNGramCounts: [NGramCount!]!
+}
+
+type WordSegmentationResponse {
+    probability: Float!
+    segmentedPlaintext: [String!]!
+}
+
+input TransformationStep {
+    transformerName: String!
+    data: Object
+}
+
+input PlaintextTransformationRequest {
+    plaintext: String!
+    plaintextTransformers: [TransformationStep]
+}
+
+type SolutionResponse {
+    plaintext: String!
+    scores: [Float]
+}
+
+input CiphertextTransformationRequest {
+    cipher: CipherRequest!
+    steps: [TransformationStep]
+}
+
+input FitnessFunction {
+    name: String!
+    data: Object
+}
+
+input SolutionRequest {
+    requestId: String
+    rows: Int!
+    columns: Int!
+    ciphertext: [String!]!
+    epochs: Int
+    plaintextTransformers: [TransformationStep]
+    fitnessFunction: FitnessFunction
+    simulatedAnnealingConfiguration: Object
+    geneticAlgorithmConfiguration: Object
+}
+
+enum WebSocketResponseType {
+    EPOCH_COMPLETE
+    SOLUTION
+    ERROR
+}
+
+type EpochCompleteResponse {
+    epochsCompleted: Int!
+    epochsTotal: Int!
+}
+
+type SolutionUpdate {
+    requestId: ID!
+    type: WebSocketResponseType!
+    epochData: EpochCompleteResponse
+    solutionData: SolutionResponse
+}

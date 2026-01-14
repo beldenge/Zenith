@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -22,7 +22,7 @@ package com.ciphertool.zenith.api.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +30,7 @@ import java.util.Map;
 @Setter
 public class SolutionRequestFitnessFunction {
     @NotBlank
-    private String fitnessFunctionName;
+    private String name;
 
     private Map<String, Object> data = new HashMap<>();
 }

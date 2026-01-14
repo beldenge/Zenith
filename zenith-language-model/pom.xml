@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
+  ~ Copyright 2017-2026 George Belden
   ~
   ~ This file is part of Zenith.
   ~
@@ -53,6 +53,10 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
 		</plugins>
 	</build>
 </project>

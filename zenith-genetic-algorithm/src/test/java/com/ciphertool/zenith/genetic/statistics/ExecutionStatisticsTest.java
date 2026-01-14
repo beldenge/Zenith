@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -23,12 +23,13 @@ import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
 import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 public class ExecutionStatisticsTest {
@@ -110,7 +111,7 @@ public class ExecutionStatisticsTest {
         assertSame(mutationOperatorToSet, executionStatistics.getMutationOperator());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testGenerationStatisticsListUnmodifiable() {
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.addGenerationStatistics(new GenerationStatistics());
@@ -118,7 +119,10 @@ public class ExecutionStatisticsTest {
         executionStatistics.addGenerationStatistics(new GenerationStatistics());
 
         List<GenerationStatistics> generationStatisticsList = executionStatistics.getGenerationStatisticsList();
-        generationStatisticsList.remove(0); // should throw exception
+
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            generationStatisticsList.remove(0); // should throw exception
+        });
     }
 
     @Test

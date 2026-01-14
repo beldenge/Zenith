@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.inference.evaluator.model;
 
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,5 +27,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SolutionScore {
     float[][] ngramProbabilitiesUpdated;
-    float score;
+    Fitness[] scores;
 }

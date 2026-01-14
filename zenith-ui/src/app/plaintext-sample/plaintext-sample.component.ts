@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,32 +17,20 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterContentInit, Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ConfigurationService } from "../configuration.service";
-import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'app-plaintext-sample',
-  templateUrl: './plaintext-sample.component.html',
-  styleUrls: ['./plaintext-sample.component.css']
+    selector: 'app-plaintext-sample',
+    templateUrl: './plaintext-sample.component.html',
+    styleUrls: ['./plaintext-sample.component.css'],
+    standalone: false
 })
-export class PlaintextSampleComponent implements OnInit, AfterContentInit  {
+export class PlaintextSampleComponent  {
   @Input() transformedSample: string;
-  sample: string = ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT;
-  samplePlaintextSubscription: Subscription;
+  sample = this.configurationService.samplePlaintext;
 
   constructor(private configurationService: ConfigurationService) { }
-
-  ngOnInit() {
-    this.samplePlaintextSubscription = this.configurationService.getSamplePlaintextAsObservable().subscribe(sample => {
-      this.sample = sample;
-    });
-  }
-
-  ngAfterContentInit() {
-    // We just want the initial value, then don't take updates anymore
-    this.samplePlaintextSubscription.unsubscribe();
-  }
 
   reset(sampleEditor: HTMLElement) {
     sampleEditor.textContent = ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT;

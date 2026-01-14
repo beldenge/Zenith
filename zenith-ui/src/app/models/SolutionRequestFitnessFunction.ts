@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -18,11 +18,11 @@
  */
 
 export class SolutionRequestFitnessFunction {
-  fitnessFunctionName : string;
+  name: string;
   data: any;
 
-  constructor(fitnessFunctionName: string, data: any) {
-    this.fitnessFunctionName = fitnessFunctionName;
+  constructor(name: string, data: any) {
+    this.name = name;
     this.data = data;
   }
 }

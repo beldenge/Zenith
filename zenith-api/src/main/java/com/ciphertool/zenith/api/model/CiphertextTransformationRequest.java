@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,10 +19,11 @@
 
 package com.ciphertool.zenith.api.model;
 
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @Getter
@@ -32,5 +33,5 @@ public class CiphertextTransformationRequest {
     private CipherRequest cipher;
 
     @Valid
-    private List<CiphertextTransformationRequestStep> steps;
+    private List<TransformationStep> steps;
 }

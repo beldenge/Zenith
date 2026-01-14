@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -20,12 +20,13 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
+import com.ciphertool.zenith.inference.transformer.FormComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,14 +43,14 @@ public class CiphertextTransformationManager {
     @PostConstruct
     public void init() {
         existentCipherTransformers = cipherTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), ""))
+                .map(FormComponent::getName)
                 .collect(Collectors.toList());
     }
 
-    public Cipher transform(Cipher cipher, List<CiphertextTransformationStep> steps) {
+    public Cipher transform(Cipher cipher, List<TransformationStep> steps) {
         List<CipherTransformer> toUse = new ArrayList<>(steps.size());
 
-        for (CiphertextTransformationStep step : steps) {
+        for (TransformationStep step : steps) {
             String transformerName = step.getTransformerName();
 
             if (!existentCipherTransformers.contains(transformerName)) {
@@ -58,7 +59,7 @@ public class CiphertextTransformationManager {
             }
 
             for (CipherTransformer cipherTransformer : cipherTransformers) {
-                if (cipherTransformer.getClass().getSimpleName().replace(CipherTransformer.class.getSimpleName(), "").equals(transformerName)) {
+                if (cipherTransformer.getName().equals(transformerName)) {
                     toUse.add(cipherTransformer.getInstance(step.getData()));
 
                     break;

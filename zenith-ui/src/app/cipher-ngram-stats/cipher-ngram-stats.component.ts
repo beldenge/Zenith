@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,51 +17,35 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { CipherService } from "../cipher.service";
-import { Cipher } from "../models/Cipher";
-import { Subscription } from "rxjs";
+import {Component, effect, ViewChild} from '@angular/core';
 import { CipherStatisticsService } from "../cipher-statistics.service";
 import { MatTableDataSource } from "@angular/material/table";
-import { NgramStatisticsResponse } from "../models/NgramStatisticsResponse";
 import { MatExpansionPanel } from "@angular/material/expansion";
+import {ConfigurationService} from "../configuration.service";
 
 @Component({
-  selector: 'app-cipher-ngram-stats',
-  templateUrl: './cipher-ngram-stats.component.html',
-  styleUrls: ['./cipher-ngram-stats.component.css']
+    selector: 'app-cipher-ngram-stats',
+    templateUrl: './cipher-ngram-stats.component.html',
+    styleUrls: ['./cipher-ngram-stats.component.css'],
+    standalone: false
 })
-export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewInit {
-  // Workaround for angular component issue #13870
-  disableAnimation = true;
-  selectedCipher: Cipher;
-  selectedCipherSubscription: Subscription;
-  unigramsDataSource: MatTableDataSource<any>;
-  bigramsDataSource: MatTableDataSource<any>;
-  trigramsDataSource: MatTableDataSource<any>;
-  headerTextOpened = "Hide ngram statistics";
-  headerTextClosed = "Show ngram statistics";
+export class CipherNgramStatsComponent {
+  selectedCipher = this.configurationService.selectedCipher;
+  ngramsDataSources: MatTableDataSource<any>[][] = [];
+  headerTextOpened = 'Hide ngram statistics';
+  headerTextClosed = 'Show ngram statistics';
   headerText = this.headerTextClosed;
-  shown: boolean = false;
+  shown = false;
 
   @ViewChild(MatExpansionPanel, { static: true }) matExpansionPanelElement: MatExpansionPanel;
 
-  constructor(private cipherService: CipherService, private cipherStatisticsService: CipherStatisticsService) { }
-
-  ngOnInit(): void {
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher;
-      this.matExpansionPanelElement.close();
+  constructor(private cipherStatisticsService: CipherStatisticsService,
+              private configurationService: ConfigurationService) {
+    effect(() => {
+      if (!!this.selectedCipher()) {
+        this.matExpansionPanelElement.close();
+      }
     });
-  }
-
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
-  }
-
-  ngAfterViewInit(): void {
-    // timeout required to avoid the dreaded 'ExpressionChangedAfterItHasBeenCheckedError'
-    setTimeout(() => this.disableAnimation = false);
   }
 
   onCollapse() {
@@ -70,13 +54,22 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   onExpand(): void {
-    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher).subscribe((response: NgramStatisticsResponse) => {
-      let sortFunction = (a, b) => a.count < b.count ? 1 : (a.count > b.count ? -1 : 0);
-      this.unigramsDataSource = new MatTableDataSource(response.unigramCounts.sort(sortFunction));
-      this.bigramsDataSource = new MatTableDataSource(response.bigramCounts.sort(sortFunction));
-      this.trigramsDataSource = new MatTableDataSource(response.trigramCounts.sort(sortFunction));
-      this.shown = true;
-      this.headerText = this.headerTextOpened;
+    this.shown = true;
+    this.headerText = this.headerTextOpened;
+
+    if (!this.ngramsDataSources?.length) {
+      this.onMore();
+    }
+  }
+
+  onMore(): void {
+    const statsPage = this.ngramsDataSources?.length;
+    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher(), statsPage).subscribe((response) => {
+      const sortFunction = (a, b) => a.count < b.count ? 1 : (a.count > b.count ? -1 : 0);
+      this.ngramsDataSources.push([]);
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.firstNGramCounts].sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.secondNGramCounts].sort(sortFunction)));
+      this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.thirdNGramCounts].sort(sortFunction)));
     });
   }
 }

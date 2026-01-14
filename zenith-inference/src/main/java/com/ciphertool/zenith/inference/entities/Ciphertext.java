@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -28,11 +28,9 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class Ciphertext {
-    private int ciphertextId;
-
     private String value;
 
     public Ciphertext clone() {
-        return new Ciphertext(this.ciphertextId, this.value);
+        return new Ciphertext(this.value);
     }
 }

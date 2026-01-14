@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -33,7 +33,7 @@ public class UniformCrossoverOperator implements CrossoverOperator {
 
     @Override
     public Genome crossover(Genome firstGenome, Genome secondGenome) {
-        Genome childGenome = new Genome(firstGenome.isEvaluationNeeded(), firstGenome.getFitness(), firstGenome.getPopulation());
+        Genome childGenome = new Genome(firstGenome.isEvaluationNeeded(), firstGenome.getFitnesses(), firstGenome.getPopulation());
 
         for (int i = 0; i < firstGenome.getChromosomes().size(); i ++) {
             Chromosome<Object> childChromosome = (Chromosome<Object>) firstGenome.getChromosomes().get(i).clone();

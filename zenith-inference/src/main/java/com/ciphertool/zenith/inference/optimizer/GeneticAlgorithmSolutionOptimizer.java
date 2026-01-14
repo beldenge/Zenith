@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -39,7 +39,7 @@ import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyGene;
 import com.ciphertool.zenith.inference.genetic.fitness.PlaintextEvaluatorWrappingFitnessEvaluator;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +96,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     @Autowired
     private List<Selector> selectors;
 
-    public GeneticAlgorithmInitialization init(Cipher cipher, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+    public GeneticAlgorithmInitialization init(Cipher cipher, Map<String, Object> configuration, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         Population population = null;
         Breeder breeder = null;
         CrossoverOperator crossoverOperator = null;
@@ -209,7 +209,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     }
 
     @Override
-    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
+    public CipherSolution optimize(Cipher cipher, int epochs, Map<String, Object> configuration, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator, OnEpochComplete onEpochComplete) {
         int populationSize = (int) configuration.get(POPULATION_SIZE);
         int numberOfGenerations = (int) configuration.get(NUMBER_OF_GENERATIONS);
         int elitism = (int) configuration.get(ELITISM);
@@ -281,11 +281,9 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 for (int i = 0; i < size; i++) {
                     Genome next = individuals.get(i);
                     log.info("Genome {}:", (i + 1), next);
-                    if (log.isInfoEnabled()) {
-                        // There's only one chromosome for this type of Genome
-                        Chromosome chromosome = next.getChromosomes().get(0);
-                        cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(chromosome), plaintextTransformationSteps);
-                    }
+                    // There's only one chromosome for this type of Genome
+                    Chromosome chromosome = next.getChromosomes().get(0);
+                    cipherSolutionPrinter.print(ChromosomeToCipherSolutionMapper.map(chromosome), plaintextTransformationSteps);
                 }
             }
 
@@ -306,7 +304,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 correctSolutions ++;
             }
 
-            overallBest = (overallBest == null) ? bestSolution : (bestSolution.getScore() > overallBest.getScore() ? bestSolution : overallBest);
+            overallBest = (overallBest == null) ? bestSolution : (bestSolution.compareTo(overallBest) > 0 ? bestSolution : overallBest);
 
             if (onEpochComplete != null) {
                 onEpochComplete.fire(epoch + 1);

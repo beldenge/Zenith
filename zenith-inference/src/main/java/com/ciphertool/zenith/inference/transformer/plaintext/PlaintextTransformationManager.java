@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,12 +19,14 @@
 
 package com.ciphertool.zenith.inference.transformer.plaintext;
 
+import com.ciphertool.zenith.inference.transformer.FormComponent;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,16 +43,16 @@ public class PlaintextTransformationManager {
     @PostConstruct
     public void init() {
         existentPlaintextTransformers = plaintextTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), ""))
+                .map(FormComponent::getName)
                 .collect(Collectors.toList());
     }
 
-    public String transform(String plaintext, List<PlaintextTransformationStep> steps) {
+    public String transform(String plaintext, List<TransformationStep> steps) {
         plaintext = plaintext.toLowerCase();
 
         List<PlaintextTransformer> toUse = new ArrayList<>(steps.size());
 
-        for (PlaintextTransformationStep step : steps) {
+        for (TransformationStep step : steps) {
             String transformerName = step.getTransformerName();
 
             if (!existentPlaintextTransformers.contains(transformerName)) {
@@ -59,7 +61,7 @@ public class PlaintextTransformationManager {
             }
 
             for (PlaintextTransformer plaintextTransformer : plaintextTransformers) {
-                if (plaintextTransformer.getClass().getSimpleName().replace(PlaintextTransformer.class.getSimpleName(), "").equals(transformerName)) {
+                if (plaintextTransformer.getName().equals(transformerName)) {
                     toUse.add(plaintextTransformer.getInstance(step.getData()));
 
                     break;

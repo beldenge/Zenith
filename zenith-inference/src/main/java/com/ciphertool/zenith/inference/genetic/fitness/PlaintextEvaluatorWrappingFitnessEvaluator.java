@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.genetic.fitness;
 
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.FitnessEvaluator;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
@@ -28,8 +29,8 @@ import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.evaluator.model.SolutionScore;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
 import com.ciphertool.zenith.inference.genetic.util.ChromosomeToCipherSolutionMapper;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationManager;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
@@ -37,11 +38,11 @@ import java.util.Map;
 
 public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvaluator {
     private PlaintextEvaluator plaintextEvaluator;
-    private List<PlaintextTransformationStep> plaintextTransformationSteps;
+    private List<TransformationStep> plaintextTransformationSteps;
     private PlaintextTransformationManager plaintextTransformationManager;
     private Map<String, Object> precomputedCounterweightData;
 
-    public PlaintextEvaluatorWrappingFitnessEvaluator(Map<String, Object> precomputedCounterweightData, PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<PlaintextTransformationStep> plaintextTransformationSteps) {
+    public PlaintextEvaluatorWrappingFitnessEvaluator(Map<String, Object> precomputedCounterweightData, PlaintextEvaluator plaintextEvaluator, PlaintextTransformationManager plaintextTransformationManager, List<TransformationStep> plaintextTransformationSteps) {
         this.precomputedCounterweightData = precomputedCounterweightData;
         this.plaintextEvaluator = plaintextEvaluator;
         this.plaintextTransformationManager = plaintextTransformationManager;
@@ -49,7 +50,7 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
     }
 
     @Override
-    public Double evaluate(Genome genome) {
+    public Fitness[] evaluate(Genome genome) {
         // There's only one chromosome for this type of Genome
         Chromosome chromosome = genome.getChromosomes().get(0);
 
@@ -63,8 +64,8 @@ public class PlaintextEvaluatorWrappingFitnessEvaluator implements FitnessEvalua
 
         Cipher cipher = ((CipherKeyChromosome) chromosome).getCipher();
         SolutionScore score = plaintextEvaluator.evaluate(precomputedCounterweightData, cipher, proposal, solutionString, null);
-        proposal.setScore(score.getScore());
+        proposal.setScores(score.getScores());
 
-        return Double.valueOf(proposal.getScore());
+        return score.getScores();
     }
 }

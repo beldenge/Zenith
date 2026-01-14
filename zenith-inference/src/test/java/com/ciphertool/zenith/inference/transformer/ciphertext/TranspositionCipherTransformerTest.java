@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -21,9 +21,9 @@ package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TranspositionCipherTransformerTest {
     @Test
@@ -34,48 +34,48 @@ public class TranspositionCipherTransformerTest {
 
         Cipher cipher = new Cipher("tomato", 7, 6);
 
-        cipher.addCiphertextCharacter(new Ciphertext(0, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(1, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(2, "E"));
-        cipher.addCiphertextCharacter(new Ciphertext(3, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(4, "O"));
-        cipher.addCiphertextCharacter(new Ciphertext(5, "M"));
-        cipher.addCiphertextCharacter(new Ciphertext(6, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(7, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(8, "O"));
-        cipher.addCiphertextCharacter(new Ciphertext(9, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(10, "S"));
-        cipher.addCiphertextCharacter(new Ciphertext(11, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(12, "P"));
-        cipher.addCiphertextCharacter(new Ciphertext(13, "L"));
-        cipher.addCiphertextCharacter(new Ciphertext(14, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(15, "N"));
-        cipher.addCiphertextCharacter(new Ciphertext(16, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(17, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(18, "N"));
-        cipher.addCiphertextCharacter(new Ciphertext(19, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(20, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(21, "E"));
-        cipher.addCiphertextCharacter(new Ciphertext(22, "N"));
-        cipher.addCiphertextCharacter(new Ciphertext(23, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(24, "G"));
-        cipher.addCiphertextCharacter(new Ciphertext(25, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(26, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(27, "S"));
-        cipher.addCiphertextCharacter(new Ciphertext(28, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(29, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(30, "D"));
-        cipher.addCiphertextCharacter(new Ciphertext(31, "E"));
-        cipher.addCiphertextCharacter(new Ciphertext(32, "F"));
-        cipher.addCiphertextCharacter(new Ciphertext(33, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(34, "M"));
-        cipher.addCiphertextCharacter(new Ciphertext(35, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(36, "L"));
-        cipher.addCiphertextCharacter(new Ciphertext(37, "Y"));
-        cipher.addCiphertextCharacter(new Ciphertext(38, "X"));
-        cipher.addCiphertextCharacter(new Ciphertext(39, "X"));
-        cipher.addCiphertextCharacter(new Ciphertext(40, "X"));
-        cipher.addCiphertextCharacter(new Ciphertext(41, "X"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("E"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("O"));
+        cipher.addCiphertextCharacter(new Ciphertext("M"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("O"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("S"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("P"));
+        cipher.addCiphertextCharacter(new Ciphertext("L"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("N"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("N"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("E"));
+        cipher.addCiphertextCharacter(new Ciphertext("N"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("G"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("S"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("D"));
+        cipher.addCiphertextCharacter(new Ciphertext("E"));
+        cipher.addCiphertextCharacter(new Ciphertext("F"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("M"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("L"));
+        cipher.addCiphertextCharacter(new Ciphertext("Y"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
         System.out.println(cipher);
         Cipher transformed = cipherTransformer.transform(cipher);
 
@@ -137,48 +137,48 @@ public class TranspositionCipherTransformerTest {
 
         Cipher cipher = new Cipher("tomato", 7, 6);
 
-        cipher.addCiphertextCharacter(new Ciphertext(0, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(1, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(2, "E"));
-        cipher.addCiphertextCharacter(new Ciphertext(3, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(4, "O"));
-        cipher.addCiphertextCharacter(new Ciphertext(5, "M"));
-        cipher.addCiphertextCharacter(new Ciphertext(6, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(7, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(8, "O"));
-        cipher.addCiphertextCharacter(new Ciphertext(9, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(10, "S"));
-        cipher.addCiphertextCharacter(new Ciphertext(11, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(12, "P"));
-        cipher.addCiphertextCharacter(new Ciphertext(13, "L"));
-        cipher.addCiphertextCharacter(new Ciphertext(14, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(15, "N"));
-        cipher.addCiphertextCharacter(new Ciphertext(16, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(17, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(18, "N"));
-        cipher.addCiphertextCharacter(new Ciphertext(19, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(20, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(21, "E"));
-        cipher.addCiphertextCharacter(new Ciphertext(22, "N"));
-        cipher.addCiphertextCharacter(new Ciphertext(23, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(24, "G"));
-        cipher.addCiphertextCharacter(new Ciphertext(25, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(26, "T"));
-        cipher.addCiphertextCharacter(new Ciphertext(27, "S"));
-        cipher.addCiphertextCharacter(new Ciphertext(28, "H"));
-        cipher.addCiphertextCharacter(new Ciphertext(29, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(30, "D"));
-        cipher.addCiphertextCharacter(new Ciphertext(31, "E"));
-        cipher.addCiphertextCharacter(new Ciphertext(32, "F"));
-        cipher.addCiphertextCharacter(new Ciphertext(33, "A"));
-        cipher.addCiphertextCharacter(new Ciphertext(34, "M"));
-        cipher.addCiphertextCharacter(new Ciphertext(35, "I"));
-        cipher.addCiphertextCharacter(new Ciphertext(36, "L"));
-        cipher.addCiphertextCharacter(new Ciphertext(37, "Y"));
-        cipher.addCiphertextCharacter(new Ciphertext(38, "X"));
-        cipher.addCiphertextCharacter(new Ciphertext(39, "X"));
-        cipher.addCiphertextCharacter(new Ciphertext(40, "X"));
-        cipher.addCiphertextCharacter(new Ciphertext(41, "X"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("E"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("O"));
+        cipher.addCiphertextCharacter(new Ciphertext("M"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("O"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("S"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("P"));
+        cipher.addCiphertextCharacter(new Ciphertext("L"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("N"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("N"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("E"));
+        cipher.addCiphertextCharacter(new Ciphertext("N"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("G"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("T"));
+        cipher.addCiphertextCharacter(new Ciphertext("S"));
+        cipher.addCiphertextCharacter(new Ciphertext("H"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("D"));
+        cipher.addCiphertextCharacter(new Ciphertext("E"));
+        cipher.addCiphertextCharacter(new Ciphertext("F"));
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("M"));
+        cipher.addCiphertextCharacter(new Ciphertext("I"));
+        cipher.addCiphertextCharacter(new Ciphertext("L"));
+        cipher.addCiphertextCharacter(new Ciphertext("Y"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
+        cipher.addCiphertextCharacter(new Ciphertext("X"));
 
         Cipher transformed = cipherTransformer.transform(cipher);
         transformed = cipherTransformer.transform(transformed);

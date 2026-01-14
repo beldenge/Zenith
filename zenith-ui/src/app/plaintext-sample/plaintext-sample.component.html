@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
+  ~ Copyright 2017-2026 George Belden
   ~
   ~ This file is part of Zenith.
   ~
@@ -24,14 +24,14 @@
       <h6 class="m-0 font-weight-bold text-primary">Sample Plaintext</h6>
       <span class="ml-2 mr-auto text-muted">(editable)</span>
       <div class="dropdown no-arrow">
-        <a class="dropdown-toggle" href="javascript:void(0);" role="button" matTooltip="Reset to original" matTooltipPosition="above" (click)="reset(sampleEditor)">
+        <button class="dropdown-toggle" matTooltip="Reset to original" matTooltipPosition="above" (click)="reset(sampleEditor)">
           <i class="fas fa-redo"></i>
-        </a>
+        </button>
       </div>
     </div>
     <!-- Card Body -->
     <div class="card-body">
-      <div #sampleEditor contenteditable="true" (keyup)="edit(sampleEditor)" [textContent]="sample"></div>
+      <div #sampleEditor contenteditable="true" (keyup)="edit(sampleEditor)" [textContent]="sample()"></div>
     </div>
   </div>
 

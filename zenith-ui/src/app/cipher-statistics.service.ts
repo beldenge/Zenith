@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -18,13 +18,31 @@
  */
 
 import { Injectable } from '@angular/core';
-import { environment } from "../environments/environment";
-import { HttpClient } from "@angular/common/http";
-import { NumberResponse } from "./models/NumberResponse";
-import { shareReplay } from "rxjs/operators";
-import { Cipher } from "./models/Cipher";
+import { Cipher } from './models/Cipher';
+import {Apollo, gql} from 'apollo-angular';
+import {map} from "rxjs/operators";
 
-const ENDPOINT_URL = environment.apiUrlBase + '/statistics';
+interface GetScalarQuery {
+  value: number;
+}
+
+interface NGramCount {
+  ngram: string;
+  count: number;
+}
+
+interface GetNGramStatisticsQuery {
+  firstNGramCounts: NGramCount[];
+  secondNGramCounts: NGramCount[];
+  thirdNGramCounts: NGramCount[];
+}
+
+interface CipherRequest {
+  name: string;
+  rows: number;
+  columns: number;
+  ciphertext: string[];
+}
 
 @Injectable({
   providedIn: 'root'
@@ -36,77 +54,210 @@ export class CipherStatisticsService {
   indexOfCoincidenceObservables = {};
   bigramRepeatsObservables = {};
   cycleScoreObservables = {};
-  ngramStatisticsObservables = {};
 
-  constructor(private http: HttpClient) { }
+  constructor(private apollo: Apollo) {}
 
   getUniqueSymbols(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.uniqueSymbolsObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.uniqueSymbolsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/uniqueSymbols', cipher).pipe(shareReplay(1));
+    if (!this.uniqueSymbolsObservables.hasOwnProperty(cipher.name)) {
+      const cipherRequest = {
+        name: cipher.name,
+        rows: cipher.rows,
+        columns: cipher.columns,
+        ciphertext: cipher.ciphertext
+      };
+
+      this.uniqueSymbolsObservables[cipher.name] = this.apollo.query<GetScalarQuery>({
+        query: gql`
+          query GetScalar($cipher: CipherRequest!) {
+            uniqueSymbols(cipher: $cipher) {
+              value
+            }
+          }
+        `,
+        variables: {
+          cipher: cipherRequest
+        }
+      }).pipe(map((response: any) => response.data.uniqueSymbols));
     }
 
-    return this.uniqueSymbolsObservables[cipher.ciphertext];
+    return this.uniqueSymbolsObservables[cipher.name];
   }
 
   getMultiplicity(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.multiplicityObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.multiplicityObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/multiplicity', cipher).pipe(shareReplay(1));
+    if (!this.multiplicityObservables.hasOwnProperty(cipher.name)) {
+      const cipherRequest = {
+        name: cipher.name,
+        rows: cipher.rows,
+        columns: cipher.columns,
+        ciphertext: cipher.ciphertext
+      };
+
+      this.multiplicityObservables[cipher.name] = this.apollo.query<GetScalarQuery>({
+        query: gql`
+          query GetScalar($cipher: CipherRequest!) {
+            multiplicity(cipher: $cipher) {
+              value
+            }
+          }
+        `,
+        variables: {
+          cipher: cipherRequest
+        }
+      }).pipe(map((response: any) => response.data.multiplicity));
     }
 
-    return this.multiplicityObservables[cipher.ciphertext];
+    return this.multiplicityObservables[cipher.name];
   }
 
   getEntropy(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.entropyObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.entropyObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/entropy', cipher).pipe(shareReplay(1));
+    if (!this.entropyObservables.hasOwnProperty(cipher.name)) {
+      const cipherRequest = {
+        name: cipher.name,
+        rows: cipher.rows,
+        columns: cipher.columns,
+        ciphertext: cipher.ciphertext
+      };
+
+      this.entropyObservables[cipher.name] = this.apollo.query<GetScalarQuery>({
+        query: gql`
+          query GetScalar($cipher: CipherRequest!) {
+            entropy(cipher: $cipher) {
+              value
+            }
+          }
+        `,
+        variables: {
+          cipher: cipherRequest
+        }
+      }).pipe(map((response: any) => response.data.entropy));
     }
 
-    return this.entropyObservables[cipher.ciphertext];
+    return this.entropyObservables[cipher.name];
   }
 
   getIndexOfCoincidence(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.indexOfCoincidenceObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.indexOfCoincidenceObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/indexOfCoincidence', cipher).pipe(shareReplay(1));
+    if (!this.indexOfCoincidenceObservables.hasOwnProperty(cipher.name)) {
+      const cipherRequest = {
+        name: cipher.name,
+        rows: cipher.rows,
+        columns: cipher.columns,
+        ciphertext: cipher.ciphertext
+      };
+
+      this.indexOfCoincidenceObservables[cipher.name] = this.apollo.query<GetScalarQuery>({
+        query: gql`
+          query GetScalar($cipher: CipherRequest!) {
+            indexOfCoincidence(cipher: $cipher) {
+              value
+            }
+          }
+        `,
+        variables: {
+          cipher: cipherRequest
+        }
+      }).pipe(map((response: any) => response.data.indexOfCoincidence));
     }
 
-    return this.indexOfCoincidenceObservables[cipher.ciphertext];
+    return this.indexOfCoincidenceObservables[cipher.name];
   }
 
   getBigramRepeats(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.bigramRepeatsObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.bigramRepeatsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/bigramRepeats', cipher).pipe(shareReplay(1));
+    if (!this.bigramRepeatsObservables.hasOwnProperty(cipher.name)) {
+      const cipherRequest = {
+        name: cipher.name,
+        rows: cipher.rows,
+        columns: cipher.columns,
+        ciphertext: cipher.ciphertext
+      };
+
+      this.bigramRepeatsObservables[cipher.name] = this.apollo.query<GetScalarQuery>({
+        query: gql`
+          query GetScalar($cipher: CipherRequest!) {
+            bigramRepeats(cipher: $cipher) {
+              value
+            }
+          }
+        `,
+        variables: {
+          cipher: cipherRequest
+        }
+      }).pipe(map((response: any) => response.data.bigramRepeats));
     }
 
-    return this.bigramRepeatsObservables[cipher.ciphertext];
+    return this.bigramRepeatsObservables[cipher.name];
   }
 
   getCycleScore(cipher: Cipher) {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.cycleScoreObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.cycleScoreObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/cycleScore', cipher).pipe(shareReplay(1));
+    if (!this.cycleScoreObservables.hasOwnProperty(cipher.name)) {
+      const cipherRequest = {
+        name: cipher.name,
+        rows: cipher.rows,
+        columns: cipher.columns,
+        ciphertext: cipher.ciphertext
+      };
+
+      this.cycleScoreObservables[cipher.name] = this.apollo.query<GetScalarQuery>({
+        query: gql`
+          query GetScalar($cipher: CipherRequest!) {
+            cycleScore(cipher: $cipher) {
+              value
+            }
+          }
+        `,
+        variables: {
+          cipher: cipherRequest
+        }
+      }).pipe(map((response: any) => response.data.cycleScore));
     }
 
-    return this.cycleScoreObservables[cipher.ciphertext];
+    return this.cycleScoreObservables[cipher.name];
   }
 
-  getNgramStatistics(cipher: Cipher) {
+  getNgramStatistics(cipher: Cipher, statsPage: number): any {
     cipher = cipher.transformed ? cipher.transformed : cipher;
 
-    if (!this.ngramStatisticsObservables.hasOwnProperty(cipher.ciphertext)) {
-      this.ngramStatisticsObservables[cipher.ciphertext] = this.http.post<NumberResponse>(ENDPOINT_URL + '/ngrams', cipher).pipe(shareReplay(1));
-    }
+    const request = {
+      name: cipher.name,
+      rows: cipher.rows,
+      columns: cipher.columns,
+      ciphertext: cipher.ciphertext
+    };
 
-    return this.ngramStatisticsObservables[cipher.ciphertext];
+    return this.apollo.query<GetNGramStatisticsQuery>({
+      query: gql`
+        query GetNGramStatistics($request: CipherRequest!, $statsPage: Int!) {
+          nGramStatistics(request: $request, statsPage: $statsPage) {
+            firstNGramCounts {
+              ngram,
+              count
+            },
+            secondNGramCounts {
+              ngram,
+              count
+            },
+            thirdNGramCounts {
+              ngram,
+              count
+            }
+          }
+        }
+      `,
+      variables: {
+        request,
+        statsPage
+      }
+    }).pipe(map((response: any) => response.data.nGramStatistics));
   }
 }

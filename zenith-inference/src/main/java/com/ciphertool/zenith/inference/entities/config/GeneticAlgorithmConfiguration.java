@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -23,7 +23,7 @@ import com.ciphertool.zenith.genetic.population.LatticePopulation;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -25,7 +25,7 @@ import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.evaluator.PlaintextEvaluator;
 import com.ciphertool.zenith.inference.genetic.entities.CipherKeyChromosome;
-import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformationStep;
+import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +41,13 @@ public class RandomCipherKeyBreeder extends AbstractCipherKeyBreeder {
     private GeneDao geneDao;
 
     @Override
-    public void init(Cipher cipher, List<PlaintextTransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
+    public void init(Cipher cipher, List<TransformationStep> plaintextTransformationSteps, PlaintextEvaluator plaintextEvaluator) {
         super.init(cipher, plaintextTransformationSteps, plaintextEvaluator);
     }
 
     @Override
     public Genome breed(Population population) {
-        Genome genome = new Genome(true, 0d, population);
+        Genome genome = new Genome(true, null, population);
         CipherKeyChromosome chromosome = new CipherKeyChromosome(genome, cipher, keys.length);
 
         for (int i = 0; i < keys.length; i++) {

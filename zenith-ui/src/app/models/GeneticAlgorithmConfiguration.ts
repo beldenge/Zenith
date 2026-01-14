@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -34,4 +34,8 @@ export class GeneticAlgorithmConfiguration {
   selectorName: string;
   tournamentSelectorAccuracy: number;
   tournamentSize: number;
+  minPopulations: number;
+  speciationEvents: number;
+  speciationFactor: number;
+  extinctionCycles: number;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -17,10 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CiphertextTransformationRequestStep } from "./CiphertextTransformationRequestStep";
-import { Cipher } from "./Cipher";
+import {TransformationStep} from "./TransformationStep";
+import {CipherRequest} from "./CipherRequest";
 
 export class CiphertextTransformationRequest {
-  cipher: Cipher;
-  steps: CiphertextTransformationRequestStep[];
+  cipher: CipherRequest;
+  steps: TransformationStep[];
 }

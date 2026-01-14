@@ -1,21 +1,21 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2026 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div class="row mt-4">
   <div class="col-md-6 text-left py-0 px-4">
@@ -24,9 +24,9 @@
 
   <div class="col-md-6 text-right">
     <div class="py-0 px-4">
-      <a id="create_button" href="javascript:void(0);" class="btn btn-primary btn-circle mx-2" matTooltip="Create Cipher" matTooltipPosition="below" (click)="createCipher()">
+      <button id="create_button" class="btn btn-primary btn-circle mx-2" matTooltip="Create Cipher" matTooltipPosition="below" (click)="createCipher()">
         <i class="fas fa-plus"></i>
-      </a>
+      </button>
     </div>
   </div>
 </div>
@@ -58,7 +58,7 @@
 
     <ng-container matColumnDef="ciphertext">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Ciphertext </th>
-      <td mat-cell *matCellDef="let cipher"> {{cipher.ciphertext}} </td>
+      <td mat-cell *matCellDef="let cipher"> {{cipher.ciphertext.join(' ')}} </td>
     </ng-container>
 
     <ng-container matColumnDef="actions">
@@ -69,13 +69,13 @@
             <i class="far fa-clone text-primary mx-2 cursor-pointer" matTooltip="Clone" matTooltipPosition="above" (click)="cloneCipher(cipher)"></i>
           </div>
           <div class="col-md-6">
-            <ng-container *ngIf="!cipher.readOnly">
+            @if (!cipher.readOnly) {
               <i class="far fa-edit text-primary mx-2 cursor-pointer" matTooltip="Edit" matTooltipPosition="above" (click)="editCipher(cipher)"></i>
               <i class="far fa-trash-alt text-danger mx-2 cursor-pointer" matTooltip="Delete" matTooltipPosition="above" (click)="deleteCipher(cipher)"></i>
-            </ng-container>
-            <ng-container *ngIf="cipher.readOnly">
+            }
+            @if (cipher.readOnly) {
               <p class="m-auto text-muted"><small>Read-only</small></p>
-            </ng-container>
+            }
           </div>
         </div>
       </td>

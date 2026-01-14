@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -34,10 +34,5 @@ public class AutoConfigurationController implements ErrorController {
     @RequestMapping("/error")
     public ModelAndView error() {
         return new ModelAndView("index.html");
-    }
-
-    @Override
-    public String getErrorPath() {
-        return "/error";
     }
 }

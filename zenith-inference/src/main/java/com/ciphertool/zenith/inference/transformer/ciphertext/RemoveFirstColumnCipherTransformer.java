@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -33,7 +33,7 @@ public class RemoveFirstColumnCipherTransformer implements CipherTransformer {
 
         // Remove the last column altogether
         for (int i = cipher.getRows() - 1; i >= 0; i--) {
-            transformed.removeCiphertextCharacter(transformed.getCiphertextCharacters().get(i * cipher.getColumns()));
+            transformed.removeCiphertextCharacter(i * cipher.getColumns());
         }
 
         transformed.setColumns(transformed.getColumns() - 1);

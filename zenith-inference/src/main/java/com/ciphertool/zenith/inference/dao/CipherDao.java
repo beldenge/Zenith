@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -20,77 +20,112 @@
 package com.ciphertool.zenith.inference.dao;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.CipherJson;
-import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class CipherDao {
     private static Logger log = LoggerFactory.getLogger(CipherDao.class);
-
-    private static final String CIPHERS_DIRECTORY = "ciphers";
-    private static final String JSON_EXTENSION = ".json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String CIPHERS_DIRECTORY_PATH = "./ciphers";
+
+    private List<Cipher> ciphers = new ArrayList<>();
 
     @Autowired
-    private ApplicationConfiguration applicationConfiguration;
+    private Validator validator;
+
+    @PostConstruct
+    public void init() {
+        // First read configuration from the classpath
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(getClass().getClassLoader());
+        Resource[] resources;
+
+        try {
+            resources = resolver.getResources("classpath*:/ciphers/*.json");
+        } catch (IOException ioe) {
+            throw new IllegalStateException("Unable to read configuration from classpath directory=ciphers/", ioe);
+        }
+
+        for (Resource resource : resources) {
+            try (InputStream inputStream = resource.getInputStream()) {
+                Cipher cipher = OBJECT_MAPPER.readValue(inputStream, Cipher.class);
+                validateInputWithInjectedValidator(cipher);
+                ciphers.add(cipher);
+            } catch (IOException e) {
+                log.error("Unable to read cipher from file: {}.", resource.getFilename(), e);
+                throw new IllegalStateException(e);
+            }
+        }
+
+        // Secondly, attempt to read configuration from the local directory on the filesystem
+        File localConfigDirectory = new File(Paths.get(CIPHERS_DIRECTORY_PATH).toAbsolutePath().toString());
+
+        if (localConfigDirectory.exists() && localConfigDirectory.isDirectory()) {
+            for (File file : localConfigDirectory.listFiles((d, name) -> name.toLowerCase().endsWith(".json"))) {
+                try {
+                    Cipher cipher = OBJECT_MAPPER.readValue(file, Cipher.class);
+                    validateInputWithInjectedValidator(cipher);
+                    ciphers.add(cipher);
+                } catch (IOException e) {
+                    log.error("Unable to read cipher from file: {}.", file.getPath(), e);
+                    throw new IllegalStateException(e);
+                }
+            }
+        }
+
+        // Validate cipher uniqueness
+        List<Cipher> uniqueCiphers = new ArrayList<>();
+
+        for (Cipher nextCipher : ciphers) {
+            if (uniqueCiphers.stream().anyMatch(cipher -> cipher.getName().equals(nextCipher.getName()))) {
+                throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
+            }
+
+            uniqueCiphers.add(nextCipher);
+        }
+    }
+
+    private void validateInputWithInjectedValidator(Cipher cipher) {
+        Set<ConstraintViolation<Cipher>> violations = validator.validate(cipher);
+
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+    }
 
     public Cipher findByCipherName(String name) {
-        if (name == null || name.isEmpty()) {
+        if (StringUtils.isBlank(name)) {
             log.warn("Attempted to find cipher with null or empty name.  Returning null.");
 
             return null;
         }
 
-        return findAll().stream()
+        return ciphers.stream()
                 .filter(cipher -> name.equalsIgnoreCase(cipher.getName()))
                 .findAny()
                 .orElse(null);
     }
 
     public List<Cipher> findAll() {
-        List<Cipher> ciphers = new ArrayList<>();
-
-        for (CipherJson cipherJson : applicationConfiguration.getCiphers()){
-            Cipher nextCipher = new Cipher(cipherJson);
-
-            if (containsCipher(ciphers, nextCipher)) {
-                throw new IllegalArgumentException("Cipher with name " + nextCipher.getName() + " already imported.  Cannot import duplicate ciphers.");
-            }
-
-            ciphers.add(nextCipher);
-        }
-
         return ciphers;
-    }
-
-    public void writeToFile(Cipher cipher) throws IOException {
-        // Write the file to the current working directory
-        String outputFilename = Paths.get(CIPHERS_DIRECTORY).toAbsolutePath().toString() + File.separator + cipher.getName() + JSON_EXTENSION;
-
-        if (!Files.exists(Paths.get(CIPHERS_DIRECTORY))) {
-            Files.createDirectory(Paths.get(CIPHERS_DIRECTORY));
-        }
-
-        try {
-            OBJECT_MAPPER.writeValue(new File(outputFilename), new CipherJson(cipher));
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to write Cipher with name=" + cipher.getName() + " to file=" + outputFilename + ".");
-        }
-    }
-
-    private boolean containsCipher(List<Cipher> ciphers, Cipher newCipher) {
-        return ciphers.stream().anyMatch(cipher -> cipher.getName().equals(newCipher.getName()));
     }
 }

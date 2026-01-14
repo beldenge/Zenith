@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -19,7 +19,7 @@
 
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from "@angular/common";
 
@@ -33,9 +33,7 @@ import { BlockifyPipe } from './blockify.pipe';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import { SortablejsModule } from "ngx-sortablejs";
 import { CiphertextTransformersComponent } from './ciphertext-transformers/ciphertext-transformers.component';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DefaultHttpInterceptor } from "./interceptors/default-http-interceptor";
 import { CipherModalComponent } from './cipher-modal/cipher-modal.component';
@@ -66,25 +64,27 @@ import { CipherNgramStatsComponent } from './cipher-ngram-stats/cipher-ngram-sta
 import { NgramsTableComponent } from './ngrams-table/ngrams-table.component';
 import { TopNavComponent } from './top-nav/top-nav.component';
 import { FormlyFieldTextArea } from "@ngx-formly/material/textarea";
+import {SortablejsModule} from "./sortable/sortablejs.module";
+import { GraphQLModule } from './graphql.module';
 
-export function minValidationMessage(err, field) {
-  return `This field has a minimum value of ${field.templateOptions.min}`;
+export function minValidationMessage(err: any, field: any) {
+  return `This field has a minimum value of ${field.props.min}`;
 }
 
-export function maxValidationMessage(err, field) {
-  return `This field has a maximum value of ${field.templateOptions.max}`;
+export function maxValidationMessage(err: any, field: any) {
+  return `This field has a maximum value of ${field.props.max}`;
 }
 
-export function minLengthValidationMessage(err, field) {
-  return `This field has a minimum length of ${field.templateOptions.minLength}`;
+export function minLengthValidationMessage(err: any, field: any) {
+  return `This field has a minimum length of ${field.props.minLength}`;
 }
 
-export function maxLengthValidationMessage(err, field) {
-  return `This field has a maximum length of ${field.templateOptions.maxLength}`;
+export function maxLengthValidationMessage(err: any, field: any) {
+  return `This field has a maximum length of ${field.props.maxLength}`;
 }
 
-export function patternValidationMessage(err, field) {
-  return `This field must match the pattern ${field.templateOptions.pattern}`;
+export function patternValidationMessage(err: any, field: any) {
+  return `This field must match the pattern ${field.props.pattern}`;
 }
 
 export function registerValidationMessages() {
@@ -118,37 +118,34 @@ export function registerValidationMessages() {
   };
 }
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    SideNavComponent,
-    CipherStatsSummaryComponent,
-    CiphertextComponent,
-    PlaintextComponent,
-    BlockifyPipe,
-    DashboardComponent,
-    SettingsComponent,
-    NotFoundComponent,
-    CiphertextTransformersComponent,
-    CipherModalComponent,
-    ManageCiphersComponent,
-    PlaintextTransformersComponent,
-    PlaintextSampleComponent,
-    HelpComponent,
-    WordSegmentationComponent,
-    SpacifyPipe,
-    CipherNgramStatsComponent,
-    NgramsTableComponent,
-    TopNavComponent
-  ],
-    imports: [
-        BrowserModule,
+@NgModule({ declarations: [
+        AppComponent,
+        SideNavComponent,
+        CipherStatsSummaryComponent,
+        CiphertextComponent,
+        PlaintextComponent,
+        BlockifyPipe,
+        DashboardComponent,
+        SettingsComponent,
+        NotFoundComponent,
+        CiphertextTransformersComponent,
+        CipherModalComponent,
+        ManageCiphersComponent,
+        PlaintextTransformersComponent,
+        PlaintextSampleComponent,
+        HelpComponent,
+        WordSegmentationComponent,
+        SpacifyPipe,
+        CipherNgramStatsComponent,
+        NgramsTableComponent,
+        TopNavComponent
+    ],
+    bootstrap: [AppComponent],
+    imports: [BrowserModule,
         AppRoutingModule,
-        HttpClientModule,
         FormsModule,
         ReactiveFormsModule,
-        SortablejsModule.forRoot({animation: 150}),
-        BrowserAnimationsModule,
+        SortablejsModule.forRoot({ animation: 150 }),
         MatTooltipModule,
         MatDialogModule,
         MatButtonModule,
@@ -160,57 +157,55 @@ export function registerValidationMessages() {
         MatPaginatorModule,
         MatSnackBarModule,
         FormlyModule.forRoot({
-          types: [
-            {
-              name: 'input',
-              component: FormlyFieldInput,
-              defaultOptions: {
-                modelOptions: {
-                  debounce: {
-                    default: 500
-                  }
+            types: [
+                {
+                    name: 'input',
+                    component: FormlyFieldInput,
+                    defaultOptions: {
+                        modelOptions: {
+                            debounce: {
+                                default: 500
+                            }
+                        }
+                    }
+                },
+                {
+                    name: 'textarea',
+                    component: FormlyFieldTextArea,
+                    defaultOptions: {
+                        modelOptions: {
+                            debounce: {
+                                default: 500
+                            }
+                        }
+                    }
                 }
-              }
-            },
-            {
-              name: 'textarea',
-              component: FormlyFieldTextArea,
-              defaultOptions: {
-                modelOptions: {
-                  debounce: {
-                    default: 500
-                  }
-                }
-              }
-            }
-          ]
+            ]
         }),
         FormlyMaterialModule,
         MatProgressSpinnerModule,
         MatRadioModule,
         MatSelectModule,
         MatExpansionModule,
-        MatSlideToggleModule
-    ],
-  providers: [
-    JsonPipe,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: DefaultHttpInterceptor,
-      multi: true
-    },
-    {
-      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-      useValue: {
-        appearance: 'outline'
-      }
-    },
-    {
-      provide: FORMLY_CONFIG,
-      multi: true,
-      useFactory: registerValidationMessages
-    }
-  ],
-  bootstrap: [AppComponent]
-})
-export class AppModule { }
+        MatSlideToggleModule,
+        GraphQLModule], providers: [
+        JsonPipe,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: DefaultHttpInterceptor,
+            multi: true
+        },
+        {
+            provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+            useValue: {
+                appearance: 'outline'
+            }
+        },
+        {
+            provide: FORMLY_CONFIG,
+            multi: true,
+            useFactory: registerValidationMessages
+        },
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
+export class AppModule {}

@@ -1,35 +1,39 @@
 <!--
-  ~ Copyright 2017-2020 George Belden
-  ~
-  ~ This file is part of Zenith.
-  ~
-  ~ Zenith is free software: you can redistribute it and/or modify it under
-  ~ the terms of the GNU General Public License as published by the Free Software
-  ~ Foundation, either version 3 of the License, or (at your option) any later
-  ~ version.
-  ~
-  ~ Zenith is distributed in the hope that it will be useful, but WITHOUT
-  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-  ~ details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with
-  ~ Zenith. If not, see <http://www.gnu.org/licenses/>.
-  -->
+~ Copyright 2017-2026 George Belden
+~
+~ This file is part of Zenith.
+~
+~ Zenith is free software: you can redistribute it and/or modify it under
+~ the terms of the GNU General Public License as published by the Free Software
+~ Foundation, either version 3 of the License, or (at your option) any later
+~ version.
+~
+~ Zenith is distributed in the hope that it will be useful, but WITHOUT
+~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+~ details.
+~
+~ You should have received a copy of the GNU General Public License along with
+~ Zenith. If not, see <http://www.gnu.org/licenses/>.
+-->
 
 <div class="card shadow mb-4">
   <!-- Card Header - Dropdown -->
   <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-primary">Ciphertext</h6>
     <div class="dropdown no-arrow">
-      <a class="dropdown-toggle" href="javascript:void(0);" role="button" #tooltip="matTooltip" matTooltip="{{tooltipText | async}}" matTooltipPosition="above" (mouseover)="resetTooltipText()" (click)="copyCiphertext(tooltip)">
+      <button class="dropdown-toggle" #tooltip="matTooltip" [matTooltip]="tooltipText()" matTooltipPosition="above" (mouseover)="resetTooltipText()" (click)="copyCiphertext(tooltip)">
         <i class="far fa-copy"></i>
-      </a>
+      </button>
     </div>
   </div>
   <!-- Card Body -->
   <div class="card-body">
-    <div *ngIf="!cipher?.transformed">{{cipher?.ciphertext | blockify : cipher?.columns}}</div>
-    <div *ngIf="cipher?.transformed">{{cipher?.transformed.ciphertext | blockify : cipher?.transformed.columns}}</div>
+    @if (!cipher()?.transformed) {
+      <div>{{cipher()?.ciphertext | blockify : cipher()?.columns}}</div>
+    }
+    @if (cipher()?.transformed) {
+      <div>{{cipher()?.transformed.ciphertext | blockify : cipher()?.transformed.columns}}</div>
+    }
   </div>
 </div>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 George Belden
+ * Copyright 2017-2026 George Belden
  *
  * This file is part of Zenith.
  *
@@ -23,7 +23,20 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+        "com.ciphertool.zenith.api",
+        "com.ciphertool.zenith.inference.configuration",
+        "com.ciphertool.zenith.inference.dao",
+        "com.ciphertool.zenith.inference.evaluator",
+        "com.ciphertool.zenith.inference.genetic",
+        "com.ciphertool.zenith.inference.optimizer",
+        "com.ciphertool.zenith.inference.printer",
+        "com.ciphertool.zenith.inference.probability",
+        "com.ciphertool.zenith.inference.segmentation",
+        "com.ciphertool.zenith.inference.statistics",
+        "com.ciphertool.zenith.inference.transformer",
+        "com.ciphertool.zenith.inference.util"
+})
 @EnableCaching
 public class ApiApplication {
     public static void main(String[] args) {
