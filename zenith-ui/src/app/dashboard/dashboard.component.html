@@ -69,12 +69,12 @@
       </form>
     </div>
     <div class="col-xl-1">
-      <a id="solve_button" href="javascript:void(0);" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true, 'disabled': isRunning()}" (click)="solve()">
+      <button id="solve_button" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true, 'disabled': isRunning()}" (click)="solve()">
         <span class="icon text-white-50">
           <i [ngClass]="{'fas': true, 'fa-play' : !isRunning(), 'fa-spinner' : isRunning(), 'fa-spin': isRunning()}"></i>
         </span>
         <span class="text">Solve</span>
-      </a>
+      </button>
     </div>
   </div>
 

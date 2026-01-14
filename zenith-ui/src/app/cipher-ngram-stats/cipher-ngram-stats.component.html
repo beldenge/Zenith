@@ -38,12 +38,12 @@
                 }
               </div>
             }
-            <a id="more_button" href="javascript:void(0);" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true}" (click)="onMore()">
+            <button id="more_button" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true}" (click)="onMore()">
               <span class="icon text-white-50">
                 <i [ngClass]="{'fas': true, 'fa-chevron-down' : true}"></i>
               </span>
               <span class="text">More</span>
-            </a>
+            </button>
           }
         </mat-expansion-panel>
       </div>

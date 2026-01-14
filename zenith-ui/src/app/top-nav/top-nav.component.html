@@ -49,11 +49,11 @@
 
     <div class="col-md-1">
       <div id="import_export" class="float-right d-flex">
-        <a href="javascript:void(0);" class="btn btn-primary btn-circle mx-2" matTooltip="Import Configuration" matTooltipPosition="below" (click)="clickInput(importInput)">
+        <button class="btn btn-primary btn-circle mx-2" matTooltip="Import Configuration" matTooltipPosition="below" (click)="clickInput(importInput)">
           <i class="fas fa-upload">
             <input #importInput class="d-none" type="file" accept=".json" (change)='importConfiguration($event)'>
           </i>
-        </a>
+        </button>
         <a [href]="exportUri" download="{{configFilename}}" class="btn btn-primary btn-circle mx-2" matTooltip="Export Configuration" matTooltipPosition="below" (mousedown)="setExportUri()">
           <i class="fas fa-download"></i>
         </a>
