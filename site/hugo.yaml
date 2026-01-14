@@ -1,6 +1,7 @@
-baseURL: "https://beldenge.github.io/zenith/"
+baseURL: "https://beldenge.github.io/Zenith/"
 title: Project Zenith
 theme: PaperMod
+publishDir: "../public"
 
 enableRobotsTXT: true
 buildDrafts: false
