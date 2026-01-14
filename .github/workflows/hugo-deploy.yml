@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: git st./public         # Where Hugo outputs; adjust if you changed publishDir
+          path: ./public         # Where Hugo outputs; adjust if you changed publishDir
 
   # Single deploy job since we're just deploying
   deploy:
