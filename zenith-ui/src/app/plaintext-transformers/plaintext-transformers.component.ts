@@ -17,8 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from "rxjs";
+import {Component, effect} from '@angular/core';
 import { FormComponent } from "../models/FormComponent";
 import { UntypedFormGroup } from "@angular/forms";
 import { SamplePlaintextTransformationRequest } from "../models/SamplePlaintextTransformationRequest";
@@ -34,15 +33,13 @@ import {PlaintextService} from "../plaintext.service";
     styleUrls: ['./plaintext-transformers.component.css'],
     standalone: false
 })
-export class PlaintextTransformersComponent implements OnInit, OnDestroy {
-  showIntroPlaintextTransformersSubscription: Subscription;
+export class PlaintextTransformersComponent {
+  showIntro = this.introductionService.showIntroPlaintextTransformers;
   public hoverClasses: string[] = [];
-  sample: string;
+  sample = this.configurationService.samplePlaintext;
   transformedSample: string;
-  appliedPlaintextTransformersSubscription: Subscription;
-  samplePlaintextSubscription: Subscription;
 
-  availableTransformers: FormComponent[] = [];
+  availableTransformers = this.configurationService.availablePlaintextTransformers;
 
   availableTransformersOptions = {
     group: {
@@ -53,20 +50,21 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     sort: false
   };
 
-  appliedTransformers: FormComponent[] = [];
+  appliedTransformersLocal: FormComponent[] = [];
+  appliedTransformersSignal = this.configurationService.appliedPlaintextTransformers;
 
   onAppliedTransformersChange = (event: any) => {
     this.solutionService.updateSolution(null);
 
     const transformationRequest: SamplePlaintextTransformationRequest = {
-      plaintext: this.sample,
+      plaintext: this.sample(),
       plaintextTransformers: []
     };
 
-    let satisfied = !!this.sample;
+    let satisfied = !!this.sample();
 
-    for (let i = 0; i < this.appliedTransformers.length; i ++) {
-      const transformer = this.appliedTransformers[i];
+    for (let i = 0; i < this.appliedTransformersLocal.length; i ++) {
+      const transformer = this.appliedTransformersLocal[i];
 
       if (transformer.form && ((event && event.type === 'add' && event.newIndex === i) || !transformer.form.form.valid)) {
         satisfied = false;
@@ -80,7 +78,7 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
     }
 
     if (satisfied) {
-      if (!this.appliedTransformers || !this.appliedTransformers.length) {
+      if (!this.appliedTransformersLocal?.length) {
         this.transformedSample = null;
       } else {
         this.plaintextService.transformSample(transformationRequest).subscribe((response: any) => {
@@ -88,57 +86,40 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
         });
       }
 
-      if (!event || !event.skipUpdate) {
-        this.configurationService.updateAppliedPlaintextTransformers(this.appliedTransformers);
+      if (!event?.skipUpdate) {
+        this.configurationService.updateAppliedPlaintextTransformers(this.appliedTransformersLocal);
       }
     }
-  };
+  }
 
   appliedTransformersOptions = {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChange,
-    onRemove: this.onAppliedTransformersChange,
     onEnd: this.onAppliedTransformersChange
   };
 
   constructor(private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
               private solutionService: SolutionService,
-              private plaintextService: PlaintextService) {}
-
-  ngOnInit(): void {
-    this.configurationService.getAvailablePlaintextTransformersAsObservable().subscribe(transformerResponse => {
-      this.availableTransformers = transformerResponse;
-    });
-
-    this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
-      if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
-        this.appliedTransformers = appliedTransformers;
-        this.onAppliedTransformersChange({ skipUpdate: true });
-      }
-    });
-
-    this.samplePlaintextSubscription = this.configurationService.getSamplePlaintextAsObservable().subscribe(sample => {
-      if (!this.sample || this.sample !== sample) {
-        this.sample = sample;
-        this.onAppliedTransformersChange(null);
-      }
-    });
-
-    this.showIntroPlaintextTransformersSubscription = this.introductionService.getShowIntroPlaintextTransformersAsObservable().subscribe(showIntro => {
-      if (showIntro) {
+              private plaintextService: PlaintextService) {
+    effect(() => {
+      if (this.showIntro()) {
         setTimeout(() => {
           this.introductionService.startIntroPlaintextTransformers();
           this.introductionService.updateShowIntroPlaintextTransformers(false);
         }, 0);
       }
     });
-  }
 
-  ngOnDestroy() {
-    this.appliedPlaintextTransformersSubscription.unsubscribe();
-    this.samplePlaintextSubscription.unsubscribe();
-    this.showIntroPlaintextTransformersSubscription.unsubscribe();
+    effect(() => {
+      if (!TransformerUtil.transformersAreEqual(this.appliedTransformersLocal, this.appliedTransformersSignal())) {
+        this.appliedTransformersLocal = this.appliedTransformersSignal();
+
+        if (this.appliedTransformersLocal?.length) {
+          this.onAppliedTransformersChange({skipUpdate: true});
+        }
+      }
+    });
   }
 
   cloneTransformer = (item) => {
@@ -158,8 +139,8 @@ export class PlaintextTransformersComponent implements OnInit, OnDestroy {
   removeTransformer(transformerIndex: number): void {
     this.hoverClasses = [];
 
-    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformers.length) {
-      this.appliedTransformers.splice(transformerIndex, 1);
+    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformersLocal.length) {
+      this.appliedTransformersLocal.splice(transformerIndex, 1);
     }
 
     this.onAppliedTransformersChange(null);

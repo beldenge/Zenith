@@ -7,10 +7,11 @@
     "esModuleInterop": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "module": "es2020",
+    "module": "ES2022",
+    "lib": ["ES2024", "dom"],
     "moduleResolution": "bundler",
     "importHelpers": true,
-    "target": "ES2022",
+    "target": "ES2024",
     "typeRoots": [
       "node_modules/@types"
     ],

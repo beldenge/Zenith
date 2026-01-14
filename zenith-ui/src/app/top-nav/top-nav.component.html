@@ -21,15 +21,10 @@
   <div class="row w-100">
     <!-- Topbar Search -->
     <div class="col-md-11 d-flex">
-      <!-- Sidebar Toggle (Topbar) -->
-      <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3" (click)="onSidebarToggleClick()">
-        <i class="fa fa-bars"></i>
-      </button>
-
       <form id="cipher_select" class="d-none d-inline form-inline mr-0 ml-md-3 mw-100 navbar-search">
         <div class="input-group rounded bg-light">
           <select #cipherSelect name="search"
-            [ngClass]="{'form-control': true, 'bg-transparent': true, 'border-0': true, 'small': true, 'cursor-wait': isRunning}"
+            [ngClass]="{'form-control': true, 'bg-transparent': true, 'border-0': true, 'small': true, 'cursor-wait': isRunning()}"
             [(ngModel)]="selectedCipher"
             [compareWith]="byName"
             (change)="onCipherSelect(cipherSelect)"
@@ -37,13 +32,13 @@
             (mouseover)="onMouseOverSelect(cipherSelect)"
             (mouseout)="onMouseOutSelect(cipherSelect)"
             (focusout)="onFocusOutSelect(cipherSelect)"
-            [disabled]="isRunning">
-            @for (cipher of ciphers; track cipher) {
+            [disabled]="isRunning()">
+            @for (cipher of ciphers(); track cipher) {
               <option [ngValue]="cipher">{{cipher.name}} ({{cipher.rows}} x {{cipher.columns}})</option>
             }
           </select>
           <div id="cipher_select_button" class="input-group-append" (mouseover)="onMouseOverSelect(cipherSelect)">
-            <button [ngClass]="{'btn': true, 'btn-primary': true, 'cursor-default': !isRunning, 'cursor-wait': isRunning}">
+            <button [ngClass]="{'btn': true, 'btn-primary': true, 'cursor-default': !isRunning(), 'cursor-wait': isRunning()}">
               <i class="fas fa-chevron-down fa-sm"></i>
             </button>
           </div>

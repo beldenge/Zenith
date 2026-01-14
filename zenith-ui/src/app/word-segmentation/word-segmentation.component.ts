@@ -1,8 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Subscription } from "rxjs";
+import {Component, effect, signal} from '@angular/core';
 import { MatTooltip } from "@angular/material/tooltip";
 import { SolutionService } from "../solution.service";
-import { SolutionResponse } from "../models/SolutionResponse";
 import {PlaintextService} from "../plaintext.service";
 
 const originalTooltipText = 'Copy to clipboard';
@@ -13,27 +11,22 @@ const originalTooltipText = 'Copy to clipboard';
     styleUrls: ['./word-segmentation.component.css'],
     standalone: false
 })
-export class WordSegmentationComponent implements OnInit, OnDestroy {
-  solution: SolutionResponse;
-  tooltipText = new BehaviorSubject<string>(originalTooltipText);
-  solutionSubscription: Subscription;
+export class WordSegmentationComponent {
+  solution = this.solutionService.solution;
+  tooltipText = signal(originalTooltipText);
   score: number;
   segmentation: string;
 
   constructor(private solutionService: SolutionService,
-              private plaintextService: PlaintextService) {}
-
-  ngOnInit(): void {
-    this.solutionSubscription = this.solutionService.getSolutionAsObservable().subscribe(solution => {
-      this.solution = solution;
-
-      if (!solution) {
+              private plaintextService: PlaintextService) {
+    effect(() => {
+      if (!this.solution()) {
         this.segmentation = null;
         this.score = null;
         return;
       }
 
-      this.plaintextService.getWordSegmentation(solution.plaintext).subscribe((response: any) => {
+      this.plaintextService.getWordSegmentation(this.solution().plaintext).subscribe((response: any) => {
         let partialSegmentation = '';
         for (let i = 0; i < response.segmentedPlaintext.length; i++) {
           partialSegmentation += response.segmentedPlaintext[i];
@@ -49,28 +42,17 @@ export class WordSegmentationComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
-    this.solutionSubscription.unsubscribe();
-  }
-
-  copyPlaintext(tooltip: MatTooltip) {
-    const plaintextElement = document.createElement('textarea');
-    plaintextElement.id = 'txt';
-    plaintextElement.style.position = 'fixed';
-    plaintextElement.style.top = '0';
-    plaintextElement.style.left = '0';
-    plaintextElement.style.opacity = '0';
-    plaintextElement.value = this.segmentation;
-    document.body.appendChild(plaintextElement);
-    plaintextElement.select();
-    document.execCommand('copy');
+  async copyPlaintext(tooltip: MatTooltip) {
+    await navigator.clipboard.writeText(this.segmentation);
 
     tooltip.hide();
-    this.tooltipText.next('Copied!');
-    tooltip.show();
+    this.tooltipText.update(() => 'Copied!');
+    setTimeout(() => {
+      tooltip.show();
+    }, 0);
   }
 
   resetTooltipText() {
-    this.tooltipText.next(originalTooltipText);
+    this.tooltipText.update(() => originalTooltipText);
   }
 }

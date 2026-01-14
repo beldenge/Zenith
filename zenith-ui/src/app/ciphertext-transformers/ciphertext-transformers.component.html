@@ -35,8 +35,8 @@
           <h6 class="m-0 font-weight-bold text-primary">Available Transformers</h6>
         </div>
         <!-- Card Body -->
-        <div id="available_transformers_list" class="card-body" [sortablejs]="availableTransformers" [sortablejsOptions]="availableTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
-          @for (item of availableTransformers; track item) {
+        <div id="available_transformers_list" class="card-body" [sortablejs]="availableTransformers()" [sortablejsOptions]="availableTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
+          @for (item of availableTransformers(); track item) {
             <div class="col-xl-12 mb-4 transformer">
               <div class="card border-left-primary shadow h-100 py-2 pl-3">
                 <div class="card-body p-2">
@@ -63,11 +63,11 @@
           <h6 class="m-0 font-weight-bold text-primary">Transformer Pipeline</h6>
         </div>
         <!-- Card Body -->
-        <div class="card-body" [sortablejs]="appliedTransformers" [sortablejsOptions]="appliedTransformersOptions" [sortablejsCloneFunction]="cloneTransformer">
-          @if (!appliedTransformers || !appliedTransformers.length) {
+        <div class="card-body" [sortablejs]="appliedTransformersLocal" [sortablejsOptions]="appliedTransformersOptions">
+          @if (!appliedTransformersLocal?.length) {
             <div>Drop transformers here</div>
           }
-          @for (item of appliedTransformers; track item; let i = $index) {
+          @for (item of appliedTransformersLocal; track item; let i = $index) {
             <div class="col-xl-12 mb-4 transformer" animate.leave="fade-out">
               <div class="card border-left-primary shadow h-100 py-2 pl-3">
                 <div class="card-body p-2">

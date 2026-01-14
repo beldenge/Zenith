@@ -17,16 +17,15 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {Component, effect, OnDestroy} from '@angular/core';
 import { UntypedFormBuilder } from '@angular/forms';
 import { Validators } from '@angular/forms';
 import { ConfigurationService } from "../configuration.service";
 import { SelectOption } from "../models/SelectOption";
 import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
-import { Subscription } from "rxjs";
+import {Subscription} from "rxjs";
 import { IntroductionService } from "../introduction.service";
-import {FormComponent} from "../models/FormComponent";
 
 const INTEGER_PATTERN = '^[0-9]+$';
 const DECIMAL_PATTERN = '^[0-9]+(.[0-9]+)?$';
@@ -37,21 +36,18 @@ const DECIMAL_PATTERN = '^[0-9]+(.[0-9]+)?$';
     styleUrls: ['./settings.component.css'],
     standalone: false
 })
-export class SettingsComponent implements OnInit, OnDestroy {
-  showIntroSettingsSubscription: Subscription;
-  selectedOptimizerSubscription: Subscription;
-  selectedFitnessFunctionSubscription: Subscription;
-  simulatedAnnealingConfigurationSubscription: Subscription;
-  geneticAlgorithmConfigurationSubscription: Subscription;
+export class SettingsComponent implements OnDestroy {
+  showIntro = this.introductionService.showIntroSettings;
   generalSettingsFormValueChangesSubscription: Subscription;
+  optimizer = this.configurationService.selectedOptimizer;
   optimizerNames: SelectOption[] = ConfigurationService.OPTIMIZER_NAMES;
-  availableFitnessFunctions: FormComponent[] = [];
+  availableFitnessFunctions = this.configurationService.availableFitnessFunctions;
   populationNames: SelectOption[] = ConfigurationService.POPULATION_NAMES;
   breederNames: SelectOption[] = ConfigurationService.BREEDER_NAMES;
   crossoverOperatorNames: SelectOption[] = ConfigurationService.CROSSOVER_OPERATOR_NAMES;
   mutationOperatorNames: SelectOption[] = ConfigurationService.MUTATION_OPERATOR_NAMES;
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
-  selectedFitnessFunction: FormComponent;
+  selectedFitnessFunction = this.configurationService.selectedFitnessFunction;
   samplerIterationsValidators = [Validators.min(1), Validators.max(100000)];
   samplerIterationsValidationMessage = 'Must be a number between 1 and 100000';
 
@@ -64,7 +60,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   geneticAlgorithmFormGroup = this.fb.group({
     populationSize: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
     numberOfGenerations: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
-    elitism: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
+    elitism: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     populationName: [null],
     latticeRows: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
     latticeColumns: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
@@ -89,105 +85,85 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   constructor(private fb: UntypedFormBuilder,
               private configurationService: ConfigurationService,
-              private introductionService: IntroductionService) {}
-
-  ngOnInit() {
-    this.configurationService.getConfigurationLoadedNotification().subscribe((loaded) => {
-      if (loaded) {
-        this.init();
-      }
-    });
-  }
-
-  init() {
-    this.configurationService.getAvailableFitnessFunctionsAsObservable().subscribe(fitnessFunctions => {
-      this.availableFitnessFunctions = fitnessFunctions;
-    });
-
-    this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
-      if (!configuration) {
-        return;
-      }
-
-      const patch = {
-        samplerIterations: configuration.samplerIterations,
-        annealingTemperatureMin: configuration.annealingTemperatureMin,
-        annealingTemperatureMax: configuration.annealingTemperatureMax,
-      };
-
-      if (JSON.stringify(this.simulatedAnnealingFormGroup.value) !== JSON.stringify(patch)) {
-        this.simulatedAnnealingFormGroup.patchValue(patch);
-        this.generalSettingsForm.patchValue({ simulatedAnnealingConfiguration: this.simulatedAnnealingFormGroup });
-      }
-    });
-
-    this.geneticAlgorithmConfigurationSubscription = this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
-      if (!configuration) {
-        return;
-      }
-
-      const patch = {
-        populationSize: configuration.populationSize,
-        numberOfGenerations: configuration.numberOfGenerations,
-        elitism: configuration.elitism,
-        populationName: this.populationNames.find(name => name.name === configuration.populationName),
-        latticeRows: configuration.latticeRows,
-        latticeColumns: configuration.latticeColumns,
-        latticeWrapAround: configuration.latticeWrapAround,
-        latticeRadius: configuration.latticeRadius,
-        breederName: this.breederNames.find(name => name.name === configuration.breederName),
-        crossoverOperatorName: this.crossoverOperatorNames.find(name => name.name === configuration.crossoverOperatorName),
-        mutationOperatorName: this.mutationOperatorNames.find(name => name.name === configuration.mutationOperatorName),
-        mutationRate: configuration.mutationRate,
-        maxMutationsPerIndividual: configuration.maxMutationsPerIndividual,
-        selectorName: this.selectorNames.find(name => name.name === configuration.selectorName),
-        tournamentSelectorAccuracy: configuration.tournamentSelectorAccuracy,
-        tournamentSize: configuration.tournamentSize
-      };
-
-      if (JSON.stringify(this.geneticAlgorithmFormGroup.value) !== JSON.stringify(patch)) {
-        this.geneticAlgorithmFormGroup.patchValue(patch);
-        this.generalSettingsForm.patchValue({ geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup });
-      }
-    });
-
-    this.selectedOptimizerSubscription = this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
-      if (!optimizer) {
-        return;
-      }
-
-      if (this.generalSettingsForm.get('optimizer').value !== optimizer) {
-        const optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === optimizer.name);
-        this.generalSettingsForm.patchValue({ optimizer: optimizerToUse });
-      }
-    });
-
-    this.selectedFitnessFunctionSubscription = this.configurationService.getSelectedFitnessFunctionAsObservable().subscribe(fitnessFunction => {
-      if (fitnessFunction && (!this.selectedFitnessFunction || this.selectedFitnessFunction !== fitnessFunction)) {
-        this.selectedFitnessFunction = fitnessFunction;
-        this.generalSettingsForm.patchValue({ fitnessFunction });
-      }
-    });
-
-    this.onFormChange();
-
-    this.showIntroSettingsSubscription = this.introductionService.getShowIntroSettingsAsObservable().subscribe(showIntro => {
-      if (showIntro) {
+              private introductionService: IntroductionService) {
+    effect(() => {
+      if (this.showIntro()) {
         setTimeout(() => {
           this.introductionService.startIntroSettings();
           this.introductionService.updateShowIntroSettings(false);
         }, 0);
       }
     });
+
+    effect(() => {
+      if (!this.optimizer()) {
+        return;
+      }
+
+      if (this.generalSettingsForm.get('optimizer').value !== this.optimizer()) {
+        const optimizerToUse = ConfigurationService.OPTIMIZER_NAMES.find(name => name.name === this.optimizer().name);
+        this.generalSettingsForm.patchValue({ optimizer: optimizerToUse }, { emitEvent: false });
+      }
+    });
+
+    effect(() => {
+      this.generalSettingsForm.patchValue({ fitnessFunction: this.selectedFitnessFunction() }, { emitEvent: false });
+    });
+
+    effect(() => {
+      const simulatedAnnealingConfiguration = this.configurationService.simulatedAnnealingConfiguration();
+      if (!simulatedAnnealingConfiguration) {
+        return;
+      }
+
+      const patch = {
+        samplerIterations: simulatedAnnealingConfiguration.samplerIterations,
+        annealingTemperatureMin: simulatedAnnealingConfiguration.annealingTemperatureMin,
+        annealingTemperatureMax: simulatedAnnealingConfiguration.annealingTemperatureMax,
+      };
+
+      if (JSON.stringify(this.simulatedAnnealingFormGroup.value) !== JSON.stringify(patch)) {
+        this.simulatedAnnealingFormGroup.patchValue(patch, { emitEvent: false });
+        this.generalSettingsForm.patchValue({ simulatedAnnealingConfiguration: this.simulatedAnnealingFormGroup }, { emitEvent: false });
+      }
+    });
+
+    effect(() => {
+      const geneticAlgorithmConfiguration = this.configurationService.geneticAlgorithmConfiguration();
+      if (!geneticAlgorithmConfiguration) {
+        return;
+      }
+
+      const patch = {
+        populationSize: geneticAlgorithmConfiguration.populationSize,
+        numberOfGenerations: geneticAlgorithmConfiguration.numberOfGenerations,
+        elitism: geneticAlgorithmConfiguration.elitism,
+        populationName: this.populationNames.find(name => name.name === geneticAlgorithmConfiguration.populationName),
+        latticeRows: geneticAlgorithmConfiguration.latticeRows,
+        latticeColumns: geneticAlgorithmConfiguration.latticeColumns,
+        latticeWrapAround: geneticAlgorithmConfiguration.latticeWrapAround,
+        latticeRadius: geneticAlgorithmConfiguration.latticeRadius,
+        breederName: this.breederNames.find(name => name.name === geneticAlgorithmConfiguration.breederName),
+        crossoverOperatorName: this.crossoverOperatorNames.find(name => name.name === geneticAlgorithmConfiguration.crossoverOperatorName),
+        mutationOperatorName: this.mutationOperatorNames.find(name => name.name === geneticAlgorithmConfiguration.mutationOperatorName),
+        mutationRate: geneticAlgorithmConfiguration.mutationRate,
+        maxMutationsPerIndividual: geneticAlgorithmConfiguration.maxMutationsPerIndividual,
+        selectorName: this.selectorNames.find(name => name.name === geneticAlgorithmConfiguration.selectorName),
+        tournamentSelectorAccuracy: geneticAlgorithmConfiguration.tournamentSelectorAccuracy,
+        tournamentSize: geneticAlgorithmConfiguration.tournamentSize
+      };
+
+      if (JSON.stringify(this.geneticAlgorithmFormGroup.value) !== JSON.stringify(patch)) {
+        this.geneticAlgorithmFormGroup.patchValue(patch, { emitEvent: false });
+        this.generalSettingsForm.patchValue({ geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup }, { emitEvent: false });
+      }
+    });
+
+    this.onFormChange();
   }
 
   ngOnDestroy() {
-    this.showIntroSettingsSubscription.unsubscribe();
-    this.simulatedAnnealingConfigurationSubscription.unsubscribe();
-    this.geneticAlgorithmConfigurationSubscription.unsubscribe();
-    this.selectedOptimizerSubscription.unsubscribe();
-    this.selectedFitnessFunctionSubscription.unsubscribe();
-    this.generalSettingsFormValueChangesSubscription.unsubscribe();
+    this.generalSettingsFormValueChangesSubscription?.unsubscribe();
   }
 
   // For some reason this doesn't even get called if we don't specify the event parameter

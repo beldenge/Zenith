@@ -17,20 +17,24 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import {Injectable, Signal, signal, WritableSignal} from '@angular/core';
 import { Router } from '@angular/router';
 import introJs from 'intro.js';
-import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IntroductionService {
-  showIntroDashboard = new BehaviorSubject(false);
-  showIntroManageCiphers = new BehaviorSubject(false);
-  showIntroSettings = new BehaviorSubject(false);
-  showIntroCiphertextTransformers = new BehaviorSubject(false);
-  showIntroPlaintextTransformers = new BehaviorSubject(false);
+  private showIntroDashboardInternal: WritableSignal<boolean> = signal(false);
+  public showIntroDashboard: Signal<boolean> = this.showIntroDashboardInternal.asReadonly();
+  private showIntroManageCiphersInternal: WritableSignal<boolean> = signal(false);
+  public showIntroManageCiphers: Signal<boolean> = this.showIntroManageCiphersInternal.asReadonly();
+  private showIntroSettingsInternal: WritableSignal<boolean> = signal(false);
+  public showIntroSettings: Signal<boolean> = this.showIntroSettingsInternal.asReadonly();
+  private showIntroCiphertextTransformersInternal: WritableSignal<boolean> = signal(false);
+  public showIntroCiphertextTransformers: Signal<boolean> = this.showIntroCiphertextTransformersInternal.asReadonly();
+  private showIntroPlaintextTransformersInternal: WritableSignal<boolean> = signal(false);
+  public showIntroPlaintextTransformers: Signal<boolean> = this.showIntroPlaintextTransformersInternal.asReadonly();
 
   introDashboard: any;
   introManageCiphers: any;
@@ -47,20 +51,20 @@ export class IntroductionService {
   }
 
   startIntro(): void {
-    this.showIntroDashboard.next(true);
-    this.showIntroManageCiphers.next(true);
-    this.showIntroSettings.next(true);
-    this.showIntroCiphertextTransformers.next(true);
-    this.showIntroPlaintextTransformers.next(true);
+    this.showIntroDashboardInternal.update(() => true);
+    this.showIntroManageCiphersInternal.update(() => true);
+    this.showIntroSettingsInternal.update(() => true);
+    this.showIntroCiphertextTransformersInternal.update(() => true);
+    this.showIntroPlaintextTransformersInternal.update(() => true);
     this.router.navigate(['/dashboard']);
   }
 
   stopIntro(): void {
-    this.showIntroDashboard.next(false);
-    this.showIntroManageCiphers.next(false);
-    this.showIntroSettings.next(false);
-    this.showIntroCiphertextTransformers.next(false);
-    this.showIntroPlaintextTransformers.next(false);
+    this.showIntroDashboardInternal.update(() => false);
+    this.showIntroManageCiphersInternal.update(() => false);
+    this.showIntroSettingsInternal.update(() => false);
+    this.showIntroCiphertextTransformersInternal.update(() => false);
+    this.showIntroPlaintextTransformersInternal.update(() => false);
   }
 
   startIntroDashboard(): void {
@@ -300,43 +304,23 @@ export class IntroductionService {
     this.introPlaintextTransformers.start();
   }
 
-  getShowIntroDashboardAsObservable() {
-    return this.showIntroDashboard.asObservable();
-  }
-
   updateShowIntroDashboard(showIntro: boolean) {
-    this.showIntroDashboard.next(showIntro);
-  }
-
-  getShowIntroManageCiphersAsObservable() {
-    return this.showIntroManageCiphers.asObservable();
+    this.showIntroDashboardInternal.update(() => showIntro);
   }
 
   updateShowIntroManageCiphers(showIntro: boolean) {
-    this.showIntroManageCiphers.next(showIntro);
-  }
-
-  getShowIntroSettingsAsObservable() {
-    return this.showIntroSettings.asObservable();
+    this.showIntroManageCiphersInternal.update(() => showIntro);
   }
 
   updateShowIntroSettings(showIntro: boolean) {
-    this.showIntroSettings.next(showIntro);
-  }
-
-  getShowIntroCiphertextTransformersAsObservable() {
-    return this.showIntroCiphertextTransformers.asObservable();
+    this.showIntroSettingsInternal.update(() => showIntro);
   }
 
   updateShowIntroCiphertextTransformers(showIntro: boolean) {
-    this.showIntroCiphertextTransformers.next(showIntro);
-  }
-
-  getShowIntroPlaintextTransformersAsObservable() {
-    return this.showIntroPlaintextTransformers.asObservable();
+    this.showIntroCiphertextTransformersInternal.update(() => showIntro);
   }
 
   updateShowIntroPlaintextTransformers(showIntro: boolean) {
-    this.showIntroPlaintextTransformers.next(showIntro);
+    this.showIntroPlaintextTransformersInternal.update(() => showIntro);
   }
 }

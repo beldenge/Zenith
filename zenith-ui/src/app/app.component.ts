@@ -17,8 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, HostListener } from '@angular/core';
-import { SidebarService } from "./sidebar.service";
+import { Component } from '@angular/core';
 
 @Component({
     selector: 'app-root',
@@ -26,13 +25,4 @@ import { SidebarService } from "./sidebar.service";
     styleUrls: ['./app.component.css'],
     standalone: false
 })
-export class AppComponent {
-  constructor(private sidebarService: SidebarService) {}
-
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
-    if (event.target.innerWidth >= 768) {
-      this.sidebarService.updateSidebarToggle(true);
-    }
-  }
-}
+export class AppComponent {}

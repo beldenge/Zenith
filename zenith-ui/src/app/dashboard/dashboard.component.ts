@@ -17,19 +17,13 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CipherService } from "../cipher.service";
-import { Cipher } from "../models/Cipher";
+import {Component, effect, OnDestroy, OnInit} from '@angular/core';
 import { UntypedFormBuilder, Validators } from "@angular/forms";
 import { SolutionRequest } from "../models/SolutionRequest";
 import { SolutionUpdate } from "../models/SolutionUpdate";
-import { FormComponent } from "../models/FormComponent";
 import { TransformationStep } from "../models/TransformationStep";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ConfigurationService } from "../configuration.service";
-import { GeneticAlgorithmConfiguration } from "../models/GeneticAlgorithmConfiguration";
-import { SimulatedAnnealingConfiguration } from "../models/SimulatedAnnealingConfiguration";
-import { SelectOption } from "../models/SelectOption";
 import { IntroductionService } from "../introduction.service";
 import { Subscription } from "rxjs";
 import { SolutionService } from "../solution.service";
@@ -44,84 +38,42 @@ import { LocalStorageKeys } from "../models/LocalStorageKeys";
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   showApplicationDownloadInfo = false;
-  showIntroDashboardSubscription: Subscription;
+  showIntro = this.introductionService.showIntroDashboard;
   solutionSubscription?: Subscription;
-  selectedCipher: Cipher;
-  isRunning = false;
-  progressPercentage = 0;
-  isRunningSubscription: Subscription;
-  progressPercentageSubscription: Subscription;
+  selectedCipher = this.configurationService.selectedCipher;
+  isRunning = this.solutionService.runState;
   epochsValidators = [Validators.min(1), Validators.max(100)];
   epochsValidationMessage = 'Must be a number between 1 and 100';
   hyperparametersForm = this.fb.group({
     epochs: [null, this.epochsValidators]
   });
-  appliedPlaintextTransformers: FormComponent[] = [];
-  optimizer: SelectOption;
-  fitnessFunction: FormComponent;
-  geneticAlgorithmConfiguration: GeneticAlgorithmConfiguration;
-  simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;
-  selectedCipherSubscription: Subscription;
-  appliedPlaintextTransformersSubscription: Subscription;
-  epochsSubscription: Subscription;
-  selectedOptimizerSubscription: Subscription;
-  selectedFitnessFunctionSubscription: Subscription;
-  simulatedAnnealingConfigurationSubscription: Subscription;
-  geneticAlgorithmConfigurationSubscription: Subscription;
+  appliedPlaintextTransformers = this.configurationService.appliedPlaintextTransformers;
+  optimizer = this.configurationService.selectedOptimizer;
+  fitnessFunction = this.configurationService.selectedFitnessFunction;
+  geneticAlgorithmConfiguration = this.configurationService.geneticAlgorithmConfiguration;
+  simulatedAnnealingConfiguration = this.configurationService.simulatedAnnealingConfiguration;
+  epochs = this.configurationService.epochs;
 
   constructor(private fb: UntypedFormBuilder,
-              private cipherService: CipherService,
               private snackBar: MatSnackBar,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {}
-
-  ngOnInit() {
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher;
-    });
-
-    this.appliedPlaintextTransformersSubscription = this.configurationService.getAppliedPlaintextTransformersAsObservable().subscribe(appliedTransformers => {
-      this.appliedPlaintextTransformers = appliedTransformers;
-    });
-
-    this.epochsSubscription = this.configurationService.getEpochsAsObservable().subscribe(epochs => {
-      if (this.hyperparametersForm.get('epochs').value !== epochs) {
-        this.hyperparametersForm.patchValue({ epochs });
-      }
-    });
-
-    this.selectedOptimizerSubscription = this.configurationService.getSelectedOptimizerAsObservable().subscribe(optimizer => {
-      this.optimizer = optimizer;
-    });
-
-    this.selectedFitnessFunctionSubscription = this.configurationService.getSelectedFitnessFunctionAsObservable().subscribe(fitnessFunction => {
-      this.fitnessFunction = fitnessFunction;
-    });
-
-    this.simulatedAnnealingConfigurationSubscription = this.configurationService.getSimulatedAnnealingConfigurationAsObservable().subscribe(configuration => {
-      this.simulatedAnnealingConfiguration = configuration;
-    });
-
-    this.geneticAlgorithmConfigurationSubscription = this.configurationService.getGeneticAlgorithmConfigurationAsObservable().subscribe(configuration => {
-      this.geneticAlgorithmConfiguration = configuration;
-    });
-
-    this.showIntroDashboardSubscription = this.introductionService.getShowIntroDashboardAsObservable().subscribe(showIntro => {
-      if (showIntro) {
+              public solutionService: SolutionService) {
+    effect(() => {
+      if (this.showIntro()) {
         this.introductionService.startIntroDashboard();
         this.introductionService.updateShowIntroDashboard(false);
       }
     });
 
-    this.isRunningSubscription = this.solutionService.getRunStateAsObservable().subscribe(runState => {
-      this.isRunning = runState;
+    effect(() => {
+      if (this.hyperparametersForm.get('epochs').value !== this.epochs()) {
+        this.hyperparametersForm.patchValue({ epochs: this.epochs() });
+      }
     });
+  }
 
-    this.progressPercentageSubscription = this.solutionService.getProgressPercentageAsObservable().subscribe(progress => {
-      this.progressPercentage = progress;
-    });
-
+  ngOnInit() {
     const showApplicationDownloadInfoLocal = localStorage.getItem(LocalStorageKeys.SHOW_APPLICATION_DOWNLOAD_INFO);
 
     this.showApplicationDownloadInfo = !showApplicationDownloadInfoLocal || showApplicationDownloadInfoLocal === 'true';
@@ -129,16 +81,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.solutionSubscription?.unsubscribe();
-    this.selectedCipherSubscription.unsubscribe();
-    this.appliedPlaintextTransformersSubscription.unsubscribe();
-    this.epochsSubscription.unsubscribe();
-    this.selectedOptimizerSubscription.unsubscribe();
-    this.selectedFitnessFunctionSubscription.unsubscribe();
-    this.simulatedAnnealingConfigurationSubscription.unsubscribe();
-    this.geneticAlgorithmConfigurationSubscription.unsubscribe();
-    this.showIntroDashboardSubscription.unsubscribe();
-    this.isRunningSubscription.unsubscribe();
-    this.progressPercentageSubscription.unsubscribe();
   }
 
   onEpochsChange() {
@@ -153,42 +95,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isRunning) {
+    if (this.isRunning()) {
       return;
     }
 
     let request: SolutionRequest;
 
-    if (!this.selectedCipher.transformed) {
+    const selectedCipherLocal = this.selectedCipher();
+    if (!selectedCipherLocal.transformed) {
       request = new SolutionRequest(
-        this.selectedCipher.rows,
-        this.selectedCipher.columns,
-        this.selectedCipher.ciphertext,
+        selectedCipherLocal.rows,
+        selectedCipherLocal.columns,
+        selectedCipherLocal.ciphertext,
         this.hyperparametersForm.get('epochs').value
       );
     } else {
       request = new SolutionRequest(
-        this.selectedCipher.transformed.rows,
-        this.selectedCipher.transformed.columns,
-        this.selectedCipher.transformed.ciphertext,
+        selectedCipherLocal.transformed.rows,
+        selectedCipherLocal.transformed.columns,
+        selectedCipherLocal.transformed.ciphertext,
         this.hyperparametersForm.get('epochs').value
       );
     }
 
-    if (this.optimizer.name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
-      request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration;
+    if (this.optimizer().name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
+      request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration();
     } else {
-      request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration;
+      request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration();
     }
 
-    request.fitnessFunction = new SolutionRequestFitnessFunction(this.fitnessFunction.name, this.fitnessFunction.form ? this.fitnessFunction.form.model : null);
+    request.fitnessFunction = new SolutionRequestFitnessFunction(this.fitnessFunction().name, this.fitnessFunction().form ? this.fitnessFunction().form.model : null);
 
     let allValid = true;
 
-    if (this.appliedPlaintextTransformers.length) {
+    if (this.appliedPlaintextTransformers().length) {
       const plaintextTransformers = [];
 
-      this.appliedPlaintextTransformers.forEach((transformer) => {
+      this.appliedPlaintextTransformers().forEach((transformer) => {
         plaintextTransformers.push(new TransformationStep(transformer.name, transformer.form.model));
 
         allValid = allValid && transformer.form.form.valid;

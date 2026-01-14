@@ -51,9 +51,9 @@
   <div class="row justify-content-end">
     @if (hyperparametersForm.get('epochs').value > 1) {
       <div class="col-xl-10">
-        <h4 class="small font-weight-bold">Progress <span class="float-right">{{progressPercentage | number:'1.0-0'}}%</span></h4>
+        <h4 class="small font-weight-bold">Progress <span class="float-right">{{solutionService.progressPercentage()}}%</span></h4>
         <div class="progress">
-          <div class="progress-bar" role="progressbar" [ngStyle]="{'width': progressPercentage + '%'}" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar" role="progressbar" [ngStyle]="{'width': solutionService.progressPercentage() + '%'}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
       </div>
     }
@@ -61,7 +61,7 @@
       <form class="user" [formGroup]="hyperparametersForm">
         <div class="form-group row">
           <label class="col-md-6 my-auto" for="epochs" matTooltip="Number of times to run the solver, the best solution of which will be displayed in the panel above" matTooltipPosition="above">Epochs</label>
-          <input id="epochs" type="text" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" (keyup)="onEpochsChange()">
+          <input id="epochs" type="number" class="form-control col-md-6" formControlName="epochs" [ngClass]="{'is-invalid': !hyperparametersForm.get('epochs').valid}" (keyup)="onEpochsChange()">
         </div>
         @if (!hyperparametersForm.get('epochs').valid) {
           <div class="text-center text-danger small">{{epochsValidationMessage}}</div>
@@ -69,9 +69,9 @@
       </form>
     </div>
     <div class="col-xl-1">
-      <a id="solve_button" href="javascript:void(0);" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true, 'disabled': isRunning}" (click)="solve()">
+      <a id="solve_button" href="javascript:void(0);" [ngClass]="{'btn': true, 'btn-success': true, 'btn-icon-split': true, 'float-right': true, 'disabled': isRunning()}" (click)="solve()">
         <span class="icon text-white-50">
-          <i [ngClass]="{'fas': true, 'fa-play' : !isRunning, 'fa-spinner' : isRunning, 'fa-spin': isRunning}"></i>
+          <i [ngClass]="{'fas': true, 'fa-play' : !isRunning(), 'fa-spinner' : isRunning(), 'fa-spin': isRunning()}"></i>
         </span>
         <span class="text">Solve</span>
       </a>

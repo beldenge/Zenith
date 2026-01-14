@@ -17,13 +17,11 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { CipherService } from "../cipher.service";
-import { Cipher } from "../models/Cipher";
-import { Subscription } from "rxjs";
+import {Component, effect, ViewChild} from '@angular/core';
 import { CipherStatisticsService } from "../cipher-statistics.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { MatExpansionPanel } from "@angular/material/expansion";
+import {ConfigurationService} from "../configuration.service";
 
 @Component({
     selector: 'app-cipher-ngram-stats',
@@ -31,9 +29,8 @@ import { MatExpansionPanel } from "@angular/material/expansion";
     styleUrls: ['./cipher-ngram-stats.component.css'],
     standalone: false
 })
-export class CipherNgramStatsComponent implements OnInit, OnDestroy {
-  selectedCipher: Cipher;
-  selectedCipherSubscription: Subscription;
+export class CipherNgramStatsComponent {
+  selectedCipher = this.configurationService.selectedCipher;
   ngramsDataSources: MatTableDataSource<any>[][] = [];
   headerTextOpened = 'Hide ngram statistics';
   headerTextClosed = 'Show ngram statistics';
@@ -42,18 +39,13 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy {
 
   @ViewChild(MatExpansionPanel, { static: true }) matExpansionPanelElement: MatExpansionPanel;
 
-  constructor(private cipherService: CipherService,
-              private cipherStatisticsService: CipherStatisticsService) {}
-
-  ngOnInit(): void {
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher;
-      this.matExpansionPanelElement.close();
+  constructor(private cipherStatisticsService: CipherStatisticsService,
+              private configurationService: ConfigurationService) {
+    effect(() => {
+      if (!!this.selectedCipher()) {
+        this.matExpansionPanelElement.close();
+      }
     });
-  }
-
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
   }
 
   onCollapse() {
@@ -72,7 +64,7 @@ export class CipherNgramStatsComponent implements OnInit, OnDestroy {
 
   onMore(): void {
     const statsPage = this.ngramsDataSources?.length;
-    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher, statsPage).subscribe((response) => {
+    this.cipherStatisticsService.getNgramStatistics(this.selectedCipher(), statsPage).subscribe((response) => {
       const sortFunction = (a, b) => a.count < b.count ? 1 : (a.count > b.count ? -1 : 0);
       this.ngramsDataSources.push([]);
       this.ngramsDataSources[statsPage].push(new MatTableDataSource([...response.firstNGramCounts].sort(sortFunction)));

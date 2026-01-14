@@ -25,9 +25,9 @@
       <span id="segmentation_score" class="ml-2 mr-auto text-muted">(Score: {{score | number : '1.4-4'}})</span>
     }
     <div class="dropdown no-arrow">
-      <a class="dropdown-toggle" href="javascript:void(0);" role="button" #tooltip="matTooltip" matTooltip="{{tooltipText | async}}" (mouseover)="resetTooltipText()" matTooltipPosition="above" (click)="copyPlaintext(tooltip)">
+      <button class="dropdown-toggle" #tooltip="matTooltip" matTooltip="{{tooltipText()}}" (mouseover)="resetTooltipText()" matTooltipPosition="above" (click)="copyPlaintext(tooltip)">
         <i class="far fa-copy"></i>
-      </a>
+      </button>
     </div>
   </div>
   <!-- Card Body -->

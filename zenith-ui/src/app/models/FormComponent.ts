@@ -23,6 +23,6 @@ export class FormComponent {
   name: string;
   displayName: string;
   form?: DynamicForm;
-  order: number;
-  helpText: string;
+  order?: number;
+  helpText?: string;
 }

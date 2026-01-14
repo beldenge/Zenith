@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import {Injectable, Signal, signal, WritableSignal} from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import {BehaviorSubject, Observable} from "rxjs";
+import {Observable} from "rxjs";
 import { filter, map } from 'rxjs/operators';
 import { SolutionResponse } from "./models/SolutionResponse";
 import { SolutionUpdate } from "./models/SolutionUpdate";
@@ -10,9 +10,12 @@ import {SolutionRequest} from "./models/SolutionRequest";
   providedIn: 'root'
 })
 export class SolutionService {
-  private solution$ = new BehaviorSubject<SolutionResponse>(null);
-  private runState$ = new BehaviorSubject<boolean>(false);
-  private progressPercentage$ = new BehaviorSubject<number>(0);
+  private solutionInternal: WritableSignal<SolutionResponse> = signal<SolutionResponse>(null);
+  public solution: Signal<SolutionResponse> = this.solutionInternal.asReadonly();
+  private runStateInternal: WritableSignal<boolean> = signal(false);
+  public runState: Signal<boolean> = this.runStateInternal.asReadonly();
+  private progressPercentageInternal: WritableSignal<number> = signal(0);
+  public progressPercentage: Signal<number> = this.progressPercentageInternal.asReadonly();
 
   constructor(private apollo: Apollo) {}
 
@@ -76,27 +79,15 @@ export class SolutionService {
     }
   }
 
-  getSolutionAsObservable(): Observable<SolutionResponse> {
-    return this.solution$.asObservable();
-  }
-
   updateSolution(solution: SolutionResponse): void {
-    this.solution$.next(solution);
-  }
-
-  getRunStateAsObservable(): Observable<boolean> {
-    return this.runState$.asObservable();
+    this.solutionInternal.update(() => solution);
   }
 
   updateRunState(isRunning: boolean): void {
-    this.runState$.next(isRunning);
-  }
-
-  getProgressPercentageAsObservable(): Observable<number> {
-    return this.progressPercentage$.asObservable();
+    this.runStateInternal.update(() => isRunning);
   }
 
   updateProgressPercentage(progressPercentage: number): void {
-    this.progressPercentage$.next(progressPercentage);
+    this.progressPercentageInternal.update(() => progressPercentage);
   }
 }

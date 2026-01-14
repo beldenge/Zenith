@@ -17,8 +17,7 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { CipherService } from "../cipher.service";
+import {Component, effect, ViewChild} from '@angular/core';
 import { MatTableDataSource } from "@angular/material/table";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
@@ -27,7 +26,7 @@ import { CipherModalComponent } from "../cipher-modal/cipher-modal.component";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { IntroductionService } from "../introduction.service";
-import { Subscription } from "rxjs";
+import {ConfigurationService} from "../configuration.service";
 
 @Component({
     selector: 'app-manage-ciphers',
@@ -35,37 +34,23 @@ import { Subscription } from "rxjs";
     styleUrls: ['./manage-ciphers.component.css'],
     standalone: false
 })
-export class ManageCiphersComponent implements OnInit, OnDestroy {
-  showIntroManageCiphersSubscription: Subscription;
+export class ManageCiphersComponent {
+  showIntro = this.introductionService.showIntroManageCiphers;
   displayedColumns: string[] = ['name', 'rows', 'columns', 'ciphertext', 'actions'];
   ciphersDataSource: MatTableDataSource<any>;
   pageSizeOptions = [10, 20, 50];
-  ciphers: Cipher[];
-  selectedCipher: Cipher;
-  ciphersSubscription: Subscription;
-  selectedCipherSubscription: Subscription;
+  ciphers = this.configurationService.ciphers;
+  selectedCipher = this.configurationService.selectedCipher;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
 
-  constructor(private cipherService: CipherService,
-              private dialog: MatDialog,
+  constructor(private dialog: MatDialog,
               private snackBar: MatSnackBar,
-              private introductionService: IntroductionService) {}
-
-  ngOnInit() {
-    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe((ciphers) => {
-      this.ciphersDataSource = new MatTableDataSource(ciphers);
-      this.ciphersDataSource.sort = this.sort;
-      this.ciphersDataSource.paginator = this.paginator;
-      this.ciphersDataSource.filterPredicate = (data: Cipher, filter: string) => {
-        return data.name.indexOf(filter) > -1;
-      };
-      this.ciphers = ciphers;
-    });
-
-    this.showIntroManageCiphersSubscription = this.introductionService.getShowIntroManageCiphersAsObservable().subscribe(showIntro => {
-      if (showIntro) {
+              private introductionService: IntroductionService,
+              private configurationService: ConfigurationService) {
+    effect(() => {
+      if (this.showIntro()) {
         setTimeout(() => {
           this.introductionService.startIntroManageCiphers();
           this.introductionService.updateShowIntroManageCiphers(false);
@@ -73,16 +58,14 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
       }
     });
 
-    // This is used to check and handled when the selected cipher is deleted
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher
+    effect(() => {
+      this.ciphersDataSource = new MatTableDataSource(this.ciphers());
+      this.ciphersDataSource.sort = this.sort;
+      this.ciphersDataSource.paginator = this.paginator;
+      this.ciphersDataSource.filterPredicate = (data: Cipher, filter: string) => {
+        return data.name.indexOf(filter) > -1;
+      };
     });
-  }
-
-  ngOnDestroy() {
-    this.ciphersSubscription.unsubscribe();
-    this.showIntroManageCiphersSubscription.unsubscribe();
-    this.selectedCipherSubscription.unsubscribe();
   }
 
   applyFilter(event: Event) {
@@ -112,18 +95,18 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
   }
 
   deleteCipher(cipher: Cipher) {
-    const filteredCiphers = this.ciphers.filter((next) => {
+    const filteredCiphers = this.ciphers().filter((next) => {
       return next.name !== cipher.name;
     });
 
     // If the selected cipher is the one that is deleted, change the selected cipher to the first in the array
-    if (this.selectedCipher.name === cipher.name) {
-      this.cipherService.updateSelectedCipher(filteredCiphers[0]);
+    if (this.selectedCipher().name === cipher.name) {
+      this.configurationService.updateSelectedCipher(filteredCiphers[0]);
     }
 
-    this.cipherService.updateCiphers(filteredCiphers);
+    this.configurationService.updateCiphers(filteredCiphers);
 
-    this.snackBar.open('Deleted "' + cipher.name + '"', '',{
+    this.snackBar.open('Deleted "' + cipher.name + '"', '', {
       duration: 2000,
       verticalPosition: 'top'
     });
@@ -137,7 +120,7 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
     while (!isUnique) {
       isUnique = true;
 
-      for (const item of this.ciphers) {
+      for (const item of this.ciphers()) {
         if (name === item.name) {
           name = name + suffix;
           isUnique = false;
@@ -148,10 +131,9 @@ export class ManageCiphersComponent implements OnInit, OnDestroy {
 
     const clone = new Cipher(name, cipher.rows, cipher.columns, cipher.ciphertext);
 
-    this.ciphers.push(clone);
-    this.cipherService.updateCiphers(this.ciphers);
+    this.configurationService.updateCiphers([...this.ciphers(), clone]);
 
-    this.snackBar.open('Cloned "' + cipher.name + '"', '',{
+    this.snackBar.open('Cloned "' + cipher.name + '"', '', {
       duration: 2000,
       verticalPosition: 'top'
     });

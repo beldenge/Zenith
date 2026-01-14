@@ -17,15 +17,14 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn } from "@angular/forms";
-import { CipherService } from "../cipher.service";
 import { CipherRequest } from "../models/CipherRequest";
 import { Cipher } from "../models/Cipher";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { Subscription } from "rxjs";
 import { BlockifyPipe } from "../blockify.pipe";
+import {ConfigurationService} from "../configuration.service";
 
 const SPACES_TABS_REGEX = /\t| /g;
 const WHITESPACE_REGEX = /\s+/g;
@@ -37,27 +36,22 @@ const NEWLINE_REGEX = /\r?\n/g;
     styleUrls: ['./cipher-modal.component.css'],
     standalone: false
 })
-export class CipherModalComponent implements OnInit, OnDestroy {
+export class CipherModalComponent implements OnInit {
   blockifyPipe = new BlockifyPipe();
-  ciphers: Cipher[];
+  ciphers = this.configurationService.ciphers;
   cipher: Cipher;
   mode: string;
   newCipherForm: UntypedFormGroup;
-  ciphersSubscription: Subscription;
   rows: number = null;
   columns: number = null;
 
   constructor(public dialogRef: MatDialogRef<CipherModalComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any,
               private fb: UntypedFormBuilder,
-              private cipherService: CipherService,
-              private snackBar: MatSnackBar) { }
+              private snackBar: MatSnackBar,
+              private configurationService: ConfigurationService) { }
 
   ngOnInit() {
-    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
-      this.ciphers = ciphers;
-    });
-
     this.cipher = this.data.cipher;
     this.mode = this.data.mode;
 
@@ -81,7 +75,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
       let error = null;
 
       if (!this.cipher || proposedName !== this.cipher.name) {
-        self.ciphers.forEach(cipher => {
+        self.ciphers().forEach(cipher => {
           if (cipher.name === proposedName) {
             error = { name: false };
           }
@@ -105,10 +99,6 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     this.newCipherForm.get('ciphertext').setValidators([cipherRowLengthValidator]);
   }
 
-  ngOnDestroy() {
-    this.ciphersSubscription.unsubscribe();
-  }
-
   save() {
     const name = this.newCipherForm.get('name').value;
     const rawCiphertext = this.newCipherForm.get('ciphertext').value;
@@ -125,7 +115,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   }
 
   determineDimensions(ciphertext: string) {
-    if (!ciphertext.length) {
+    if (!ciphertext?.length) {
       return { rows: -1, columns: -1 };
     }
 
@@ -150,9 +140,7 @@ export class CipherModalComponent implements OnInit, OnDestroy {
   create(request: CipherRequest) {
     const cipher = new Cipher(request.name, request.rows, request.columns, request.ciphertext);
 
-    this.ciphers.push(cipher);
-
-    this.cipherService.updateCiphers(this.ciphers);
+    this.configurationService.updateCiphers([...this.ciphers(), cipher]);
 
     this.dialogRef.close();
 
@@ -167,8 +155,6 @@ export class CipherModalComponent implements OnInit, OnDestroy {
     this.cipher.rows = request.rows;
     this.cipher.columns = request.columns;
     this.cipher.ciphertext = request.ciphertext;
-
-    this.cipherService.updateCiphers(this.ciphers);
 
     this.dialogRef.close();
 

@@ -22,18 +22,18 @@
   <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-primary">Ciphertext</h6>
     <div class="dropdown no-arrow">
-      <a class="dropdown-toggle" href="javascript:void(0);" role="button" #tooltip="matTooltip" matTooltip="{{tooltipText | async}}" matTooltipPosition="above" (mouseover)="resetTooltipText()" (click)="copyCiphertext(tooltip)">
+      <button class="dropdown-toggle" #tooltip="matTooltip" [matTooltip]="tooltipText()" matTooltipPosition="above" (mouseover)="resetTooltipText()" (click)="copyCiphertext(tooltip)">
         <i class="far fa-copy"></i>
-      </a>
+      </button>
     </div>
   </div>
   <!-- Card Body -->
   <div class="card-body">
-    @if (!cipher?.transformed) {
-      <div>{{cipher?.ciphertext | blockify : cipher?.columns}}</div>
+    @if (!cipher()?.transformed) {
+      <div>{{cipher()?.ciphertext | blockify : cipher()?.columns}}</div>
     }
-    @if (cipher?.transformed) {
-      <div>{{cipher?.transformed.ciphertext | blockify : cipher?.transformed.columns}}</div>
+    @if (cipher()?.transformed) {
+      <div>{{cipher()?.transformed.ciphertext | blockify : cipher()?.transformed.columns}}</div>
     }
   </div>
 </div>

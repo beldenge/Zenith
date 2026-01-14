@@ -18,10 +18,8 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable } from "rxjs";
 import { Cipher } from "./models/Cipher";
 import { CiphertextTransformationRequest } from "./models/CiphertextTransformationRequest";
-import { ConfigurationService } from "./configuration.service";
 import {Apollo, gql} from "apollo-angular";
 import {map} from "rxjs/operators";
 
@@ -29,32 +27,7 @@ import {map} from "rxjs/operators";
   providedIn: 'root'
 })
 export class CipherService {
-  constructor(private configurationService: ConfigurationService,
-              private apollo: Apollo) {}
-
-  selected: Cipher;
-
-  getSelectedCipherAsObservable(): Observable<Cipher> {
-    return this.configurationService.getSelectedCipherAsObservable();
-  }
-
-  updateSelectedCipher(cipher: Cipher): void {
-    this.selected = cipher;
-    this.configurationService.updateSelectedCipher(cipher);
-  }
-
-  getCiphersAsObservable(): Observable<Cipher[]> {
-    return this.configurationService.getCiphersAsObservable();
-  }
-
-  updateCiphers(ciphers: Cipher[]): void {
-    if (this.selected !== undefined && !ciphers.find(cipher => cipher.name === this.selected.name)) {
-      // If the selected cipher has been deleted, pick a different one
-      this.updateSelectedCipher(ciphers[0]);
-    }
-
-    return this.configurationService.updateCiphers(ciphers);
-  }
+  constructor(private apollo: Apollo) {}
 
   transformCipher(request: CiphertextTransformationRequest) {
     return this.apollo.mutate<Cipher>({

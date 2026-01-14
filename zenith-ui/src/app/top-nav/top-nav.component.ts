@@ -17,15 +17,12 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, effect} from '@angular/core';
 import { Cipher } from "../models/Cipher";
 import { ApplicationConfiguration } from "../models/ApplicationConfiguration";
-import { SidebarService } from "../sidebar.service";
 import { SafeUrl } from "@angular/platform-browser";
 import {SolutionService} from "../solution.service";
 import {ConfigurationService} from "../configuration.service";
-import {CipherService} from "../cipher.service";
-import {Subscription} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
@@ -34,41 +31,20 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     styleUrls: ['./top-nav.component.css'],
     standalone: false
 })
-export class TopNavComponent implements OnInit, OnDestroy {
+export class TopNavComponent {
   configFilename = 'zenith.json';
   selectHasFocus = false;
   exportUri: SafeUrl;
-  ciphers: Cipher[];
+  ciphers = this.configurationService.ciphers;
   selectedCipher: Cipher;
-  isRunning = false;
-  selectedCipherSubscription: Subscription;
-  ciphersSubscription: Subscription;
-  isRunningSubscription: Subscription;
+  isRunning = this.solutionService.runState;
 
   constructor(private snackBar: MatSnackBar,
-              private cipherService: CipherService,
               private configurationService: ConfigurationService,
-              private solutionService: SolutionService,
-              private sidebarService: SidebarService) {}
-
-  ngOnInit(): void {
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe(selectedCipher => {
-      this.selectedCipher = selectedCipher;
+              private solutionService: SolutionService) {
+    effect (() => {
+      this.selectedCipher = this.configurationService.selectedCipher();
     });
-
-    this.ciphersSubscription = this.cipherService.getCiphersAsObservable().subscribe(ciphers => {
-      this.ciphers = ciphers;
-    });
-
-    this.isRunningSubscription = this.solutionService.getRunStateAsObservable().subscribe(runState => {
-      this.isRunning = runState;
-    });
-  }
-
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
-    this.isRunningSubscription.unsubscribe();
-    this.ciphersSubscription.unsubscribe();
   }
 
   onMouseDownSelect(element: HTMLElement) {
@@ -91,14 +67,6 @@ export class TopNavComponent implements OnInit, OnDestroy {
     this.selectHasFocus = false;
   }
 
-  onSidebarToggleClick() {
-    if (document.body.classList.contains('sidebar-toggled')) {
-      this.sidebarService.updateSidebarToggle(false);
-    } else {
-      this.sidebarService.updateSidebarToggle(true);
-    }
-  }
-
   byName(c1: Cipher, c2: Cipher): boolean {
     return c1 && c2 ? c1.name === c2.name : c1 === c2;
   }
@@ -109,8 +77,8 @@ export class TopNavComponent implements OnInit, OnDestroy {
     this.solutionService.updateProgressPercentage(0);
     delete this.selectedCipher.transformed;
     this.configurationService.updateAppliedCiphertextTransformers([]);
-    this.configurationService.updateAppliedPlaintextTransformers([])
-    this.cipherService.updateSelectedCipher(this.selectedCipher);
+    this.configurationService.updateAppliedPlaintextTransformers([]);
+    this.configurationService.updateSelectedCipher(this.selectedCipher);
   }
 
   setExportUri() {

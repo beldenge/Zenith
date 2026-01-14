@@ -70,3 +70,10 @@ input[type=number] {
   opacity: 0;
   transition: opacity 300ms ease-out;
 }
+
+.dropdown-toggle {
+  color: #4e73df;
+  text-decoration: none;
+  background-color: transparent;
+  border: 0;
+}

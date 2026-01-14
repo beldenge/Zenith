@@ -25,6 +25,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class SpacifyPipe implements PipeTransform {
   transform(value: string): string[] {
+    if (!value) {
+      return [];
+    }
+
     return value.split(/\s+/);
   }
 }

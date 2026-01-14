@@ -17,20 +17,18 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
-import {BehaviorSubject, Observable} from "rxjs";
+import {Injectable, Signal, signal, WritableSignal} from '@angular/core';
 import { SimulatedAnnealingConfiguration } from "./models/SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./models/GeneticAlgorithmConfiguration";
 import { SelectOption } from "./models/SelectOption";
 import { ApplicationConfiguration } from "./models/ApplicationConfiguration";
 import { FormComponent } from "./models/FormComponent";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
-import { UntypedFormGroup } from "@angular/forms";
+import { UntypedFormGroup} from "@angular/forms";
 import { LocalStorageKeys } from "./models/LocalStorageKeys";
 import { FitnessFunctionService } from "./fitness-function.service";
 import { Cipher } from "./models/Cipher";
-import { environment } from "../environments/environment";
-import {debounceTime, map} from "rxjs/operators";
+import {map} from "rxjs/operators";
 import {Apollo, gql} from "apollo-angular";
 import { firstValueFrom } from "rxjs";
 import {TransformerService} from "./transformer.service";
@@ -38,8 +36,6 @@ import {TransformerService} from "./transformer.service";
 interface GetCiphersQuery {
   ciphers: Cipher[];
 }
-
-const ENDPOINT_URL = environment.apiUrlBase + '/configurations';
 
 @Injectable({
   providedIn: 'root'
@@ -72,7 +68,7 @@ export class ConfigurationService {
   }];
 
   static readonly CROSSOVER_OPERATOR_NAMES: SelectOption[] = [{
-    name: 'GeneWiseCrossoverOperator',
+    name: 'UniformCrossoverOperator',
     displayName: 'Uniform'
   }, {
     name: 'SinglePointCrossoverOperator',
@@ -98,20 +94,32 @@ export class ConfigurationService {
     displayName: 'Random'
   }];
 
-  private epochs$ = new BehaviorSubject<number>(1);
-  private availableCiphertextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
-  private appliedCiphertextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
-  private availablePlaintextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
-  private appliedPlaintextTransformers$ = new BehaviorSubject<FormComponent[]>([]);
-  private samplePlaintext$ = new BehaviorSubject<string>(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
-  private selectedOptimizer$ = new BehaviorSubject<SelectOption>(null);
-  private availableFitnessFunctions$ = new BehaviorSubject<FormComponent[]>([]);
-  private selectedFitnessFunction$ = new BehaviorSubject<FormComponent>(null);
-  private simulatedAnnealingConfiguration$ = new BehaviorSubject<SimulatedAnnealingConfiguration>(null);
-  private geneticAlgorithmConfiguration$ = new BehaviorSubject<GeneticAlgorithmConfiguration>(null);
-  private ciphers$ = new BehaviorSubject<Cipher[]>([]);
-  private selectedCipher$ = new BehaviorSubject<Cipher>(null);
-  private configurationLoadedNotification$ = new BehaviorSubject<boolean>(false);
+  private epochsInternal: WritableSignal<number> = signal(1);
+  public epochs: Signal<number> = this.epochsInternal.asReadonly();
+  private availableCiphertextTransformersInternal: WritableSignal<FormComponent[]> = signal([]);
+  public availableCiphertextTransformers: Signal<FormComponent[]> = this.availableCiphertextTransformersInternal.asReadonly();
+  private appliedCiphertextTransformersInternal: WritableSignal<FormComponent[]> = signal([]);
+  public appliedCiphertextTransformers: Signal<FormComponent[]> = this.appliedCiphertextTransformersInternal.asReadonly();
+  private availablePlaintextTransformersInternal: WritableSignal<FormComponent[]> = signal([]);
+  public availablePlaintextTransformers: Signal<FormComponent[]> = this.availablePlaintextTransformersInternal.asReadonly();
+  private appliedPlaintextTransformersLocal: WritableSignal<FormComponent[]> = signal([]);
+  public appliedPlaintextTransformers: Signal<FormComponent[]> = this.appliedPlaintextTransformersLocal.asReadonly();
+  private samplePlaintextInternal: WritableSignal<string> = signal(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
+  public samplePlaintext: Signal<string> = this.samplePlaintextInternal.asReadonly();
+  private selectedOptimizerInternal: WritableSignal<SelectOption> = signal(null);
+  public selectedOptimizer: Signal<SelectOption> = this.selectedOptimizerInternal.asReadonly();
+  private availableFitnessFunctionsInternal: WritableSignal<FormComponent[]> = signal([]);
+  public availableFitnessFunctions: Signal<FormComponent[]> = this.availableFitnessFunctionsInternal.asReadonly();
+  private selectedFitnessFunctionInternal: WritableSignal<FormComponent> = signal(null);
+  public selectedFitnessFunction: Signal<FormComponent> = this.selectedFitnessFunctionInternal.asReadonly();
+  private simulatedAnnealingConfigurationInternal: WritableSignal<SimulatedAnnealingConfiguration> = signal(null);
+  public simulatedAnnealingConfiguration = this.simulatedAnnealingConfigurationInternal.asReadonly();
+  private geneticAlgorithmConfigurationInternal: WritableSignal<GeneticAlgorithmConfiguration> = signal(null);
+  public geneticAlgorithmConfiguration: Signal<GeneticAlgorithmConfiguration> = this.geneticAlgorithmConfigurationInternal.asReadonly();
+  private ciphersInternal: WritableSignal<Cipher[]> = signal([]);
+  public ciphers: Signal<Cipher[]> = this.ciphersInternal.asReadonly();
+  private selectedCipherInternal: WritableSignal<Cipher> = signal(null);
+  public selectedCipher: Signal<Cipher> = this.selectedCipherInternal.asReadonly();
 
   constructor(private sanitizer: DomSanitizer,
               private fitnessFunctionService: FitnessFunctionService,
@@ -278,171 +286,106 @@ export class ConfigurationService {
       return t1.order - t2.order;
     });
 
-    this.updateAvailableFitnessFunctions(availableFitnessFunctions);
+    this.availableFitnessFunctionsInternal.update(() => availableFitnessFunctions);
 
     const availablePlaintextTransformers = [...plaintextTransformerResponse].sort((t1, t2) => {
       return t1.order - t2.order;
     });
 
-    this.updateAvailablePlaintextTransformers(availablePlaintextTransformers);
+    this.availablePlaintextTransformersInternal.update(() => availablePlaintextTransformers);
 
     const availableCiphertextTransformers = [...ciphertextTransformerResponse].sort((t1, t2) => {
       return t1.order - t2.order;
     });
 
-    this.updateAvailableCiphertextTransformers(availableCiphertextTransformers);
+    this.availableCiphertextTransformersInternal.update(() => availableCiphertextTransformers);
 
     if (!localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)) {
       this.loadConfiguration().subscribe(configurationResponse => {
         localStorage.setItem(LocalStorageKeys.APPLICATION_CONFIGURATION, JSON.stringify(configurationResponse));
 
-        this.import(configurationResponse);
+        this.import({...configurationResponse});
       });
     } else {
       this.import(JSON.parse(localStorage.getItem(LocalStorageKeys.APPLICATION_CONFIGURATION)));
     }
-
-    this.configurationLoadedNotification$.next(true);
-  }
-
-  getConfigurationLoadedNotification() {
-    return this.configurationLoadedNotification$.asObservable();
-  }
-
-  getSelectedCipherAsObservable(): Observable<Cipher> {
-    return this.selectedCipher$.asObservable();
   }
 
   updateSelectedCipher(selectedCipher: Cipher, skipSave?: boolean) {
-    this.selectedCipher$.next(selectedCipher);
+    this.selectedCipherInternal.update(() => selectedCipher);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
-  }
-
-  getEpochsAsObservable(): Observable<number> {
-    return this.epochs$.asObservable();
   }
 
   updateEpochs(epochs: number, skipSave?: boolean) {
-    this.epochs$.next(epochs);
+    this.epochsInternal.update(() => epochs);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
-  }
-
-  getAvailableCiphertextTransformersAsObservable(): Observable<FormComponent[]> {
-    return this.availableCiphertextTransformers$.asObservable();
-  }
-
-  updateAvailableCiphertextTransformers(appliedTransformers: FormComponent[]): void {
-    this.availableCiphertextTransformers$.next(appliedTransformers);
-  }
-
-  getAppliedCiphertextTransformersAsObservable(): Observable<FormComponent[]> {
-    return this.appliedCiphertextTransformers$.asObservable();
   }
 
   updateAppliedCiphertextTransformers(appliedTransformers: FormComponent[], skipSave?: boolean): void {
-    this.appliedCiphertextTransformers$.next(appliedTransformers);
+    this.appliedCiphertextTransformersInternal.update(() => appliedTransformers);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
-  }
-
-  getAvailablePlaintextTransformersAsObservable(): Observable<FormComponent[]> {
-    return this.availablePlaintextTransformers$.asObservable();
-  }
-
-  updateAvailablePlaintextTransformers(appliedTransformers: FormComponent[]): void {
-    this.availablePlaintextTransformers$.next(appliedTransformers);
-  }
-
-  getAppliedPlaintextTransformersAsObservable(): Observable<FormComponent[]> {
-    return this.appliedPlaintextTransformers$.asObservable();
   }
 
   updateAppliedPlaintextTransformers(appliedTransformers: FormComponent[], skipSave?: boolean): void {
-    this.appliedPlaintextTransformers$.next(appliedTransformers);
+    this.appliedPlaintextTransformersLocal.update(() => appliedTransformers);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
   }
 
-  getSamplePlaintextAsObservable(): Observable<string> {
-    return this.samplePlaintext$.pipe(debounceTime(500));
-  }
-
-  updateSamplePlaintext(appliedTransformers: string): void {
-    this.samplePlaintext$.next(appliedTransformers);
-  }
-
-  getSelectedOptimizerAsObservable(): Observable<SelectOption> {
-    return this.selectedOptimizer$.asObservable();
+  updateSamplePlaintext(sample: string): void {
+    this.samplePlaintextInternal.update(() => sample);
   }
 
   updateSelectedOptimizer(optimizer: SelectOption, skipSave?: boolean) {
-    this.selectedOptimizer$.next(optimizer);
+    this.selectedOptimizerInternal.update(() => optimizer);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
-  }
-
-  getAvailableFitnessFunctionsAsObservable(): Observable<FormComponent[]> {
-    return this.availableFitnessFunctions$.asObservable();
-  }
-
-  updateAvailableFitnessFunctions(fitnessFunctions: FormComponent[]) {
-    this.availableFitnessFunctions$.next(fitnessFunctions);
-  }
-
-  getSelectedFitnessFunctionAsObservable(): Observable<FormComponent> {
-    return this.selectedFitnessFunction$.asObservable();
   }
 
   updateSelectedFitnessFunction(fitnessFunction: FormComponent, skipSave?: boolean) {
-    this.selectedFitnessFunction$.next(fitnessFunction);
+    this.selectedFitnessFunctionInternal.update(() => fitnessFunction);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
-  }
-
-  getSimulatedAnnealingConfigurationAsObservable(): Observable<SimulatedAnnealingConfiguration> {
-    return this.simulatedAnnealingConfiguration$.asObservable();
   }
 
   updateSimulatedAnnealingConfiguration(configuration: SimulatedAnnealingConfiguration, skipSave?: boolean) {
-    this.simulatedAnnealingConfiguration$.next(configuration);
+    this.simulatedAnnealingConfigurationInternal.update(() => configuration);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
-  }
-
-  getGeneticAlgorithmConfigurationAsObservable(): Observable<GeneticAlgorithmConfiguration> {
-    return this.geneticAlgorithmConfiguration$.asObservable();
   }
 
   updateGeneticAlgorithmConfiguration(configuration: GeneticAlgorithmConfiguration, skipSave?: boolean) {
-    this.geneticAlgorithmConfiguration$.next(configuration);
+    this.geneticAlgorithmConfigurationInternal.update(() => configuration);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
     }
   }
 
-  getCiphersAsObservable(): Observable<Cipher[]> {
-    return this.ciphers$.asObservable();
-  }
-
   updateCiphers(ciphers: Cipher[], skipSave?: boolean) {
-    this.ciphers$.next(ciphers);
+    if (this.selectedCipherInternal() && !ciphers.find(cipher => cipher.name === this.selectedCipherInternal().name)) {
+      // If the selected cipher has been deleted, pick a different one
+      this.updateSelectedCipher(ciphers[0]);
+    }
+
+    this.ciphersInternal.update(() => ciphers);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
@@ -452,7 +395,7 @@ export class ConfigurationService {
   restoreGeneralSettings() {
     this.loadConfiguration().subscribe(configurationResponse => {
       this.updateSelectedOptimizer(configurationResponse.selectedOptimizer, true);
-      this.updateSelectedFitnessFunction(this.availableFitnessFunctions$.getValue().find(fitnessFunction => fitnessFunction.name === configurationResponse.selectedFitnessFunction.name), true);
+      this.updateSelectedFitnessFunction(this.availableFitnessFunctions().find(fitnessFunction => fitnessFunction.name === configurationResponse.selectedFitnessFunction.name), true);
       this.updateSimulatedAnnealingConfiguration(configurationResponse.simulatedAnnealingConfiguration, true);
       this.updateGeneticAlgorithmConfiguration(configurationResponse.geneticAlgorithmConfiguration, true);
       this.saveConfigurationToLocalStorage();
@@ -487,33 +430,33 @@ export class ConfigurationService {
     this.updateAppliedPlaintextTransformers(configuration.appliedPlaintextTransformers, true);
     this.updateSelectedOptimizer(configuration.selectedOptimizer, true);
 
-    const selectedFitnessFunction = this.availableFitnessFunctions$.getValue().find(fitnessFunction =>
+    const selectedFitnessFunctionMatch = this.availableFitnessFunctions().find(fitnessFunction =>
       fitnessFunction.name === configuration.selectedFitnessFunction.name
     );
 
-    if (selectedFitnessFunction.form) {
-      selectedFitnessFunction.form.model = configuration.selectedFitnessFunction.form.model;
-      selectedFitnessFunction.form.fields = configuration.selectedFitnessFunction.form.fields;
+    if (selectedFitnessFunctionMatch.form) {
+      selectedFitnessFunctionMatch.form.model = configuration.selectedFitnessFunction.form.model;
+      selectedFitnessFunctionMatch.form.fields = configuration.selectedFitnessFunction.form.fields;
     }
 
-    this.updateSelectedFitnessFunction(selectedFitnessFunction, true);
+    this.updateSelectedFitnessFunction(selectedFitnessFunctionMatch, true);
     this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration, true);
     this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration, true);
-    this.updateSelectedCipher(this.ciphers$.getValue().find(cipher => cipher.name === configuration.selectedCipher), true);
+    this.updateSelectedCipher(this.ciphersInternal().find(cipher => cipher.name === configuration.selectedCipher), true);
     this.saveConfigurationToLocalStorage();
   }
 
   buildConfigurationAsString(): string {
     const configuration = new ApplicationConfiguration();
 
-    configuration.epochs = this.epochs$.getValue();
+    configuration.epochs = this.epochsInternal();
 
-    if (this.appliedCiphertextTransformers$.getValue()) {
+    if (this.appliedCiphertextTransformersInternal()) {
       // The FormGroup attribute is causing cyclic references when serializing to JSON,
       // so we have to manually instantiate the transformers to skip copying the FormGroup
       configuration.appliedCiphertextTransformers = [];
 
-      this.appliedCiphertextTransformers$.getValue().forEach(transformer => {
+      this.appliedCiphertextTransformersInternal().forEach(transformer => {
         configuration.appliedCiphertextTransformers.push({
           name: transformer.name,
           displayName: transformer.displayName,
@@ -527,12 +470,12 @@ export class ConfigurationService {
       });
     }
 
-    if (this.appliedPlaintextTransformers$.getValue()) {
+    if (this.appliedPlaintextTransformersLocal()) {
       // The FormGroup attribute is causing cyclic references when serializing to JSON,
       // so we have to manually instantiate the transformers to skip copying the FormGroup
       configuration.appliedPlaintextTransformers = [];
 
-      this.appliedPlaintextTransformers$.getValue().forEach(transformer => {
+      this.appliedPlaintextTransformersLocal().forEach(transformer => {
         configuration.appliedPlaintextTransformers.push({
           name: transformer.name,
           displayName: transformer.displayName,
@@ -546,7 +489,7 @@ export class ConfigurationService {
       });
     }
 
-    const fitnessFunction = this.selectedFitnessFunction$.getValue();
+    const fitnessFunction = this.selectedFitnessFunctionInternal();
 
     configuration.selectedFitnessFunction = {
       name: fitnessFunction.name,
@@ -559,10 +502,10 @@ export class ConfigurationService {
       helpText: fitnessFunction.helpText
     };
 
-    configuration.selectedOptimizer = this.selectedOptimizer$.getValue();
-    configuration.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration$.getValue();
-    configuration.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration$.getValue();
-    configuration.selectedCipher = this.selectedCipher$.getValue().name;
+    configuration.selectedOptimizer = this.selectedOptimizerInternal();
+    configuration.simulatedAnnealingConfiguration = this.simulatedAnnealingConfigurationInternal();
+    configuration.geneticAlgorithmConfiguration = this.geneticAlgorithmConfigurationInternal();
+    configuration.selectedCipher = this.selectedCipherInternal().name;
 
     return JSON.stringify(configuration, null, 2);
   }

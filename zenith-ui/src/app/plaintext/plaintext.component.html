@@ -21,19 +21,19 @@
   <!-- Card Header - Dropdown -->
   <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-primary">Plaintext</h6>
-    @if (solution) {
-      <span id="plaintext_score" class="ml-2 mr-auto text-muted">(Score: {{solution.scores[0] | number : '1.4-4'}})</span>
+    @if (solution()) {
+      <span id="plaintext_score" class="ml-2 mr-auto text-muted">(Score: {{solution().scores[0] | number : '1.4-4'}})</span>
     }
     <div class="dropdown no-arrow">
-      <a class="dropdown-toggle" href="javascript:void(0);" role="button" #tooltip="matTooltip" matTooltip="{{tooltipText | async}}" (mouseover)="resetTooltipText()" matTooltipPosition="above" (click)="copyPlaintext(tooltip)">
+      <button class="dropdown-toggle" #tooltip="matTooltip" matTooltip="{{tooltipText()}}" (mouseover)="resetTooltipText()" matTooltipPosition="above" (click)="copyPlaintext(tooltip)">
         <i class="far fa-copy"></i>
-      </a>
+      </button>
     </div>
   </div>
   <!-- Card Body -->
   <div class="card-body">
     @if (solution) {
-      <div>{{solution.plaintext | spacify | blockify : cipher?.columns}}</div>
+      <div>{{solution()?.plaintext | spacify | blockify : cipher()?.columns}}</div>
     }
   </div>
 </div>

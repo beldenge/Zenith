@@ -17,11 +17,9 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {Component, effect} from '@angular/core';
 import { FormComponent } from "../models/FormComponent";
 import { CipherService } from "../cipher.service";
-import { Cipher } from "../models/Cipher";
-import { Subscription } from "rxjs";
 import { UntypedFormGroup } from "@angular/forms";
 import { ConfigurationService } from "../configuration.service";
 import { IntroductionService } from "../introduction.service";
@@ -35,14 +33,11 @@ import { TransformerUtil } from "../util/transformer-util";
     styleUrls: ['./ciphertext-transformers.component.css'],
     standalone: false
 })
-export class CiphertextTransformersComponent implements OnInit, OnDestroy {
-  showIntroCiphertextTransformersSubscription: Subscription;
-  cipher: Cipher;
+export class CiphertextTransformersComponent {
+  showIntro = this.introductionService.showIntroCiphertextTransformers;
+  cipher = this.configurationService.selectedCipher;
   public hoverClasses: string[] = [];
-  selectedCipherSubscription: Subscription;
-  appliedCiphertextTransformersSubscription: Subscription;
-
-  availableTransformers: FormComponent[] = [];
+  availableTransformers = this.configurationService.availableCiphertextTransformers;
 
   availableTransformersOptions = {
     group: {
@@ -53,29 +48,31 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     sort: false
   };
 
-  appliedTransformers: FormComponent[] = [];
+  appliedTransformersLocal: FormComponent[] = [];
+  appliedTransformersSignal = this.configurationService.appliedCiphertextTransformers;
 
   onAppliedTransformersChange = (event: any) => {
     this.solutionService.updateSolution(null);
 
-    if (!this.cipher) {
+    const localCipher = {...this.cipher()};
+    if (!localCipher) {
       return;
     }
 
     const transformationRequest: CiphertextTransformationRequest = {
       cipher: {
-        name: this.cipher.name,
-        rows: this.cipher.rows,
-        columns: this.cipher.columns,
-        ciphertext: this.cipher.ciphertext
+        name: localCipher.name,
+        rows: localCipher.rows,
+        columns: localCipher.columns,
+        ciphertext: localCipher.ciphertext
       },
       steps: []
     };
 
     let satisfied = true;
 
-    for (let i = 0; i < this.appliedTransformers.length; i ++) {
-      const transformer = this.appliedTransformers[i];
+    for (let i = 0; i < this.appliedTransformersLocal.length; i ++) {
+      const transformer = this.appliedTransformersLocal[i];
 
       if (transformer.form && ((event && event.type === 'add' && event.newIndex === i) || !transformer.form.form.valid)) {
         satisfied = false;
@@ -89,18 +86,18 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     }
 
     if (satisfied) {
-      if (!this.appliedTransformers.length) {
-        delete this.cipher.transformed;
-        this.cipherService.updateSelectedCipher(this.cipher);
+      if (!this.appliedTransformersLocal.length) {
+        delete localCipher.transformed;
+        this.configurationService.updateSelectedCipher(localCipher);
       } else {
         this.cipherService.transformCipher(transformationRequest).subscribe((cipherResponse: any) => {
-          this.cipher.transformed = cipherResponse;
-          this.cipherService.updateSelectedCipher(this.cipher);
+          localCipher.transformed = cipherResponse;
+          this.configurationService.updateSelectedCipher(localCipher);
         });
       }
 
-      if (!event || !event.skipUpdate) {
-        this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformers);
+      if (!event?.skipUpdate) {
+        this.configurationService.updateAppliedCiphertextTransformers(this.appliedTransformersLocal);
       }
     }
   }
@@ -108,55 +105,31 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
   appliedTransformersOptions = {
     group: 'clone-group',
     onAdd: this.onAppliedTransformersChange,
-    onRemove: this.onAppliedTransformersChange,
     onEnd: this.onAppliedTransformersChange
   };
 
   constructor(private cipherService: CipherService,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService,
-              private solutionService: SolutionService) {}
-
-  ngOnInit(): void {
-    this.configurationService.getAvailableCiphertextTransformersAsObservable().subscribe(transformerResponse => {
-      this.availableTransformers = transformerResponse;
-    });
-
-    this.appliedCiphertextTransformersSubscription = this.configurationService.getAppliedCiphertextTransformersAsObservable().subscribe(appliedTransformers => {
-      if (!TransformerUtil.transformersAreEqual(this.appliedTransformers, appliedTransformers)) {
-        this.appliedTransformers = appliedTransformers;
-
-        if (this.appliedTransformers.length) {
-          this.onAppliedTransformersChange({ skipUpdate: true });
-        }
-      }
-    });
-
-    this.selectedCipherSubscription = this.cipherService.getSelectedCipherAsObservable().subscribe((cipher: Cipher) => {
-        this.cipher = {
-          name: cipher?.name,
-          rows: cipher?.rows,
-          columns: cipher?.columns,
-          ciphertext: cipher?.ciphertext,
-          transformed: cipher?.transformed,
-          readOnly: cipher?.readOnly
-        };
-    });
-
-    this.showIntroCiphertextTransformersSubscription = this.introductionService.getShowIntroCiphertextTransformersAsObservable().subscribe(showIntro => {
-      if (showIntro) {
+              private solutionService: SolutionService) {
+    effect(() => {
+      if (this.showIntro()) {
         setTimeout(() => {
           this.introductionService.startIntroCiphertextTransformers();
           this.introductionService.updateShowIntroCiphertextTransformers(false);
         }, 0);
       }
     });
-  }
 
-  ngOnDestroy() {
-    this.selectedCipherSubscription.unsubscribe();
-    this.appliedCiphertextTransformersSubscription.unsubscribe();
-    this.showIntroCiphertextTransformersSubscription.unsubscribe();
+    effect(() => {
+      if (!TransformerUtil.transformersAreEqual(this.appliedTransformersLocal, this.appliedTransformersSignal())) {
+        this.appliedTransformersLocal = this.appliedTransformersSignal();
+
+        if (this.appliedTransformersLocal?.length) {
+          this.onAppliedTransformersChange({ skipUpdate: true });
+        }
+      }
+    });
   }
 
   cloneTransformer = (item) => {
@@ -171,13 +144,13 @@ export class CiphertextTransformersComponent implements OnInit, OnDestroy {
     }
 
     return clone;
-  };
+  }
 
   removeTransformer(transformerIndex: number): void {
     this.hoverClasses = [];
 
-    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformers.length) {
-      this.appliedTransformers.splice(transformerIndex, 1);
+    if (transformerIndex >= 0 && transformerIndex < this.appliedTransformersLocal.length) {
+      this.appliedTransformersLocal.splice(transformerIndex, 1);
     }
 
     this.onAppliedTransformersChange(null);

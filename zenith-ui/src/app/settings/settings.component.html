@@ -58,7 +58,7 @@
               <mat-form-field appearance="outline">
                 <mat-label>Fitness Function</mat-label>
                 <mat-select formControlName="fitnessFunction" (selectionChange)="onFitnessFunctionChange($event)">
-                  @for (fitnessFunction of availableFitnessFunctions; track fitnessFunction) {
+                  @for (fitnessFunction of availableFitnessFunctions(); track fitnessFunction) {
                     <mat-option [value]="fitnessFunction">
                       {{fitnessFunction.displayName}}
                     </mat-option>
@@ -67,7 +67,7 @@
               </mat-form-field>
             </div>
           </div>
-          @if (selectedFitnessFunction?.form) {
+          @if (selectedFitnessFunction()?.form) {
             <div class="form-group row">
               <div class="col-md-4 mx-auto">
                 <form [formGroup]="generalSettingsForm.get('fitnessFunction').value.form.form">
