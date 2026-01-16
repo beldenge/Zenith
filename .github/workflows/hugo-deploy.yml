@@ -1,10 +1,11 @@
-# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["master"]
+    paths:
+      - 'site/**'
+      - '.github/workflows/hugo-deploy.yml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -34,19 +35,18 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: 'latest'   # Or pin e.g. '0.154.4' for stability
-          extended: true           # Required for PaperMod Sass/image processing
+          hugo-version: 'latest'
+          extended: false
 
       - name: Build
-        working-directory: ./site   # ← Key: cd into your Hugo folder
-        run: hugo --minify --gc     # --gc cleans up, --minify compresses
+        working-directory: ./site
+        run: hugo --minify --gc
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public         # Where Hugo outputs; adjust if you changed publishDir
+          path: ./public
 
-  # Single deploy job since we're just deploying
   deploy:
     needs: build
     environment:
