@@ -176,6 +176,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
         CipherSolution next = initialSolution;
         long startLetterSampling;
         char[] solutionCharArray = next.asSingleLineString().toCharArray();
+        var temperatureDifference = (annealingTemperatureMax - annealingTemperatureMin);
 
         int i;
         for (i = 0; i < samplerIterations; i++) {
@@ -185,7 +186,8 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
              * Set temperature as a ratio of the max temperature to the number of iterations left, offset by the min
              * temperature so as not to go below it
              */
-            temperature = ((annealingTemperatureMax - annealingTemperatureMin) * ((samplerIterations - (float) i) / samplerIterations)) + annealingTemperatureMin;
+            var ratio = ((samplerIterations - (float) i) / samplerIterations);
+            temperature = (temperatureDifference * ratio) + annealingTemperatureMin;
 
             startLetterSampling = System.currentTimeMillis();
             next = runLetterSampler(precomputedCounterweightData, cipher, temperature, next, solutionCharArray, mappingKeys, plaintextTransformationSteps, plaintextEvaluator);

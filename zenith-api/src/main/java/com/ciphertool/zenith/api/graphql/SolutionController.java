@@ -22,6 +22,7 @@ package com.ciphertool.zenith.api.graphql;
 import com.ciphertool.zenith.api.model.*;
 import com.ciphertool.zenith.inference.entities.CipherSolution;
 import com.ciphertool.zenith.inference.optimizer.OnEpochComplete;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -33,15 +34,25 @@ import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.*;
 
 @Controller
 public class SolutionController extends AbstractSolutionController {
     private static final Logger log = LoggerFactory.getLogger(SolutionController.class);
     private static final Map<String, Sinks.Many<SolutionUpdate>> REQUEST_SINKS = new ConcurrentHashMap<>();
+    private static final ScheduledExecutorService CLEANUP_EXECUTOR = Executors.newScheduledThreadPool(1);
+
+    @PostConstruct
+    public void initCleanup() {
+        CLEANUP_EXECUTOR.scheduleAtFixedRate(() -> {
+            REQUEST_SINKS.entrySet().removeIf(entry -> {
+                Sinks.Many<SolutionUpdate> sink = entry.getValue();
+                return sink.currentSubscriberCount() == 0;
+            });
+        }, 5, 5, TimeUnit.MINUTES);
+    }
 
     @Override
     public OnEpochComplete getCallback(SolutionRequest request) {
@@ -69,7 +80,9 @@ public class SolutionController extends AbstractSolutionController {
                 SolutionUpdate errorUpdate = new SolutionUpdate();
                 errorUpdate.setRequestId(input.getRequestId());
                 errorUpdate.setType(WebSocketResponseType.ERROR);
-                REQUEST_SINKS.computeIfAbsent(input.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer()).tryEmitNext(errorUpdate);
+                Sinks.Many<SolutionUpdate> sink = REQUEST_SINKS.computeIfAbsent(input.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer());
+                sink.tryEmitNext(errorUpdate);
+                sink.tryEmitComplete();
                 return;
             }
 
@@ -83,7 +96,9 @@ public class SolutionController extends AbstractSolutionController {
             update.setRequestId(input.getRequestId());
             update.setType(WebSocketResponseType.SOLUTION);
             update.setSolutionData(solutionResp);
-            REQUEST_SINKS.computeIfAbsent(input.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer()).tryEmitNext(update);
+            Sinks.Many<SolutionUpdate> sink = REQUEST_SINKS.computeIfAbsent(input.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer());
+            sink.tryEmitNext(update);
+            sink.tryEmitComplete();
         });
         return CompletableFuture.completedFuture(input.getRequestId());
     }

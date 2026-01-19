@@ -36,7 +36,10 @@ export function createApollo(): ApolloClient.Options {
 
   const ws = new GraphQLWsLink(
     createClient({
-      url: '/graphql'
+      url: '/graphql',
+      retryAttempts: 10,
+      shouldRetry: () => true,
+      keepAlive: 10000,
     })
   );
 

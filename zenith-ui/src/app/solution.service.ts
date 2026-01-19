@@ -1,7 +1,7 @@
 import {Injectable, Signal, signal, WritableSignal} from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import {Observable} from "rxjs";
-import { filter, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { SolutionResponse } from "./models/SolutionResponse";
 import { SolutionUpdate } from "./models/SolutionUpdate";
 import {SolutionRequest} from "./models/SolutionRequest";
@@ -54,7 +54,6 @@ export class SolutionService {
         requestId
       }
     }).pipe(
-      filter<any>((result: any) => !result.data.upstreamPublisher),
       map((result: any) => result.data.solutionUpdates)
     );
   }
