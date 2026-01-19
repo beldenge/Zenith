@@ -29,8 +29,13 @@ import lombok.*;
 @EqualsAndHashCode
 public class Ciphertext {
     private String value;
+    private boolean locked;
+
+    public Ciphertext(String value) {
+        this.value = value;
+    }
 
     public Ciphertext clone() {
-        return new Ciphertext(this.value);
+        return new Ciphertext(this.value, this.locked);
     }
 }

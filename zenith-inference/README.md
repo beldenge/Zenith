@@ -148,6 +148,14 @@ Removes a symbol from the ciphertext
 Traverses the ciphertext diagonally as if the cipher was rotated 45 degrees to the right, with the output retaining the same number of rows and columns
 ### ZPattern
 Custom operation which traverses two rows at a time, outputting the symbols using a Z pattern, with the output retaining the same number of rows and columns
+### MDownMAcross
+Begins with the first symbol and goes n-down and m-across, wrapping both vertically and horizontally
+### LockCharacters
+Prevents characters from being modified by subsequent transformers
+### ShiftCharactersLeft
+Shifts charactes in a given range to the left by one and wraps
+### ShiftCharactersRight
+Shifts charactes in a given range to the right by one and wraps
 
 ## Plaintext Transformers
 The following plaintext transformers are provided out of the box.  More can be added by implementing the PlaintextTransformer interface.

@@ -20,21 +20,37 @@
 package com.ciphertool.zenith.inference.transformer.ciphertext;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.ciphertool.zenith.inference.entities.FormlyForm;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@NoArgsConstructor
 @Component
-public class ReverseCipherTransformer implements CipherTransformer {
+public class ReverseCipherTransformer extends AbstractRangeLimitedCipherTransformer {
+    public ReverseCipherTransformer(Map<String, Object> data) {
+        super(data);
+    }
+
     @Override
     public Cipher transform(Cipher cipher) {
         Cipher transformed = cipher.clone();
 
-        // Remove the last row altogether
-        int j = cipher.length() - 1;
-        for (int i = 0; i < cipher.length(); i++) {
-            transformed.replaceCiphertextCharacter(i, cipher.getCiphertextCharacters().get(j--).clone());
+        int start = 0;
+        int end = cipher.length() - 1;
+
+        if (rangeStart != null) {
+            start = Math.max(rangeStart, 0);
+        }
+
+        if (rangeEnd != null) {
+            end = Math.min(rangeEnd, cipher.length() - 1);
+        }
+
+        int j = end;
+        for (int i = start; i <= end; i++) {
+            transformed.replaceCiphertextCharacter(i, cipher.getCiphertextCharacters().get(j).clone());
+            j--;
         }
 
         return transformed;
@@ -42,12 +58,7 @@ public class ReverseCipherTransformer implements CipherTransformer {
 
     @Override
     public CipherTransformer getInstance(Map<String, Object> data) {
-        return new ReverseCipherTransformer();
-    }
-
-    @Override
-    public FormlyForm getForm() {
-        return null;
+        return new ReverseCipherTransformer(data);
     }
 
     @Override

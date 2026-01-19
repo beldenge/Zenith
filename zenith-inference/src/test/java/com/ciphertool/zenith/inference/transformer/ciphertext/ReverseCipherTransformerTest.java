@@ -23,12 +23,14 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.Ciphertext;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReverseCipherTransformerTest {
     @Test
     public void testTransform() {
-        ReverseCipherTransformer cipherTransformer = new ReverseCipherTransformer();
+        ReverseCipherTransformer cipherTransformer = new ReverseCipherTransformer(new HashMap<>());
 
         Cipher cipher = new Cipher("tomato", 7, 6);
 
