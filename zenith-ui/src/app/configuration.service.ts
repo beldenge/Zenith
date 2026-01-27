@@ -32,6 +32,8 @@ import {map} from "rxjs/operators";
 import {Apollo, gql} from "apollo-angular";
 import { firstValueFrom } from "rxjs";
 import {TransformerService} from "./transformer.service";
+import {CipherService} from "./cipher.service";
+import {CiphertextTransformationRequest} from "./models/CiphertextTransformationRequest";
 
 interface GetCiphersQuery {
   ciphers: Cipher[];
@@ -124,7 +126,8 @@ export class ConfigurationService {
   constructor(private sanitizer: DomSanitizer,
               private fitnessFunctionService: FitnessFunctionService,
               private apollo: Apollo,
-              private transformerService: TransformerService) {
+              private transformerService: TransformerService,
+              private cipherService: CipherService) {
     this.loadInitialData();
   }
 
@@ -402,6 +405,45 @@ export class ConfigurationService {
     });
   }
 
+  private applyCiphertextTransformers(selectedCipher: Cipher, appliedTransformers: FormComponent[]): void {
+    if (!selectedCipher) {
+      return;
+    }
+
+    const localCipher = {...selectedCipher};
+
+    if (!appliedTransformers?.length) {
+      if (localCipher.transformed) {
+        delete localCipher.transformed;
+        this.updateSelectedCipher(localCipher, true);
+      }
+
+      return;
+    }
+
+    const transformationRequest: CiphertextTransformationRequest = {
+      cipher: {
+        name: localCipher.name,
+        rows: localCipher.rows,
+        columns: localCipher.columns,
+        ciphertext: localCipher.ciphertext
+      },
+      steps: []
+    };
+
+    appliedTransformers.forEach(transformer => {
+      transformationRequest.steps.push({
+        transformerName: transformer.name,
+        data: transformer.form ? transformer.form.model : null
+      });
+    });
+
+    this.cipherService.transformCipher(transformationRequest).subscribe((cipherResponse: any) => {
+      localCipher.transformed = cipherResponse;
+      this.updateSelectedCipher(localCipher, true);
+    });
+  }
+
   import(configuration: ApplicationConfiguration) {
     this.updateEpochs(configuration.epochs, true);
 
@@ -442,7 +484,9 @@ export class ConfigurationService {
     this.updateSelectedFitnessFunction(selectedFitnessFunctionMatch, true);
     this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration, true);
     this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration, true);
-    this.updateSelectedCipher(this.ciphersInternal().find(cipher => cipher.name === configuration.selectedCipher), true);
+    const selectedCipher = this.ciphersInternal().find(cipher => cipher.name === configuration.selectedCipher) ?? this.ciphersInternal()[0];
+    this.updateSelectedCipher(selectedCipher, true);
+    this.applyCiphertextTransformers(selectedCipher, configuration.appliedCiphertextTransformers);
     this.saveConfigurationToLocalStorage();
   }
 
