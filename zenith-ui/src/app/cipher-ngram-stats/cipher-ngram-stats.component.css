@@ -23,4 +23,17 @@
 
 #cipher_ngram_statistics h6 {
   font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+  margin-top: 0.75rem;
+}
+
+#cipher_ngram_statistics mat-expansion-panel-header {
+  height: 48px;
+}
+
+#cipher_ngram_statistics mat-expansion-panel-header h6 {
+  margin: 0;
+}
+
+#more_button {
+  margin-top: 12px;
 }

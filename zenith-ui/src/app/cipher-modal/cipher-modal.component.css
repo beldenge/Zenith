@@ -19,6 +19,9 @@
 
 #inject_spaces_button {
   position: absolute;
-  top: 0;
   right: 0;
+}
+
+.cipher-form {
+  padding-top: 6px;
 }
