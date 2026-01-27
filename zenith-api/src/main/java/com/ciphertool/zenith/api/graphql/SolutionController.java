@@ -56,13 +56,17 @@ public class SolutionController extends AbstractSolutionController {
 
     @Override
     public OnEpochComplete getCallback(SolutionRequest request) {
-        return (i) -> {
-            EpochCompleteResponse epochResponse = new EpochCompleteResponse(i, request.getEpochs());
+        return (epoch, epochBestSolution) -> {
+            EpochCompleteResponse epochResponse = new EpochCompleteResponse(epoch, request.getEpochs());
             SolutionUpdate update = new SolutionUpdate();
             update.setRequestId(request.getRequestId());
             update.setType(WebSocketResponseType.EPOCH_COMPLETE);
             update.setEpochData(epochResponse);
-            REQUEST_SINKS.computeIfAbsent(request.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer()).tryEmitNext(update);
+            if (epochBestSolution != null) {
+                update.setSolutionData(buildSolutionResponse(epochBestSolution));
+            }
+            Sinks.Many<SolutionUpdate> sink = REQUEST_SINKS.computeIfAbsent(request.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer());
+            sink.tryEmitNext(update);
         };
     }
 
@@ -86,21 +90,29 @@ public class SolutionController extends AbstractSolutionController {
                 return;
             }
 
-            float[] scores = new float[cipherSolution.getScores().length];
-            for (int i = 0; i < cipherSolution.getScores().length; i++) {
-                scores[i] = (float) cipherSolution.getScores()[i].getValue();
-            }
-
-            SolutionResponse solutionResp = new SolutionResponse(cipherSolution.asSingleLineString(), scores);
-            SolutionUpdate update = new SolutionUpdate();
-            update.setRequestId(input.getRequestId());
-            update.setType(WebSocketResponseType.SOLUTION);
-            update.setSolutionData(solutionResp);
+            SolutionUpdate update = buildSolutionUpdate(input.getRequestId(), WebSocketResponseType.SOLUTION, cipherSolution);
             Sinks.Many<SolutionUpdate> sink = REQUEST_SINKS.computeIfAbsent(input.getRequestId(), k -> Sinks.many().multicast().onBackpressureBuffer());
             sink.tryEmitNext(update);
             sink.tryEmitComplete();
         });
         return CompletableFuture.completedFuture(input.getRequestId());
+    }
+
+    private SolutionUpdate buildSolutionUpdate(String requestId, WebSocketResponseType responseType, CipherSolution cipherSolution) {
+        SolutionUpdate update = new SolutionUpdate();
+        update.setRequestId(requestId);
+        update.setType(responseType);
+        update.setSolutionData(buildSolutionResponse(cipherSolution));
+        return update;
+    }
+
+    private SolutionResponse buildSolutionResponse(CipherSolution cipherSolution) {
+        float[] scores = new float[cipherSolution.getScores().length];
+        for (int i = 0; i < cipherSolution.getScores().length; i++) {
+            scores[i] = (float) cipherSolution.getScores()[i].getValue();
+        }
+
+        return new SolutionResponse(cipherSolution.asSingleLineString(), scores);
     }
 
     @SubscriptionMapping

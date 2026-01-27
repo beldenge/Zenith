@@ -132,7 +132,7 @@ public class SimulatedAnnealingSolutionOptimizer extends AbstractSolutionOptimiz
             overallBest = (overallBest == null) ? best : (best.compareTo(overallBest) > 0 ? best : overallBest);
 
             if (onEpochComplete != null) {
-                onEpochComplete.fire(epoch + 1);
+                onEpochComplete.fire(epoch + 1, best);
             }
         }
 

@@ -65,6 +65,12 @@ export class SolutionService {
           const progress = (update.epochData.epochsCompleted / update.epochData.epochsTotal) * 100;
           this.updateProgressPercentage(progress);
         }
+        if (update.solutionData) {
+          const nextSolution = new SolutionResponse(update.solutionData.plaintext, update.solutionData.scores);
+          if (this.isBetterSolution(nextSolution, this.solutionInternal())) {
+            this.updateSolution(nextSolution);
+          }
+        }
         break;
       case 'SOLUTION':
         if (update.solutionData) {
@@ -76,6 +82,25 @@ export class SolutionService {
       default:
           break;
     }
+  }
+
+  private isBetterSolution(nextSolution: SolutionResponse, currentSolution: SolutionResponse): boolean {
+    if (!nextSolution || !currentSolution) {
+      return false;
+    }
+
+    const nextScore = nextSolution.scores?.[0];
+    const currentScore = currentSolution.scores?.[0];
+
+    if (nextScore == null) {
+      return currentScore == null;
+    }
+
+    if (currentScore == null) {
+      return true;
+    }
+
+    return nextScore > currentScore;
   }
 
   updateSolution(solution: SolutionResponse): void {
