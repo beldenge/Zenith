@@ -6,13 +6,13 @@ A cipher solver application that is:
  - cross-browser
  - fast
  - extensible
- - flexible: can be used as a web UI, command-line app, or REST API
+ - flexible: can be used as a web UI, command-line app, or GraphQL API
 
 The aim of this project is to provide a complete tool with that is easy to use for somewhat technical people in solving ciphers.  It is highly configurable but has sensible defaults.
 
 # How-to
 ### Prerequisites
-1. First you'll need to download Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
+1. First you'll need to download Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
 
 2. You'll need approximately 500 MB free disk space, roughly half of which is for the downloaded artifacts, and half of which will be written to disk as it unzips the included language model on the first startup.  
 
@@ -25,7 +25,7 @@ The run script should initialize the application and open the UI in your default
 
 Check out [zenith-ui](zenith-ui/README.md) for more information.
 
-For specifics on the command-line and REST API, please check out the [zenith-inference](zenith-inference/README.md) and [zenith-api](zenith-api/README.md) modules respectively.
+For specifics on the command-line and GraphQL API, please check out the [zenith-inference](zenith-inference/README.md) and [zenith-api](zenith-api/README.md) modules respectively.
 
 ### Stopping
 In order to stop Zenith, you'll have to type `ctrl + c` in the terminal where zenith is running.
@@ -43,7 +43,7 @@ The benchmarks were carried out using JDK 8 on a Windows 10 laptop with an i7-77
 
 # Modules
 ### [zenith-api](zenith-api/README.md)
-This is the REST API for Zenith.  It is used by the web UI and can also be used standalone.
+This is the GraphQL API for Zenith.  It is used by the web UI and can also be used standalone.
 ### [zenith-inference](zenith-inference/README.md)
 This is the command-line version of Zenith.  It is both a dependency and a runnable application on its own.  It performs hill climbing using the precomputed language model to estimate the optimal solution for a given cipher.
 ### [zenith-genetic-algorithm](zenith-genetic-algorithm/README.md)
@@ -57,10 +57,10 @@ This module simply packages the runnable portions of the project for distributio
 ### [zenith-roulette](zenith-roulette/README.md)
 This module is a dependency shared by multiple Zenith modules.  That is its only purpose.
 ### [zenith-ui](zenith-ui/README.md)
-A full-featured web user interface which showcases all of Zenith's solver, transformation, and configuration capabilities, built on Angular 9.
+A full-featured web user interface which showcases all of Zenith's solver, transformation, and configuration capabilities, built on Angular 21.
 
 # Building from source
-1. Download and install Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
+1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
 2. Download and install [Apache Maven](https://maven.apache.org/download.cgi)
 3. On the command line, change directory to the top-level directory where you cloned the Git repository
 4. Issue the command `mvn clean install`

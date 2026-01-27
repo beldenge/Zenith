@@ -2,7 +2,7 @@
 This module encompasses the algorithm which performs inference on the language model.
 
 # Running Standalone
-1. Download and install Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
+1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
 2. Download zenith-inference-2.1.4-SNAPSHOT-exec.jar
 3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-inference-2.1.4-SNAPSHOT-exec.jar`
 
@@ -153,9 +153,9 @@ Begins with the first symbol and goes n-down and m-across, wrapping both vertica
 ### LockCharacters
 Prevents characters from being modified by subsequent transformers
 ### ShiftCharactersLeft
-Shifts charactes in a given range to the left by one and wraps
+Shifts characters in a given range to the left by one and wraps
 ### ShiftCharactersRight
-Shifts charactes in a given range to the right by one and wraps
+Shifts characters in a given range to the right by one and wraps
 
 ## Plaintext Transformers
 The following plaintext transformers are provided out of the box.  More can be added by implementing the PlaintextTransformer interface.

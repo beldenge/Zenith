@@ -2,7 +2,7 @@
 This module exposes the functionality of Zenith as a web UI.
 
 # Running
-1. Download and install Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
+1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
 2. Download zenith-ui-2.1.4-SNAPSHOT.jar
 3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-ui-2.1.4-SNAPSHOT.jar`
 

@@ -11,7 +11,7 @@ These corpora are **not** supplied with this project.  At this time they would n
 * [Blog Authorship Corpus](https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm)
 
 # Running Standalone
-1. Download and install Java 8 or later: [AdoptOpenJDK](https://adoptopenjdk.net/)
+1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
 2. Download zenith-language-model-2.1.4-SNAPSHOT-exec.jar
 3. Issue the command `java -jar zenith-language-model-2.1.4-SNAPSHOT-exec.jar`
 
