@@ -68,17 +68,8 @@ export class IntroductionService {
   }
 
   startIntroDashboard(): void {
-    this.introDashboard.setOptions({
-      exitOnOverlayClick: false,
-      hidePrev: true,
-      hideNext: true,
-      showStepNumbers: false,
-      showBullets: false,
-      showProgress: false,
-      skipLabel: 'Quit',
+    this.introDashboard = this.buildTour({
       doneLabel: 'Take me there!',
-      disableInteraction: true,
-      overlayOpacity: 0.5,
       steps: [{
         intro: 'Welcome to Project Zenith!  How about a tour?'
       }, {
@@ -103,35 +94,12 @@ export class IntroductionService {
         position: 'right',
         highlightClass: 'introjs-nav-item-highlighted'
       }]
-    });
-
-    const self = this;
-    this.introDashboard.oncomplete(() => {
-      self.router.navigate(['/ciphers']);
-
-      // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introDashboard.onexit(() => {});
-    });
-
-    this.introDashboard.onexit(() => {
-      self.stopIntro();
-    });
-
-    this.introDashboard.start();
+    }, () => this.router.navigate(['/ciphers']));
   }
 
   startIntroManageCiphers(): void {
-    this.introManageCiphers.setOptions({
-      exitOnOverlayClick: false,
-      hidePrev: true,
-      hideNext: true,
-      showStepNumbers: false,
-      showBullets: false,
-      showProgress: false,
-      skipLabel: 'Quit',
+    this.introManageCiphers = this.buildTour({
       doneLabel: 'Take me there!',
-      disableInteraction: true,
-      overlayOpacity: 0.5,
       steps: [{
         element: '#create_button',
         intro: 'This button opens a form to create a new cipher.',
@@ -146,35 +114,12 @@ export class IntroductionService {
         position: 'right',
         highlightClass: 'introjs-nav-item-highlighted'
       }]
-    });
-
-    const self = this;
-    this.introManageCiphers.oncomplete(() => {
-      self.router.navigate(['/settings']);
-
-      // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introManageCiphers.onexit(() => {});
-    });
-
-    this.introManageCiphers.onexit(() => {
-      self.stopIntro();
-    });
-
-    this.introManageCiphers.start();
+    }, () => this.router.navigate(['/settings']));
   }
 
   startIntroSettings(): void {
-    this.introSettings.setOptions({
-      exitOnOverlayClick: false,
-      hidePrev: true,
-      hideNext: true,
-      showStepNumbers: false,
-      showBullets: false,
-      showProgress: false,
-      skipLabel: 'Quit',
+    this.introSettings = this.buildTour({
       doneLabel: 'Take me there!',
-      disableInteraction: true,
-      overlayOpacity: 0.5,
       steps: [{
         element: '#optimizer_form_group',
         intro: 'Choose your preferred optimizer and fitness function.',
@@ -193,35 +138,12 @@ export class IntroductionService {
         position: 'right',
         highlightClass: 'introjs-nav-item-highlighted'
       }]
-    });
-
-    const self = this;
-    this.introSettings.oncomplete(() => {
-      self.router.navigate(['/transformers/ciphertext']);
-
-      // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introSettings.onexit(() => {});
-    });
-
-    this.introSettings.onexit(() => {
-      self.stopIntro();
-    });
-
-    this.introSettings.start();
+    }, () => this.router.navigate(['/transformers/ciphertext']));
   }
 
   startIntroCiphertextTransformers(): void {
-    this.introCiphertextTransformers.setOptions({
-      exitOnOverlayClick: false,
-      hidePrev: true,
-      hideNext: true,
-      showStepNumbers: false,
-      showBullets: false,
-      showProgress: false,
-      skipLabel: 'Quit',
+    this.introCiphertextTransformers = this.buildTour({
       doneLabel: 'Take me there!',
-      disableInteraction: true,
-      overlayOpacity: 0.5,
       steps: [{
         element: '#available_ciphertext_transformers_container',
         intro: 'Drag one or more transformers from here to the right to add them to the pipeline.',
@@ -240,35 +162,12 @@ export class IntroductionService {
         position: 'right',
         highlightClass: 'introjs-nav-item-highlighted'
       }]
-    });
-
-    const self = this;
-    this.introCiphertextTransformers.oncomplete(() => {
-      self.router.navigate(['/transformers/plaintext']);
-
-      // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introCiphertextTransformers.onexit(() => {});
-    });
-
-    this.introCiphertextTransformers.onexit(() => {
-      self.stopIntro();
-    });
-
-    this.introCiphertextTransformers.start();
+    }, () => this.router.navigate(['/transformers/plaintext']));
   }
 
   startIntroPlaintextTransformers(): void {
-    this.introPlaintextTransformers.setOptions({
-      exitOnOverlayClick: false,
-      hidePrev: true,
-      hideNext: true,
-      showStepNumbers: false,
-      showBullets: false,
-      showProgress: false,
-      skipLabel: 'Quit',
+    this.introPlaintextTransformers = this.buildTour({
       doneLabel: 'Finish tour',
-      disableInteraction: true,
-      overlayOpacity: 0.5,
       steps: [{
         element: '#available_plaintext_transformers_container',
         intro: 'Drag one or more transformers from here to the right to add them to the pipeline.',
@@ -287,21 +186,46 @@ export class IntroductionService {
         position: 'right',
         highlightClass: 'introjs-nav-item-highlighted'
       }]
+    }, () => this.router.navigate(['/dashboard']));
+  }
+
+  private buildTour(options: any, onComplete: () => void) {
+    const tour = introJs.tour();
+    tour.setOptions({
+      exitOnOverlayClick: false,
+      hidePrev: true,
+      hideNext: false,
+      showStepNumbers: false,
+      showBullets: false,
+      showProgress: false,
+      disableInteraction: true,
+      overlayOpacity: 0.5,
+      ...options
     });
 
-    const self = this;
-    this.introPlaintextTransformers.oncomplete(() => {
-      self.router.navigate(['/dashboard']);
-
-      // Prevent the intro on other pages from being halted because of the onexit function below
-      self.introPlaintextTransformers.onexit(() => {});
+    let allowStop = true;
+    tour.onComplete((_, reason) => {
+      if (reason === 'skip') {
+        return;
+      }
+      allowStop = false;
+      tour.resetCurrentStep();
+      setTimeout(() => onComplete(), 0);
     });
 
-    this.introPlaintextTransformers.onexit(() => {
-      self.stopIntro();
-    });
+    const stopIntroIfAllowed = () => {
+      tour.resetCurrentStep();
+      if (allowStop) {
+        this.stopIntro();
+      }
+    };
 
-    this.introPlaintextTransformers.start();
+    tour.onExit(stopIntroIfAllowed);
+    tour.onSkip(stopIntroIfAllowed);
+    tour.resetCurrentStep();
+    tour.refresh(true);
+    tour.start();
+    return tour;
   }
 
   updateShowIntroDashboard(showIntro: boolean) {
