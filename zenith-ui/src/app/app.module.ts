@@ -22,7 +22,6 @@ import { NgModule } from '@angular/core';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from "@angular/common";
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SideNavComponent } from './side-nav/side-nav.component';
@@ -55,7 +54,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
 import { HelpComponent } from './help/help.component';
-import { MatExpansionModule } from "@angular/material/expansion";
+import { MatListModule } from "@angular/material/list";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { WordSegmentationComponent } from './word-segmentation/word-segmentation.component';
 import { FormlyFieldInput } from "@ngx-formly/material/input";
@@ -66,6 +65,8 @@ import { TopNavComponent } from './top-nav/top-nav.component';
 import { FormlyFieldTextArea } from "@ngx-formly/material/textarea";
 import {SortablejsModule} from "./sortable/sortablejs.module";
 import { GraphQLModule } from './graphql.module';
+import {MatExpansionModule} from "@angular/material/expansion";
+import {MatLineModule} from "@angular/material/core";
 
 export function minValidationMessage(err: any, field: any) {
   return `This field has a minimum value of ${field.props.min}`;
@@ -118,7 +119,8 @@ export function registerValidationMessages() {
   };
 }
 
-@NgModule({ declarations: [
+@NgModule({
+    declarations: [
         AppComponent,
         SideNavComponent,
         CipherStatsSummaryComponent,
@@ -141,11 +143,12 @@ export function registerValidationMessages() {
         TopNavComponent
     ],
     bootstrap: [AppComponent],
-    imports: [BrowserModule,
+    imports: [
+        BrowserModule,
         AppRoutingModule,
         FormsModule,
         ReactiveFormsModule,
-        SortablejsModule.forRoot({ animation: 150 }),
+        SortablejsModule.forRoot({animation: 150}),
         MatTooltipModule,
         MatDialogModule,
         MatButtonModule,
@@ -158,28 +161,28 @@ export function registerValidationMessages() {
         MatSnackBarModule,
         FormlyModule.forRoot({
             types: [
-                {
-                    name: 'input',
-                    component: FormlyFieldInput,
-                    defaultOptions: {
-                        modelOptions: {
-                            debounce: {
-                                default: 500
-                            }
-                        }
+              {
+                name: 'input',
+                component: FormlyFieldInput,
+                defaultOptions: {
+                  modelOptions: {
+                    debounce: {
+                      default: 500
                     }
-                },
-                {
-                    name: 'textarea',
-                    component: FormlyFieldTextArea,
-                    defaultOptions: {
-                        modelOptions: {
-                            debounce: {
-                                default: 500
-                            }
-                        }
-                    }
+                  }
                 }
+              },
+              {
+                name: 'textarea',
+                component: FormlyFieldTextArea,
+                defaultOptions: {
+                  modelOptions: {
+                    debounce: {
+                      default: 500
+                    }
+                  }
+                }
+              }
             ]
         }),
         FormlyMaterialModule,
@@ -187,8 +190,11 @@ export function registerValidationMessages() {
         MatRadioModule,
         MatSelectModule,
         MatExpansionModule,
+        MatListModule,
+        MatLineModule,
         MatSlideToggleModule,
-        GraphQLModule], providers: [
+        GraphQLModule],
+    providers: [
         JsonPipe,
         {
             provide: HTTP_INTERCEPTORS,
@@ -207,5 +213,6 @@ export function registerValidationMessages() {
             useFactory: registerValidationMessages
         },
         provideHttpClient(withInterceptorsFromDi())
-    ] })
+    ]
+})
 export class AppModule {}

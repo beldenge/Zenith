@@ -27,37 +27,34 @@
         </div>
         <div class="form-group row">
           <div class="col-sm-8 mx-auto">
-            <mat-accordion>
-              <mat-expansion-panel>
-                <mat-expansion-panel-header class="h-100 py-3">
-                  <mat-panel-title>
-                    How can I replay the introduction tour?
-                  </mat-panel-title>
-                </mat-expansion-panel-header>
-                <button class="btn btn-success btn-icon-split" (click)="replayIntroduction()">
-                  <span class="icon text-white-50">
-                    <i class="fas fa-redo"></i>
-                  </span>
-                  <span class="text">Replay Introduction</span>
-                </button>
-              </mat-expansion-panel>
-              <mat-expansion-panel>
-                <mat-expansion-panel-header class="h-100 py-3">
-                  <mat-panel-title>
-                    Where can I file issues?
-                  </mat-panel-title>
-                </mat-expansion-panel-header>
-                <p>Please raise an issue on the project <a href="https://github.com/beldenge/zenith/issues" target="_blank">issues page</a>.  Thank you for helping make the tool better!</p>
-              </mat-expansion-panel>
-              <mat-expansion-panel>
-                <mat-expansion-panel-header class="h-100 py-3">
-                  <mat-panel-title>
-                    Where can I read more about Project Zenith?
-                  </mat-panel-title>
-                </mat-expansion-panel-header>
-                <p>Please check out the <a href="https://github.com/beldenge/Zenith" target="_blank">README</a>.</p>
-              </mat-expansion-panel>
-            </mat-accordion>
+            <mat-list class="faq-list">
+              <mat-list-item class="faq-item">
+                <div class="faq-question" matListItemTitle>Is there an introduction tour?</div>
+                <div class="faq-answer" matListItemLine>
+                  <p>
+                    Yes:
+                    <button class="btn btn-success btn-icon-split" (click)="replayIntroduction()">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-play"></i>
+                    </span>
+                      <span class="text">Play Intro</span>
+                    </button>
+                  </p>
+                </div>
+              </mat-list-item>
+              <mat-list-item class="faq-item">
+                <div class="faq-question" matListItemTitle>Where can I file issues?</div>
+                <div class="faq-answer" matListItemLine>
+                  <p>Please raise an issue on the project <a href="https://github.com/beldenge/zenith/issues" target="_blank">issues page</a>. Thank you for helping make the tool better!</p>
+                </div>
+              </mat-list-item>
+              <mat-list-item class="faq-item">
+                <div class="faq-question" matListItemTitle>Where can I read more about Project Zenith?</div>
+                <div class="faq-answer" matListItemLine>
+                  <p>Please check out the <a href="https://github.com/beldenge/Zenith" target="_blank">README</a> and the <a href="https://projectzenith.net" target="_blank">blog</a>.</p>
+                </div>
+              </mat-list-item>
+            </mat-list>
           </div>
         </div>
       </div>
