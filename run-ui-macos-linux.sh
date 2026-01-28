@@ -7,7 +7,7 @@ if [ "$1" = "--debug" ]; then
   shift
 fi
 
-JAR_FILENAME="zenith-ui-2026.1.jar"
+JAR_FILENAME="zenith-ui-2026.1.1-SNAPSHOT.jar"
 JAR_PATH=
 
 if [ ! -e $JAR_FILENAME ]; then

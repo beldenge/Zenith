@@ -26,7 +26,7 @@
     <parent>
         <artifactId>zenith</artifactId>
         <groupId>com.ciphertool.zenith</groupId>
-        <version>2026.1</version>
+        <version>2026.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>zenith-package</artifactId>

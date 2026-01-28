@@ -12,8 +12,8 @@ These corpora are **not** supplied with this project.  At this time they would n
 
 # Running Standalone
 1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
-2. Download zenith-language-model-2026.1-exec.jar
-3. Issue the command `java -jar zenith-language-model-2026.1-exec.jar`
+2. Download zenith-language-model-2026.1.1-SNAPSHOT-exec.jar
+3. Issue the command `java -jar zenith-language-model-2026.1.1-SNAPSHOT-exec.jar`
 
 Note: You must run the *-exec.jar and not the vanilla jar file, as this module is used both as a dependency and as a runnable application on its own.
 

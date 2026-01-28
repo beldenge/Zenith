@@ -3,8 +3,8 @@ This module encompasses hill climbing algorithm(s) for detecting cipher mutation
 
 # Running
 1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
-2. Download zenith-mutation-search-2026.1.jar
-3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-mutation-search-2026.1.jar`
+2. Download zenith-mutation-search-2026.1.1-SNAPSHOT.jar
+3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-mutation-search-2026.1.1-SNAPSHOT.jar`
 
 # Configuration
 There are a number of configuration settings that can be set for the application.  They need to be put in an application.properties file in the same directory as where you are running the application from.

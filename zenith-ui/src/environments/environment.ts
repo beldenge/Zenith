@@ -24,7 +24,7 @@
 export const environment = {
   production: false,
   apiUrlBase: 'api', // relative URL
-  applicationVersion: '2026.1'
+  applicationVersion: '2026.1.1-SNAPSHOT'
 };
 
 /*

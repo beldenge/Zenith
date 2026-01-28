@@ -25,7 +25,7 @@
 	<groupId>com.ciphertool.zenith</groupId>
 	<artifactId>zenith</artifactId>
 	<packaging>pom</packaging>
-	<version>2026.1</version>
+	<version>2026.1.1-SNAPSHOT</version>
 	<name>zenith</name>
 	<url>http://www.ciphertool.com</url>
 

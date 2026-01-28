@@ -5,7 +5,7 @@ if "%1"=="--debug" (
     shift
 )
 
-set JAR_FILENAME=zenith-ui-2026.1.jar
+set JAR_FILENAME=zenith-ui-2026.1.1-SNAPSHOT.jar
 set JAR_PATH=
 
 if not exist %JAR_FILENAME% (
