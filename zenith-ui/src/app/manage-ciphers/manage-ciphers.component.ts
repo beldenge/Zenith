@@ -38,7 +38,7 @@ export class ManageCiphersComponent {
   showIntro = this.introductionService.showIntroManageCiphers;
   displayedColumns: string[] = ['name', 'rows', 'columns', 'ciphertext', 'actions'];
   ciphersDataSource: MatTableDataSource<any>;
-  pageSizeOptions = [10, 20, 50];
+  pageSizeOptions = [20, 50, 100];
   ciphers = this.configurationService.ciphers;
   selectedCipher = this.configurationService.selectedCipher;
 

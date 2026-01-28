@@ -1,9 +1,9 @@
 {
-  "selectedCipher" : "zodiac408",
+  "selectedCipher" : "zodiac340-transformed",
   "epochs": 10,
   "cipherConfigurations": [
     {
-      "cipherName": "zodiac340",
+      "cipherName": "zodiac340-transformed",
       "appliedCiphertextTransformers": [
         {
           "name": "NDownMAcross",

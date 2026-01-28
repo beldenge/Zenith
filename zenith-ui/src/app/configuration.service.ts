@@ -463,24 +463,37 @@ export class ConfigurationService {
       configuration.cipherConfigurations = [];
     }
 
-    configuration.cipherConfigurations.forEach(cipherConfiguration => {
-      cipherConfiguration.appliedCiphertextTransformers = this.normalizeTransformers(cipherConfiguration.appliedCiphertextTransformers);
-      cipherConfiguration.appliedPlaintextTransformers = this.normalizeTransformers(cipherConfiguration.appliedPlaintextTransformers);
+    const normalizedCipherConfigurations = configuration.cipherConfigurations.map(cipherConfiguration => {
+      return {
+        ...cipherConfiguration,
+        appliedCiphertextTransformers: this.normalizeTransformers(cipherConfiguration.appliedCiphertextTransformers),
+        appliedPlaintextTransformers: this.normalizeTransformers(cipherConfiguration.appliedPlaintextTransformers)
+      };
     });
 
-    this.cipherConfigurationsInternal.update(() => configuration.cipherConfigurations);
+    this.cipherConfigurationsInternal.update(() => normalizedCipherConfigurations);
     this.updateSelectedOptimizer(configuration.selectedOptimizer, true);
 
     const selectedFitnessFunctionMatch = this.availableFitnessFunctions().find(fitnessFunction =>
       fitnessFunction.name === configuration.selectedFitnessFunction.name
     );
 
-    if (selectedFitnessFunctionMatch.form) {
-      selectedFitnessFunctionMatch.form.model = configuration.selectedFitnessFunction.form.model;
-      selectedFitnessFunctionMatch.form.fields = configuration.selectedFitnessFunction.form.fields;
-    }
+    // Apollo GraphQL returns frozen response objects, so we clone nested form data before Formly mutates it.
+    const selectedFitnessFunction = selectedFitnessFunctionMatch ? {
+      ...selectedFitnessFunctionMatch,
+      form: selectedFitnessFunctionMatch.form ? {
+        ...selectedFitnessFunctionMatch.form,
+        form: new UntypedFormGroup({}),
+        model: configuration.selectedFitnessFunction.form?.model
+          ? JSON.parse(JSON.stringify(configuration.selectedFitnessFunction.form.model))
+          : configuration.selectedFitnessFunction.form?.model,
+        fields: configuration.selectedFitnessFunction.form?.fields
+          ? JSON.parse(JSON.stringify(configuration.selectedFitnessFunction.form.fields))
+          : configuration.selectedFitnessFunction.form?.fields
+      } : null
+    } : selectedFitnessFunctionMatch;
 
-    this.updateSelectedFitnessFunction(selectedFitnessFunctionMatch, true);
+    this.updateSelectedFitnessFunction(selectedFitnessFunction, true);
     this.updateSimulatedAnnealingConfiguration(configuration.simulatedAnnealingConfiguration, true);
     this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration, true);
     const selectedCipher = this.ciphersInternal().find(cipher => cipher.name === configuration.selectedCipher) ?? this.ciphersInternal()[0];
@@ -527,13 +540,20 @@ export class ConfigurationService {
       return [];
     }
 
-    transformers.forEach(transformer => {
-      if (transformer.form) {
-        transformer.form.form = new UntypedFormGroup({});
-      }
-    });
+    // Apollo GraphQL returns frozen response objects, so this nonsense is necessary to avoid mutating non-extensible data.
+    return transformers.map(transformer => {
+      const normalizedForm = transformer.form ? {
+        ...transformer.form,
+        form: new UntypedFormGroup({}),
+        model: transformer.form.model ? JSON.parse(JSON.stringify(transformer.form.model)) : transformer.form.model,
+        fields: transformer.form.fields ? JSON.parse(JSON.stringify(transformer.form.fields)) : transformer.form.fields
+      } : undefined;
 
-    return transformers;
+      return {
+        ...transformer,
+        form: normalizedForm
+      };
+    });
   }
 
   private serializeTransformers(transformers?: FormComponent[]): FormComponent[] {
