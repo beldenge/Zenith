@@ -27,12 +27,8 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ApplicationConfiguration {
-    private String selectedCipher;
-    private int epochs;
-    private List<CipherConfiguration> cipherConfigurations;
-    private SelectOption selectedOptimizer;
-    private FormComponentDto selectedFitnessFunction;
-    private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
-    private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
+public class CipherConfiguration {
+    private String cipherName;
+    private List<FormComponentDto> appliedCiphertextTransformers;
+    private List<FormComponentDto> appliedPlaintextTransformers;
 }

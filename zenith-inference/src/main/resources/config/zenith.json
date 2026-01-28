@@ -1,6 +1,1002 @@
 {
   "selectedCipher" : "zodiac408",
   "epochs": 10,
+  "cipherConfigurations": [
+    {
+      "cipherName": "zodiac340",
+      "appliedCiphertextTransformers": [
+        {
+          "name": "NDownMAcross",
+          "displayName": "N Down M Across",
+          "form": {
+            "model": {
+              "rangeStart": 0,
+              "rangeEnd": 8,
+              "down": 1,
+              "across": 2
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Row Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_16_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Row End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_16_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "down",
+                "type": "input",
+                "props": {
+                  "label": "Down",
+                  "placeholder": "",
+                  "required": true,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_16_input_down_2",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "across",
+                "type": "input",
+                "props": {
+                  "label": "Across",
+                  "placeholder": "",
+                  "required": true,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_16_input_across_3",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "ShiftCharactersRight",
+          "displayName": "Shift Characters Right",
+          "form": {
+            "model": {
+              "rangeStart": 241,
+              "rangeEnd": 254
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_12_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_12_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "LockCharacters",
+          "displayName": "Lock Characters",
+          "form": {
+            "model": {
+              "rangeStart": 164,
+              "rangeEnd": 169
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_40_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_40_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "NDownMAcross",
+          "displayName": "N Down M Across",
+          "form": {
+            "model": {
+              "rangeStart": 9,
+              "rangeEnd": 17,
+              "down": 1,
+              "across": 2
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Row Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_8_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Row End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_8_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "down",
+                "type": "input",
+                "props": {
+                  "label": "Down",
+                  "placeholder": "",
+                  "required": true,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_8_input_down_2",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "across",
+                "type": "input",
+                "props": {
+                  "label": "Across",
+                  "placeholder": "",
+                  "required": true,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_8_input_across_3",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "Reverse",
+          "displayName": "Reverse",
+          "form": {
+            "model": {
+              "rangeStart": 306,
+              "rangeEnd": 309
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_18_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_18_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "Reverse",
+          "displayName": "Reverse",
+          "form": {
+            "model": {
+              "rangeStart": 314,
+              "rangeEnd": 315
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_16_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_16_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "Reverse",
+          "displayName": "Reverse",
+          "form": {
+            "model": {
+              "rangeStart": 316,
+              "rangeEnd": 317
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_14_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_14_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "Reverse",
+          "displayName": "Reverse",
+          "form": {
+            "model": {
+              "rangeStart": 322,
+              "rangeEnd": 324
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_24_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_24_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "Reverse",
+          "displayName": "Reverse",
+          "form": {
+            "model": {
+              "rangeStart": 325,
+              "rangeEnd": 326
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_22_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_22_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "Reverse",
+          "displayName": "Reverse",
+          "form": {
+            "model": {
+              "rangeStart": 327,
+              "rangeEnd": 334
+            },
+            "fields": [
+              {
+                "key": "rangeStart",
+                "type": "input",
+                "props": {
+                  "label": "Range Start",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": 0,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_20_input_rangeStart_0",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              },
+              {
+                "key": "rangeEnd",
+                "type": "input",
+                "props": {
+                  "label": "Range End",
+                  "placeholder": "",
+                  "required": false,
+                  "type": "number",
+                  "rows": null,
+                  "cols": null,
+                  "max": null,
+                  "min": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "pattern": null,
+                  "disabled": false
+                },
+                "defaultValue": null,
+                "id": "formly_20_input_rangeEnd_1",
+                "hooks": {},
+                "modelOptions": {
+                  "debounce": {
+                    "default": 500
+                  }
+                },
+                "validation": {
+                  "messages": {}
+                },
+                "resetOnHide": true,
+                "wrappers": [
+                  "form-field"
+                ],
+                "expressions": {},
+                "expressionProperties": {},
+                "focus": false
+              }
+            ]
+          }
+        }
+      ],
+      "appliedPlaintextTransformers": []
+    }
+  ],
   "selectedOptimizer": {
     "name": "SimulatedAnnealing"
   },

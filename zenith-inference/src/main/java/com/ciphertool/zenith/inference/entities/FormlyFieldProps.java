@@ -38,4 +38,5 @@ public class FormlyFieldProps {
     private Integer minLength;
     private Integer maxLength;
     private String pattern;
+    private boolean disabled;
 }

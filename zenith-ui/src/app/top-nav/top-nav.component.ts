@@ -76,8 +76,6 @@ export class TopNavComponent {
     this.solutionService.updateSolution(null);
     this.solutionService.updateProgressPercentage(0);
     delete this.selectedCipher.transformed;
-    this.configurationService.updateAppliedCiphertextTransformers([]);
-    this.configurationService.updateAppliedPlaintextTransformers([]);
     this.configurationService.updateSelectedCipher(this.selectedCipher);
   }
 

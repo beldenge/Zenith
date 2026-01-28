@@ -23,6 +23,7 @@ import com.ciphertool.zenith.inference.dao.CipherDao;
 import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.FormComponentDto;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
+import com.ciphertool.zenith.inference.entities.config.CipherConfiguration;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
@@ -175,11 +176,12 @@ public class InferenceConfiguration {
     @Bean
     public Cipher cipher(CipherDao cipherDao, CiphertextTransformationManager ciphertextTransformationManager, ApplicationConfiguration applicationConfiguration) {
         Cipher cipher = cipherDao.findByCipherName(applicationConfiguration.getSelectedCipher());
+        List<FormComponentDto> appliedCiphertextTransformers = resolveAppliedCiphertextTransformers(applicationConfiguration);
 
-        if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedCiphertextTransformers())) {
-            List<TransformationStep> transformationSteps = new ArrayList<>(applicationConfiguration.getAppliedCiphertextTransformers().size());
+        if (CollectionUtils.isNotEmpty(appliedCiphertextTransformers)) {
+            List<TransformationStep> transformationSteps = new ArrayList<>(appliedCiphertextTransformers.size());
 
-            for (FormComponentDto transformer : applicationConfiguration.getAppliedCiphertextTransformers()) {
+            for (FormComponentDto transformer : appliedCiphertextTransformers) {
                 transformationSteps.add(new TransformationStep(transformer.getName(), transformer.getForm() != null ? transformer.getForm().getModel() : null));
             }
 
@@ -283,8 +285,10 @@ public class InferenceConfiguration {
                 .map(transformer -> transformer.getClass().getSimpleName())
                 .collect(Collectors.toList());
 
-        if (CollectionUtils.isNotEmpty(applicationConfiguration.getAppliedPlaintextTransformers())) {
-            for (FormComponentDto transformer : applicationConfiguration.getAppliedPlaintextTransformers()) {
+        List<FormComponentDto> appliedPlaintextTransformers = resolveAppliedPlaintextTransformers(applicationConfiguration);
+
+        if (CollectionUtils.isNotEmpty(appliedPlaintextTransformers)) {
+            for (FormComponentDto transformer : appliedPlaintextTransformers) {
                 String transformerName = transformer.getName();
 
                 if (!existentPlaintextTransformers.contains(transformer.getName())) {
@@ -297,6 +301,29 @@ public class InferenceConfiguration {
         }
 
         return plaintextTransformationSteps;
+    }
+
+    private List<FormComponentDto> resolveAppliedCiphertextTransformers(ApplicationConfiguration applicationConfiguration) {
+        CipherConfiguration cipherConfiguration = resolveCipherConfiguration(applicationConfiguration);
+
+        return cipherConfiguration != null ? cipherConfiguration.getAppliedCiphertextTransformers() : List.of();
+    }
+
+    private List<FormComponentDto> resolveAppliedPlaintextTransformers(ApplicationConfiguration applicationConfiguration) {
+        CipherConfiguration cipherConfiguration = resolveCipherConfiguration(applicationConfiguration);
+
+        return cipherConfiguration != null ? cipherConfiguration.getAppliedPlaintextTransformers() : List.of();
+    }
+
+    private CipherConfiguration resolveCipherConfiguration(ApplicationConfiguration applicationConfiguration) {
+        if (CollectionUtils.isEmpty(applicationConfiguration.getCipherConfigurations())) {
+            return null;
+        }
+
+        return applicationConfiguration.getCipherConfigurations().stream()
+                .filter(configuration -> applicationConfiguration.getSelectedCipher().equals(configuration.getCipherName()))
+                .findFirst()
+                .orElse(null);
     }
 
     @Bean

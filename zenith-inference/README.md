@@ -41,11 +41,17 @@ There are three main areas of configuration.
     {
       "epochs": 10,
       "selectedCipher": "zodiac408",
-      "appliedCiphertextTransformers": [
+      "cipherConfigurations": [
         {
-          "name": "RemoveLastRow",
-          "displayName": "Remove Last Row",
-          "form": null
+          "cipherName": "zodiac408",
+          "appliedCiphertextTransformers": [
+            {
+              "name": "RemoveLastRow",
+              "displayName": "Remove Last Row",
+              "form": null
+            }
+          ],
+          "appliedPlaintextTransformers": []
         }
       ],
       "selectedOptimizer": {

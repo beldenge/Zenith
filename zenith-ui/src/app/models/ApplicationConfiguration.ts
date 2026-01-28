@@ -22,12 +22,12 @@ import { SelectOption } from "./SelectOption";
 import { SimulatedAnnealingConfiguration } from "./SimulatedAnnealingConfiguration";
 import { GeneticAlgorithmConfiguration } from "./GeneticAlgorithmConfiguration";
 import { Cipher } from "./Cipher";
+import { CipherConfiguration } from "./CipherConfiguration";
 
 export class ApplicationConfiguration {
   selectedCipher: string;
   epochs: number;
-  appliedCiphertextTransformers: FormComponent[];
-  appliedPlaintextTransformers: FormComponent[];
+  cipherConfigurations: CipherConfiguration[];
   selectedOptimizer: SelectOption;
   selectedFitnessFunction: FormComponent;
   simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration;

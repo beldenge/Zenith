@@ -60,11 +60,16 @@ type GeneticAlgorithmConfiguration {
     extinctionCycles: Int
 }
 
+type CipherConfiguration {
+    cipherName: String!
+    appliedCiphertextTransformers: [FormComponent]
+    appliedPlaintextTransformers: [FormComponent]
+}
+
 type ApplicationConfiguration {
     selectedCipher: String
     epochs: Int
-    appliedCiphertextTransformers: [FormComponent]
-    appliedPlaintextTransformers: [FormComponent]
+    cipherConfigurations: [CipherConfiguration]
     selectedOptimizer: SelectOption
     selectedFitnessFunction: FormComponent
     simulatedAnnealingConfiguration: SimulatedAnnealingConfiguration

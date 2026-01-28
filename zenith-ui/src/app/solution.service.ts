@@ -85,8 +85,12 @@ export class SolutionService {
   }
 
   private isBetterSolution(nextSolution: SolutionResponse, currentSolution: SolutionResponse): boolean {
-    if (!nextSolution || !currentSolution) {
+    if (!nextSolution) {
       return false;
+    }
+
+    if (!currentSolution) {
+      return true;
     }
 
     const nextScore = nextSolution.scores?.[0];

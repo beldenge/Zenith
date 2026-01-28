@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.inference.entities;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,8 +28,17 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormlyFormField {
+    private String id;
     private String key;
     private String type;
     private FormlyFieldProps props;
     private String defaultValue;
+    private JsonNode hooks;
+    private JsonNode modelOptions;
+    private JsonNode validation;
+    private boolean resetOnHide;
+    private JsonNode wrappers;
+    private JsonNode expressions;
+    private JsonNode expressionProperties;
+    private boolean focus;
 }

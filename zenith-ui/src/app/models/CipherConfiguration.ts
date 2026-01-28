@@ -17,22 +17,10 @@
  * Zenith. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ciphertool.zenith.inference.entities.config;
+import { FormComponent } from "./FormComponent";
 
-import com.ciphertool.zenith.inference.entities.FormComponentDto;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.List;
-
-@Getter
-@Setter
-public class ApplicationConfiguration {
-    private String selectedCipher;
-    private int epochs;
-    private List<CipherConfiguration> cipherConfigurations;
-    private SelectOption selectedOptimizer;
-    private FormComponentDto selectedFitnessFunction;
-    private SimulatedAnnealingConfiguration simulatedAnnealingConfiguration;
-    private GeneticAlgorithmConfiguration geneticAlgorithmConfiguration;
+export class CipherConfiguration {
+  cipherName: string;
+  appliedCiphertextTransformers: FormComponent[];
+  appliedPlaintextTransformers: FormComponent[];
 }

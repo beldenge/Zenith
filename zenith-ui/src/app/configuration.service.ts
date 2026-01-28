@@ -22,6 +22,7 @@ import { SimulatedAnnealingConfiguration } from "./models/SimulatedAnnealingConf
 import { GeneticAlgorithmConfiguration } from "./models/GeneticAlgorithmConfiguration";
 import { SelectOption } from "./models/SelectOption";
 import { ApplicationConfiguration } from "./models/ApplicationConfiguration";
+import { CipherConfiguration } from "./models/CipherConfiguration";
 import { FormComponent } from "./models/FormComponent";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { UntypedFormGroup} from "@angular/forms";
@@ -106,6 +107,8 @@ export class ConfigurationService {
   public availablePlaintextTransformers: Signal<FormComponent[]> = this.availablePlaintextTransformersInternal.asReadonly();
   private appliedPlaintextTransformersLocal: WritableSignal<FormComponent[]> = signal([]);
   public appliedPlaintextTransformers: Signal<FormComponent[]> = this.appliedPlaintextTransformersLocal.asReadonly();
+  private cipherConfigurationsInternal: WritableSignal<CipherConfiguration[]> = signal([]);
+  public cipherConfigurations: Signal<CipherConfiguration[]> = this.cipherConfigurationsInternal.asReadonly();
   private samplePlaintextInternal: WritableSignal<string> = signal(ConfigurationService.DEFAULT_SAMPLE_PLAINTEXT);
   public samplePlaintext: Signal<string> = this.samplePlaintextInternal.asReadonly();
   private selectedOptimizerInternal: WritableSignal<SelectOption> = signal(null);
@@ -137,59 +140,62 @@ export class ConfigurationService {
           configuration {
             selectedCipher
             epochs
-            appliedCiphertextTransformers {
-              name
-              displayName
-              form {
-                model,
-                fields {
-                  key,
-                  type,
-                  props {
-                    label,
-                    placeholder,
-                    required,
+            cipherConfigurations {
+              cipherName
+              appliedCiphertextTransformers {
+                name
+                displayName
+                form {
+                  model,
+                  fields {
+                    key,
                     type,
-                    rows,
-                    cols,
-                    max,
-                    min,
-                    maxLength,
-                    minLength,
-                    pattern
+                    props {
+                      label,
+                      placeholder,
+                      required,
+                      type,
+                      rows,
+                      cols,
+                      max,
+                      min,
+                      maxLength,
+                      minLength,
+                      pattern
+                    }
+                    defaultValue
                   }
-                  defaultValue
                 }
+                order
+                helpText
               }
-              order
-              helpText
-            }
-            appliedPlaintextTransformers {
-              name
-              displayName
-              form {
-                model,
-                fields {
-                  key,
-                  type,
-                  props {
-                    label,
-                    placeholder,
-                    required,
+              appliedPlaintextTransformers {
+                name
+                displayName
+                form {
+                  model,
+                  fields {
+                    key,
                     type,
-                    rows,
-                    cols,
-                    max,
-                    min,
-                    maxLength,
-                    minLength,
-                    pattern
+                    props {
+                      label,
+                      placeholder,
+                      required,
+                      type,
+                      rows,
+                      cols,
+                      max,
+                      min,
+                      maxLength,
+                      minLength,
+                      pattern
+                    }
+                    defaultValue
                   }
-                  defaultValue
                 }
+                order
+                helpText
               }
-              order
-              helpText
             }
             selectedOptimizer {
               name
@@ -314,8 +320,12 @@ export class ConfigurationService {
     }
   }
 
-  updateSelectedCipher(selectedCipher: Cipher, skipSave?: boolean) {
+  updateSelectedCipher(selectedCipher: Cipher, skipSave?: boolean, skipTransformerApply?: boolean) {
     this.selectedCipherInternal.update(() => selectedCipher);
+
+    if (!skipTransformerApply) {
+      this.applyTransformersForSelectedCipher(selectedCipher, true);
+    }
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
@@ -332,6 +342,7 @@ export class ConfigurationService {
 
   updateAppliedCiphertextTransformers(appliedTransformers: FormComponent[], skipSave?: boolean): void {
     this.appliedCiphertextTransformersInternal.update(() => appliedTransformers);
+    this.updateCipherConfiguration(this.selectedCipherInternal(), appliedTransformers, this.appliedPlaintextTransformersLocal());
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
@@ -340,6 +351,7 @@ export class ConfigurationService {
 
   updateAppliedPlaintextTransformers(appliedTransformers: FormComponent[], skipSave?: boolean): void {
     this.appliedPlaintextTransformersLocal.update(() => appliedTransformers);
+    this.updateCipherConfiguration(this.selectedCipherInternal(), this.appliedCiphertextTransformersInternal(), appliedTransformers);
 
     if (!skipSave) {
       this.saveConfigurationToLocalStorage();
@@ -440,36 +452,23 @@ export class ConfigurationService {
 
     this.cipherService.transformCipher(transformationRequest).subscribe((cipherResponse: any) => {
       localCipher.transformed = cipherResponse;
-      this.updateSelectedCipher(localCipher, true);
+      this.updateSelectedCipher(localCipher, true, true);
     });
   }
 
   import(configuration: ApplicationConfiguration) {
     this.updateEpochs(configuration.epochs, true);
 
-    if (configuration.appliedCiphertextTransformers) {
-      configuration.appliedCiphertextTransformers.forEach(transformer => {
-        if (transformer.form) {
-          transformer.form.form = new UntypedFormGroup({});
-        }
-      });
-    } else {
-      configuration.appliedCiphertextTransformers = [];
+    if (!configuration.cipherConfigurations) {
+      configuration.cipherConfigurations = [];
     }
 
-    this.updateAppliedCiphertextTransformers(configuration.appliedCiphertextTransformers, true);
+    configuration.cipherConfigurations.forEach(cipherConfiguration => {
+      cipherConfiguration.appliedCiphertextTransformers = this.normalizeTransformers(cipherConfiguration.appliedCiphertextTransformers);
+      cipherConfiguration.appliedPlaintextTransformers = this.normalizeTransformers(cipherConfiguration.appliedPlaintextTransformers);
+    });
 
-    if (configuration.appliedPlaintextTransformers) {
-      configuration.appliedPlaintextTransformers.forEach(transformer => {
-        if (transformer.form) {
-          transformer.form.form = new UntypedFormGroup({});
-        }
-      });
-    } else {
-      configuration.appliedPlaintextTransformers = [];
-    }
-
-    this.updateAppliedPlaintextTransformers(configuration.appliedPlaintextTransformers, true);
+    this.cipherConfigurationsInternal.update(() => configuration.cipherConfigurations);
     this.updateSelectedOptimizer(configuration.selectedOptimizer, true);
 
     const selectedFitnessFunctionMatch = this.availableFitnessFunctions().find(fitnessFunction =>
@@ -486,7 +485,7 @@ export class ConfigurationService {
     this.updateGeneticAlgorithmConfiguration(configuration.geneticAlgorithmConfiguration, true);
     const selectedCipher = this.ciphersInternal().find(cipher => cipher.name === configuration.selectedCipher) ?? this.ciphersInternal()[0];
     this.updateSelectedCipher(selectedCipher, true);
-    this.applyCiphertextTransformers(selectedCipher, configuration.appliedCiphertextTransformers);
+    this.applyCiphertextTransformers(selectedCipher, this.appliedCiphertextTransformersInternal());
     this.saveConfigurationToLocalStorage();
   }
 
@@ -494,44 +493,13 @@ export class ConfigurationService {
     const configuration = new ApplicationConfiguration();
 
     configuration.epochs = this.epochsInternal();
-
-    if (this.appliedCiphertextTransformersInternal()) {
-      // The FormGroup attribute is causing cyclic references when serializing to JSON,
-      // so we have to manually instantiate the transformers to skip copying the FormGroup
-      configuration.appliedCiphertextTransformers = [];
-
-      this.appliedCiphertextTransformersInternal().forEach(transformer => {
-        configuration.appliedCiphertextTransformers.push({
-          name: transformer.name,
-          displayName: transformer.displayName,
-          form: transformer.form ? {
-            model: transformer.form.model,
-            fields: transformer.form.fields
-          } : null,
-          order: transformer.order,
-          helpText: transformer.helpText
-        });
-      });
-    }
-
-    if (this.appliedPlaintextTransformersLocal()) {
-      // The FormGroup attribute is causing cyclic references when serializing to JSON,
-      // so we have to manually instantiate the transformers to skip copying the FormGroup
-      configuration.appliedPlaintextTransformers = [];
-
-      this.appliedPlaintextTransformersLocal().forEach(transformer => {
-        configuration.appliedPlaintextTransformers.push({
-          name: transformer.name,
-          displayName: transformer.displayName,
-          form: transformer.form ? {
-            model: transformer.form.model,
-            fields: transformer.form.fields
-          } : null,
-          order: transformer.order,
-          helpText: transformer.helpText
-        });
-      });
-    }
+    configuration.cipherConfigurations = this.cipherConfigurationsInternal().map(cipherConfiguration => {
+      return {
+        cipherName: cipherConfiguration.cipherName,
+        appliedCiphertextTransformers: this.serializeTransformers(cipherConfiguration.appliedCiphertextTransformers),
+        appliedPlaintextTransformers: this.serializeTransformers(cipherConfiguration.appliedPlaintextTransformers)
+      };
+    });
 
     const fitnessFunction = this.selectedFitnessFunctionInternal();
 
@@ -552,6 +520,78 @@ export class ConfigurationService {
     configuration.selectedCipher = this.selectedCipherInternal().name;
 
     return JSON.stringify(configuration, null, 2);
+  }
+
+  private normalizeTransformers(transformers?: FormComponent[]): FormComponent[] {
+    if (!transformers) {
+      return [];
+    }
+
+    transformers.forEach(transformer => {
+      if (transformer.form) {
+        transformer.form.form = new UntypedFormGroup({});
+      }
+    });
+
+    return transformers;
+  }
+
+  private serializeTransformers(transformers?: FormComponent[]): FormComponent[] {
+    if (!transformers) {
+      return [];
+    }
+
+    return transformers.map(transformer => {
+      return {
+        name: transformer.name,
+        displayName: transformer.displayName,
+        form: transformer.form ? {
+          model: transformer.form.model,
+          fields: transformer.form.fields
+        } : null,
+        order: transformer.order,
+        helpText: transformer.helpText
+      };
+    });
+  }
+
+  private applyTransformersForSelectedCipher(selectedCipher: Cipher, skipSave?: boolean): void {
+    const cipherConfiguration = this.cipherConfigurationsInternal()
+      .find(configuration => configuration.cipherName === selectedCipher?.name);
+    const appliedCiphertextTransformers = cipherConfiguration?.appliedCiphertextTransformers ?? [];
+    const appliedPlaintextTransformers = cipherConfiguration?.appliedPlaintextTransformers ?? [];
+
+    this.updateAppliedCiphertextTransformers(appliedCiphertextTransformers, true);
+    this.updateAppliedPlaintextTransformers(appliedPlaintextTransformers, true);
+    this.applyCiphertextTransformers(selectedCipher, appliedCiphertextTransformers);
+
+    if (!skipSave) {
+      this.saveConfigurationToLocalStorage();
+    }
+  }
+
+  private updateCipherConfiguration(selectedCipher: Cipher, appliedCiphertextTransformers: FormComponent[], appliedPlaintextTransformers: FormComponent[]): void {
+    if (!selectedCipher) {
+      return;
+    }
+
+    const updatedConfigurations = [...this.cipherConfigurationsInternal()];
+    const configurationIndex = updatedConfigurations
+      .findIndex(configuration => configuration.cipherName === selectedCipher.name);
+
+    const cipherConfiguration: CipherConfiguration = {
+      cipherName: selectedCipher.name,
+      appliedCiphertextTransformers: appliedCiphertextTransformers ?? [],
+      appliedPlaintextTransformers: appliedPlaintextTransformers ?? []
+    };
+
+    if (configurationIndex >= 0) {
+      updatedConfigurations[configurationIndex] = cipherConfiguration;
+    } else {
+      updatedConfigurations.push(cipherConfiguration);
+    }
+
+    this.cipherConfigurationsInternal.update(() => updatedConfigurations);
   }
 
   saveConfigurationToLocalStorage() {
