@@ -2,7 +2,7 @@
 title: "What's this all About?"
 date: 2026-01-24T11:30:03+00:00
 image: alessandro-erbetta-8oYPewvmhnY-unsplash.jpg
-tags: ["first"]
+tags: ["blog"]
 author: "George"
 showToc: true
 TocOpen: false

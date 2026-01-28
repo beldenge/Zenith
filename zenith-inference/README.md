@@ -3,8 +3,8 @@ This module encompasses the algorithm which performs inference on the language m
 
 # Running Standalone
 1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
-2. Download zenith-inference-2.1.4-SNAPSHOT-exec.jar
-3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-inference-2.1.4-SNAPSHOT-exec.jar`
+2. Download zenith-inference-2026.1-exec.jar
+3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-inference-2026.1-exec.jar`
 
 Note: You must run the *-exec.jar and not the vanilla jar file, as this module is used both as a dependency and as a runnable application on its own.
 

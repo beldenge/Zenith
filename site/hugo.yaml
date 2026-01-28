@@ -57,7 +57,7 @@ params:
     avatar:
       enabled: true
       local: true
-      src: img/george.png
+      src: img/340-cipher-snippet.png
 
   article:
     math: false
