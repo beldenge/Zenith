@@ -57,7 +57,7 @@
             <div class="col-sm-4 mx-auto">
               <mat-form-field appearance="outline">
                 <mat-label>Fitness Function</mat-label>
-                <mat-select formControlName="fitnessFunction" (selectionChange)="onFitnessFunctionChange($event)">
+                <mat-select formControlName="fitnessFunction" (selectionChange)="onFitnessFunctionChange($event)" [compareWith]="compareByName">
                   @for (fitnessFunction of availableFitnessFunctions(); track fitnessFunction) {
                     <mat-option [value]="fitnessFunction">
                       {{fitnessFunction.displayName}}
@@ -185,7 +185,7 @@
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
                           <mat-label>Breeder Name</mat-label>
-                          <mat-select formControlName="breederName">
+                          <mat-select formControlName="breederName" [compareWith]="compareByName">
                             @for (breederName of breederNames; track breederName) {
                               <mat-option [value]="breederName">
                                 {{breederName.displayName}}
@@ -202,7 +202,7 @@
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
                           <mat-label>Crossover Operator Name</mat-label>
-                          <mat-select formControlName="crossoverOperatorName">
+                          <mat-select formControlName="crossoverOperatorName" [compareWith]="compareByName">
                             @for (crossoverOperatorName of crossoverOperatorNames; track crossoverOperatorName) {
                               <mat-option [value]="crossoverOperatorName">
                                 {{crossoverOperatorName.displayName}}
@@ -228,7 +228,7 @@
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
                           <mat-label>Population Name</mat-label>
-                          <mat-select formControlName="populationName">
+                          <mat-select formControlName="populationName" [compareWith]="compareByName">
                             @for (populationName of populationNames; track populationName) {
                               <mat-option [value]="populationName">
                                 {{populationName.displayName}}
@@ -241,7 +241,7 @@
                         <i class="far fa-question-circle mt-2" matTooltip="The type of population to perform selection over" matTooltipPosition="right"></i>
                       </div>
                     </div>
-                    @if (geneticAlgorithmFormGroup.get('populationName').value === populationNames[1]) {
+                    @if (compareByName(geneticAlgorithmFormGroup.get('populationName').value, populationNames[1])) {
                       <div class="form-group row">
                         <div class="col-sm-11 mx-auto">
                           <mat-form-field appearance="outline">
@@ -360,7 +360,7 @@
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
                           <mat-label>Mutation Operator Name</mat-label>
-                          <mat-select formControlName="mutationOperatorName">
+                          <mat-select formControlName="mutationOperatorName" [compareWith]="compareByName">
                             @for (mutationOperatorName of mutationOperatorNames; track mutationOperatorName) {
                               <mat-option [value]="mutationOperatorName">
                                 {{mutationOperatorName.displayName}}
@@ -373,7 +373,7 @@
                         <i class="far fa-question-circle mt-2" matTooltip="The algorithm for performing mutation on selected individuals" matTooltipPosition="right"></i>
                       </div>
                     </div>
-                    @if (geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[0]) {
+                    @if (compareByName(geneticAlgorithmFormGroup.get('mutationOperatorName').value, mutationOperatorNames[0])) {
                       <div class="form-group row">
                         <div class="col-sm-11 mx-auto">
                           <mat-form-field appearance="outline">
@@ -387,7 +387,7 @@
                         </div>
                       </div>
                     }
-                    @if (geneticAlgorithmFormGroup.get('mutationOperatorName').value === mutationOperatorNames[1]) {
+                    @if (compareByName(geneticAlgorithmFormGroup.get('mutationOperatorName').value, mutationOperatorNames[1])) {
                       <div class="form-group row">
                         <div class="col-sm-11 mx-auto">
                           <mat-form-field appearance="outline">
@@ -414,7 +414,7 @@
                       <div class="col-sm-11 mx-auto">
                         <mat-form-field appearance="outline">
                           <mat-label>Selector Name</mat-label>
-                          <mat-select formControlName="selectorName">
+                          <mat-select formControlName="selectorName" [compareWith]="compareByName">
                             @for (selectorName of selectorNames; track selectorName) {
                               <mat-option [value]="selectorName">
                                 {{selectorName.displayName}}
@@ -427,7 +427,7 @@
                         <i class="far fa-question-circle mt-2" matTooltip="The selection method to use" matTooltipPosition="right"></i>
                       </div>
                     </div>
-                    @if (geneticAlgorithmFormGroup.get('selectorName').value === selectorNames[0]) {
+                    @if (compareByName(geneticAlgorithmFormGroup.get('selectorName').value, selectorNames[0])) {
                       <div class="form-group row">
                         <div class="col-sm-11 mx-auto">
                           <mat-form-field appearance="outline">

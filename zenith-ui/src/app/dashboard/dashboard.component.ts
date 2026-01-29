@@ -118,7 +118,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
     }
 
-    if (this.optimizer().name === ConfigurationService.OPTIMIZER_NAMES[0].name) {
+    if (this.optimizer().name === 'SimulatedAnnealing') {
       request.simulatedAnnealingConfiguration = this.simulatedAnnealingConfiguration();
     } else {
       request.geneticAlgorithmConfiguration = this.geneticAlgorithmConfiguration();

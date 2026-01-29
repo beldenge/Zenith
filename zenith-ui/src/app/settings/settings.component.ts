@@ -87,6 +87,14 @@ export class SettingsComponent implements OnDestroy {
     geneticAlgorithmConfiguration: this.geneticAlgorithmFormGroup
   });
 
+  compareByName = (o1: SelectOption | null, o2: SelectOption | null): boolean => {
+    if (o1 == null || o2 == null) {
+      return o1 === o2;
+    }
+
+    return o1.name === o2.name;
+  }
+
   constructor(private fb: UntypedFormBuilder,
               private configurationService: ConfigurationService,
               private introductionService: IntroductionService) {
@@ -142,17 +150,17 @@ export class SettingsComponent implements OnDestroy {
         populationSize: geneticAlgorithmConfiguration.populationSize,
         numberOfGenerations: geneticAlgorithmConfiguration.numberOfGenerations,
         elitism: geneticAlgorithmConfiguration.elitism,
-        populationName: this.populationNames.find(name => name.name === geneticAlgorithmConfiguration.populationName),
+        populationName: { name: geneticAlgorithmConfiguration.populationName },
         latticeRows: geneticAlgorithmConfiguration.latticeRows,
         latticeColumns: geneticAlgorithmConfiguration.latticeColumns,
         latticeWrapAround: geneticAlgorithmConfiguration.latticeWrapAround,
         latticeRadius: geneticAlgorithmConfiguration.latticeRadius,
-        breederName: this.breederNames.find(name => name.name === geneticAlgorithmConfiguration.breederName),
-        crossoverOperatorName: this.crossoverOperatorNames.find(name => name.name === geneticAlgorithmConfiguration.crossoverOperatorName),
-        mutationOperatorName: this.mutationOperatorNames.find(name => name.name === geneticAlgorithmConfiguration.mutationOperatorName),
+        breederName: { name: geneticAlgorithmConfiguration.breederName },
+        crossoverOperatorName: { name: geneticAlgorithmConfiguration.crossoverOperatorName },
+        mutationOperatorName: { name: geneticAlgorithmConfiguration.mutationOperatorName },
         mutationRate: geneticAlgorithmConfiguration.mutationRate,
         maxMutationsPerIndividual: geneticAlgorithmConfiguration.maxMutationsPerIndividual,
-        selectorName: this.selectorNames.find(name => name.name === geneticAlgorithmConfiguration.selectorName),
+        selectorName: { name: geneticAlgorithmConfiguration.selectorName },
         tournamentSelectorAccuracy: geneticAlgorithmConfiguration.tournamentSelectorAccuracy,
         tournamentSize: geneticAlgorithmConfiguration.tournamentSize,
         minPopulations: geneticAlgorithmConfiguration.minPopulations,

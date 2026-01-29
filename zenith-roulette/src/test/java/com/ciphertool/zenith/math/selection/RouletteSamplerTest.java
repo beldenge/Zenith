@@ -286,4 +286,38 @@ public class RouletteSamplerTest {
         assertEquals(2, chosen);
         assertSame(c, dummyProbabilities.get(chosen));
     }
+
+    @Test
+    public void testReindex_NullList() {
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        double result = rouletteSampler.reIndex(null);
+
+        assertEquals(-1, result);
+    }
+
+    @Test
+    public void testReindex_EmptyList() {
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        double result = rouletteSampler.reIndex(new ArrayList<>());
+
+        assertEquals(-1, result);
+    }
+
+    @Test
+    public void testReindex_AllZeroProbabilities() {
+        List<DummyProbability> dummyProbabilities = new ArrayList<>();
+        dummyProbabilities.add(new DummyProbability('a', 0.0d));
+        dummyProbabilities.add(new DummyProbability('b', 0.0d));
+
+        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
+
+        Collections.sort(dummyProbabilities);
+        double result = rouletteSampler.reIndex(dummyProbabilities);
+
+        // All probabilities are zero, so sum is 0, which means totalProbability stays 0
+        // and the check (abs(1 - 0) > 0.0001) is true, so it returns -1
+        assertEquals(-1, result);
+    }
 }

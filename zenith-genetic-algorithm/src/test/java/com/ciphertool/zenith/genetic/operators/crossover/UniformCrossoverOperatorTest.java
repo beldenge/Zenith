@@ -18,12 +18,17 @@ public class UniformCrossoverOperatorTest {
     public void testCrossover() {
         UniformCrossoverOperator operator = new UniformCrossoverOperator();
 
+        // Mock the coin to ensure deterministic behavior
+        Coin mockedCoin = mock(Coin.class);
+        when(mockedCoin.flip()).thenReturn(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(operator, "coin", mockedCoin);
+
         Genome parent1 = new Genome(false, null, null);
         Genome parent2 = new Genome(false, null, null);
 
         Chromosome chromosome1 = mock(Chromosome.class);
         Chromosome chromosome2 = mock(Chromosome.class);
-        
+
         Gene gene1a = mock(Gene.class);
         Gene gene1b = mock(Gene.class);
         Gene gene2a = mock(Gene.class);
@@ -39,10 +44,10 @@ public class UniformCrossoverOperatorTest {
 
         when(chromosome1.getGenes()).thenReturn(genes1);
         when(chromosome2.getGenes()).thenReturn(genes2);
-        
+
         Chromosome clonedChromosome = mock(Chromosome.class);
         when(chromosome1.clone()).thenReturn(clonedChromosome);
-        
+
         when(clonedChromosome.getGenes()).thenReturn(genes1);
 
         // Mocking clone for genes
@@ -58,7 +63,8 @@ public class UniformCrossoverOperatorTest {
 
         assertNotNull(child);
         assertEquals(1, child.getChromosomes().size());
-        verify(clonedChromosome, atLeastOnce()).replaceGene(any(), any());
+        // With coin always returning true, both genes should be replaced
+        verify(clonedChromosome, times(2)).replaceGene(any(), any());
     }
 
     @Test
