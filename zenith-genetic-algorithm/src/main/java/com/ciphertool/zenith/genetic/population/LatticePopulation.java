@@ -84,17 +84,17 @@ public class LatticePopulation extends AbstractPopulation {
         @Override
         public Parents call() {
             int row = ThreadLocalRandom.current().nextInt(latticeRows);
-            int column = ThreadLocalRandom.current().nextInt(currentColumn - 1);
+            int column = ThreadLocalRandom.current().nextInt(latticeColumns);
 
             List<LatticeIndividual> nearbyLatticeIndividuals = new ArrayList<>();
 
             // center
             nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row][column], row, column));
 
-            for (int i = 0; i < selectionRadius; i ++) {
+            for (int r = 1; r <= selectionRadius; r ++) {
                 // top edge
-                for (int j = 0 - selectionRadius; j < selectionRadius; j ++) {
-                    int rowIndex = row - selectionRadius;
+                for (int j = 0 - r; j < r; j ++) {
+                    int rowIndex = row - r;
                     int columnIndex = column + j;
 
                     if (outOfBounds(rowIndex, columnIndex)) {
@@ -110,9 +110,9 @@ public class LatticePopulation extends AbstractPopulation {
                 }
 
                 // right edge
-                for (int j = 0 - selectionRadius; j < selectionRadius; j ++) {
+                for (int j = 0 - r; j < r; j ++) {
                     int rowIndex = row + j;
-                    int columnIndex = column + selectionRadius;
+                    int columnIndex = column + r;
 
                     if (outOfBounds(rowIndex, columnIndex)) {
                         if (!wrapAround) {
@@ -127,8 +127,8 @@ public class LatticePopulation extends AbstractPopulation {
                 }
 
                 // bottom edge
-                for (int j = selectionRadius; j > 0 - selectionRadius; j --) {
-                    int rowIndex = row + selectionRadius;
+                for (int j = r; j > 0 - r; j --) {
+                    int rowIndex = row + r;
                     int columnIndex = column + j;
 
                     if (outOfBounds(rowIndex, columnIndex)) {
@@ -144,9 +144,9 @@ public class LatticePopulation extends AbstractPopulation {
                 }
 
                 // left edge
-                for (int j = selectionRadius; j > 0 - selectionRadius; j --) {
+                for (int j = r; j > 0 - r; j --) {
                     int rowIndex = row + j;
-                    int columnIndex = column - selectionRadius;
+                    int columnIndex = column - r;
 
                     if (outOfBounds(rowIndex, columnIndex)) {
                         if (!wrapAround) {
@@ -198,7 +198,7 @@ public class LatticePopulation extends AbstractPopulation {
     }
 
     private boolean outOfBounds(int rowIndex, int columnIndex) {
-        return rowIndex < 0 || rowIndex > (latticeRows - 1) || columnIndex < 0 || columnIndex > (latticeColumns - 1) || columnIndex > (currentColumn - 1);
+        return rowIndex < 0 || rowIndex > (latticeRows - 1) || columnIndex < 0 || columnIndex > (latticeColumns - 1);
     }
 
     private int wrapRowIndex(int rowIndex) {

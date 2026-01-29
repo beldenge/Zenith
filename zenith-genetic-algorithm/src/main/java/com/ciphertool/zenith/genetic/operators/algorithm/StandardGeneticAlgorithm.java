@@ -220,10 +220,12 @@ public class StandardGeneticAlgorithm {
 
         Population population = strategy.getPopulation();
 
-        if (strategy.getElitism() > 0) {
+        if (strategy.getElitism() > 0 && population.size() > 0) {
             population.sortIndividuals();
 
-            for (int i = population.size() - 1; i >= population.size() - strategy.getElitism(); i--) {
+            int numberToKeep = Math.min(strategy.getElitism(), population.size());
+
+            for (int i = population.size() - 1; i >= population.size() - numberToKeep; i--) {
                 eliteIndividuals.add(population.getIndividuals().get(i));
             }
         }

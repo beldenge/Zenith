@@ -26,6 +26,10 @@ public class Coin {
      * @return a random boolean representing the result a coin flip
      */
     public Boolean flip() {
-        return ((int) (ThreadLocalRandom.current().nextDouble() * 2)) == 0;
+        return flip(ThreadLocalRandom.current().nextDouble());
+    }
+
+    public Boolean flip(double magicNumber) {
+        return ((int) (magicNumber * 2)) == 0;
     }
 }

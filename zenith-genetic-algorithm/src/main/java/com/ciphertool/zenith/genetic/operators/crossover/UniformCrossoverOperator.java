@@ -46,11 +46,14 @@ public class UniformCrossoverOperator implements CrossoverOperator {
                 if (coin.flip()) {
                     next = parentB.getGenes().get(entry.getKey());
 
+                    if (next == null) {
+                        throw new IllegalStateException("Expected second parent to have a Gene with key " + entry.getKey()
+                                + ", but no such key was found.  Cannot continue.");
+                    }
+
                     if (!entry.getValue().equals(next)) {
                         childChromosome.replaceGene(entry.getKey(), next.clone());
                     }
-                } else {
-                    // TODO: clone from parentA -- this could potentially save 50% of the cloning overhead vs. cloning the entire chromosome upfront
                 }
             }
 

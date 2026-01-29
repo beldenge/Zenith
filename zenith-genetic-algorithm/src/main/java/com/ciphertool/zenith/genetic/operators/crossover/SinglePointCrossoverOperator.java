@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class SinglePointCrossoverOperator implements CrossoverOperator {
@@ -33,10 +34,11 @@ public class SinglePointCrossoverOperator implements CrossoverOperator {
 
     @Override
     public Genome crossover(Genome firstGenome, Genome secondGenome) {
-        // TODO: consider using ThreadLocalRandom
-        Random generator = new Random();
+        return crossover(firstGenome, secondGenome, ThreadLocalRandom.current().nextDouble(), ThreadLocalRandom.current());
+    }
 
-        Genome dadGenome = coin.flip() ? firstGenome : secondGenome;
+    protected Genome crossover(Genome firstGenome, Genome secondGenome, double coinFlip, Random random) {
+        Genome dadGenome = coin.flip(coinFlip) ? firstGenome : secondGenome;
         Genome momGenome = (dadGenome == firstGenome) ? secondGenome : firstGenome;
 
         Genome childGenome = new Genome(dadGenome.isEvaluationNeeded(), dadGenome.getFitnesses(), dadGenome.getPopulation());
@@ -49,7 +51,7 @@ public class SinglePointCrossoverOperator implements CrossoverOperator {
             Object[] keys = availableKeys.toArray();
 
             // Get a random map key
-            int randomIndex = generator.nextInt(keys.length);
+            int randomIndex = random.nextInt(keys.length);
 
             Chromosome<Object> childChromosome = dad.clone();
             childChromosome.setGenome(childGenome);

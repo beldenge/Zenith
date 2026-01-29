@@ -12,11 +12,11 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class SinglePointCrossoverOperatorTest {
+public class UniformCrossoverOperatorTest {
 
     @Test
     public void testCrossover() {
-        SinglePointCrossoverOperator operator = new SinglePointCrossoverOperator();
+        UniformCrossoverOperator operator = new UniformCrossoverOperator();
 
         Genome parent1 = new Genome(false, null, null);
         Genome parent2 = new Genome(false, null, null);
@@ -42,7 +42,8 @@ public class SinglePointCrossoverOperatorTest {
         
         Chromosome clonedChromosome = mock(Chromosome.class);
         when(chromosome1.clone()).thenReturn(clonedChromosome);
-        when(chromosome2.clone()).thenReturn(clonedChromosome); // simplified
+        
+        when(clonedChromosome.getGenes()).thenReturn(genes1);
 
         // Mocking clone for genes
         when(gene1a.clone()).thenReturn(gene1a);
@@ -53,18 +54,45 @@ public class SinglePointCrossoverOperatorTest {
         parent1.addChromosome(chromosome1);
         parent2.addChromosome(chromosome2);
 
-        java.util.Random mockedRandom = mock(java.util.Random.class);
-        when(mockedRandom.nextInt(anyInt())).thenReturn(0);
-
-        // This should not hang anymore
-        Genome child = operator.crossover(parent1, parent2, 0.0, mockedRandom);
+        Genome child = operator.crossover(parent1, parent2);
 
         assertNotNull(child);
         assertEquals(1, child.getChromosomes().size());
+        verify(clonedChromosome, atLeastOnce()).replaceGene(any(), any());
+    }
+
+    @Test
+    public void testCrossover_MissingKey() {
+        UniformCrossoverOperator operator = new UniformCrossoverOperator();
+
+        Genome parent1 = new Genome(false, null, null);
+        Genome parent2 = new Genome(false, null, null);
+
+        Chromosome chromosome1 = mock(Chromosome.class);
+        Chromosome chromosome2 = mock(Chromosome.class);
         
-        // With randomIndex = 0, it should replaceGene for key1 (index 0)
-        // Note: the operator uses dad.clone() then replaces genes from mom up to randomIndex
-        verify(clonedChromosome).replaceGene(eq("key1"), any());
-        verify(clonedChromosome, never()).replaceGene(eq("key2"), any());
+        Map<Object, Gene> genes1 = new LinkedHashMap<>();
+        genes1.put("key1", mock(Gene.class));
+
+        Map<Object, Gene> genes2 = new LinkedHashMap<>();
+        // parent2 is missing key1
+
+        when(chromosome1.getGenes()).thenReturn(genes1);
+        when(chromosome2.getGenes()).thenReturn(genes2);
+        
+        Chromosome clonedChromosome = mock(Chromosome.class);
+        when(chromosome1.clone()).thenReturn(clonedChromosome);
+        when(clonedChromosome.getGenes()).thenReturn(genes1);
+
+        parent1.addChromosome(chromosome1);
+        parent2.addChromosome(chromosome2);
+
+        // We need to force a flip to true to trigger the exception
+        // We can do this by using Reflection to set a mocked Coin
+        Coin mockedCoin = mock(Coin.class);
+        when(mockedCoin.flip()).thenReturn(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(operator, "coin", mockedCoin);
+
+        assertThrows(IllegalStateException.class, () -> operator.crossover(parent1, parent2));
     }
 }
