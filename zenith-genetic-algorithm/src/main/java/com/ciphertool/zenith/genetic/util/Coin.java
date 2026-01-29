@@ -29,6 +29,7 @@ public class Coin {
         return flip(ThreadLocalRandom.current().nextDouble());
     }
 
+    // Separate method purely to support testability since we can't rely on randomness during tests
     public Boolean flip(double magicNumber) {
         return ((int) (magicNumber * 2)) == 0;
     }

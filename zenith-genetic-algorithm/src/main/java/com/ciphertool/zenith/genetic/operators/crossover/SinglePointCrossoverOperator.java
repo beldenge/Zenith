@@ -37,6 +37,7 @@ public class SinglePointCrossoverOperator implements CrossoverOperator {
         return crossover(firstGenome, secondGenome, ThreadLocalRandom.current().nextDouble(), ThreadLocalRandom.current());
     }
 
+    // Separate method purely to support testability since we can't rely on randomness during tests
     protected Genome crossover(Genome firstGenome, Genome secondGenome, double coinFlip, Random random) {
         Genome dadGenome = coin.flip(coinFlip) ? firstGenome : secondGenome;
         Genome momGenome = (dadGenome == firstGenome) ? secondGenome : firstGenome;

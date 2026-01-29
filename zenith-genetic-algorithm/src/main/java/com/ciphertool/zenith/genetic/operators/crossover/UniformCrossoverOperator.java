@@ -55,6 +55,7 @@ public class UniformCrossoverOperator implements CrossoverOperator {
                         childChromosome.replaceGene(entry.getKey(), next.clone());
                     }
                 }
+                // TODO: Else, clone from parentA -- this could potentially save 50% of the cloning overhead vs. cloning the entire chromosome upfront
             }
 
             childGenome.addChromosome(childChromosome);

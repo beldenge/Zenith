@@ -19,7 +19,6 @@
 
 package com.ciphertool.zenith.math.selection;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -52,10 +51,8 @@ public class RouletteSamplerTest {
         }
     }
 
-    // This is a valid test but mark it as @Ignore because it sometimes fails due to the nature of random chance
-    @Disabled
     @Test
-    public void testSampling() {
+    public void testSampling_Deterministic() {
         List<DummyProbability> dummyProbabilities = new ArrayList<>();
 
         dummyProbabilities.add(new DummyProbability('a', 0.07916));
@@ -90,30 +87,26 @@ public class RouletteSamplerTest {
         Collections.sort(dummyProbabilities);
         rouletteSampler.reIndex(dummyProbabilities);
 
-        Map<Character, Integer> characterCounts = new HashMap<>();
-        int nextIndex;
-
-        int i = 0;
-
-        for (; i < 1000000; i++) {
-            nextIndex = rouletteSampler.getNextIndex();
-
-            if (characterCounts.get(dummyProbabilities.get(nextIndex).getValue()) == null) {
-                characterCounts.put(dummyProbabilities.get(nextIndex).getValue(), 1);
-            }
-
-            characterCounts.put(dummyProbabilities.get(nextIndex).getValue(), characterCounts.get(dummyProbabilities.get(nextIndex).getValue()) + 1);
+        // Build expected cumulative thresholds
+        double cumulative = 0.0;
+        double[] thresholds = new double[dummyProbabilities.size()];
+        for (int i = 0; i < dummyProbabilities.size(); i++) {
+            cumulative += dummyProbabilities.get(i).getProbability();
+            thresholds[i] = cumulative;
         }
 
-        for (DummyProbability letterProbability : dummyProbabilities) {
-            Double actual = letterProbability.getProbability();
-            Double estimated = (double) characterCounts.get(letterProbability.getValue()) / (double) i;
-            Double difference = Math.abs(actual - estimated);
-
-            System.out.printf(letterProbability.getValue() + ": actual=" + actual.toString() + ", estimated=" + estimated.toString() + ", difference=" + difference.toString() + "\n");
-
-            assertTrue(difference < 0.001d);
+        // Test that midpoint values within each probability range return the correct index
+        cumulative = 0.0;
+        for (int i = 0; i < dummyProbabilities.size(); i++) {
+            double midpoint = cumulative + (dummyProbabilities.get(i).getProbability() / 2.0);
+            assertEquals(i, rouletteSampler.getNextIndex(midpoint),
+                "Midpoint " + midpoint + " should map to index " + i + " (" + dummyProbabilities.get(i).getValue() + ")");
+            cumulative = thresholds[i];
         }
+
+        // Test boundary conditions
+        assertEquals(0, rouletteSampler.getNextIndex(0.0001)); // First bucket
+        assertEquals(dummyProbabilities.size() - 1, rouletteSampler.getNextIndex(0.9999)); // Last bucket
     }
 
     @Test

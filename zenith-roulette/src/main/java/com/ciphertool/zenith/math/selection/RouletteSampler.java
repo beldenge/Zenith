@@ -107,7 +107,7 @@ public class RouletteSampler<T extends Probability> {
         addToTreeBalanced(nodes.subList(half + 1, nodes.size()));
     }
 
-    public synchronized int getNextIndex() {
+    public int getNextIndex() {
         return getNextIndex(ThreadLocalRandom.current().nextDouble());
     }
 
