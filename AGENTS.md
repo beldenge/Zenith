@@ -45,6 +45,7 @@ Zenith is a multi-module Java + Angular project for cipher analysis and optimiza
 ## Testing and Verification
 - Update or add **unit tests** whenever changes are made, ideally covering both backend (JUnit/Spring) and frontend (Jasmine/Karma) code paths that were touched.
 - Verify API changes against GraphiQL and keep sample operations up-to-date when possible.
+- Add or update tests even if not asked
 
 ## Contribution Notes
 - Follow existing code style and naming conventions.

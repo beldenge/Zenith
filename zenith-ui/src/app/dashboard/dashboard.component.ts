@@ -157,12 +157,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.solutionService.solveSolution(request).subscribe({
       next: (requestId: string) => {
+        // Don't manually unsubscribe on SOLUTION/ERROR - let the server complete the stream
+        // via tryEmitComplete() to avoid race condition causing "WebSocket session has been closed" errors
         this.solutionSubscription = this.solutionService.solutionUpdates(requestId).subscribe({
           next: (update: SolutionUpdate) => {
             this.solutionService.handleSolutionUpdate(update);
-            if (update.type === 'SOLUTION' || update.type === 'ERROR') {
-              this.solutionSubscription.unsubscribe();
-            }
             if (update.type === 'ERROR') {
               this.solverError();
             }
