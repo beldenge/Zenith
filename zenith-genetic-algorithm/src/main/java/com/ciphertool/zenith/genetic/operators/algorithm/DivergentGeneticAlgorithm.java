@@ -128,7 +128,8 @@ public class DivergentGeneticAlgorithm {
 
                     for (Population divergentPopulation : divergentPopulations) {
                         strategy.setPopulation(divergentPopulation);
-                        strategy.getPopulation().init(strategy);
+                        // Use setStrategy instead of init to preserve individuals added by speciation
+                        strategy.getPopulation().setStrategy(strategy);
                         evolvePopulation(strategy, false);
                         newPopulations.add(strategy.getPopulation());
                     }

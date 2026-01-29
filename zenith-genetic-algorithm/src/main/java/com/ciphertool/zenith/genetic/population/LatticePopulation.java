@@ -29,8 +29,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -71,6 +70,10 @@ public class LatticePopulation extends AbstractPopulation {
             throw new IllegalArgumentException("The population size " + strategy.getPopulationSize() + " for LatticePopulation must be " +
                     "equal to the product of its rows and columns.  Rows=" + latticeRows + ", Columns=" + latticeColumns + ".");
         }
+
+        this.individuals = new Genome[this.latticeRows][this.latticeColumns];
+        this.currentRow = 0;
+        this.currentColumn = 0;
     }
 
     @Override
@@ -87,77 +90,39 @@ public class LatticePopulation extends AbstractPopulation {
             int column = ThreadLocalRandom.current().nextInt(latticeColumns);
 
             List<LatticeIndividual> nearbyLatticeIndividuals = new ArrayList<>();
+            Set<Integer> visitedCoordinates = new HashSet<>();
 
             // center
             nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[row][column], row, column));
+            visitedCoordinates.add(row * latticeColumns + column);
 
             for (int r = 1; r <= selectionRadius; r ++) {
                 // top edge
                 for (int j = 0 - r; j < r; j ++) {
                     int rowIndex = row - r;
                     int columnIndex = column + j;
-
-                    if (outOfBounds(rowIndex, columnIndex)) {
-                        if (!wrapAround) {
-                            continue;
-                        }
-
-                        rowIndex = wrapRowIndex(rowIndex);
-                        columnIndex = wrapColumnIndex(columnIndex);
-                    }
-
-                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                    addNeighborIfValid(rowIndex, columnIndex, nearbyLatticeIndividuals, visitedCoordinates);
                 }
 
                 // right edge
                 for (int j = 0 - r; j < r; j ++) {
                     int rowIndex = row + j;
                     int columnIndex = column + r;
-
-                    if (outOfBounds(rowIndex, columnIndex)) {
-                        if (!wrapAround) {
-                            continue;
-                        }
-
-                        rowIndex = wrapRowIndex(rowIndex);
-                        columnIndex = wrapColumnIndex(columnIndex);
-                    }
-
-                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                    addNeighborIfValid(rowIndex, columnIndex, nearbyLatticeIndividuals, visitedCoordinates);
                 }
 
                 // bottom edge
                 for (int j = r; j > 0 - r; j --) {
                     int rowIndex = row + r;
                     int columnIndex = column + j;
-
-                    if (outOfBounds(rowIndex, columnIndex)) {
-                        if (!wrapAround) {
-                            continue;
-                        }
-
-                        rowIndex = wrapRowIndex(rowIndex);
-                        columnIndex = wrapColumnIndex(columnIndex);
-                    }
-
-                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                    addNeighborIfValid(rowIndex, columnIndex, nearbyLatticeIndividuals, visitedCoordinates);
                 }
 
                 // left edge
                 for (int j = r; j > 0 - r; j --) {
                     int rowIndex = row + j;
                     int columnIndex = column - r;
-
-                    if (outOfBounds(rowIndex, columnIndex)) {
-                        if (!wrapAround) {
-                            continue;
-                        }
-
-                        rowIndex = wrapRowIndex(rowIndex);
-                        columnIndex = wrapColumnIndex(columnIndex);
-                    }
-
-                    nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
+                    addNeighborIfValid(rowIndex, columnIndex, nearbyLatticeIndividuals, visitedCoordinates);
                 }
             }
 
@@ -202,27 +167,28 @@ public class LatticePopulation extends AbstractPopulation {
     }
 
     private int wrapRowIndex(int rowIndex) {
-        if (rowIndex < 0) {
-            return latticeRows + rowIndex;
-        }
-
-        if (rowIndex > latticeRows - 1) {
-            return rowIndex - latticeRows;
-        }
-
-        return rowIndex;
+        return ((rowIndex % latticeRows) + latticeRows) % latticeRows;
     }
 
     private int wrapColumnIndex(int columnIndex) {
-        if (columnIndex < 0) {
-            return latticeColumns + columnIndex;
+        return ((columnIndex % latticeColumns) + latticeColumns) % latticeColumns;
+    }
+
+    private void addNeighborIfValid(int rowIndex, int columnIndex,
+                                    List<LatticeIndividual> nearbyLatticeIndividuals,
+                                    Set<Integer> visitedCoordinates) {
+        if (outOfBounds(rowIndex, columnIndex)) {
+            if (!wrapAround) {
+                return;
+            }
+            rowIndex = wrapRowIndex(rowIndex);
+            columnIndex = wrapColumnIndex(columnIndex);
         }
 
-        if (columnIndex > latticeColumns - 1) {
-            return columnIndex - latticeColumns;
+        int key = rowIndex * latticeColumns + columnIndex;
+        if (visitedCoordinates.add(key)) {
+            nearbyLatticeIndividuals.add(new LatticeIndividual(individuals[rowIndex][columnIndex], rowIndex, columnIndex));
         }
-
-        return columnIndex;
     }
 
     @AllArgsConstructor
@@ -247,7 +213,10 @@ public class LatticePopulation extends AbstractPopulation {
 
     @Override
     public int size() {
-        return latticeRows * latticeColumns;
+        return (int) Arrays.stream(individuals)
+                .flatMap(Arrays::stream)
+                .filter(Objects::nonNull)
+                .count();
     }
 
     @Override
@@ -268,7 +237,9 @@ public class LatticePopulation extends AbstractPopulation {
 
         for (int y = 0; y < latticeColumns; y++) {
             for (int x = 0; x < latticeRows; x++) {
-                individualsAsList.add(individuals[x][y]);
+                if (individuals[x][y] != null) {
+                    individualsAsList.add(individuals[x][y]);
+                }
             }
         }
 

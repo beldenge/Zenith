@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.genetic.operators.speciation;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.population.LatticePopulation;
 import com.ciphertool.zenith.genetic.population.Population;
 import org.springframework.stereotype.Component;
@@ -35,24 +36,42 @@ public class ProximitySpeciationOperator implements SpeciationOperator {
             throw new IllegalStateException(getClass().getSimpleName() + " is only compatible with " + LatticePopulation.class.getSimpleName());
         }
 
-        List<Population> populations = new ArrayList<>(strategy.getSpeciationFactor());
+        int speciationFactor = strategy.getSpeciationFactor();
 
-        int sliceSize = population.size() / strategy.getSpeciationFactor();
+        if (speciationFactor <= 0) {
+            throw new IllegalArgumentException("Speciation factor must be positive, but was: " + speciationFactor);
+        }
 
-        // Always split on the X-axis
-        for (int i = 0; i < strategy.getSpeciationFactor(); i ++) {
+        if (population.size() == 0) {
+            throw new IllegalArgumentException("Cannot speciate an empty population");
+        }
+
+        if (speciationFactor > population.size()) {
+            throw new IllegalArgumentException("Speciation factor (" + speciationFactor +
+                    ") cannot be greater than population size (" + population.size() + ")");
+        }
+
+        // Get individuals in lattice order (column by column) to preserve spatial proximity
+        List<Genome> unsortedIndividuals = ((LatticePopulation) population).getIndividualsUnsorted();
+
+        List<Population> populations = new ArrayList<>(speciationFactor);
+
+        int sliceSize = unsortedIndividuals.size() / speciationFactor;
+
+        for (int i = 0; i < speciationFactor; i++) {
             Population newPopulation = population.getInstance();
             populations.add(newPopulation);
 
+            int startIndex = i * sliceSize;
             int endIndex = (i + 1) * sliceSize;
 
-            if (i + 1 == strategy.getSpeciationFactor()) {
+            if (i + 1 == speciationFactor) {
                 // Handle the case where the population is not evenly divisible by the speciation factor,
                 // in which case we just add the remainder to the last "new" population
-                endIndex = population.size();
+                endIndex = unsortedIndividuals.size();
             }
 
-            ((LatticePopulation) population).getIndividualsUnsorted().subList(i * sliceSize, endIndex).stream().forEach(newPopulation::addIndividual);
+            unsortedIndividuals.subList(startIndex, endIndex).forEach(newPopulation::addIndividual);
         }
 
         return populations;

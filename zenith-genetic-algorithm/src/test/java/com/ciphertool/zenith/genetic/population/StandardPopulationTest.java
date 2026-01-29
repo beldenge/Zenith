@@ -419,4 +419,28 @@ public class StandardPopulationTest {
         assertSame(genome2, population.getIndividuals().get(1));
         assertSame(genome1, population.getIndividuals().get(2));
     }
+
+    @Test
+    public void testInit_PreservesExistingIndividuals() {
+        StandardPopulation population = new StandardPopulation();
+
+        Genome genome1 = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d) }, population);
+        population.addIndividual(genome1);
+
+        Genome genome2 = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d) }, population);
+        population.addIndividual(genome2);
+
+        assertEquals(2, population.size());
+
+        GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .taskExecutor(taskExecutor)
+                .build();
+
+        // Calling init should NOT clear the individuals (important for speciation)
+        population.init(strategy);
+
+        assertEquals(2, population.size());
+        assertSame(genome1, population.getIndividuals().get(0));
+        assertSame(genome2, population.getIndividuals().get(1));
+    }
 }

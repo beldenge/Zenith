@@ -20,6 +20,7 @@
 package com.ciphertool.zenith.genetic.operators.speciation;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
+import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.population.Population;
 import org.springframework.stereotype.Component;
 
@@ -30,25 +31,42 @@ import java.util.List;
 public class FitnessSpeciationOperator implements SpeciationOperator {
     @Override
     public List<Population> diverge(GeneticAlgorithmStrategy strategy, Population population) {
-        List<Population> populations = new ArrayList<>(strategy.getSpeciationFactor());
+        int speciationFactor = strategy.getSpeciationFactor();
+
+        if (speciationFactor <= 0) {
+            throw new IllegalArgumentException("Speciation factor must be positive, but was: " + speciationFactor);
+        }
+
+        if (population.size() == 0) {
+            throw new IllegalArgumentException("Cannot speciate an empty population");
+        }
+
+        if (speciationFactor > population.size()) {
+            throw new IllegalArgumentException("Speciation factor (" + speciationFactor +
+                    ") cannot be greater than population size (" + population.size() + ")");
+        }
+
+        List<Population> populations = new ArrayList<>(speciationFactor);
 
         population.sortIndividuals();
 
-        int sliceSize = population.size() / strategy.getSpeciationFactor();
+        List<Genome> sortedIndividuals = population.getIndividuals();
+        int sliceSize = sortedIndividuals.size() / speciationFactor;
 
-        for (int i = 0; i < strategy.getSpeciationFactor(); i ++) {
+        for (int i = 0; i < speciationFactor; i++) {
             Population newPopulation = population.getInstance();
             populations.add(newPopulation);
 
+            int startIndex = i * sliceSize;
             int endIndex = (i + 1) * sliceSize;
 
-            if (i + 1 == strategy.getSpeciationFactor()) {
+            if (i + 1 == speciationFactor) {
                 // Handle the case where the population is not evenly divisible by the speciation factor,
                 // in which case we just add the remainder to the last "new" population
-                endIndex = population.size();
+                endIndex = sortedIndividuals.size();
             }
 
-            population.getIndividuals().subList(i * sliceSize, endIndex).stream().forEach(newPopulation::addIndividual);
+            sortedIndividuals.subList(startIndex, endIndex).forEach(newPopulation::addIndividual);
         }
 
         return populations;

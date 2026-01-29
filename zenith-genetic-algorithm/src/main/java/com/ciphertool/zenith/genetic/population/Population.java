@@ -37,6 +37,8 @@ public interface Population {
 
     void init(GeneticAlgorithmStrategy strategy);
 
+    void setStrategy(GeneticAlgorithmStrategy strategy);
+
     Genome evaluateFitness(GenerationStatistics generationStatistics);
 
     List<Genome> breed(int numberToBreed);

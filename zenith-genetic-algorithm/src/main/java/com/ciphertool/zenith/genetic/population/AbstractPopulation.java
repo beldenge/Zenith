@@ -46,6 +46,11 @@ public abstract class AbstractPopulation implements Population {
     }
 
     @Override
+    public void setStrategy(GeneticAlgorithmStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    @Override
     public List<Genome> breed(int numberToBreed) {
         List<FutureTask<Genome>> futureTasks = new ArrayList<>();
         FutureTask<Genome> futureTask;
