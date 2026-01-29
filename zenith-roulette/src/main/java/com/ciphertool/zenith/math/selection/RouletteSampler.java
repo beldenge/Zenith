@@ -106,11 +106,11 @@ public class RouletteSampler<T extends Probability> {
         addToTreeBalanced(nodes.subList(half + 1, nodes.size()));
     }
 
-    public int getNextIndex() {
+    public synchronized int getNextIndex() {
         return getNextIndex(ThreadLocalRandom.current().nextDouble());
     }
 
-    protected int getNextIndex(double magicNumber) {
+    protected synchronized int getNextIndex(double magicNumber) {
         return this.rouletteWheel.find(magicNumber).getIndex();
     }
 }

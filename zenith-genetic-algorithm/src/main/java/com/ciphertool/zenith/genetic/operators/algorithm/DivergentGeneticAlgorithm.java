@@ -229,9 +229,9 @@ public class DivergentGeneticAlgorithm {
             childrenToAdd.addAll(crossoverResults);
         }
 
-        if (childrenToAdd == null || (childrenToAdd.size() + strategy.getElitism()) < strategy.getPopulationSize()) {
-            throw new IllegalStateException(((null == childrenToAdd) ? "No" : childrenToAdd.size()) +
-                    " children produced from concurrent crossover execution.  Expected " + strategy.getPopulationSize() + " children.");
+        if (childrenToAdd.size() + strategy.getElitism() < strategy.getPopulationSize()) {
+            throw new IllegalStateException(childrenToAdd.size() +
+                    " children produced from concurrent crossover execution.  Expected " + (strategy.getPopulationSize() - strategy.getElitism()) + " children.");
         }
 
         return childrenToAdd;

@@ -54,7 +54,7 @@ public class SinglePointCrossoverOperator implements CrossoverOperator {
             Chromosome<Object> childChromosome = dad.clone();
             childChromosome.setGenome(childGenome);
 
-            for (int j = 0; j <= randomIndex; i++) {
+            for (int j = 0; j <= randomIndex; j++) {
                 Object nextKey = keys[j];
 
                 if (null == mom.getGenes().get(nextKey)) {
