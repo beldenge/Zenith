@@ -32,6 +32,7 @@ import com.ciphertool.zenith.model.dao.WordNGramDao;
 import com.ciphertool.zenith.model.entities.TreeNGram;
 import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
+import com.ciphertool.zenith.model.markov.ArrayMarkovModelCache;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
@@ -39,6 +40,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.Min;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -64,6 +66,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -106,6 +110,9 @@ public class InferenceConfiguration {
     @Min(1)
     @Value("${language-model.max-ngrams-to-keep}")
     private int maxNGramsToKeep;
+
+    @Value("${language-model.cache.filename:#{null}}")
+    private String languageModelCacheFilename;
 
     @Value("${application.configuration.file-path}")
     private String configurationFilePath;
@@ -193,6 +200,27 @@ public class InferenceConfiguration {
 
     @Bean
     public ArrayMarkovModel letterMarkovModel(LetterNGramDao letterNGramDao) {
+        Path cachePath = resolveLanguageModelCachePath();
+
+        if (cachePath != null) {
+            long cacheStart = System.currentTimeMillis();
+            try {
+                ArrayMarkovModel cachedModel = ArrayMarkovModelCache.readIfValid(cachePath, markovOrder, maxNGramsToKeep);
+                if (cachedModel != null) {
+                    log.info("Loaded cached letter n-gram model from {} in {}ms.", cachePath.toAbsolutePath(), (System.currentTimeMillis() - cacheStart));
+                    return cachedModel;
+                }
+
+                if (Files.exists(cachePath)) {
+                    log.info("Cached letter n-gram model at {} is invalid or out of date. Rebuilding.", cachePath.toAbsolutePath());
+                } else {
+                    log.info("Cached letter n-gram model not found at {}. Building from source.", cachePath.toAbsolutePath());
+                }
+            } catch (IOException e) {
+                log.warn("Unable to load cached letter n-gram model from {}. Rebuilding.", cachePath.toAbsolutePath(), e);
+            }
+        }
+
         long startFindAll = System.currentTimeMillis();
         log.info("Beginning retrieval of all n-grams.");
 
@@ -224,6 +252,16 @@ public class InferenceConfiguration {
                 .forEach(letterMarkovModel::addNode);
 
         log.info("Finished adding {} nodes to the letter n-gram model in {}ms.", letterMarkovModel.getMapSize(), (System.currentTimeMillis() - startAdding));
+
+        if (cachePath != null) {
+            long cacheWriteStart = System.currentTimeMillis();
+            try {
+                ArrayMarkovModelCache.write(cachePath, letterMarkovModel, maxNGramsToKeep);
+                log.info("Saved cached letter n-gram model to {} in {}ms.", cachePath.toAbsolutePath(), (System.currentTimeMillis() - cacheWriteStart));
+            } catch (IOException e) {
+                log.warn("Unable to write cached letter n-gram model to {}.", cachePath.toAbsolutePath(), e);
+            }
+        }
 
         return letterMarkovModel;
     }
@@ -378,4 +416,13 @@ public class InferenceConfiguration {
 
         return taskExecutor;
     }
+
+    private Path resolveLanguageModelCachePath() {
+        if (StringUtils.isBlank(languageModelCacheFilename)) {
+            return null;
+        }
+
+        return Paths.get(languageModelCacheFilename);
+    }
+
 }

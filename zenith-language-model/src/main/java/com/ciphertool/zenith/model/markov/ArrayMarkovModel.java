@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ArrayMarkovModel {
+    static final int NGRAM_ARRAY_LENGTH = 26 * 26 * 26 * 26 * 26;
     private static final int FOURTH_POWER = 26 * 26 * 26 * 26;
     private static final int THIRD_POWER = 26 * 26 * 26;
     private static final int SECOND_POWER = 26 * 26;
@@ -34,7 +35,7 @@ public class ArrayMarkovModel {
     private float unknownLetterNGramProbability;
     private float unknownLetterNGramLogProbability;
     private List<TreeNGram> firstOrderNodes = new ArrayList<>();
-    private float[] nGramLogProbabilities = new float[26 * 26 * 26 * 26 * 26];
+    private float[] nGramLogProbabilities = new float[NGRAM_ARRAY_LENGTH];
 
     public ArrayMarkovModel(int order, float unknownLetterNGramProbability) {
         this.order = order;
@@ -42,6 +43,20 @@ public class ArrayMarkovModel {
         this.unknownLetterNGramProbability = unknownLetterNGramProbability;
         this.unknownLetterNGramLogProbability = (float) Math.log(unknownLetterNGramProbability);
         Arrays.fill(nGramLogProbabilities, this.unknownLetterNGramLogProbability);
+    }
+
+    ArrayMarkovModel(int order, float unknownLetterNGramProbability, List<TreeNGram> firstOrderNodes, float[] nGramLogProbabilities, int totalNodes) {
+        this.order = order;
+        this.unknownLetterNGramProbability = unknownLetterNGramProbability;
+        this.unknownLetterNGramLogProbability = (float) Math.log(unknownLetterNGramProbability);
+
+        if (nGramLogProbabilities.length != NGRAM_ARRAY_LENGTH) {
+            throw new IllegalArgumentException("Expected nGramLogProbabilities size=" + NGRAM_ARRAY_LENGTH + " but was=" + nGramLogProbabilities.length);
+        }
+
+        this.firstOrderNodes = new ArrayList<>(firstOrderNodes);
+        this.nGramLogProbabilities = Arrays.copyOf(nGramLogProbabilities, nGramLogProbabilities.length);
+        this.totalNodes.set(totalNodes);
     }
 
     public long getTotalNGramCount() {
@@ -56,6 +71,14 @@ public class ArrayMarkovModel {
 
     public List<TreeNGram> getFirstOrderNodes() {
         return Collections.unmodifiableList(firstOrderNodes);
+    }
+
+    int getTotalNodes() {
+        return totalNodes.get();
+    }
+
+    float[] getNGramLogProbabilities() {
+        return nGramLogProbabilities;
     }
 
     public void addNode(TreeNGram nodeToAdd) {

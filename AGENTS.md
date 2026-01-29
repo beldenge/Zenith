@@ -30,6 +30,8 @@ Zenith is a multi-module Java + Angular project for cipher analysis and optimiza
 - Prefer constructor injection and immutable dependencies.
 - Use configuration properties and `application.properties` for defaults; document configuration keys in module READMEs.
 - Maintain GraphQL schema-first discipline: update the schema alongside resolver implementations.
+- Use StringUtils.isBlank() or StringUtils.isNotBlank() instead of separate null and empty string checks
+- Use CollectionUtils.isEmpty() or CollectionUtils.isNotEmpty() instead of separate null and empty collection checks
 
 ## Frontend (Angular)
 - Prefer **signals** for synchronous state and derived state (computed signals) over `BehaviorSubject` or manual change detection for local, synchronous UI state.

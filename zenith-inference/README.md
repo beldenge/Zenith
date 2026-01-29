@@ -96,6 +96,7 @@ There are three main areas of configuration.
     task-executor.queue-capacity | 100000 | The number of tasks which can be queued at any given time when performing multi-threaded operations
     language-model.filename | zenith-model.csv | The language model file to use (CSV only) which should exist in the same directory where the application is run from
     language-model.archive-filename | zenith-model.zip | The language model zip file on the classpath which will be unzipped if language-model.filename does not exist
+    language-model.cache.filename | zenith-model.array.bin | Optional cache file for the in-memory letter n-gram model (binary). If present, it will be loaded instead of rebuilding from CSV
     language-model.max-ngrams-to-keep | 500000 | The maximum number of ngrams to keep.  The list of ngrams will be sorted in descending order by count and then the top number below will be kept.
     markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
     application.configuration.file-path | ./config | The path to the application configuration JSON file 
