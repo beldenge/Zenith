@@ -21,33 +21,17 @@ package com.ciphertool.zenith.genetic.util;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CoinTest {
-    private static final int MAX_FLIPS = 100;
-
     @Test
-    public void testFlip() {
+    public void testFlipUsesMagicNumber() {
         Coin coin = new Coin();
-        boolean headsOccurred = false;
-        boolean tailsOccurred = false;
 
-        for (int i = 0; i < MAX_FLIPS; i++) {
-            Boolean result = coin.flip();
-
-            if (Boolean.TRUE.equals(result)) {
-                headsOccurred = true;
-            }
-
-            if (Boolean.FALSE.equals(result)) {
-                tailsOccurred = true;
-            }
-
-            if (headsOccurred && tailsOccurred) {
-                break;
-            }
-        }
-
-        assertTrue(headsOccurred && tailsOccurred);
+        assertTrue(coin.flip(0.0d));
+        assertTrue(coin.flip(0.49d));
+        assertFalse(coin.flip(0.5d));
+        assertFalse(coin.flip(0.99d));
     }
 }

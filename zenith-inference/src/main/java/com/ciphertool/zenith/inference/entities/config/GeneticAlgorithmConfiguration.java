@@ -97,16 +97,28 @@ public class GeneticAlgorithmConfiguration {
             return true;
         }
 
+        if (populationSize == null || latticeColumns == null || latticeRows == null) {
+            return false;
+        }
+
         return populationSize == (latticeColumns * latticeRows);
     }
 
     @AssertTrue(message = "The elitism must be less than the populationSize.")
     public boolean isElitismLessThanPopulationSize() {
+        if (elitism == null || populationSize == null) {
+            return true;
+        }
+
         return elitism < populationSize;
     }
 
     @AssertTrue(message = "The tournamentSize must be less than the populationSize.")
     public boolean isTournamentSizeLessThanPopulationSize() {
+        if (tournamentSize == null || populationSize == null) {
+            return true;
+        }
+
         return tournamentSize < populationSize;
     }
 }

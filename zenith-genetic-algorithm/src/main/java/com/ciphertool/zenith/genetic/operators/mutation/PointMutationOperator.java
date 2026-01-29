@@ -27,6 +27,7 @@ import com.ciphertool.zenith.genetic.entities.Genome;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -43,7 +44,7 @@ public class PointMutationOperator implements MutationOperator {
         for (Chromosome<Object> chromosome : genome.getChromosomes()) {
             Set<Object> keys = chromosome.getGenes().keySet();
 
-            for (Object key : keys) {
+            for (Object key : new ArrayList<>(keys)) {
                 if (ThreadLocalRandom.current().nextDouble() <= mutationRate) {
                     Gene next = geneDao.findRandomGene(chromosome);
 

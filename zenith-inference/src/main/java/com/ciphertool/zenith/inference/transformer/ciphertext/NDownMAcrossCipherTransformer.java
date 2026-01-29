@@ -30,14 +30,18 @@ public class NDownMAcrossCipherTransformer extends AbstractRangeLimitedCipherTra
         Cipher transformed = cipher.clone();
 
         int rowStart = 0;
-        int rowEnd = cipher.getRows();
+        int rowEnd = cipher.getRows() - 1;
 
         if (rangeStart != null) {
             rowStart = Math.max(rangeStart, 0);
         }
 
         if (rangeEnd != null) {
-            rowEnd = Math.min(rangeEnd, cipher.getRows());
+            rowEnd = Math.min(rangeEnd, cipher.getRows() - 1);
+        }
+
+        if (rowStart > rowEnd) {
+            return transformed;
         }
 
         int charStart = rowStart * cipher.getColumns();

@@ -41,9 +41,12 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
     protected String transpositionKeyString;
 
     public void init() {
-        if (transpositionKeyString != null && !transpositionKeyString.isEmpty()) {
-            transpositionKey = getIndicesForTranspositionKey();
+        if (transpositionKeyString == null || transpositionKeyString.isEmpty()) {
+            transpositionKey = null;
+            return;
         }
+
+        transpositionKey = getIndicesForTranspositionKey();
 
         List<Integer> toCheck = new ArrayList<>(transpositionKey);
 

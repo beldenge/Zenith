@@ -22,6 +22,8 @@ package com.ciphertool.zenith.inference.entities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -190,5 +192,63 @@ public class CipherTest {
         Cipher cipherWithNullPropertiesA = new Cipher();
         Cipher cipherWithNullPropertiesB = new Cipher();
         assertEquals(cipherWithNullPropertiesA, cipherWithNullPropertiesB);
+    }
+
+    @Test
+    public void testGetCipherSymbolIndicesMap() {
+        Cipher cipher = new Cipher("test", 1, 5);
+        cipher.setCiphertext(Arrays.asList("A", "B", "A", "C", "B"));
+
+        Map<String, int[]> indices = cipher.getCipherSymbolIndicesMap();
+
+        assertArrayEquals(new int[] { 0, 2 }, indices.get("A"));
+        assertArrayEquals(new int[] { 1, 4 }, indices.get("B"));
+        assertArrayEquals(new int[] { 3 }, indices.get("C"));
+    }
+
+    @Test
+    public void testReplaceCiphertextCharacterClearsAndRebuildsIndices() {
+        Cipher cipher = new Cipher("test", 1, 5);
+        cipher.setCiphertext(Arrays.asList("A", "B", "A", "C", "B"));
+
+        Map<String, int[]> original = cipher.getCipherSymbolIndicesMap();
+        assertArrayEquals(new int[] { 1, 4 }, original.get("B"));
+
+        cipher.replaceCiphertextCharacter(1, new Ciphertext("A"));
+
+        Map<String, int[]> updated = cipher.getCipherSymbolIndicesMap();
+        assertArrayEquals(new int[] { 0, 1, 2 }, updated.get("A"));
+        assertArrayEquals(new int[] { 4 }, updated.get("B"));
+        assertArrayEquals(new int[] { 3 }, updated.get("C"));
+    }
+
+    @Test
+    public void testCloneCopiesState() {
+        Cipher cipher = new Cipher("clone", 2, 2, true);
+        cipher.addCiphertextCharacter(new Ciphertext("X", true));
+        cipher.addCiphertextCharacter(new Ciphertext("Y", false));
+        cipher.putKnownSolutionMapping("a", "b");
+
+        Cipher cloned = cipher.clone();
+
+        assertEquals(cipher.getName(), cloned.getName());
+        assertEquals(cipher.getRows(), cloned.getRows());
+        assertEquals(cipher.getColumns(), cloned.getColumns());
+        assertEquals(cipher.isReadOnly(), cloned.isReadOnly());
+        assertEquals(cipher.getKnownSolutionKey(), cloned.getKnownSolutionKey());
+
+        assertEquals(cipher.getCiphertextCharacters().size(), cloned.getCiphertextCharacters().size());
+        assertNotSame(cipher.getCiphertextCharacters().get(0), cloned.getCiphertextCharacters().get(0));
+        assertEquals(cipher.getCiphertextCharacters().get(0).getValue(), cloned.getCiphertextCharacters().get(0).getValue());
+    }
+
+    @Test
+    public void testAsSingleLineString() {
+        Cipher cipher = new Cipher("test", 1, 3);
+        cipher.addCiphertextCharacter(new Ciphertext("A"));
+        cipher.addCiphertextCharacter(new Ciphertext("B"));
+        cipher.addCiphertextCharacter(new Ciphertext("C"));
+
+        assertEquals("A B C", cipher.asSingleLineString());
     }
 }

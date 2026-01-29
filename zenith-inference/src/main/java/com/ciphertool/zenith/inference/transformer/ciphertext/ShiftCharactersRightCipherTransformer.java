@@ -17,23 +17,27 @@ public class ShiftCharactersRightCipherTransformer extends AbstractRangeLimitedC
     public Cipher transform(Cipher cipher) {
         Cipher transformed = cipher.clone();
         int start = 0;
-        int end = cipher.length();
+        int end = cipher.length() - 1;
 
         if (rangeStart != null) {
             start = Math.max(rangeStart, 0);
         }
 
         if (rangeEnd != null) {
-            end = Math.min(rangeEnd, cipher.length());
+            end = Math.min(rangeEnd, cipher.length() - 1);
         }
 
-        int rangeLength = end - start;
+        if (start > end) {
+            return transformed;
+        }
+
+        int rangeLength = end - start + 1;
 
         int k = end;
         for (int i = end; i >= start; i--) {
             k--;
             if (i == start) {
-                k += rangeLength + 1;
+                k += rangeLength;
             }
             transformed.replaceCiphertextCharacter(i, cipher.getCiphertextCharacters().get(k).clone());
         }

@@ -26,6 +26,7 @@ import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.ciphertool.zenith.inference.entities.config.CipherConfiguration;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
+import com.ciphertool.zenith.inference.transformer.FormComponent;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.dao.WordNGramDao;
@@ -320,7 +321,7 @@ public class InferenceConfiguration {
         List<TransformationStep> plaintextTransformationSteps = new ArrayList<>();
 
         List<String> existentPlaintextTransformers = plaintextTransformers.stream()
-                .map(transformer -> transformer.getClass().getSimpleName())
+                .map(FormComponent::getName)
                 .collect(Collectors.toList());
 
         List<FormComponentDto> appliedPlaintextTransformers = resolveAppliedPlaintextTransformers(applicationConfiguration);

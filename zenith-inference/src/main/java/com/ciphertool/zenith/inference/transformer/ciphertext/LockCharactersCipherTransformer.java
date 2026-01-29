@@ -16,14 +16,18 @@ public class LockCharactersCipherTransformer extends AbstractRangeLimitedCipherT
     @Override
     public Cipher transform(Cipher cipher) {
         int start = 0;
-        int end = cipher.length();
+        int end = cipher.length() - 1;
 
         if (rangeStart != null) {
             start = Math.max(rangeStart, 0);
         }
 
         if (rangeEnd != null) {
-            end = Math.min(rangeEnd, cipher.length());
+            end = Math.min(rangeEnd, cipher.length() - 1);
+        }
+
+        if (start > end) {
+            return cipher;
         }
 
         for (int i = start; i <= end; i++) {

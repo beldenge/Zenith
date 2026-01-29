@@ -61,7 +61,8 @@ public class CipherKeyGene implements Gene {
     }
 
     public void setValue(String value) {
-        if (!this.value.equals(value)){
+        boolean changed = this.value == null ? value != null : !this.value.equals(value);
+        if (changed && this.chromosome != null && this.chromosome.getGenome() != null) {
             this.chromosome.getGenome().setEvaluationNeeded(true);
         }
 

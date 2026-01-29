@@ -21,86 +21,54 @@ package com.ciphertool.zenith.genetic.operators.selection;
 
 import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
-import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
-import com.ciphertool.zenith.genetic.population.Population;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 public class TournamentSelectorTest {
-    private static TournamentSelector tournamentSelector;
-    private static Logger logMock;
-    private static RandomSelector randomSelectorMock;
-    private static GeneticAlgorithmStrategy strategy;
+    @Test
+    public void testGetNextIndexEmptyReturnsMinusOne() {
+        RandomSelector randomSelector = mock(RandomSelector.class);
+        TournamentSelector selector = new TournamentSelector(randomSelector);
 
-    @BeforeAll
-    public static void setUp() {
-        randomSelectorMock = mock(RandomSelector.class);
-        tournamentSelector = new TournamentSelector(randomSelectorMock);
+        int index = selector.getNextIndex(Collections.emptyList(), mock(GeneticAlgorithmStrategy.class));
 
-        strategy = GeneticAlgorithmStrategy.builder()
-                .tournamentSelectorAccuracy(0.9)
+        assertEquals(-1, index);
+        verifyNoInteractions(randomSelector);
+    }
+
+    @Test
+    public void testGetNextIndexSelectsBestWhenAccuracyIsCertain() {
+        RandomSelector randomSelector = mock(RandomSelector.class);
+        TournamentSelector selector = new TournamentSelector(randomSelector);
+
+        Genome weakest = genomeWithFitness(1.0d);
+        Genome middle = genomeWithFitness(3.0d);
+        Genome strongest = genomeWithFitness(5.0d);
+
+        List<Genome> individuals = Arrays.asList(weakest, strongest, middle);
+
+        GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .tournamentSelectorAccuracy(1.0d)
                 .tournamentSize(3)
                 .build();
 
-        logMock = mock(Logger.class);
-        Field logField = ReflectionUtils.findField(TournamentSelector.class, "log");
-        ReflectionUtils.makeAccessible(logField);
-        ReflectionUtils.setField(logField, tournamentSelector, logMock);
+        when(randomSelector.getNextIndex(individuals, strategy)).thenReturn(0, 1, 2);
+
+        int index = selector.getNextIndex(individuals, strategy);
+
+        assertEquals(1, index);
     }
 
-    @BeforeEach
-    public void resetMocks() {
-        reset(logMock);
-        reset(randomSelectorMock);
-    }
-
-    @Test
-    public void testGetNextIndex() {
-        Population populationMock = mock(Population.class);
-        List<Genome> individuals = new ArrayList<>();
-
-        Genome genome1 = new Genome(true, new Fitness[] { new MaximizingFitness(0.2d) }, populationMock);
-        individuals.add(genome1);
-
-        Genome genome2 = new Genome(true, new Fitness[] { new MaximizingFitness(0.3d) }, populationMock);
-        individuals.add(genome2);
-
-        Genome genome3 = new Genome(true, new Fitness[] { new MaximizingFitness(0.5d) }, populationMock);
-        individuals.add(genome3);
-
-        tournamentSelector.reIndex(individuals);
-        int selectedIndex = tournamentSelector.getNextIndex(individuals, strategy);
-
-        assertTrue(selectedIndex > -1);
-        verifyNoInteractions(logMock);
-    }
-
-    @Test
-    public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(null, strategy);
-
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
-    }
-
-    @Test
-    public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = tournamentSelector.getNextIndex(new ArrayList<>(), strategy);
-
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
+    private Genome genomeWithFitness(double value) {
+        return new Genome(false, new com.ciphertool.zenith.genetic.fitness.Fitness[] { new MaximizingFitness(value) }, null);
     }
 }

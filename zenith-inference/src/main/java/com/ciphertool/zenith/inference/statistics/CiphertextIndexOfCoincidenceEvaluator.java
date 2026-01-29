@@ -29,6 +29,10 @@ import java.util.Map;
 @Component
 public class CiphertextIndexOfCoincidenceEvaluator {
     public float evaluate(Cipher cipher) {
+        if (cipher.length() < 2) {
+            return 0f;
+        }
+
         float denominator = cipher.length() * (cipher.length() - 1);
 
         Map<String, Integer> ciphertextCounts = new HashMap<>();

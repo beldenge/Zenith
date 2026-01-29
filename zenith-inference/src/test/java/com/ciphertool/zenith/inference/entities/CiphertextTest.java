@@ -21,40 +21,30 @@ package com.ciphertool.zenith.inference.entities;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CiphertextTest {
     @Test
-    public void testConstructor() {
-        String valueToSet = "ciphertextValue";
-        Ciphertext ciphertext = new Ciphertext(valueToSet);
+    public void testConstructors() {
+        Ciphertext ciphertext = new Ciphertext("A");
+        assertEquals("A", ciphertext.getValue());
+        assertFalse(ciphertext.isLocked());
 
-        assertEquals(valueToSet, ciphertext.getValue());
+        Ciphertext locked = new Ciphertext("B", true);
+        assertEquals("B", locked.getValue());
+        assertTrue(locked.isLocked());
     }
 
     @Test
-    public void testSetValue() {
-        String valueToSet = "ciphertextValue";
-        Ciphertext ciphertext = new Ciphertext();
-        ciphertext.setValue(valueToSet);
+    public void testCloneCopiesState() {
+        Ciphertext original = new Ciphertext("C", true);
+        Ciphertext clone = original.clone();
 
-        assertEquals(valueToSet, ciphertext.getValue());
-    }
-
-    @Test
-    public void testEquals() {
-        String baseValue = "baseValue";
-
-        Ciphertext base = new Ciphertext(baseValue);
-
-        Ciphertext ciphertextEqualToBase = new Ciphertext(baseValue);
-        assertEquals(base, ciphertextEqualToBase);
-
-        Ciphertext ciphertextWithDifferentValue = new Ciphertext("differentValue");
-        assertNotEquals(base, ciphertextWithDifferentValue);
-
-        Ciphertext ciphertextWithNullPropertiesA = new Ciphertext();
-        Ciphertext ciphertextWithNullPropertiesB = new Ciphertext();
-        assertEquals(ciphertextWithNullPropertiesA, ciphertextWithNullPropertiesB);
+        assertNotSame(original, clone);
+        assertEquals(original.getValue(), clone.getValue());
+        assertEquals(original.isLocked(), clone.isLocked());
     }
 }

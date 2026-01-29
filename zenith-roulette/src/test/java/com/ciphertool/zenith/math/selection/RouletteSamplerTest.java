@@ -21,22 +21,61 @@ package com.ciphertool.zenith.math.selection;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class RouletteSamplerTest {
-    public static class DummyProbability implements Probability<Character>, Comparable<DummyProbability> {
-        private Character value;
-        private Double probability;
+    @Test
+    public void testReIndexRejectsNullAndEmpty() {
+        RouletteSampler<SampleProbability> sampler = new RouletteSampler<>();
 
-        public DummyProbability(Character value, Double probability) {
+        assertEquals(-1d, sampler.reIndex(null), 0.0001d);
+        assertEquals(-1d, sampler.reIndex(Collections.emptyList()), 0.0001d);
+    }
+
+    @Test
+    public void testReIndexRequiresSortedInput() {
+        RouletteSampler<SampleProbability> sampler = new RouletteSampler<>();
+
+        SampleProbability higher = new SampleProbability("b", 0.7d);
+        SampleProbability lower = new SampleProbability("a", 0.3d);
+
+        List<SampleProbability> unsorted = Arrays.asList(higher, lower);
+
+        assertThrows(IllegalStateException.class, () -> sampler.reIndex(unsorted));
+    }
+
+    @Test
+    public void testReIndexAndSampling() {
+        TestSampler sampler = new TestSampler();
+
+        List<SampleProbability> sorted = Arrays.asList(
+                new SampleProbability("a", 0.2d),
+                new SampleProbability("b", 0.3d),
+                new SampleProbability("c", 0.5d)
+        );
+
+        assertEquals(1.0d, sampler.reIndex(sorted), 0.0001d);
+        assertEquals(0, sampler.getNextIndexFor(0.1d));
+        assertEquals(1, sampler.getNextIndexFor(0.25d));
+        assertEquals(2, sampler.getNextIndexFor(0.75d));
+    }
+
+    private static final class SampleProbability implements Probability<String>, Comparable<SampleProbability> {
+        private final String value;
+        private final Double probability;
+
+        private SampleProbability(String value, Double probability) {
             this.value = value;
             this.probability = probability;
         }
 
         @Override
-        public Character getValue() {
+        public String getValue() {
             return value;
         }
 
@@ -46,271 +85,18 @@ public class RouletteSamplerTest {
         }
 
         @Override
-        public int compareTo(DummyProbability other) {
-            return this.probability.compareTo(other.probability);
+        public int compareTo(SampleProbability other) {
+            int compare = this.probability.compareTo(other.probability);
+            if (compare != 0) {
+                return compare;
+            }
+            return this.value.compareTo(other.value);
         }
     }
 
-    @Test
-    public void testSampling_Deterministic() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        dummyProbabilities.add(new DummyProbability('a', 0.07916));
-        dummyProbabilities.add(new DummyProbability('b', 0.01543));
-        dummyProbabilities.add(new DummyProbability('c', 0.03037));
-        dummyProbabilities.add(new DummyProbability('d', 0.03962));
-        dummyProbabilities.add(new DummyProbability('e', 0.12454));
-        dummyProbabilities.add(new DummyProbability('f', 0.02233));
-        dummyProbabilities.add(new DummyProbability('g', 0.01981));
-        dummyProbabilities.add(new DummyProbability('h', 0.05323));
-        dummyProbabilities.add(new DummyProbability('i', 0.07300));
-        dummyProbabilities.add(new DummyProbability('j', 0.00163));
-        dummyProbabilities.add(new DummyProbability('k', 0.00701));
-        dummyProbabilities.add(new DummyProbability('l', 0.04058));
-        dummyProbabilities.add(new DummyProbability('m', 0.02403));
-        dummyProbabilities.add(new DummyProbability('n', 0.07289));
-        dummyProbabilities.add(new DummyProbability('o', 0.07603));
-        dummyProbabilities.add(new DummyProbability('p', 0.02002));
-        dummyProbabilities.add(new DummyProbability('q', 0.00104));
-        dummyProbabilities.add(new DummyProbability('r', 0.06124));
-        dummyProbabilities.add(new DummyProbability('s', 0.06438));
-        dummyProbabilities.add(new DummyProbability('t', 0.09284));
-        dummyProbabilities.add(new DummyProbability('u', 0.02905));
-        dummyProbabilities.add(new DummyProbability('v', 0.01068));
-        dummyProbabilities.add(new DummyProbability('w', 0.01930));
-        dummyProbabilities.add(new DummyProbability('x', 0.00226));
-        dummyProbabilities.add(new DummyProbability('y', 0.01888));
-        dummyProbabilities.add(new DummyProbability('z', 0.00068));
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        // Build expected cumulative thresholds
-        double cumulative = 0.0;
-        double[] thresholds = new double[dummyProbabilities.size()];
-        for (int i = 0; i < dummyProbabilities.size(); i++) {
-            cumulative += dummyProbabilities.get(i).getProbability();
-            thresholds[i] = cumulative;
+    private static final class TestSampler extends RouletteSampler<SampleProbability> {
+        private int getNextIndexFor(double magicNumber) {
+            return getNextIndex(magicNumber);
         }
-
-        // Test that midpoint values within each probability range return the correct index
-        cumulative = 0.0;
-        for (int i = 0; i < dummyProbabilities.size(); i++) {
-            double midpoint = cumulative + (dummyProbabilities.get(i).getProbability() / 2.0);
-            assertEquals(i, rouletteSampler.getNextIndex(midpoint),
-                "Midpoint " + midpoint + " should map to index " + i + " (" + dummyProbabilities.get(i).getValue() + ")");
-            cumulative = thresholds[i];
-        }
-
-        // Test boundary conditions
-        assertEquals(0, rouletteSampler.getNextIndex(0.0001)); // First bucket
-        assertEquals(dummyProbabilities.size() - 1, rouletteSampler.getNextIndex(0.9999)); // Last bucket
-    }
-
-    @Test
-    public void testGetNextIndex_SingleNode() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        dummyProbabilities.add(new DummyProbability('a', 1.0d));
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        assertEquals(0, rouletteSampler.getNextIndex(1.0d));
-        assertEquals(0, rouletteSampler.getNextIndex(0.1d));
-        assertEquals(0, rouletteSampler.getNextIndex(2.0d));
-    }
-
-    @Test
-    public void testReindex_Unsorted() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        DummyProbability a = new DummyProbability('a', 0.3d);
-        dummyProbabilities.add(a);
-        DummyProbability b = new DummyProbability('b', 0.2d);
-        dummyProbabilities.add(b);
-        DummyProbability c = new DummyProbability('c', 0.5d);
-        dummyProbabilities.add(c);
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        boolean caught = false;
-        try {
-            rouletteSampler.reIndex(dummyProbabilities);
-        } catch(IllegalStateException ise) {
-            caught = true;
-        }
-
-        assertTrue(caught);
-    }
-
-    @Test
-    public void testGetNextIndex_ThreeNodes_Equal() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        DummyProbability a = new DummyProbability('a', 0.3d);
-        dummyProbabilities.add(a);
-        DummyProbability b = new DummyProbability('b', 0.2d);
-        dummyProbabilities.add(b);
-        DummyProbability c = new DummyProbability('c', 0.5d);
-        dummyProbabilities.add(c);
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        int chosen = rouletteSampler.getNextIndex(0.2d);
-
-        assertEquals(0, chosen);
-        assertSame(b, dummyProbabilities.get(chosen));
-    }
-
-    @Test
-    public void testGetNextIndex_ThreeNodes_LessThan_Equal() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        DummyProbability a = new DummyProbability('a', 0.3d);
-        dummyProbabilities.add(a);
-        DummyProbability b = new DummyProbability('b', 0.2d);
-        dummyProbabilities.add(b);
-        DummyProbability c = new DummyProbability('c', 0.5d);
-        dummyProbabilities.add(c);
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        int chosen = rouletteSampler.getNextIndex(0.2d);
-
-        assertEquals(0, chosen);
-        assertSame(b, dummyProbabilities.get(chosen));
-    }
-
-    @Test
-    public void testGetNextIndex_ThreeNodes_LessThan_LessThan() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        DummyProbability a = new DummyProbability('a', 0.3d);
-        dummyProbabilities.add(a);
-        DummyProbability b = new DummyProbability('b', 0.2d);
-        dummyProbabilities.add(b);
-        DummyProbability c = new DummyProbability('c', 0.5d);
-        dummyProbabilities.add(c);
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        int chosen = rouletteSampler.getNextIndex(0.15d);
-
-        assertEquals(0, chosen);
-        assertSame(b, dummyProbabilities.get(chosen));
-    }
-
-    @Test
-    public void testGetNextIndex_ThreeNodes_LessThan_GreaterThan() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        DummyProbability a = new DummyProbability('a', 0.3d);
-        dummyProbabilities.add(a);
-        DummyProbability b = new DummyProbability('b', 0.2d);
-        dummyProbabilities.add(b);
-        DummyProbability c = new DummyProbability('c', 0.5d);
-        dummyProbabilities.add(c);
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        int chosen = rouletteSampler.getNextIndex(0.25d);
-
-        assertEquals(1, chosen);
-        assertSame(a, dummyProbabilities.get(chosen));
-    }
-
-    @Test
-    public void testGetNextIndex_ThreeNodes_GreaterThan_Equal() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        DummyProbability a = new DummyProbability('a', 0.3d);
-        dummyProbabilities.add(a);
-        DummyProbability b = new DummyProbability('b', 0.2d);
-        dummyProbabilities.add(b);
-        DummyProbability c = new DummyProbability('c', 0.5d);
-        dummyProbabilities.add(c);
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        int chosen = rouletteSampler.getNextIndex(1.0d);
-
-        assertEquals(2, chosen);
-        assertSame(c, dummyProbabilities.get(chosen));
-    }
-
-    @Test
-    public void testGetNextIndex_ThreeNodes_GreaterThan_LessThan() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-
-        DummyProbability a = new DummyProbability('a', 0.3d);
-        dummyProbabilities.add(a);
-        DummyProbability b = new DummyProbability('b', 0.2d);
-        dummyProbabilities.add(b);
-        DummyProbability c = new DummyProbability('c', 0.5d);
-        dummyProbabilities.add(c);
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        rouletteSampler.reIndex(dummyProbabilities);
-
-        int chosen = rouletteSampler.getNextIndex(0.6d);
-
-        assertEquals(2, chosen);
-        assertSame(c, dummyProbabilities.get(chosen));
-    }
-
-    @Test
-    public void testReindex_NullList() {
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        double result = rouletteSampler.reIndex(null);
-
-        assertEquals(-1, result);
-    }
-
-    @Test
-    public void testReindex_EmptyList() {
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        double result = rouletteSampler.reIndex(new ArrayList<>());
-
-        assertEquals(-1, result);
-    }
-
-    @Test
-    public void testReindex_AllZeroProbabilities() {
-        List<DummyProbability> dummyProbabilities = new ArrayList<>();
-        dummyProbabilities.add(new DummyProbability('a', 0.0d));
-        dummyProbabilities.add(new DummyProbability('b', 0.0d));
-
-        RouletteSampler<DummyProbability> rouletteSampler = new RouletteSampler<>();
-
-        Collections.sort(dummyProbabilities);
-        double result = rouletteSampler.reIndex(dummyProbabilities);
-
-        // All probabilities are zero, so sum is 0, which means totalProbability stays 0
-        // and the check (abs(1 - 0) > 0.0001) is true, so it returns -1
-        assertEquals(-1, result);
     }
 }

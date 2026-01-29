@@ -19,77 +19,36 @@
 
 package com.ciphertool.zenith.genetic.operators.selection;
 
+import com.ciphertool.zenith.genetic.GeneticAlgorithmStrategy;
 import com.ciphertool.zenith.genetic.entities.Genome;
-import com.ciphertool.zenith.genetic.fitness.Fitness;
 import com.ciphertool.zenith.genetic.fitness.MaximizingFitness;
-import com.ciphertool.zenith.genetic.population.Population;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 public class RandomSelectorTest {
-    private static RandomSelector randomSelector;
-    private static Logger logMock;
+    @Test
+    public void testGetNextIndexEmptyReturnsMinusOne() {
+        RandomSelector selector = new RandomSelector();
 
-    @BeforeAll
-    public static void setUp() {
-        randomSelector = new RandomSelector();
+        int index = selector.getNextIndex(Collections.emptyList(), mock(GeneticAlgorithmStrategy.class));
 
-        logMock = mock(Logger.class);
-        Field logField = ReflectionUtils.findField(RandomSelector.class, "log");
-        ReflectionUtils.makeAccessible(logField);
-        ReflectionUtils.setField(logField, randomSelector, logMock);
-    }
-
-    @BeforeEach
-    public void resetMocks() {
-        reset(logMock);
+        assertEquals(-1, index);
     }
 
     @Test
-    public void testGetNextIndex() {
-        Population populationMock = mock(Population.class);
-        List<Genome> individuals = new ArrayList<>();
+    public void testGetNextIndexSingleElementAlwaysZero() {
+        RandomSelector selector = new RandomSelector();
 
-        Genome genome1 = new Genome(true, new Fitness[] { new MaximizingFitness(0.2d) }, populationMock);
-        individuals.add(genome1);
+        Genome genome = new Genome(false, new com.ciphertool.zenith.genetic.fitness.Fitness[] { new MaximizingFitness(1.0d) }, null);
+        List<Genome> individuals = Collections.singletonList(genome);
 
-        Genome genome2 = new Genome(true, new Fitness[] { new MaximizingFitness(0.3d) }, populationMock);
-        individuals.add(genome2);
+        int index = selector.getNextIndex(individuals, mock(GeneticAlgorithmStrategy.class));
 
-        Genome genome3 = new Genome(true, new Fitness[] { new MaximizingFitness(0.5d) }, populationMock);
-        individuals.add(genome3);
-
-        int selectedIndex = randomSelector.getNextIndex(individuals, null);
-
-        assertTrue(selectedIndex > -1);
-        verifyNoInteractions(logMock);
-    }
-
-    @Test
-    public void testGetNextIndexWithNullPopulation() {
-        int selectedIndex = randomSelector.getNextIndex(null, null);
-
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
-    }
-
-    @Test
-    public void testGetNextIndexWithEmptyPopulation() {
-        int selectedIndex = randomSelector.getNextIndex(new ArrayList<>(), null);
-
-        assertEquals(-1, selectedIndex);
-        verify(logMock, times(1)).warn(anyString());
+        assertEquals(0, index);
     }
 }

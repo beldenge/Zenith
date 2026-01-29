@@ -74,7 +74,7 @@ public interface Population {
                 for (Map.Entry<Object, Gene> entry : ((Chromosome<Object>) chromosome).getGenes().entrySet()) {
                     geneKey = entry.getKey();
 
-                    if (symbolCounts.containsKey(geneKey)) {
+                    if (!symbolCounts.containsKey(geneKey)) {
                         symbolCounts.put(geneKey, new HashMap<>());
                     }
 

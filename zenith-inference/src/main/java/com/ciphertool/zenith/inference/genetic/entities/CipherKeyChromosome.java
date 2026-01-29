@@ -173,6 +173,8 @@ public class CipherKeyChromosome implements Chromosome<String> {
             if (other.cipher != null) {
                 return false;
             }
+        } else if (!cipher.equals(other.cipher)) {
+            return false;
         }
 
         if (genes == null) {

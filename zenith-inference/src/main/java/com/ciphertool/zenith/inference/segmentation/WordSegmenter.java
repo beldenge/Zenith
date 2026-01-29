@@ -56,6 +56,10 @@ public class WordSegmenter {
     }
 
     public Map.Entry<Double, String[]> score(String text) {
+        if (text == null || text.isEmpty()) {
+            return new AbstractMap.SimpleEntry<>(0d, new String[0]);
+        }
+
         text = text.toLowerCase();
 
         double[][] probabilities = new double[text.length()][MAX_WORD_LENGTH];
@@ -68,7 +72,7 @@ public class WordSegmenter {
             }
         }
 
-        for (int i = 0; i < MAX_WORD_LENGTH; i ++) {
+        for (int i = 0; i < Math.min(text.length(), MAX_WORD_LENGTH); i ++) {
             String partial = text.substring(0, i + 1);
             probabilities[0][i] = getConditionalWordProbability(partial, null);
             strings[0][i] = new String[] { partial };

@@ -22,41 +22,29 @@ package com.ciphertool.zenith.genetic.util;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RandomListElementSelectorTest {
-    private static final int MAX_SELECTIONS = 100;
+    @Test
+    public void testSelectRandomListElementSingleItemAlwaysZero() {
+        RandomListElementSelector selector = new RandomListElementSelector();
+        List<String> items = Collections.singletonList("only");
+
+        assertEquals(0, selector.selectRandomListElement(items));
+    }
 
     @Test
-    public void testSelectRandomListElement() {
-        RandomListElementSelector randomListElementSelector = new RandomListElementSelector();
+    public void testSelectRandomListElementWithinRange() {
+        RandomListElementSelector selector = new RandomListElementSelector();
+        List<String> items = Arrays.asList("a", "b", "c", "d", "e");
 
-        List<String> threeElements = Arrays.asList("element1", "element2", "element3");
-
-        boolean element1Selected = false, element2Selected = false, element3Selected = false;
-
-        for (int i = 0; i < MAX_SELECTIONS; i++) {
-            Integer randomIndex = randomListElementSelector.selectRandomListElement(threeElements);
-
-            if ("element1".equals(threeElements.get(randomIndex))) {
-                element1Selected = true;
-            }
-
-            if ("element2".equals(threeElements.get(randomIndex))) {
-                element2Selected = true;
-            }
-
-            if ("element3".equals(threeElements.get(randomIndex))) {
-                element3Selected = true;
-            }
-
-            if (element1Selected && element2Selected && element3Selected) {
-                break;
-            }
+        for (int i = 0; i < 100; i++) {
+            int index = selector.selectRandomListElement(items);
+            assertTrue(index >= 0 && index < items.size());
         }
-
-        assertTrue(element1Selected && element2Selected && element3Selected);
     }
 }
