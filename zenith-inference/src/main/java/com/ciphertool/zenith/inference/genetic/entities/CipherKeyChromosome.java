@@ -29,11 +29,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
- * TODO: we should probably create an AbstractChromosome which handles the add/put/replace operations since they are
- * pretty generic, and the logic for setting whether the genome requires evaluation is critical to implement correctly
- * for other Chromosome implementations.
- */
 public class CipherKeyChromosome implements Chromosome<String> {
     private Genome genome;
 
@@ -78,7 +73,6 @@ public class CipherKeyChromosome implements Chromosome<String> {
         gene.setChromosome(this);
 
         this.genes.put(key, gene);
-        // TODO: it may be worth testing to see if there's already a Gene mapped to this key and if the value is the same, then don't evaluate
 
         if (this.genome != null) {
             this.genome.setEvaluationNeeded(true);
@@ -98,10 +92,6 @@ public class CipherKeyChromosome implements Chromosome<String> {
         return this.genes.remove(key);
     }
 
-    /*
-     * This does the same thing as putGene(), and exists solely for semantic consistency.
-     * TODO: if the previous comment is true, then we need to either get rid of this method or call putGene from it
-     */
     @Override
     public void replaceGene(String key, Gene newGene) {
         if (null == newGene) {

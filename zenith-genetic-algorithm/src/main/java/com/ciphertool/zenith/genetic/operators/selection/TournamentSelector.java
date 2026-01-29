@@ -70,8 +70,6 @@ public class TournamentSelector implements Selector {
 
         for (int i = 0; i < Math.min(tournamentSize, individuals.size()); i ++) {
             int chosenIndex = randomSelector.getNextIndex(individuals, strategy);
-
-            // TODO: How to handle whether we've chosen the same individual more than once? -- since it's a map, the tournament size just suffers
             indexedCompetitors.add(new IndexedIndividual(chosenIndex, individuals.get(chosenIndex)));
         }
 

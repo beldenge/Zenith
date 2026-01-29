@@ -54,7 +54,7 @@ public class CiphertextCycleCountEvaluator {
         }
 
         List<CyclePair> cyclePairs = new ArrayList<>((uniqueCiphertextCharacters.size() * (uniqueCiphertextCharacters.size() - 1)) / 2);
-        for (CyclePair cyclePair : calculateUniqueCyclePairs(cipher, uniqueCiphertextCharacters)) {
+        for (CyclePair cyclePair : calculateUniqueCyclePairs(uniqueCiphertextCharacters, ciphertextIndices)) {
             cyclePairs.add((CyclePair) cyclePair.clone());
         }
 
@@ -95,7 +95,7 @@ public class CiphertextCycleCountEvaluator {
         return score;
     }
 
-    private List<CyclePair> calculateUniqueCyclePairs(Cipher cipher, List<String> uniqueCiphertextCharacters) {
+    private List<CyclePair> calculateUniqueCyclePairs(List<String> uniqueCiphertextCharacters, Map<String, List<Integer>> ciphertextIndices) {
         List<CyclePair> uniqueCyclePairs = new ArrayList<>((uniqueCiphertextCharacters.size() * (uniqueCiphertextCharacters.size() - 1)) / 2);
         for (String first : uniqueCiphertextCharacters) {
             for (String second : uniqueCiphertextCharacters) {
@@ -113,37 +113,11 @@ public class CiphertextCycleCountEvaluator {
             }
         }
 
-        int end = cipher.length();
-
-        // Remove cycle pairs that are guaranteed to not produce useful scores, interpreted as occurence sequences which don't contain at least two of each ciphertext value
-        // TODO: a simpler way to do this would be to simply remove all cycle pairs where one of the ciphertext values only occurs once in the cipher
-        List<CyclePair> insignificantCyclePairs = new ArrayList<>();
-
-        for (CyclePair cyclePair : uniqueCyclePairs) {
-            for (int i = 0; i < end - 1; i++) {
-                String ciphertext = cipher.getCiphertextCharacters().get(i).getValue();
-
-                if (cyclePair.contains(ciphertext)) {
-                    cyclePair.addCiphertext(ciphertext);
-                }
-            }
-
-            int firstCount = (int) cyclePair.getOccurenceSequence().stream()
-                    .filter(occurence -> occurence.equals(cyclePair.getFirst()))
-                    .count();
-
-            int secondCount = (int) cyclePair.getOccurenceSequence().stream()
-                    .filter(occurence -> occurence.equals(cyclePair.getSecond()))
-                    .count();
-
-            if (firstCount < 2 || secondCount < 2) {
-                insignificantCyclePairs.add(cyclePair);
-            }
-        }
-
-        for (CyclePair insignificantCyclePair : insignificantCyclePairs) {
-            uniqueCyclePairs.remove(insignificantCyclePair);
-        }
+        // Remove cycle pairs where either ciphertext value occurs less than twice in the cipher
+        uniqueCyclePairs.removeIf(cyclePair ->
+                ciphertextIndices.get(cyclePair.getFirst()).size() < 2 ||
+                ciphertextIndices.get(cyclePair.getSecond()).size() < 2
+        );
 
         return uniqueCyclePairs;
     }

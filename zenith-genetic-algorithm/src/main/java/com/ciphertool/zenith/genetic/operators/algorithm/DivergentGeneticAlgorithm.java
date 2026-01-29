@@ -273,9 +273,6 @@ public class DivergentGeneticAlgorithm {
         List<FutureTask<Integer>> futureTasks = new ArrayList<>();
         FutureTask<Integer> futureTask;
 
-        // TODO: this probably is not necessary
-        strategy.getPopulation().sortIndividuals();
-
         /*
          * Execute each mutation concurrently.
          */

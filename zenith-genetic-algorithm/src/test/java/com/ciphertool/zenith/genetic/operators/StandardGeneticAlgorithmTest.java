@@ -124,7 +124,7 @@ public class StandardGeneticAlgorithmTest {
         verify(populationMock, never()).breed(anyInt());
         verify(populationMock, times(1)).evaluateFitness(any(GenerationStatistics.class));
         verify(populationMock, times(100)).addIndividual(any(Genome.class));
-        verify(populationMock, times(1)).sortIndividuals();
+        verify(populationMock, never()).sortIndividuals(); // elitism is 0, so sortIndividuals is not called
         verify(populationMock, times(1)).clearIndividuals();
         verify(populationMock, never()).calculateEntropy();
         verifyNoMoreInteractions(populationMock);
@@ -257,9 +257,7 @@ public class StandardGeneticAlgorithmTest {
 
         standardGeneticAlgorithm.mutate(strategyToSet, individuals);
 
-        verify(populationMock, times(1)).sortIndividuals();
-        verifyNoMoreInteractions(populationMock);
-
+        verifyNoInteractions(populationMock);
         verify(mutationOperatorMock, times(100)).mutateChromosomes(any(Genome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationOperatorMock);
     }
@@ -299,9 +297,7 @@ public class StandardGeneticAlgorithmTest {
 
         standardGeneticAlgorithm.mutate(strategyToSet, individuals);
 
-        verify(populationMock, times(1)).sortIndividuals();
-        verifyNoMoreInteractions(populationMock);
-
+        verifyNoInteractions(populationMock);
         verify(mutationOperatorMock, times(initialPopulationSize)).mutateChromosomes(any(Genome.class), same(strategyToSet));
         verifyNoMoreInteractions(mutationOperatorMock);
     }
