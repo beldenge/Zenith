@@ -19,6 +19,7 @@
 
 package com.ciphertool.zenith.math.selection;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,12 @@ public class RouletteSampler<T extends Probability> {
     private BinaryRouletteTree rouletteWheel;
 
     public synchronized double reIndex(List<T> probabilities) {
+        if (CollectionUtils.isEmpty(probabilities)) {
+            log.error("Attempted to index a null or empty probability distribution.  Unable to continue.");
+
+            return -1;
+        }
+
         List sortedProbabilities = new ArrayList<>();
         sortedProbabilities.addAll(probabilities);
         Collections.sort(sortedProbabilities);
@@ -45,12 +52,6 @@ public class RouletteSampler<T extends Probability> {
             if (probabilities.get(i) != sortedProbabilities.get(i)) {
                 throw new IllegalStateException("The List of probabilities must be sorted before being indexed.");
             }
-        }
-
-        if (probabilities == null || probabilities.isEmpty()) {
-            log.error("Attempted to index a null or empty probability distribution.  Unable to continue.");
-
-            return -1;
         }
 
         this.rouletteWheel = new BinaryRouletteTree();
