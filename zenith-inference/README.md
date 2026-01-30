@@ -1,180 +1,351 @@
-# Description
-This module encompasses the algorithm which performs inference on the language model.
+# Zenith Inference Module
 
-# Running Standalone
+The core inference engine for solving homophonic substitution ciphers. Uses language models and optimization algorithms to find the most likely plaintext for a given ciphertext.
+
+---
+
+## Quick Start
+
 1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
-2. Download zenith-inference-2026.1.1-SNAPSHOT-exec.jar
-3. Issue the command `java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M -jar zenith-inference-2026.1.1-SNAPSHOT-exec.jar`
+2. Download `zenith-inference-2026.1.1-SNAPSHOT-exec.jar`
+3. Run:
+   ```bash
+   java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M \
+        -jar zenith-inference-2026.1.1-SNAPSHOT-exec.jar
+   ```
 
-Note: You must run the *-exec.jar and not the vanilla jar file, as this module is used both as a dependency and as a runnable application on its own.
+**Note:** Use the `-exec.jar` file, not the plain `.jar`. This module serves as both a standalone application and a library dependency.
 
-# Architecture
+---
 
-There are four major levels of customization:
-1. Optimizer
-   - SimulatedAnnealingSolutionOptimizer
-     - This is the optimizer which currently is successful and is recommended (and is the default).
-   - GeneticAlgorithmSolutionOptimizer
-     - This is an experimental optimizer that does not yet produce successful solutions.
-2. Ciphertext Transformers (listed below in [Ciphertext Transformers](#ciphertext-transformers))
-2. Plaintext Transformers (listed below in [Plaintext Transformers](#plaintext-transformers))
-3. PlaintextEvaluator
-   - NGramAndIndexOfCoincidencePlaintextEvaluator
-     - This evaluator is explained below in [Algorithm and Scoring](#algorithm-and-scoring)
-   - RestServicePlaintextEvaluator
-     - You can implement an evaluator in any technology you want, as long as it conforms to the predefined REST interface.  Just point to that service using the property ```evaluation.rest-service.url```. 
+## Architecture Overview
 
-# Configuration
-There are three main areas of configuration.
-1. **Ciphers**
+The inference engine has four customizable layers:
 
-    Ciphers need to be configured as JSON, each in a separate file that is readable from the property working directory in a subdirectory called "ciphers".  Out of the box, the zodiac408 and zodiac340 ciphers are packaged within the application.
-    Take a look at [ciphers.json](src/main/resources/ciphers/zodiac408.json) for an example.
+| Layer | Purpose | Options |
+|-------|---------|---------|
+| **Optimizer** | Search algorithm | `SimulatedAnnealing` (recommended), `GeneticAlgorithm` (experimental) |
+| **Fitness Function** | Score solutions | Multiple n-gram + statistical evaluators |
+| **Ciphertext Transformers** | Pre-process cipher | Rotations, transpositions, period shifts, etc. |
+| **Plaintext Transformers** | Post-process plaintext | Vigenere, Four Square, One Time Pad |
 
-2. **Solver Configuration**
+---
 
-    There are sensible defaults, but if you would like to customize how the solver runs, a file with the name zenith.json needs to be put in a /config directory within the same directory as where you are running the application from.
+## Optimizers
 
-    Below lists the defaults and serves as an example of the JSON structure.
+| Optimizer | Status | Description |
+|-----------|--------|-------------|
+| `SimulatedAnnealing` | **Recommended** | Hill climbing with random restarts and annealing schedule |
+| `GeneticAlgorithm` | Experimental | Parallel population-based search with speciation |
 
-    ```json
-    {
-      "epochs": 10,
-      "selectedCipher": "zodiac408",
-      "cipherConfigurations": [
-        {
-          "cipherName": "zodiac408",
-          "appliedCiphertextTransformers": [
-            {
-              "name": "RemoveLastRow",
-              "displayName": "Remove Last Row",
-              "form": null
-            }
-          ],
-          "appliedPlaintextTransformers": []
-        }
-      ],
-      "selectedOptimizer": {
-        "name": "SimulatedAnnealing"
-      },
-      "selectedFitnessFunction": {
-        "name": "NgramAndIndexOfCoincidence"
-      },
-      "simulatedAnnealingConfiguration": {
-        "samplerIterations": 5001,
-        "annealingTemperatureMin": 2.75,
-        "annealingTemperatureMax": 5
-      },
-      "geneticAlgorithmConfiguration": {
-        "populationSize": 10000,
-        "numberOfGenerations": 1000,
-        "elitism": 1,
-        "populationName": "StandardPopulation",
-        "latticeRows": 100,
-        "latticeColumns": 100,
-        "latticeWrapAround": true,
-        "latticeRadius": 1,
-        "breederName": "RandomCipherKeyBreeder",
-        "crossoverOperatorName": "UniformCrossoverOperator",
-        "mutationOperatorName": "PointMutationOperator",
-        "mutationRate": 0.05,
-        "maxMutationsPerIndividual": 5,
-        "selectorName": "TournamentSelector",
-        "tournamentSelectorAccuracy": 0.75,
-        "tournamentSize": 5
-      }
-    }
-    ```
+---
 
-3. **Application Properties**
+## Fitness Functions (PlaintextEvaluators)
 
-    There are a number of configuration settings that can be set for the application.  Zenith comes with sensible defaults, so you can skip this altogether unless you need to customize something.  The properties need to be put in an application.properties file in the same directory as where you are running the application from.
+| Name | Type | Description |
+|------|------|-------------|
+| `NgramAndIndexOfCoincidence` | Single-objective | N-gram log probability penalized by index of coincidence |
+| `NgramAndIndexOfCoincidenceMultiObjective` | Multi-objective | Separate n-gram and IoC objectives for Pareto optimization |
+| `NgramAndChiSquared` | Single-objective | N-gram probability with chi-squared letter frequency penalty |
+| `NgramAndChiSquaredMultiObjective` | Multi-objective | Separate n-gram and chi-squared objectives |
+| `NgramAndEntropy` | Single-objective | N-gram probability with entropy penalty |
+| `NgramAndEntropyMultiObjective` | Multi-objective | Separate n-gram and entropy objectives |
+| `RestService` | External | Delegate scoring to external REST service (configure with `evaluation.rest-service.url`) |
 
-    Property Key | Default Value | Description
-    --- | --- | ---
-    task-executor.pool-size | Number of available cores on host | The number of threads to use for parallel tasks
-    task-executor.queue-capacity | 100000 | The number of tasks which can be queued at any given time when performing multi-threaded operations
-    language-model.filename | zenith-model.csv | The language model file to use (CSV only) which should exist in the same directory where the application is run from
-    language-model.archive-filename | zenith-model.zip | The language model zip file on the classpath which will be unzipped if language-model.filename does not exist
-    language-model.cache.filename | zenith-model.array.bin | Optional cache file for the in-memory letter n-gram model (binary). If present, it will be loaded instead of rebuilding from CSV
-    language-model.max-ngrams-to-keep | 500000 | The maximum number of ngrams to keep.  The list of ngrams will be sorted in descending order by count and then the top number below will be kept.
-    markov.letter.order | 5 | Order of the Markov model (essentially the n-gram size)
-    application.configuration.file-path | ./config | The path to the application configuration JSON file 
+---
 
-# Algorithm and Scoring
-This applies to the SimulatedAnnealingSolutionOptimizer.
+## Configuration
 
-The algorithm is standard hill climbing with random restarts and an annealing schedule to aid in convergence.  Many other more complex types of algorithms have been attempted, but they have been found to either be unsuccessful or too slow.  Furthermore, the simplest solution that works is most often the best solution. 
+### 1. Cipher Files
 
-The solution scoring works by using a language model to estimate the probability of the solution and then penalizing the solution with a compution of the index of coincidence.  The language model is a Markov model of order 5 whereby any n-grams of the same length can each be assigned probabilities.  For n-grams that occur in solutions and which we do not have a match in the language model, we assign an "unknown n-gram probability".  We convert all probabilties to log probabilities, and this is done both for performance reasons and for ease of penalizing them by the aforementioned index of coincidence.  The index of coincidence turns out to be a critical component, as without it the hill climbing algorithm gets very easily stuck at local optima.  We finally take the fifth root of the index of coincidence and then multiply that by the sum of log probabilities as determined by the language model to get our score for a given solution.
+Place cipher JSON files in a `ciphers/` subdirectory. Example structure:
 
-# Transformer Implementations
-For ciphers that are more complex than homophonic substitution ciphers read left-to-right as normal, it's assumed that some sort of mutation(s) have been performed to throw off various types of cryptanalysis.  When this is the case, it's anyone's guess as to what type(s) of mutation(s) may have been performed during encipherment, either before or after substitution.  Therefore Zenith comes with an extensible facility for specifying transformations to perform to "unwrap" the ciphertext and plaintext before scoring the solution proposal.  
+```json
+{
+  "name": "zodiac408",
+  "rows": 24,
+  "columns": 17,
+  "ciphertext": ["symbol1", "symbol2", ...],
+  "knownSolution": "optional plaintext for validation"
+}
+```
+
+Built-in ciphers: `zodiac408`, `zodiac340`
+
+### 2. Solver Configuration (`config/zenith.json`)
+
+```json
+{
+   "selectedCipher" : "zodiac340-transformed",
+   "epochs": 10,
+   "cipherConfigurations": [],
+   "selectedOptimizer": {
+      "name": "SimulatedAnnealing"
+   },
+   "selectedFitnessFunction": {
+      "name": "NgramAndIndexOfCoincidence"
+   },
+   "simulatedAnnealingConfiguration": {
+      "samplerIterations": 5000,
+      "annealingTemperatureMin": 0.006,
+      "annealingTemperatureMax": 0.012
+   },
+   "geneticAlgorithmConfiguration": {
+      "populationSize": 1000,
+      "numberOfGenerations": 4,
+      "elitism": 0,
+      "populationName": "StandardPopulation",
+      "latticeRows": 1,
+      "latticeColumns": 1000,
+      "latticeWrapAround": false,
+      "latticeRadius": 1,
+      "breederName": "ProbabilisticCipherKeyBreeder",
+      "crossoverOperatorName": "UniformCrossoverOperator",
+      "mutationOperatorName": "PointMutationOperator",
+      "mutationRate": 0.01,
+      "maxMutationsPerIndividual": 5,
+      "selectorName": "TournamentSelector",
+      "tournamentSelectorAccuracy": 0.9,
+      "tournamentSize": 5,
+      "minPopulations": 64,
+      "speciationEvents": 1,
+      "speciationFactor": 2,
+      "extinctionCycles": 100,
+      "speciationOperatorName": "FitnessSpeciationOperator"
+   }
+}
+```
+
+#### Simulated Annealing Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `samplerIterations` | Iterations per epoch |
+| `annealingTemperatureMin` | Final temperature (lower = more greedy) |
+| `annealingTemperatureMax` | Initial temperature (higher = more exploration) |
+
+#### Genetic Algorithm Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `populationSize` | Individuals per population |
+| `numberOfGenerations` | Generations per evolution cycle |
+| `elitism` | Top individuals preserved each generation (**set > 0!**) |
+| `breederName` | `RandomCipherKeyBreeder`, `ProbabilisticCipherKeyBreeder`, or `BiasedCipherKeyBreeder` |
+| `mutationRate` | Probability each gene mutates (0.0-1.0) |
+| `minPopulations` | Parallel populations for divergent search |
+| `extinctionCycles` | Number of speciation/extinction rounds |
+
+See [zenith-genetic-algorithm README](../zenith-genetic-algorithm/README.md) for full parameter documentation.
+
+### 3. Application Properties (`application.properties`)
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `task-executor.pool-size` | 1 | Thread pool size for parallel operations |
+| `task-executor.queue-capacity` | 1000000 | Task queue capacity |
+| `language-model.filename` | `zenith-model.csv` | Language model CSV file |
+| `language-model.archive-filename` | `zenith-model.zip` | Fallback archive if CSV not found |
+| `language-model.cache.filename` | `zenith-model.array.bin` | Binary cache for faster startup |
+| `language-model.max-ngrams-to-keep` | 3000000 | Top n-grams to retain (sorted by frequency) |
+| `markov.letter.order` | 5 | N-gram size for Markov model |
+| `application.configuration.file-path` | `./config` | Path to zenith.json |
+| `genetic-algorithm.calculate-entropy` | false | Track population entropy (slower) |
+
+---
+
+## Scoring Algorithm
+
+The default `NgramAndIndexOfCoincidence` evaluator works as follows:
+
+1. **N-gram probability**: Use a 5-gram Markov model to compute log probability of the plaintext. Unknown n-grams receive a small default probability.
+
+2. **Index of Coincidence (IoC)**: Measure how much the letter distribution resembles natural English. IoC helps escape local optima where n-gram scores plateau.
+
+3. **Combined score**: `score = (avg_log_probability) × IoC^(1/6)`
+
+The sixth root of IoC provides balanced penalization without dominating the n-gram signal.
+
+---
 
 ## Ciphertext Transformers
-The following ciphertext transformers are provided out of the box.  More can be added by implementing the CipherTransformer interface.
-### RemoveFirstRow
-Removes the first row of the cipher
-### RemoveLastRow
-Removes the last row of the cipher.  This is useful for block ciphers where the last row contains mostly jibberish.
-### RemoveFirstColumn
-Removes the first column of the cipher
-### RemoveLastColumn
-Removes the last column of the cipher
-### RemoveMiddleColumn
-Removes the middle column of the cipher if there are an odd number of columns.
+
+Transformers modify the ciphertext before solving. Useful for ciphers with additional encoding layers.
+
+### Row/Column Operations
+
+| Transformer | Description |
+|-------------|-------------|
+| `RemoveFirstRow` | Remove first row |
+| `RemoveLastRow` | Remove last row (common for padding) |
+| `RemoveFirstColumn` | Remove first column |
+| `RemoveLastColumn` | Remove last column |
+| `RemoveMiddleColumn` | Remove middle column (odd column count only) |
+
+### Quadrants
+
+| Transformer | Description |
+|-------------|-------------|
+| `UpperLeftQuadrant` | Extract upper-left quarter |
+| `UpperRightQuadrant` | Extract upper-right quarter |
+| `LowerLeftQuadrant` | Extract lower-left quarter |
+| `LowerRightQuadrant` | Extract lower-right quarter |
+
+### Rotations and Flips
+
+| Transformer | Description |
+|-------------|-------------|
+| `RotateClockwise` | Rotate 90° clockwise |
+| `RotateCounterClockwise` | Rotate 90° counter-clockwise |
+| `FlipHorizontally` | Mirror horizontally |
+| `FlipVertically` | Mirror vertically |
+| `Reverse` | Reverse symbol order (supports range) |
+
 ### Transposition
-Transposes the cipher using a configured column key.  The column key should be specified as lowercase alpha characters in parenthesis, e.g. ```Transposition(baconisgood)```
-### UnwrapTransposition
-Unwraps the transposition on the cipher using a configured column key.  The column key should be specified as lowercase alpha characters in parenthesis, e.g. ```UnwrapTransposition(baconisgood)```
-### UpperLeftQuadrant
-Replaces the cipher with its upper left quadrant
-### UpperRightQuadrant
-Replaces the cipher with its upper right quadrant
-### LowerLeftQuadrant
-Replaces the cipher with its lower left quadrant
-### LowerRightQuadrant
-Replaces the cipher with its lower right quadrant
-### Reverse
-Reverses the cipher
-### RotateClockwise
-Rotates the cipher clockwise (number of rows and columns are swapped)
-### RotateCounterClockwise
-Rotates the cipher counter-clockwise (number of rows and columns are swapped)
-### FlipHorizontally
-Inverts the cipher horizontally (as if looking in a mirror)
-### FlipVertically
-Inverts the cipher vertically (as if looking in a mirror with your head sideways...?)
-### Period
-Replaces the cipher with a period shift.  The period number should be specified as an integer in paranthesis, e.g. ```Period(19)```
-### UnwrapPeriod
-Unwraps the period shift on the cipher.  The period number should be specified as an integer in paranthesis, e.g. ```UnwrapPeriod(19)```
-### RemoveSymbol
-Removes a symbol from the ciphertext
-### TopLeftDiagonal
-Traverses the ciphertext diagonally as if the cipher was rotated 45 degrees to the right, with the output retaining the same number of rows and columns
-### ZPattern
-Custom operation which traverses two rows at a time, outputting the symbols using a Z pattern, with the output retaining the same number of rows and columns
-### MDownMAcross
-Begins with the first symbol and goes n-down and m-across, wrapping both vertically and horizontally
-### LockCharacters
-Prevents characters from being modified by subsequent transformers
-### ShiftCharactersLeft
-Shifts characters in a given range to the left by one and wraps
-### ShiftCharactersRight
-Shifts characters in a given range to the right by one and wraps
+
+| Transformer | Syntax | Description |
+|-------------|--------|-------------|
+| `Transposition` | `Transposition(keyword)` | Apply columnar transposition |
+| `UnwrapTransposition` | `UnwrapTransposition(keyword)` | Reverse columnar transposition |
+| `Period` | `Period(n)` | Period-n rearrangement |
+| `UnwrapPeriod` | `UnwrapPeriod(n)` | Reverse period-n |
+
+### Traversal Patterns
+
+| Transformer | Description |
+|-------------|-------------|
+| `TopLeftDiagonal` | Read diagonally from top-left |
+| `ZPattern` | Read in Z-pattern (two rows at a time) |
+| `NDownMAcross` | Read n-down, m-across with wrapping |
+
+### Character Operations
+
+| Transformer | Description |
+|-------------|-------------|
+| `RemoveSymbol` | Remove specific symbol from ciphertext |
+| `LockCharacters` | Prevent characters in range from further transformation |
+| `ShiftCharactersLeft` | Shift range left with wrap |
+| `ShiftCharactersRight` | Shift range right with wrap |
+
+---
 
 ## Plaintext Transformers
-The following plaintext transformers are provided out of the box.  More can be added by implementing the PlaintextTransformer interface.
-### FourSquare
-Performs a standard four square transformation using the specified set of keys
-### UnwrapFourSquare
-"Performs the inverse operation of the Four Square transformer
-### OneTimePad
-Performs a One Time Pad transformation with modular addition using the specified key
-### UnwrapOneTimePad
-Performs the inverse operation of the One Time Pad transformer
-### Vigenere
-Performs a standard Vigenere transformation using the standard Vigenere square and specified key
-### UnwrapVigenere
-Performs the inverse operation of the Vigenere transformer
+
+Transformers applied to plaintext after decryption. Used when the cipher combines substitution with another cipher.
+
+| Transformer | Description |
+|-------------|-------------|
+| `Vigenere` | Apply Vigenere cipher with key |
+| `UnwrapVigenere` | Reverse Vigenere |
+| `FourSquare` | Apply Four Square cipher |
+| `UnwrapFourSquare` | Reverse Four Square |
+| `OneTimePad` | Apply OTP with modular addition |
+| `UnwrapOneTimePad` | Reverse OTP |
+
+---
+
+## Extending Zenith
+
+### Custom Ciphertext Transformer
+
+Implement `CipherTransformer`:
+
+```java
+@Component
+public class MyTransformer implements CipherTransformer {
+    @Override
+    public Cipher transform(Cipher cipher) {
+        // Return modified cipher
+    }
+
+    @Override
+    public CipherTransformer getInstance(Map<String, Object> data) {
+        return new MyTransformer(data);
+    }
+
+    @Override
+    public FormlyForm getForm() { return null; }  // Optional: UI form config
+
+    @Override
+    public int getOrder() { return 100; }  // Display order in UI
+
+    @Override
+    public String getHelpText() { return "Description"; }
+}
+```
+
+### Custom Plaintext Transformer
+
+Implement `PlaintextTransformer`:
+
+```java
+@Component
+public class MyPlaintextTransformer implements PlaintextTransformer {
+    @Override
+    public String transform(String plaintext) {
+        // Return modified plaintext
+    }
+
+    @Override
+    public PlaintextTransformer getInstance(Map<String, Object> data) {
+        return new MyPlaintextTransformer(data);
+    }
+
+    @Override
+    public FormlyForm getForm() { return null; }
+
+    @Override
+    public int getOrder() { return 100; }
+
+    @Override
+    public String getHelpText() { return "Description"; }
+}
+```
+
+### Custom Fitness Function
+
+Implement `PlaintextEvaluator`:
+
+```java
+@Component
+public class MyEvaluator implements PlaintextEvaluator {
+    @Override
+    public SolutionScore evaluate(Map<String, Object> precomputed, Cipher cipher,
+                                   CipherSolution solution, String solutionString,
+                                   String ciphertextKey) {
+        // Return SolutionScore with Fitness array
+    }
+
+    @Override
+    public Map<String, Object> getPrecomputedCounterweightData(Cipher cipher) {
+        return Collections.emptyMap();  // Precompute data once per cipher
+    }
+
+    @Override
+    public PlaintextEvaluator getInstance(Map<String, Object> data) {
+        return new MyEvaluator(data);
+    }
+
+    @Override
+    public FormlyForm getForm() { return null; }
+
+    @Override
+    public int getOrder() { return 100; }
+
+    @Override
+    public String getHelpText() { return "Description"; }
+}
+```
+
+---
+
+## Troubleshooting
+
+### Solver not finding good solutions
+- Increase `samplerIterations` (simulated annealing)
+- Try different `annealingTemperatureMin`/`Max` values
+- Verify ciphertext transformers are correct for your cipher
+
+### Out of memory
+- Reduce `language-model.max-ngrams-to-keep`
+- Increase heap size: `-Xmx4G`
