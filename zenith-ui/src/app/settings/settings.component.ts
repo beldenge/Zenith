@@ -77,7 +77,7 @@ export class SettingsComponent implements OnDestroy {
     tournamentSize: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
     minPopulations: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     speciationEvents: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
-    speciationFactor: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
+    speciationFactor: [null, [Validators.min(1), Validators.pattern(INTEGER_PATTERN)]],
     extinctionCycles: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     speciationOperatorName: [null],
   });

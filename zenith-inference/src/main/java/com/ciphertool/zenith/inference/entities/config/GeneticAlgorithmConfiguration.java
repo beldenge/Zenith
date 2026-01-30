@@ -85,7 +85,7 @@ public class GeneticAlgorithmConfiguration {
     @Min(0)
     private Integer speciationEvents;
 
-    @Min(2)
+    @Min(1)
     private Integer speciationFactor;
 
     @Min(0)

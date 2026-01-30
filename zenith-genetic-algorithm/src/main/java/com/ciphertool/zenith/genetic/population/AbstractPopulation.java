@@ -139,8 +139,9 @@ public abstract class AbstractPopulation implements Population {
         for (Genome individual : getIndividuals()) {
             // Probability calculation and average fitness is only supported for single-objective fitness functions.
             if (individual.getFitnesses().length == 1) {
-                this.totalFitness += individual.getFitnesses()[0].getValue();
-                this.totalProbability += individual.getProbability();
+                double fitnessValue = individual.getFitnesses()[0].getValue();
+                this.totalFitness += fitnessValue;
+                this.totalProbability += convertFromLogProbability(fitnessValue);
             } else {
                 singleObjective = false;
             }

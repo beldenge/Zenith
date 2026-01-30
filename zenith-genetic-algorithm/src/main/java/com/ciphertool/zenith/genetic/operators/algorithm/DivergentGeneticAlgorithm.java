@@ -152,8 +152,11 @@ public class DivergentGeneticAlgorithm {
 
         ParetoSorter.sort(bestIndividuals);
 
+        // Get the globally best individual (last in sorted list, since sort is ascending)
+        Genome globallyBest = bestIndividuals.get(bestIndividuals.size() - 1);
+
         Population bestPopulation = populations.stream()
-                .filter(pop -> bestIndividuals.contains(pop.getIndividuals().get(pop.getIndividuals().size() - 1)))
+                .filter(pop -> pop.getIndividuals().get(pop.getIndividuals().size() - 1) == globallyBest)
                 .findFirst()
                 .orElse(null);
 
