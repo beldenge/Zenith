@@ -25,6 +25,7 @@ import com.ciphertool.zenith.inference.entities.FormlyFormField;
 import com.ciphertool.zenith.inference.entities.FormlyFieldProps;
 import com.ciphertool.zenith.model.LanguageConstants;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public abstract class AbstractTranspositionCipherTransformer implements CipherTr
     protected String transpositionKeyString;
 
     public void init() {
-        if (transpositionKeyString == null || transpositionKeyString.isEmpty()) {
+        if (StringUtils.isBlank(transpositionKeyString)) {
             transpositionKey = null;
             return;
         }

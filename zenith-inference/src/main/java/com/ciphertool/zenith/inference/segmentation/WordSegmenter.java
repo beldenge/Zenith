@@ -21,6 +21,7 @@ package com.ciphertool.zenith.inference.segmentation;
 
 import com.ciphertool.zenith.model.markov.WordNGramModel;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -56,7 +57,7 @@ public class WordSegmenter {
     }
 
     public Map.Entry<Double, String[]> score(String text) {
-        if (text == null || text.isEmpty()) {
+        if (StringUtils.isBlank(text)) {
             return new AbstractMap.SimpleEntry<>(0d, new String[0]);
         }
 
