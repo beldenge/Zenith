@@ -57,6 +57,7 @@ type GeneticAlgorithmConfiguration {
     minPopulations: Int
     speciationEvents: Int
     speciationFactor: Int
+    speciationOperatorName: String
     extinctionCycles: Int
 }
 

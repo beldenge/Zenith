@@ -61,10 +61,18 @@ public class LatticePopulation extends AbstractPopulation {
     @Override
     public void init(GeneticAlgorithmStrategy strategy) {
         super.init(strategy);
+
+        if (strategy.getLatticeRows() == null) {
+            throw new IllegalArgumentException("LatticePopulation requires latticeRows to be configured.");
+        }
+        if (strategy.getLatticeColumns() == null) {
+            throw new IllegalArgumentException("LatticePopulation requires latticeColumns to be configured.");
+        }
+
         this.latticeRows = strategy.getLatticeRows();
         this.latticeColumns = strategy.getLatticeColumns();
-        this.wrapAround = strategy.getLatticeWrapAround();
-        this.selectionRadius = strategy.getLatticeRadius();
+        this.wrapAround = strategy.getLatticeWrapAround() != null ? strategy.getLatticeWrapAround() : false;
+        this.selectionRadius = strategy.getLatticeRadius() != null ? strategy.getLatticeRadius() : 1;
 
         if ((latticeRows * latticeColumns) != strategy.getPopulationSize()) {
             throw new IllegalArgumentException("The population size " + strategy.getPopulationSize() + " for LatticePopulation must be " +

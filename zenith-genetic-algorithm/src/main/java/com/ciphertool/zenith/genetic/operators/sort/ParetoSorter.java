@@ -20,6 +20,8 @@
 package com.ciphertool.zenith.genetic.operators.sort;
 
 import com.ciphertool.zenith.genetic.entities.Genome;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,16 @@ import java.util.stream.Collectors;
 public class ParetoSorter {
     public static void sort(List<Genome> individuals) {
         List<Genome> sorted = new ArrayList<>(individuals.size());
+
+        if (CollectionUtils.isEmpty(individuals)) {
+            return;
+        }
+
+        for (Genome individual : individuals) {
+            if (ArrayUtils.isEmpty(individual.getFitnesses())) {
+                return;
+            }
+        }
 
         if (individuals.get(0).getFitnesses().length == 1) {
             sorted = individuals.stream()

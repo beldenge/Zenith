@@ -69,6 +69,7 @@ public class ConfigurationResolver {
         configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_EVENTS, geneticAlgorithmConfiguration.getSpeciationEvents());
         configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_FACTOR, geneticAlgorithmConfiguration.getSpeciationFactor());
         configuration.put(GeneticAlgorithmSolutionOptimizer.EXTINCTION_CYCLES, geneticAlgorithmConfiguration.getExtinctionCycles());
+        configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_OPERATOR_NAME, geneticAlgorithmConfiguration.getSpeciationOperatorName());
 
         return configuration;
     }

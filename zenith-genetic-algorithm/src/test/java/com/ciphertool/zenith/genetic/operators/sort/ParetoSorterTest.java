@@ -65,4 +65,17 @@ public class ParetoSorterTest {
         assertTrue(topTwo.contains(first));
         assertTrue(topTwo.contains(second));
     }
+
+    @Test
+    public void given_nullFitnesses_when_sort_then_leavesOrderUnchanged() {
+        Genome first = new Genome(false, null, null);
+        Genome second = new Genome(false, null, null);
+
+        List<Genome> individuals = new ArrayList<>(Arrays.asList(first, second));
+
+        ParetoSorter.sort(individuals);
+
+        assertEquals(first, individuals.get(0));
+        assertEquals(second, individuals.get(1));
+    }
 }

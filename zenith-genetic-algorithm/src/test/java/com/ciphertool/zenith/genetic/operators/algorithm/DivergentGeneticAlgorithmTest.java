@@ -5,6 +5,8 @@ import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.operators.crossover.CrossoverOperator;
 import com.ciphertool.zenith.genetic.operators.mutation.MutationOperator;
+import com.ciphertool.zenith.genetic.operators.speciation.RandomSpeciationOperator;
+import com.ciphertool.zenith.genetic.operators.speciation.SpeciationOperator;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
@@ -102,5 +104,17 @@ public class DivergentGeneticAlgorithmTest {
         when(population.size()).thenReturn(10);
 
         assertThrows(IllegalStateException.class, () -> divergentGeneticAlgorithm.crossover(strategy, parentsList));
+    }
+
+    @Test
+    public void given_randomSpeciationOperatorName_when_getSpeciationOperator_then_returnsRandomSpeciationOperator() {
+        RandomSpeciationOperator randomSpeciationOperator = new RandomSpeciationOperator();
+        ReflectionTestUtils.setField(divergentGeneticAlgorithm, "randomSpeciationOperator", randomSpeciationOperator);
+        when(strategy.getSpeciationOperatorName()).thenReturn("RandomSpeciationOperator");
+
+        SpeciationOperator result = ReflectionTestUtils.invokeMethod(divergentGeneticAlgorithm,
+                "getSpeciationOperator", strategy, population);
+
+        assertSame(randomSpeciationOperator, result);
     }
 }

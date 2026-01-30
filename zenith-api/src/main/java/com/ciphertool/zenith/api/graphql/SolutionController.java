@@ -81,6 +81,7 @@ public class SolutionController extends AbstractSolutionController {
             try {
                 cipherSolution = doSolve(input);
             } catch (Exception e) {
+                log.error("Error solving for requestId {}: {}", input.getRequestId(), e.getMessage(), e);
                 SolutionUpdate errorUpdate = new SolutionUpdate();
                 errorUpdate.setRequestId(input.getRequestId());
                 errorUpdate.setType(WebSocketResponseType.ERROR);

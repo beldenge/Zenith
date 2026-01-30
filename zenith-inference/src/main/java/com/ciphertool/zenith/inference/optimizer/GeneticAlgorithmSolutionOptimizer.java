@@ -74,6 +74,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
     public static final String SPECIATION_EVENTS = "speciationEvents";
     public static final String SPECIATION_FACTOR = "speciationFactor";
     public static final String EXTINCTION_CYCLES = "extinctionCycles";
+    public static final String SPECIATION_OPERATOR_NAME = "speciationOperatorName";
 
     @Autowired
     protected TaskExecutor taskExecutor;
@@ -225,6 +226,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
         Integer speciationEvents = (Integer) configuration.get(SPECIATION_EVENTS);
         Integer speciationFactor = (Integer) configuration.get(SPECIATION_FACTOR);
         Integer extinctionCycles = (Integer) configuration.get(EXTINCTION_CYCLES);
+        String speciationOperatorName = (String) configuration.get(SPECIATION_OPERATOR_NAME);
 
         GeneticAlgorithmInitialization initialization = init(cipher, configuration, plaintextTransformationSteps, plaintextEvaluator);
 
@@ -251,6 +253,7 @@ public class GeneticAlgorithmSolutionOptimizer extends AbstractSolutionOptimizer
                 .speciationEvents(speciationEvents)
                 .speciationFactor(speciationFactor)
                 .extinctionCycles(extinctionCycles)
+                .speciationOperatorName(speciationOperatorName)
                 .build();
 
         geneticAlgorithmStrategy.getPopulation().init(geneticAlgorithmStrategy);

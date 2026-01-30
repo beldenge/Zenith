@@ -55,4 +55,5 @@ public class GeneticAlgorithmStrategy {
     private Integer speciationEvents;
     private Integer speciationFactor;
     private Integer extinctionCycles;
+    private String speciationOperatorName;
 }

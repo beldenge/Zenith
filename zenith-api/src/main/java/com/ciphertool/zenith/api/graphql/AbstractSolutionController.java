@@ -120,7 +120,7 @@ public abstract class AbstractSolutionController {
             configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_EVENTS, geneticAlgorithmConfiguration.getSpeciationEvents());
             configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_FACTOR, geneticAlgorithmConfiguration.getSpeciationFactor());
             configuration.put(GeneticAlgorithmSolutionOptimizer.EXTINCTION_CYCLES, geneticAlgorithmConfiguration.getExtinctionCycles());
-
+            configuration.put(GeneticAlgorithmSolutionOptimizer.SPECIATION_OPERATOR_NAME, geneticAlgorithmConfiguration.getSpeciationOperatorName());
 
             cipherSolution = geneticAlgorithmOptimizer.optimize(cipher, request.getEpochs(), configuration, steps, plaintextEvaluator, getCallback(request));
         } else {

@@ -38,4 +38,5 @@ export class GeneticAlgorithmConfiguration {
   speciationEvents: number;
   speciationFactor: number;
   extinctionCycles: number;
+  speciationOperatorName: string;
 }

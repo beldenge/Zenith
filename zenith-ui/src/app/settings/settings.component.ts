@@ -47,6 +47,7 @@ export class SettingsComponent implements OnDestroy {
   crossoverOperatorNames: SelectOption[] = ConfigurationService.CROSSOVER_OPERATOR_NAMES;
   mutationOperatorNames: SelectOption[] = ConfigurationService.MUTATION_OPERATOR_NAMES;
   selectorNames: SelectOption[] = ConfigurationService.SELECTOR_NAMES;
+  speciationOperatorNames: SelectOption[] = ConfigurationService.SPECIATION_OPERATOR_NAMES;
   selectedFitnessFunction = this.configurationService.selectedFitnessFunction;
   samplerIterationsValidators = [Validators.min(1), Validators.max(100000)];
   samplerIterationsValidationMessage = 'Must be a number between 1 and 100000';
@@ -77,7 +78,8 @@ export class SettingsComponent implements OnDestroy {
     minPopulations: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     speciationEvents: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
     speciationFactor: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
-    extinctionCycles: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]]
+    extinctionCycles: [null, [Validators.min(0), Validators.pattern(INTEGER_PATTERN)]],
+    speciationOperatorName: [null],
   });
 
   generalSettingsForm = this.fb.group({
@@ -166,7 +168,8 @@ export class SettingsComponent implements OnDestroy {
         minPopulations: geneticAlgorithmConfiguration.minPopulations,
         speciationEvents: geneticAlgorithmConfiguration.speciationEvents,
         speciationFactor: geneticAlgorithmConfiguration.speciationFactor,
-        extinctionCycles: geneticAlgorithmConfiguration.extinctionCycles
+        extinctionCycles: geneticAlgorithmConfiguration.extinctionCycles,
+        speciationOperatorName: geneticAlgorithmConfiguration.speciationOperatorName ? { name: geneticAlgorithmConfiguration.speciationOperatorName } : null,
       };
 
       if (JSON.stringify(this.geneticAlgorithmFormGroup.value) !== JSON.stringify(patch)) {
@@ -225,7 +228,8 @@ export class SettingsComponent implements OnDestroy {
           minPopulations: this.geneticAlgorithmFormGroup.get('minPopulations').value,
           speciationEvents: this.geneticAlgorithmFormGroup.get('speciationEvents').value,
           speciationFactor: this.geneticAlgorithmFormGroup.get('speciationFactor').value,
-          extinctionCycles: this.geneticAlgorithmFormGroup.get('extinctionCycles').value
+          extinctionCycles: this.geneticAlgorithmFormGroup.get('extinctionCycles').value,
+          speciationOperatorName: this.geneticAlgorithmFormGroup.get('speciationOperatorName').value?.name,
         };
 
         this.configurationService.updateGeneticAlgorithmConfiguration(configuration);

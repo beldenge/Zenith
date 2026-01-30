@@ -25,11 +25,14 @@ import com.ciphertool.zenith.genetic.entities.Parents;
 import com.ciphertool.zenith.genetic.operators.sort.ParetoSorter;
 import com.ciphertool.zenith.genetic.operators.speciation.FitnessSpeciationOperator;
 import com.ciphertool.zenith.genetic.operators.speciation.ProximitySpeciationOperator;
+import com.ciphertool.zenith.genetic.operators.speciation.RandomSpeciationOperator;
+import com.ciphertool.zenith.genetic.operators.speciation.SpeciationOperator;
 import com.ciphertool.zenith.genetic.population.Population;
 import com.ciphertool.zenith.genetic.population.StandardPopulation;
 import com.ciphertool.zenith.genetic.statistics.ExecutionStatistics;
 import com.ciphertool.zenith.genetic.statistics.GenerationStatistics;
 import com.ciphertool.zenith.genetic.statistics.PerformanceStatistics;
+import io.micrometer.common.util.StringUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +61,9 @@ public class DivergentGeneticAlgorithm {
 
     @Autowired
     private ProximitySpeciationOperator proximitySpeciationOperator;
+
+    @Autowired
+    private RandomSpeciationOperator randomSpeciationOperator;
 
     public void spawnInitialPopulation(GeneticAlgorithmStrategy strategy) {
         GenerationStatistics generationStatistics = new GenerationStatistics(0);
@@ -120,11 +126,8 @@ public class DivergentGeneticAlgorithm {
                 for (Population population : populations) {
                     List<Population> divergentPopulations;
 
-                    if (population instanceof StandardPopulation) {
-                        divergentPopulations = fitnessSpeciationOperator.diverge(strategy, population);
-                    } else {
-                        divergentPopulations = proximitySpeciationOperator.diverge(strategy, population);
-                    }
+                    SpeciationOperator speciationOperator = getSpeciationOperator(strategy, population);
+                    divergentPopulations = speciationOperator.diverge(strategy, population);
 
                     for (Population divergentPopulation : divergentPopulations) {
                         strategy.setPopulation(divergentPopulation);
@@ -344,6 +347,39 @@ public class DivergentGeneticAlgorithm {
         log.info("Average generation time is {}ms.", averageExecutionTime);
 
         executionStatistics.setEndDateTime(LocalDateTime.now());
+    }
+
+    /**
+     * Returns the appropriate speciation operator based on the configuration and population type.
+     * If a specific operator is configured, it is used. Otherwise, defaults based on population type:
+     * - StandardPopulation uses FitnessSpeciationOperator
+     * - LatticePopulation uses ProximitySpeciationOperator
+     */
+    private SpeciationOperator getSpeciationOperator(GeneticAlgorithmStrategy strategy, Population population) {
+        String operatorName = strategy.getSpeciationOperatorName();
+
+        if (StringUtils.isNotBlank(operatorName)) {
+            switch (operatorName) {
+                case "FitnessSpeciationOperator":
+                    return fitnessSpeciationOperator;
+                case "ProximitySpeciationOperator":
+                    if (population instanceof StandardPopulation) {
+                        throw new IllegalArgumentException("ProximitySpeciationOperator cannot be used with StandardPopulation");
+                    }
+                    return proximitySpeciationOperator;
+                case "RandomSpeciationOperator":
+                    return randomSpeciationOperator;
+                default:
+                    log.warn("Unknown speciation operator '{}', falling back to default", operatorName);
+            }
+        }
+
+        // Default behavior based on population type
+        if (population instanceof StandardPopulation) {
+            return fitnessSpeciationOperator;
+        } else {
+            return proximitySpeciationOperator;
+        }
     }
 
     /**

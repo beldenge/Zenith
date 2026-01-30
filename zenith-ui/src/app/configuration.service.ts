@@ -97,6 +97,17 @@ export class ConfigurationService {
     displayName: 'Random'
   }];
 
+  static readonly SPECIATION_OPERATOR_NAMES: SelectOption[] = [{
+    name: 'FitnessSpeciationOperator',
+    displayName: 'Fitness'
+  }, {
+    name: 'RandomSpeciationOperator',
+    displayName: 'Random'
+  }, {
+    name: 'ProximitySpeciationOperator',
+    displayName: 'Proximity'
+  }];
+
   private epochsInternal: WritableSignal<number> = signal(1);
   public epochs: Signal<number> = this.epochsInternal.asReadonly();
   private availableCiphertextTransformersInternal: WritableSignal<FormComponent[]> = signal([]);
@@ -254,6 +265,7 @@ export class ConfigurationService {
               speciationEvents
               speciationFactor
               extinctionCycles
+              speciationOperatorName
             }
             ciphers {
               name
