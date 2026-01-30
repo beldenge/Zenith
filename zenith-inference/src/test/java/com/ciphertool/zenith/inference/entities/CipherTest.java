@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CipherTest {
     @Test
-    public void testConstructor() {
+    public void given_validInput_when_constructing_then_returnsSameInstance() {
         String nameToSet = "cipherName";
         int rowsToSet = 5;
         int columnsToSet = 10;
@@ -42,7 +42,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testSetName() {
+    public void given_validInput_when_settingName_then_returnsExpectedValue() {
         Cipher cipher = new Cipher();
         String nameToSet = "cipherName";
         cipher.setName(nameToSet);
@@ -51,7 +51,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testSetColumns() {
+    public void given_validInput_when_settingColumns_then_returnsExpectedValue() {
         Cipher cipher = new Cipher();
         int columnsToSet = 10;
         cipher.setColumns(columnsToSet);
@@ -60,7 +60,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testSetRows() {
+    public void given_validInput_when_settingRows_then_returnsExpectedValue() {
         Cipher cipher = new Cipher();
         int rowsToSet = 5;
         cipher.setRows(rowsToSet);
@@ -69,7 +69,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testHasKnownSolution() {
+    public void given_knownSolution_when_checkingKnownSolution_then_returnsTrue() {
         Cipher cipher = new Cipher();
         cipher.putKnownSolutionMapping("a", "b");
 
@@ -77,7 +77,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testCiphertextCharactersUnmodifiable() {
+    public void given_validInput_when_ciphertextCharactersUnmodifiable_then_throwsUnsupportedOperationException() {
         Cipher cipher = new Cipher();
         cipher.addCiphertextCharacter(new Ciphertext("a"));
         cipher.addCiphertextCharacter(new Ciphertext("b"));
@@ -91,13 +91,13 @@ public class CipherTest {
     }
 
     @Test
-    public void getNullCiphertextCharacters() {
+    public void given_nullInput_when_gettingNullCiphertextCharacters_then_returnsNotNull() {
         Cipher cipher = new Cipher();
         assertNotNull(cipher.getCiphertextCharacters());
     }
 
     @Test
-    public void testAddCiphertextCharacter() {
+    public void given_validInput_when_addingCiphertextCharacter_then_returnsSameInstance() {
         Cipher cipher = new Cipher();
         assertEquals(0, cipher.getCiphertextCharacters().size());
 
@@ -115,7 +115,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testRemoveCiphertextCharacter() {
+    public void given_validInput_when_removingCiphertextCharacter_then_returnsSameInstance() {
         Cipher cipher = new Cipher();
 
         Ciphertext ciphertext1 = new Ciphertext("a");
@@ -135,7 +135,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testLength() {
+    public void given_validInput_when_calculatingLength_then_returnsExpectedValue() {
         Cipher cipher = new Cipher();
         assertEquals(0, cipher.length());
 
@@ -146,7 +146,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testEquals() {
+    public void given_validInput_when_equals_then_comparesAsExpected() {
         String baseName = "baseName";
         int baseRows = 10;
         int baseColumns = 5;
@@ -195,7 +195,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testGetCipherSymbolIndicesMap() {
+    public void given_validInput_when_gettingCipherSymbolIndicesMap_then_matchesExpectations() {
         Cipher cipher = new Cipher("test", 1, 5);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "C", "B"));
 
@@ -207,7 +207,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testReplaceCiphertextCharacterClearsAndRebuildsIndices() {
+    public void given_validInput_when_replacingCiphertextCharacterClearsAndRebuildsIndices_then_clearsState() {
         Cipher cipher = new Cipher("test", 1, 5);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "C", "B"));
 
@@ -223,7 +223,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testCloneCopiesState() {
+    public void given_validInput_when_cloningCopiesState_then_copiesState() {
         Cipher cipher = new Cipher("clone", 2, 2, true);
         cipher.addCiphertextCharacter(new Ciphertext("X", true));
         cipher.addCiphertextCharacter(new Ciphertext("Y", false));
@@ -243,7 +243,7 @@ public class CipherTest {
     }
 
     @Test
-    public void testAsSingleLineString() {
+    public void given_validInput_when_asSingleLineString_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 3);
         cipher.addCiphertextCharacter(new Ciphertext("A"));
         cipher.addCiphertextCharacter(new Ciphertext("B"));

@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ConfigurationDtosTest {
     @Test
-    public void testSelectOption() {
+    public void given_validInput_when_selectOption_then_returnsExpectedValue() {
         SelectOption option = new SelectOption();
         option.setName("name");
         option.setDisplayName("display");
@@ -39,7 +39,7 @@ public class ConfigurationDtosTest {
     }
 
     @Test
-    public void testCipherConfiguration() {
+    public void given_validInput_when_cipherConfiguration_then_returnsExpectedValue() {
         CipherConfiguration cipherConfiguration = new CipherConfiguration();
         FormComponentDto transformer = new FormComponentDto();
         transformer.setName("Transformer");
@@ -54,7 +54,7 @@ public class ConfigurationDtosTest {
     }
 
     @Test
-    public void testSimulatedAnnealingConfiguration() {
+    public void given_validInput_when_simulatedAnnealingConfiguration_then_returnsExpectedValue() {
         SimulatedAnnealingConfiguration configuration = new SimulatedAnnealingConfiguration();
         configuration.setSamplerIterations(10);
         configuration.setAnnealingTemperatureMin(0.1f);
@@ -66,7 +66,7 @@ public class ConfigurationDtosTest {
     }
 
     @Test
-    public void testApplicationConfiguration() {
+    public void given_validInput_when_applicationConfiguration_then_returnsNotNull() {
         ApplicationConfiguration configuration = new ApplicationConfiguration();
         SelectOption optimizer = new SelectOption();
         optimizer.setName("optimizer");

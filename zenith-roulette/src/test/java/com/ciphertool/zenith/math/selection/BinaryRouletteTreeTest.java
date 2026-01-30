@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class BinaryRouletteTreeTest {
     @Test
-    public void testInsert_SetsRootAndPositionsChildren() {
+    public void given_validInput_when_insertSetsRootAndPositionsChildren_then_returnsSameInstance() {
         BinaryRouletteTree tree = new BinaryRouletteTree();
 
         BinaryRouletteNode root = node(1, 0.5d);
@@ -49,7 +49,7 @@ public class BinaryRouletteTreeTest {
     }
 
     @Test
-    public void testFind_ExactAndBetweenValues() {
+    public void given_validInput_when_findExactAndBetweenValues_then_returnsSameInstance() {
         BinaryRouletteTree tree = new BinaryRouletteTree();
 
         BinaryRouletteNode root = node(1, 0.5d);
@@ -70,7 +70,7 @@ public class BinaryRouletteTreeTest {
     }
 
     @Test
-    public void testFind_SingleNodeValueAbove() {
+    public void given_validInput_when_findSingleNodeValueAbove_then_returnsSameInstance() {
         BinaryRouletteTree tree = new BinaryRouletteTree();
         BinaryRouletteNode root = node(0, 0.5d);
 

@@ -52,7 +52,7 @@ import static org.mockito.Mockito.when;
 
 public class CipherSolutionPrinterTest {
     @Test
-    public void testPrintWithoutTransformations() {
+    public void given_missingDependency_when_printWithoutTransformations_then_returnsExpectedValue() {
         CipherSolutionPrinter printer = new CipherSolutionPrinter();
         PlaintextTransformationManager plaintextTransformationManager = mock(PlaintextTransformationManager.class);
         EntropyEvaluator entropyEvaluator = mock(EntropyEvaluator.class);
@@ -116,7 +116,7 @@ public class CipherSolutionPrinterTest {
     }
 
     @Test
-    public void testPrintWithTransformationsAndKnownSolution() {
+    public void given_knownSolution_when_printWithTransformationsAndKnownSolution_then_matchesExpectations() {
         CipherSolutionPrinter printer = new CipherSolutionPrinter();
         PlaintextTransformationManager plaintextTransformationManager = mock(PlaintextTransformationManager.class);
         EntropyEvaluator entropyEvaluator = mock(EntropyEvaluator.class);

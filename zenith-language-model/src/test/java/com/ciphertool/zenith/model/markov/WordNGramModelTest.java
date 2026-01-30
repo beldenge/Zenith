@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WordNGramModelTest {
     @Test
-    public void testPutAndGet() {
+    public void given_validInput_when_putAndGet_then_returnsTrue() {
         WordNGramModel model = new WordNGramModel();
 
         WordNGram word = new WordNGram();
@@ -46,7 +46,7 @@ public class WordNGramModelTest {
     }
 
     @Test
-    public void testGetWordNGramMapIsUnmodifiable() {
+    public void given_validInput_when_gettingWordNgramMapIsUnmodifiable_then_throwsUnsupportedOperationException() {
         WordNGramModel model = new WordNGramModel();
 
         Map<String, WordNGram> map = model.getWordNGramMap();

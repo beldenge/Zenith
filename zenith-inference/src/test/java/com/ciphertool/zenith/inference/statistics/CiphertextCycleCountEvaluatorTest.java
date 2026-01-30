@@ -36,7 +36,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateWithAlternatingCycle() {
+    public void given_validInput_when_evaluatingWithAlternatingCycle_then_returnsExpectedValue() {
         // Create a cipher with a strong alternating cycle pattern: A B A B A B A B
         // This should produce a cycle of length 7 (each alternation counts)
         // Score = 7^2 = 49
@@ -49,7 +49,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateWithNoSignificantCycles() {
+    public void given_missingDependency_when_evaluatingWithNoSignificantCycles_then_returnsExpectedValue() {
         // Create a cipher with cycles of length 3 or less (insignificant)
         // Pattern: A B A B C C - alternating sequence of length 3
         Cipher cipher = new Cipher("test", 1, 6);
@@ -62,7 +62,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateFiltersOutSingleOccurrenceCharacters() {
+    public void given_validInput_when_evaluatingFiltersOutSingleOccurrenceCharacters_then_returnsExpectedValue() {
         // Characters that only occur once should be filtered out
         // Pattern: A B A B A X Y Z - X, Y, Z occur only once
         // Only A-B pair should be considered
@@ -77,7 +77,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateWithAllSingleOccurrences() {
+    public void given_validInput_when_evaluatingWithAllSingleOccurrences_then_returnsExpectedValue() {
         // All characters occur only once - should return 0
         Cipher cipher = new Cipher("test", 1, 5);
         cipher.setCiphertext(Arrays.asList("A", "B", "C", "D", "E"));
@@ -88,7 +88,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateWithMultipleCyclePairs() {
+    public void given_validInput_when_evaluatingWithMultipleCyclePairs_then_returnsExpectedValue() {
         // Pattern with multiple cycle pairs that have significant cycles
         // A B A B A B C D C D C D
         // A-B: length 5, score = 25
@@ -103,7 +103,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateWithBrokenCycle() {
+    public void given_validInput_when_evaluatingWithBrokenCycle_then_returnsExpectedValue() {
         // Pattern where cycle is broken: A B A B X A B A B
         // The X breaks the alternation, creating two separate sequences
         Cipher cipher = new Cipher("test", 1, 9);
@@ -118,7 +118,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateWithRepeatedCharacters() {
+    public void given_validInput_when_evaluatingWithRepeatedCharacters_then_returnsExpectedValue() {
         // Pattern: A A B B A A B B - no alternation
         Cipher cipher = new Cipher("test", 1, 8);
         cipher.setCiphertext(Arrays.asList("A", "A", "B", "B", "A", "A", "B", "B"));
@@ -133,7 +133,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateMinimalCipher() {
+    public void given_validInput_when_evaluatingMinimalCipher_then_returnsExpectedValue() {
         // Minimal cipher with just two characters each appearing twice
         Cipher cipher = new Cipher("test", 1, 4);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "B"));
@@ -145,7 +145,7 @@ public class CiphertextCycleCountEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateJustAboveThreshold() {
+    public void given_validInput_when_evaluatingJustAboveThreshold_then_returnsExpectedValue() {
         // Create a pattern that just crosses the threshold (length > 3 means length >= 4)
         // A B A B A = alternating length 4
         Cipher cipher = new Cipher("test", 1, 5);

@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ModelUnzipperTest {
     @Test
-    public void testNewFile_AllowsSafeEntry() throws IOException {
+    public void given_validInput_when_newFileAllowsSafeEntry_then_returnsTrue() throws IOException {
         ModelUnzipper unzipper = new ModelUnzipper();
         Path tempDir = Files.createTempDirectory("model-unzipper");
 
@@ -44,7 +44,7 @@ public class ModelUnzipperTest {
     }
 
     @Test
-    public void testNewFile_RejectsZipSlipEntry() throws IOException {
+    public void given_validInput_when_newFileRejectsZipSlipEntry_then_throwsIoexception() throws IOException {
         ModelUnzipper unzipper = new ModelUnzipper();
         Path tempDir = Files.createTempDirectory("model-unzipper");
 

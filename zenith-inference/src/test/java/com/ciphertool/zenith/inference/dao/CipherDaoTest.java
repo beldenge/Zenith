@@ -34,14 +34,14 @@ public class CipherDaoTest {
     }
 
     @Test
-    public void testFindByCipherNameNull() {
+    public void given_nullInput_when_findByCipherNameNull_then_returnsNull() {
         Cipher cipherReturned = cipherDao.findByCipherName(null);
 
         assertNull(cipherReturned);
     }
 
     @Test
-    public void testFindByCipherNameEmpty() {
+    public void given_emptyInput_when_findByCipherNameEmpty_then_returnsNull() {
         Cipher cipherReturned = cipherDao.findByCipherName("");
 
         assertNull(cipherReturned);

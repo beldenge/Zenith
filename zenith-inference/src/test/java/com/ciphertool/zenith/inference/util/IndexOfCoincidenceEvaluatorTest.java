@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IndexOfCoincidenceEvaluatorTest {
     @Test
-    public void testEvaluate_NoRepeatsReturnsZero() {
+    public void given_missingDependency_when_evaluatingNoRepeatsReturnsZero_then_returnsExpectedValue() {
         IndexOfCoincidenceEvaluator evaluator = new IndexOfCoincidenceEvaluator();
 
         Cipher cipher = new Cipher("test", 1, 4);
@@ -37,7 +37,7 @@ public class IndexOfCoincidenceEvaluatorTest {
     }
 
     @Test
-    public void testEvaluate_RepeatedLettersReturnsExpectedValue() {
+    public void given_validInput_when_evaluatingRepeatedLettersReturnsExpectedValue_then_returnsExpectedValue() {
         IndexOfCoincidenceEvaluator evaluator = new IndexOfCoincidenceEvaluator();
 
         Cipher cipher = new Cipher("test", 1, 4);

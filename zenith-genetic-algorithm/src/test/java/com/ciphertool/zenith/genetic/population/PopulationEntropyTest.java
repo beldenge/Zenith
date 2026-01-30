@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PopulationEntropyTest {
     @Test
-    public void testCalculateEntropy() {
+    public void given_validInput_when_calculateEntropy_then_returnsExpectedValue() {
         Genome genome1 = new Genome(false, null, null);
         Genome genome2 = new Genome(false, null, null);
 

@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CiphertextTransformationManagerTest {
     @Test
-    public void testTransformUnknownTransformerThrows() throws Exception {
+    public void given_missingInput_when_transformUnknownTransformerThrows_then_throwsIllegalArgumentException() throws Exception {
         CiphertextTransformationManager manager = new CiphertextTransformationManager();
         setField(manager, "cipherTransformers", List.of(new NamedCipherTransformer("First")));
         manager.init();
@@ -44,7 +44,7 @@ public class CiphertextTransformationManagerTest {
     }
 
     @Test
-    public void testTransformAppliesInOrderWithData() throws Exception {
+    public void given_validInput_when_transformAppliesInOrderWithData_then_returnsExpectedValue() throws Exception {
         CiphertextTransformationManager manager = new CiphertextTransformationManager();
         setField(manager, "cipherTransformers", List.of(new NamedCipherTransformer("First"), new NamedCipherTransformer("Second")));
         manager.init();

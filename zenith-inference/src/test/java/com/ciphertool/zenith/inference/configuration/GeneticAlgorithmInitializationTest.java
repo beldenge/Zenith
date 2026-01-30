@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 
 public class GeneticAlgorithmInitializationTest {
     @Test
-    public void testBuilder() {
+    public void given_validInput_when_builder_then_returnsExpectedValue() {
         Population population = mock(Population.class);
         Breeder breeder = mock(Breeder.class);
         CrossoverOperator crossoverOperator = mock(CrossoverOperator.class);

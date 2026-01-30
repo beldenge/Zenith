@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LetterProbabilityTest {
     @Test
-    public void testGettersAndComparison() {
+    public void given_validInput_when_gettingTersAndComparison_then_returnsTrue() {
         LetterProbability low = new LetterProbability('a', 0.1d);
         LetterProbability high = new LetterProbability('b', 0.9d);
 
@@ -38,7 +38,7 @@ public class LetterProbabilityTest {
     }
 
     @Test
-    public void testEqualsAndHashCodeBasedOnLetter() {
+    public void given_validInput_when_equalsAndHashCodeBasedOnLetter_then_comparesAsExpected() {
         LetterProbability aLow = new LetterProbability('a', 0.1d);
         LetterProbability aHigh = new LetterProbability('a', 0.9d);
         LetterProbability b = new LetterProbability('b', 0.1d);

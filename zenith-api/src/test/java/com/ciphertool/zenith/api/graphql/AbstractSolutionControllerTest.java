@@ -71,7 +71,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withSimulatedAnnealing_callsSimulatedAnnealingOptimizer() {
+    void given_validInput_when_doSolveWithSimulatedAnnealingCallsSimulatedAnnealingOptimizer_then_returnsSameInstance() {
         SolutionRequest request = createBasicRequest();
         SimulatedAnnealingConfiguration saConfig = new SimulatedAnnealingConfiguration();
         saConfig.setSamplerIterations(1000);
@@ -91,7 +91,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withGeneticAlgorithm_callsGeneticAlgorithmOptimizer() {
+    void given_validInput_when_doSolveWithGeneticAlgorithmCallsGeneticAlgorithmOptimizer_then_returnsSameInstance() {
         SolutionRequest request = createBasicRequest();
         GeneticAlgorithmConfiguration gaConfig = new GeneticAlgorithmConfiguration();
         gaConfig.setPopulationSize(100);
@@ -110,7 +110,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withGeneticAlgorithmDisabled_throwsException() {
+    void given_validInput_when_doSolveWithGeneticAlgorithmDisabledThrowsException_then_throwsIllegalArgumentException() {
         ReflectionTestUtils.setField(controller, "geneticAlgorithmEnabled", false);
 
         SolutionRequest request = createBasicRequest();
@@ -123,7 +123,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withEpochsExceedingMax_throwsException() {
+    void given_validInput_when_doSolveWithEpochsExceedingMaxThrowsException_then_throwsIllegalArgumentException() {
         SolutionRequest request = createBasicRequest();
         request.setEpochs(150); // exceeds max of 100
         request.setSimulatedAnnealingConfiguration(new SimulatedAnnealingConfiguration());
@@ -135,7 +135,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withSamplerIterationsExceedingMax_throwsException() {
+    void given_validInput_when_doSolveWithSamplerIterationsExceedingMaxThrowsException_then_throwsIllegalArgumentException() {
         SolutionRequest request = createBasicRequest();
         SimulatedAnnealingConfiguration saConfig = new SimulatedAnnealingConfiguration();
         saConfig.setSamplerIterations(200000); // exceeds max of 100000
@@ -148,7 +148,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withNoOptimizerConfigured_throwsException() {
+    void given_missingDependency_when_doSolveWithNoOptimizerConfiguredThrowsException_then_throwsIllegalStateException() {
         SolutionRequest request = createBasicRequest();
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
@@ -158,7 +158,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withNonExistentPlaintextEvaluator_throwsException() {
+    void given_validInput_when_doSolveWithNonExistentPlaintextEvaluatorThrowsException_then_throwsIllegalArgumentException() {
         SolutionRequest request = createBasicRequest();
         SolutionRequestFitnessFunction fitnessFunction = new SolutionRequestFitnessFunction();
         fitnessFunction.setName("NonExistent");
@@ -172,7 +172,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withMaxEpochsZero_doesNotValidateEpochs() {
+    void given_validInput_when_doSolveWithMaxEpochsZeroDoesNotValidateEpochs_then_returnsSameInstance() {
         ReflectionTestUtils.setField(controller, "maxEpochs", 0);
 
         SolutionRequest request = createBasicRequest();
@@ -191,7 +191,7 @@ class AbstractSolutionControllerTest {
     }
 
     @Test
-    void doSolve_withMaxIterationsZero_doesNotValidateIterations() {
+    void given_validInput_when_doSolveWithMaxIterationsZeroDoesNotValidateIterations_then_returnsSameInstance() {
         ReflectionTestUtils.setField(controller, "simulatedAnnealingMaxIterations", 0);
 
         SolutionRequest request = createBasicRequest();

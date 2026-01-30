@@ -38,7 +38,7 @@ class ConfigurationControllerTest {
     private ConfigurationController controller;
 
     @Test
-    void configuration_returnsInjectedConfiguration() {
+    void given_validInput_when_configurationReturnsInjectedConfiguration_then_returnsSameInstance() {
         ApplicationConfiguration result = controller.configuration();
 
         assertSame(applicationConfiguration, result);

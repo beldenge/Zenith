@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CiphertextIndexOfCoincidenceEvaluatorTest {
     @Test
-    public void testEvaluateCountsCoincidence() {
+    public void given_validInput_when_evaluatingCountsCoincidence_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 4);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "B"));
 
@@ -38,7 +38,7 @@ public class CiphertextIndexOfCoincidenceEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateShortCipherReturnsZero() {
+    public void given_validInput_when_evaluatingShortCipherReturnsZero_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 1);
         cipher.setCiphertext(Arrays.asList("A"));
 

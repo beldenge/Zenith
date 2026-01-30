@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CipherKeyGeneTest {
     @Test
-    public void testConstructorRejectsNullOrEmpty() {
+    public void given_nullInput_when_constructing_then_throwsIllegalArgumentException() {
         CipherKeyChromosome chromosome = new CipherKeyChromosome(null, new Cipher("test", 1, 1), 1);
 
         assertThrows(IllegalArgumentException.class, () -> new CipherKeyGene(chromosome, null));
@@ -40,7 +40,7 @@ public class CipherKeyGeneTest {
     }
 
     @Test
-    public void testSetValueMarksEvaluationNeededWhenChanged() {
+    public void given_validInput_when_settingValueMarksEvaluationNeededWhenChanged_then_matchesExpectations() {
         Genome genome = new Genome(false, null, null);
         CipherKeyChromosome chromosome = new CipherKeyChromosome(genome, new Cipher("test", 1, 1), 1);
         CipherKeyGene gene = new CipherKeyGene(chromosome, "a");
@@ -54,7 +54,7 @@ public class CipherKeyGeneTest {
     }
 
     @Test
-    public void testSetValueWithNullInitialValueDoesNotThrow() {
+    public void given_nullInput_when_settingValueWithNullInitialValueDoesNotThrow_then_returnsTrue() {
         Genome genome = new Genome(false, null, null);
         CipherKeyChromosome chromosome = new CipherKeyChromosome(genome, new Cipher("test", 1, 1), 1);
         CipherKeyGene gene = new CipherKeyGene();
@@ -67,7 +67,7 @@ public class CipherKeyGeneTest {
     }
 
     @Test
-    public void testEqualsAndHashCodeBasedOnValue() {
+    public void given_validInput_when_equalsAndHashCodeBasedOnValue_then_comparesAsExpected() {
         CipherKeyGene left = new CipherKeyGene(null, "a");
         CipherKeyGene right = new CipherKeyGene(null, "a");
         CipherKeyGene different = new CipherKeyGene(null, "b");

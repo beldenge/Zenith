@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AbstractPeriodCipherTransformerTest {
     @Test
-    public void testConstructorUsesLength() {
+    public void given_validInput_when_constructing_then_returnsExpectedValue() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractPeriodCipherTransformer.LENGTH, 7);
 
@@ -42,7 +42,7 @@ public class AbstractPeriodCipherTransformerTest {
     }
 
     @Test
-    public void testConstructorUsesArgumentFallback() {
+    public void given_validInput_when_constructing_then_returnsExpectedValueCase2() {
         Map<String, Object> data = new HashMap<>();
         data.put("argument", 5);
 
@@ -52,7 +52,7 @@ public class AbstractPeriodCipherTransformerTest {
     }
 
     @Test
-    public void testGetForm() {
+    public void given_validInput_when_gettingForm_then_returnsNotNull() {
         TestPeriodTransformer transformer = new TestPeriodTransformer(new HashMap<>());
 
         FormlyForm form = transformer.getForm();

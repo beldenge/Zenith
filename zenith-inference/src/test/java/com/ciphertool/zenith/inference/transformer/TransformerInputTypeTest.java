@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TransformerInputTypeTest {
     @Test
-    public void testEnumValues() {
+    public void given_validInput_when_enumValues_then_returnsNotNull() {
         assertEquals(TransformerInputType.TEXT, TransformerInputType.valueOf("TEXT"));
         assertEquals(TransformerInputType.NUMBER, TransformerInputType.valueOf("NUMBER"));
         assertEquals(TransformerInputType.TEXT_OR_NUMBER_ARRAY, TransformerInputType.valueOf("TEXT_OR_NUMBER_ARRAY"));

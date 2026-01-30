@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ShiftCharactersRightCipherTransformerTest {
     @Test
-    public void testTransformShiftsRightWithWrap() {
+    public void given_validInput_when_transformShiftsRightWithWrap_then_returnsExpectedValue() {
         ShiftCharactersRightCipherTransformer transformer = new ShiftCharactersRightCipherTransformer(new HashMap<>());
 
         Cipher cipher = new Cipher("test", 1, 4);
@@ -45,7 +45,7 @@ public class ShiftCharactersRightCipherTransformerTest {
     }
 
     @Test
-    public void testTransformShiftsRightWithinRange() {
+    public void given_validInput_when_transformShiftsRightWithinRange_then_returnsExpectedValue() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractRangeLimitedCipherTransformer.RANGE_START, 1);
         data.put(AbstractRangeLimitedCipherTransformer.RANGE_END, 2);

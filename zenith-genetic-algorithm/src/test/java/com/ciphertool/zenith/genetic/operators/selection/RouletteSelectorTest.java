@@ -42,7 +42,7 @@ public class RouletteSelectorTest {
     }
 
     @Test
-    public void testGetNextIndex() {
+    public void given_validInput_when_gettingNextIndex_then_returnsTrue() {
         Population populationMock = mock(Population.class);
 
         List<Genome> individuals = new ArrayList<>();

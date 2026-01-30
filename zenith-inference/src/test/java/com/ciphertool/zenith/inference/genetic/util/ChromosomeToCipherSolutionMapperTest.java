@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class ChromosomeToCipherSolutionMapperTest {
     @Test
-    public void testMapCopiesMappingsAndClonesFitness() {
+    public void given_validInput_when_mapCopiesMappingsAndClonesFitness_then_copiesState() {
         Cipher cipher = new Cipher("test", 1, 2);
         cipher.setCiphertext(Arrays.asList("x", "y"));
 

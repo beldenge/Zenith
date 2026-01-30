@@ -35,7 +35,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testInit_Valid() {
+    public void given_validInput_when_initValid_then_returnsExpectedValue() {
         LatticePopulation population = new LatticePopulation();
         population.init(strategy);
         // size() returns actual count (0 after init, before individuals added)
@@ -43,14 +43,14 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testInit_Invalid() {
+    public void given_invalidInput_when_initInvalid_then_throwsIllegalArgumentException() {
         when(strategy.getPopulationSize()).thenReturn(5);
         LatticePopulation population = new LatticePopulation();
         assertThrows(IllegalArgumentException.class, () -> population.init(strategy));
     }
 
     @Test
-    public void testAddIndividual() {
+    public void given_validInput_when_addingIndividual_then_throwsIllegalStateException() {
         LatticePopulation population = new LatticePopulation(2, 2, true, 1);
         Genome g1 = mock(Genome.class);
         when(g1.isEvaluationNeeded()).thenReturn(true);
@@ -77,7 +77,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testSelection() throws Exception {
+    public void given_validInput_when_selection_then_returnsNotNull() throws Exception {
         LatticePopulation population = new LatticePopulation(2, 2, true, 1);
         population.init(strategy);
 
@@ -119,7 +119,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testSelection_NoWrapAround() throws Exception {
+    public void given_missingDependency_when_selectionNoWrapAround_then_returnsNotNull() throws Exception {
         when(strategy.getLatticeWrapAround()).thenReturn(false);
         LatticePopulation population = new LatticePopulation(2, 2, false, 1);
         population.init(strategy);
@@ -140,7 +140,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testSelection_LargeRadiusWithWrapAround() throws Exception {
+    public void given_validInput_when_selectionLargeRadiusWithWrapAround_then_returnsNotNull() throws Exception {
         // Test that large radius works with wrap-around enabled
         // A 3x3 lattice with radius 5 should still work and select all 9 cells (with duplicates filtered)
         when(strategy.getLatticeWrapAround()).thenReturn(true);
@@ -170,7 +170,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testInit_InitializesIndividualsArray() {
+    public void given_validInput_when_initInitializesIndividualsArray_then_matchesExpectations() {
         LatticePopulation population = new LatticePopulation();
         population.init(strategy);
 
@@ -183,7 +183,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testInit_LargeSelectionRadiusAllowed() {
+    public void given_validInput_when_initLargeSelectionRadiusAllowed_then_matchesExpectations() {
         when(strategy.getLatticeRadius()).thenReturn(10);
         when(strategy.getLatticeWrapAround()).thenReturn(true);
         // Large radius is allowed - wrap functions handle any offset via modulo
@@ -193,7 +193,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testWrapRowIndex() throws Exception {
+    public void given_validInput_when_wrapRowIndex_then_returnsExpectedValue() throws Exception {
         LatticePopulation population = new LatticePopulation(5, 5, true, 1);
 
         Method wrapRowIndex = LatticePopulation.class.getDeclaredMethod("wrapRowIndex", int.class);
@@ -223,7 +223,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testWrapColumnIndex() throws Exception {
+    public void given_validInput_when_wrapColumnIndex_then_returnsExpectedValue() throws Exception {
         LatticePopulation population = new LatticePopulation(5, 5, true, 1);
 
         Method wrapColumnIndex = LatticePopulation.class.getDeclaredMethod("wrapColumnIndex", int.class);
@@ -253,7 +253,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testClearIndividuals_ResetsState() {
+    public void given_validInput_when_clearingIndividualsResetsState_then_returnsExpectedValue() {
         LatticePopulation population = new LatticePopulation(2, 2, true, 1);
 
         Genome g1 = mock(Genome.class);
@@ -277,7 +277,7 @@ public class LatticePopulationTest {
     }
 
     @Test
-    public void testSetStrategy_PreservesExistingIndividuals() {
+    public void given_validInput_when_settingStrategyPreservesExistingIndividuals_then_returnsExpectedValue() {
         // This tests the speciation use case where getInstance() creates a population,
         // individuals are added, and then setStrategy() is called (instead of init())
         LatticePopulation population = new LatticePopulation(2, 2, true, 1);

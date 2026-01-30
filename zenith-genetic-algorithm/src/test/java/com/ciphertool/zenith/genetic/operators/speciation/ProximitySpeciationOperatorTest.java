@@ -36,7 +36,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_EvenSplit() {
+    public void given_validInput_when_divergeEvenSplit_then_returnsExpectedValue() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         LatticePopulation population = createPopulatedLattice(4, 4); // 16 individuals
@@ -49,7 +49,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_UnevenSplit() {
+    public void given_validInput_when_divergeUnevenSplit_then_returnsExpectedValue() {
         when(strategy.getSpeciationFactor()).thenReturn(3);
 
         LatticePopulation population = createPopulatedLattice(4, 4); // 16 individuals
@@ -64,7 +64,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_RequiresLatticePopulation() {
+    public void given_validInput_when_divergeRequiresLatticePopulation_then_throwsIllegalStateException() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         StandardPopulation population = new StandardPopulation();
@@ -76,7 +76,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_ZeroSpeciationFactor() {
+    public void given_validInput_when_divergeZeroSpeciationFactor_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(0);
 
         LatticePopulation population = createPopulatedLattice(2, 2);
@@ -85,7 +85,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_NegativeSpeciationFactor() {
+    public void given_validInput_when_divergeNegativeSpeciationFactor_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(-1);
 
         LatticePopulation population = createPopulatedLattice(2, 2);
@@ -94,7 +94,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_EmptyPopulation() {
+    public void given_emptyInput_when_divergeEmptyPopulation_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         LatticePopulation population = new LatticePopulation(2, 2, false, 1);
@@ -104,7 +104,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_SpeciationFactorGreaterThanPopulationSize() {
+    public void given_validInput_when_divergeSpeciationFactorGreaterThanPopulationSize_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(10);
 
         LatticePopulation population = createPopulatedLattice(2, 2); // 4 individuals
@@ -113,7 +113,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_SpeciationFactorEqualsPopulationSize() {
+    public void given_validInput_when_divergeSpeciationFactorEqualsPopulationSize_then_comparesAsExpected() {
         when(strategy.getSpeciationFactor()).thenReturn(4);
 
         LatticePopulation population = createPopulatedLattice(2, 2); // 4 individuals
@@ -127,7 +127,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_PreservesAllIndividuals() {
+    public void given_validInput_when_divergePreservesAllIndividuals_then_returnsExpectedValue() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         LatticePopulation population = createPopulatedLattice(3, 3); // 9 individuals
@@ -140,7 +140,7 @@ public class ProximitySpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_ReturnsLatticePopulations() {
+    public void given_validInput_when_divergeReturnsLatticePopulations_then_returnsTrue() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         LatticePopulation population = createPopulatedLattice(4, 4);

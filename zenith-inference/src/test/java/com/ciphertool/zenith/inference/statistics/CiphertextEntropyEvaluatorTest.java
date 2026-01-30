@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CiphertextEntropyEvaluatorTest {
     @Test
-    public void testEvaluateUniformEntropy() {
+    public void given_validInput_when_evaluatingUniformEntropy_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 4);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "B"));
 

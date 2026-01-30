@@ -36,7 +36,7 @@ class FormComponentControllerTest {
     private FormComponentController controller;
 
     @Test
-    void nameSchemaMapping_returnsComponentName() {
+    void given_validInput_when_nameSchemaMappingReturnsComponentName_then_returnsExpectedValue() {
         FormComponent component = mock(FormComponent.class);
         when(component.getName()).thenReturn("ComponentName");
 
@@ -44,7 +44,7 @@ class FormComponentControllerTest {
     }
 
     @Test
-    void displayNameSchemaMapping_returnsComponentDisplayName() {
+    void given_validInput_when_displayNameSchemaMappingReturnsComponentDisplayName_then_returnsExpectedValue() {
         FormComponent component = mock(FormComponent.class);
         when(component.getDisplayName()).thenReturn("Display Name");
 
@@ -52,7 +52,7 @@ class FormComponentControllerTest {
     }
 
     @Test
-    void formSchemaMapping_returnsComponentForm() {
+    void given_validInput_when_formSchemaMappingReturnsComponentForm_then_returnsSameInstance() {
         FormComponent component = mock(FormComponent.class);
         FormlyForm form = mock(FormlyForm.class);
         when(component.getForm()).thenReturn(form);
@@ -61,7 +61,7 @@ class FormComponentControllerTest {
     }
 
     @Test
-    void orderSchemaMapping_returnsComponentOrder() {
+    void given_validInput_when_orderSchemaMappingReturnsComponentOrder_then_returnsExpectedValue() {
         FormComponent component = mock(FormComponent.class);
         when(component.getOrder()).thenReturn(5);
 
@@ -69,7 +69,7 @@ class FormComponentControllerTest {
     }
 
     @Test
-    void helpTextSchemaMapping_returnsComponentHelpText() {
+    void given_validInput_when_helpTextSchemaMappingReturnsComponentHelpText_then_returnsExpectedValue() {
         FormComponent component = mock(FormComponent.class);
         when(component.getHelpText()).thenReturn("Help text here");
 

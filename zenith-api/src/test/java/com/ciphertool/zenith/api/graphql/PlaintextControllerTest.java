@@ -52,7 +52,7 @@ class PlaintextControllerTest {
     private PlaintextController controller;
 
     @Test
-    void segmentPlaintext_returnsSegmentedWords() {
+    void given_validInput_when_segmentPlaintextReturnsSegmentedWords_then_returnsExpectedValue() {
         String plaintext = "thequickbrownfox";
         String[] segments = {"the", "quick", "brown", "fox"};
         Map.Entry<Double, String[]> segmentResult = new AbstractMap.SimpleEntry<>(-15.5, segments);
@@ -67,7 +67,7 @@ class PlaintextControllerTest {
     }
 
     @Test
-    void transformPlaintext_appliesTransformations() {
+    void given_validInput_when_transformPlaintextAppliesTransformations_then_returnsNull() {
         PlaintextTransformationRequest request = new PlaintextTransformationRequest();
         request.setPlaintext("HELLO");
         List<TransformationStep> transformers = Arrays.asList(new TransformationStep("LowerCase", null));
@@ -83,7 +83,7 @@ class PlaintextControllerTest {
     }
 
     @Test
-    void transformPlaintext_withNullTransformers_passesNullToManager() {
+    void given_nullInput_when_transformPlaintextWithNullTransformersPassesNullToManager_then_returnsExpectedValue() {
         PlaintextTransformationRequest request = new PlaintextTransformationRequest();
         request.setPlaintext("TEST");
         request.setPlaintextTransformers(null);

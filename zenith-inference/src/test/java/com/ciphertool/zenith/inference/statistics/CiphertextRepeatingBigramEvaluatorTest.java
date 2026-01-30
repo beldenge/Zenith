@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CiphertextRepeatingBigramEvaluatorTest {
     @Test
-    public void testEvaluateRepeats() {
+    public void given_validInput_when_evaluatingRepeats_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 4);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "B"));
 
@@ -38,7 +38,7 @@ public class CiphertextRepeatingBigramEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateShortCipherReturnsZero() {
+    public void given_validInput_when_evaluatingShortCipherReturnsZero_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 1);
         cipher.setCiphertext(Arrays.asList("A"));
 

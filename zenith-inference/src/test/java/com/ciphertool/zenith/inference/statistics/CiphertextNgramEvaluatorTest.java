@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CiphertextNgramEvaluatorTest {
     @Test
-    public void testEvaluateBuildsCounts() {
+    public void given_validInput_when_evaluatingBuildsCounts_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 3);
         cipher.setCiphertext(Arrays.asList("A", "B", "A"));
 
@@ -44,7 +44,7 @@ public class CiphertextNgramEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateSizeOneAndOversized() {
+    public void given_validInput_when_evaluatingSizeOneAndOversized_then_returnsTrue() {
         Cipher cipher = new Cipher("test", 1, 3);
         cipher.setCiphertext(Arrays.asList("A", "B", "A"));
 

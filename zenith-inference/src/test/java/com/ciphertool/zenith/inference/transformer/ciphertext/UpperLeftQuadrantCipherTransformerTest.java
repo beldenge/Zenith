@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UpperLeftQuadrantCipherTransformerTest {
     @Test
-    public void testTransform_OddColumns() {
+    public void given_validInput_when_transformOddColumns_then_returnsExpectedValue() {
         UpperLeftQuadrantCipherTransformer cipherTransformer = new UpperLeftQuadrantCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 6, 7);
@@ -95,7 +95,7 @@ public class UpperLeftQuadrantCipherTransformerTest {
     }
 
     @Test
-    public void testTransform_OddRows() {
+    public void given_validInput_when_transformOddRows_then_returnsExpectedValue() {
         UpperLeftQuadrantCipherTransformer cipherTransformer = new UpperLeftQuadrantCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 7, 6);

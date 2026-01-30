@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class GenomeTest {
     @Test
-    public void testConstructorClonesFitnesses() {
+    public void given_validInput_when_constructing_then_returnsNewInstance() {
         Fitness[] fitnesses = new Fitness[] { new MaximizingFitness(1.0d) };
         Genome genome = new Genome(true, fitnesses, new StubPopulation(1.0d));
 
@@ -43,7 +43,7 @@ public class GenomeTest {
     }
 
     @Test
-    public void testSetFitnessesClearsEvaluationNeeded() {
+    public void given_validInput_when_settingFitnessesClearsEvaluationNeeded_then_clearsState() {
         Genome genome = new Genome(true, null, new StubPopulation(1.0d));
         assertTrue(genome.isEvaluationNeeded());
 
@@ -53,7 +53,7 @@ public class GenomeTest {
     }
 
     @Test
-    public void testGetProbabilitySingleObjective() {
+    public void given_validInput_when_gettingProbabilitySingleObjective_then_returnsExpectedValue() {
         Fitness[] fitnesses = new Fitness[] { new MaximizingFitness(-1.0d) };
         Genome genome = new Genome(false, fitnesses, new StubPopulation(2.0d));
 
@@ -63,7 +63,7 @@ public class GenomeTest {
     }
 
     @Test
-    public void testGetProbabilityMultipleObjectivesThrows() {
+    public void given_validInput_when_gettingProbabilityMultipleObjectivesThrows_then_throwsIllegalStateException() {
         Fitness[] fitnesses = new Fitness[] { new MaximizingFitness(1.0d), new MaximizingFitness(2.0d) };
         Genome genome = new Genome(false, fitnesses, new StubPopulation(1.0d));
 
@@ -71,7 +71,7 @@ public class GenomeTest {
     }
 
     @Test
-    public void testCompareToSingleObjective() {
+    public void given_validInput_when_comparingToSingleObjective_then_comparesAsExpected() {
         Genome higher = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d) }, new StubPopulation(1.0d));
         Genome lower = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d) }, new StubPopulation(1.0d));
 
@@ -80,7 +80,7 @@ public class GenomeTest {
     }
 
     @Test
-    public void testCompareToMultiObjectiveDominates() {
+    public void given_validInput_when_comparingToMultiObjectiveDominates_then_comparesAsExpected() {
         Genome dominant = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d), new MaximizingFitness(3.0d) }, new StubPopulation(1.0d));
         Genome dominated = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d), new MaximizingFitness(2.0d) }, new StubPopulation(1.0d));
 
@@ -89,7 +89,7 @@ public class GenomeTest {
     }
 
     @Test
-    public void testCompareToMultiObjectiveIncomparable() {
+    public void given_validInput_when_comparingToMultiObjectiveIncomparable_then_comparesAsExpected() {
         Genome first = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d), new MaximizingFitness(1.0d) }, new StubPopulation(1.0d));
         Genome second = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d), new MaximizingFitness(2.0d) }, new StubPopulation(1.0d));
 

@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CiphertextMultiplicityEvaluatorTest {
     @Test
-    public void testEvaluateReturnsPercentage() {
+    public void given_validInput_when_evaluatingReturnsPercentage_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 4);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "B"));
 
@@ -38,7 +38,7 @@ public class CiphertextMultiplicityEvaluatorTest {
     }
 
     @Test
-    public void testEvaluateSingleCharacter() {
+    public void given_validInput_when_evaluatingSingleCharacter_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 1);
         cipher.setCiphertext(Arrays.asList("A"));
 

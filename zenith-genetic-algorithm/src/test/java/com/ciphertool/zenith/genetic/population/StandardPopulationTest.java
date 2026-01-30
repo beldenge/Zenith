@@ -53,7 +53,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testGeneratorTask() {
+    public void given_validInput_when_generatorTask_then_returnsSameInstance() {
         StandardPopulation population = new StandardPopulation();
         StandardPopulation.GeneratorTask generatorTask = population.new GeneratorTask();
 
@@ -80,7 +80,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testBreed() {
+    public void given_validInput_when_breed_then_returnsExpectedValue() {
         StandardPopulation population = new StandardPopulation();
 
         int expectedPopulationSize = 10;
@@ -109,7 +109,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testEvaluatorTask() {
+    public void given_validInput_when_evaluatorTask_then_returnsExpectedValue() {
         StandardPopulation population = new StandardPopulation();
         Genome genomeToEvaluate = new Genome(true, new Fitness[] { new MaximizingFitness(0d) }, population);
 
@@ -140,7 +140,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testDoConcurrentFitnessEvaluations() {
+    public void given_validInput_when_doConcurrentFitnessEvaluations_then_matchesExpectations() {
         StandardPopulation population = new StandardPopulation();
 
         FitnessEvaluator fitnessEvaluatorMock = mock(FitnessEvaluator.class);
@@ -181,7 +181,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testEvaluateFitness() {
+    public void given_validInput_when_evaluatingFitness_then_returnsExpectedValue() {
         GenerationStatistics generationStatistics = new GenerationStatistics();
 
         StandardPopulation population = new StandardPopulation();
@@ -234,7 +234,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testEvaluateFitnessCompareToKnownSolution() {
+    public void given_knownSolution_when_evaluatingFitnessCompareToKnownSolution_then_comparesAsExpected() {
         GenerationStatistics generationStatistics = new GenerationStatistics();
 
         StandardPopulation population = new StandardPopulation();
@@ -287,7 +287,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testIndividualsUnmodifiable() {
+    public void given_validInput_when_individualsUnmodifiable_then_throwsUnsupportedOperationException() {
         StandardPopulation population = new StandardPopulation();
         population.addIndividual(mock(Genome.class));
         population.addIndividual(mock(Genome.class));
@@ -301,13 +301,13 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void getNullIndividuals() {
+    public void given_nullInput_when_gettingNullIndividuals_then_returnsNotNull() {
         StandardPopulation population = new StandardPopulation();
         assertNotNull(population.getIndividuals());
     }
 
     @Test
-    public void testAddIndividual() {
+    public void given_validInput_when_addingIndividual_then_returnsSameInstance() {
         StandardPopulation population = new StandardPopulation();
 
         Double fitnessSum = 0d;
@@ -336,7 +336,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testRemoveIndividual() {
+    public void given_validInput_when_removingIndividual_then_returnsNull() {
         StandardPopulation population = new StandardPopulation();
 
         Genome genome1 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
@@ -363,7 +363,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testClearIndividuals() {
+    public void given_validInput_when_clearingIndividuals_then_returnsExpectedValue() {
         StandardPopulation population = new StandardPopulation();
 
         Genome genome1 = new Genome(true, new Fitness[] { new MaximizingFitness(5.0d) }, population);
@@ -382,7 +382,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testSize() {
+    public void given_validInput_when_size_then_returnsExpectedValue() {
         StandardPopulation population = new StandardPopulation();
 
         assertEquals(0, population.size());
@@ -397,7 +397,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testSortIndividuals() {
+    public void given_validInput_when_sortIndividuals_then_returnsSameInstance() {
         StandardPopulation population = new StandardPopulation();
 
         Genome genome1 = new Genome(false, new Fitness[] { new MaximizingFitness(3.0d) }, population);
@@ -421,7 +421,7 @@ public class StandardPopulationTest {
     }
 
     @Test
-    public void testInit_PreservesExistingIndividuals() {
+    public void given_validInput_when_initPreservesExistingIndividuals_then_returnsSameInstance() {
         StandardPopulation population = new StandardPopulation();
 
         Genome genome1 = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d) }, population);

@@ -27,7 +27,7 @@ public class CrossoverProgressDtoTest {
     private static final int AMOUNT_TO_ADVANCE = 5;
 
     @Test
-    public void testConstructor() {
+    public void given_validInput_when_constructing_then_returnsExpectedValue() {
         CrossoverProgressDto crossoverProgressDto = new CrossoverProgressDto();
 
         assertEquals(0, crossoverProgressDto.getFirstChromosomeGeneIndex());
@@ -37,7 +37,7 @@ public class CrossoverProgressDtoTest {
     }
 
     @Test
-    public void testAdvanceChildSequencePositionBy() {
+    public void given_validInput_when_advanceChildSequencePositionBy_then_returnsExpectedValue() {
         CrossoverProgressDto crossoverProgressDto = new CrossoverProgressDto();
 
         assertEquals(0, crossoverProgressDto.getFirstChromosomeSequencePosition());
@@ -48,7 +48,7 @@ public class CrossoverProgressDtoTest {
     }
 
     @Test
-    public void testAdvanceParentSequencePositionBy() {
+    public void given_validInput_when_advanceParentSequencePositionBy_then_returnsExpectedValue() {
         CrossoverProgressDto crossoverProgressDto = new CrossoverProgressDto();
 
         assertEquals(0, crossoverProgressDto.getSecondChromosomeSequencePosition());
@@ -59,7 +59,7 @@ public class CrossoverProgressDtoTest {
     }
 
     @Test
-    public void testAdvanceChildGeneIndexBy() {
+    public void given_validInput_when_advanceChildGeneIndexBy_then_returnsExpectedValue() {
         CrossoverProgressDto crossoverProgressDto = new CrossoverProgressDto();
 
         assertEquals(0, crossoverProgressDto.getFirstChromosomeGeneIndex());
@@ -70,7 +70,7 @@ public class CrossoverProgressDtoTest {
     }
 
     @Test
-    public void testAdvanceParentGeneIndexBy() {
+    public void given_validInput_when_advanceParentGeneIndexBy_then_returnsExpectedValue() {
         CrossoverProgressDto crossoverProgressDto = new CrossoverProgressDto();
 
         assertEquals(0, crossoverProgressDto.getSecondChromosomeGeneIndex());

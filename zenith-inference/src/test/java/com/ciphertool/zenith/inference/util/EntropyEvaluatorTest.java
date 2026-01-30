@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EntropyEvaluatorTest {
     @Test
-    public void testEvaluate_AllSameCharacterReturnsZero() {
+    public void given_validInput_when_evaluatingAllSameCharacterReturnsZero_then_returnsExpectedValue() {
         EntropyEvaluator evaluator = new EntropyEvaluator();
 
         Cipher cipher = new Cipher("test", 1, 4);
@@ -37,7 +37,7 @@ public class EntropyEvaluatorTest {
     }
 
     @Test
-    public void testEvaluate_TwoEqualCharactersReturnsExpectedEntropy() {
+    public void given_validInput_when_evaluatingTwoEqualCharactersReturnsExpectedEntropy_then_returnsExpectedValue() {
         EntropyEvaluator evaluator = new EntropyEvaluator();
 
         Cipher cipher = new Cipher("test", 1, 4);

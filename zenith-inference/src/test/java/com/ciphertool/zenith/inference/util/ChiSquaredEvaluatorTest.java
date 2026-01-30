@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChiSquaredEvaluatorTest {
     @Test
-    public void testEvaluate_ReturnsZeroForExpectedDistribution() {
+    public void given_validInput_when_evaluatingReturnsZeroForExpectedDistribution_then_returnsExpectedValue() {
         ChiSquaredEvaluator evaluator = new ChiSquaredEvaluator();
         setLetterMarkovModel(evaluator, buildLetterModel());
 
@@ -43,7 +43,7 @@ public class ChiSquaredEvaluatorTest {
     }
 
     @Test
-    public void testEvaluate_ReturnsExpectedSumForDifferentDistribution() {
+    public void given_validInput_when_evaluatingReturnsExpectedSumForDifferentDistribution_then_returnsExpectedValue() {
         ChiSquaredEvaluator evaluator = new ChiSquaredEvaluator();
         setLetterMarkovModel(evaluator, buildLetterModel());
 

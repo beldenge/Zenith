@@ -30,20 +30,20 @@ public class MathUtilsTest {
     private static final float FAST_POW_RELATIVE_TOLERANCE = 0.05f;
 
     @Test
-    public void testPowRoot() {
+    public void given_validInput_when_powRoot_then_returnsExpectedValue() {
         assertEquals(Math.pow(81d, 1d / 4d), MathUtils.powRoot(81f, 4f), 0.0001d);
         assertEquals(Math.pow(32d, 1d / 5d), MathUtils.powRoot(32f, 5f), 0.0001d);
         assertEquals(Math.pow(0.5d, 1d / 2d), MathUtils.powRoot(0.5f, 2f), 0.0001d);
     }
 
     @Test
-    public void testPowSixthRoot() {
+    public void given_validInput_when_powSixthRoot_then_returnsExpectedValue() {
         float value = 64f;
         assertEquals(MathUtils.powRoot(value, 6f), MathUtils.powSixthRoot(value), 0.0001d);
     }
 
     @Test
-    public void testFastExpApproximation() {
+    public void given_validInput_when_fastExpApproximation_then_matchesExpectations() {
         float[] values = new float[] { -2f, -1f, -0.5f, 0f, 0.5f, 1f, 2f, 3f };
 
         for (float value : values) {
@@ -54,7 +54,7 @@ public class MathUtilsTest {
     }
 
     @Test
-    public void testFastLogApproximation() {
+    public void given_validInput_when_fastLogApproximation_then_returnsExpectedValue() {
         float[] values = new float[] { 0.1f, 0.5f, 1f, 2f, 3f, 5f, 10f };
 
         for (float value : values) {
@@ -69,7 +69,7 @@ public class MathUtilsTest {
     }
 
     @Test
-    public void testFastPowApproximation() {
+    public void given_validInput_when_fastPowApproximation_then_matchesExpectations() {
         float[][] pairs = new float[][] {
             { 0.5f, 2f },
             { 2f, 2f },
@@ -88,7 +88,7 @@ public class MathUtilsTest {
     }
 
     @Test
-    public void testLogBase() {
+    public void given_validInput_when_logBase_then_returnsExpectedValue() {
         assertEquals(2d, MathUtils.logBase(100d, 10f), 0.0000001d);
         assertEquals(3d, MathUtils.logBase(8d, 2f), 0.0000001d);
         assertEquals(Math.log(7d) / Math.log(3d), MathUtils.logBase(7d, 3f), 0.0000001d);

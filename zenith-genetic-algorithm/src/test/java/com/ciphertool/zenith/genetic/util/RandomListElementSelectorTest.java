@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RandomListElementSelectorTest {
     @Test
-    public void testSelectRandomListElementSingleItemAlwaysZero() {
+    public void given_validInput_when_selectRandomListElementSingleItemAlwaysZero_then_returnsExpectedValue() {
         RandomListElementSelector selector = new RandomListElementSelector();
         List<String> items = Collections.singletonList("only");
 
@@ -38,7 +38,7 @@ public class RandomListElementSelectorTest {
     }
 
     @Test
-    public void testSelectRandomListElementWithinRange() {
+    public void given_validInput_when_selectRandomListElementWithinRange_then_returnsTrue() {
         RandomListElementSelector selector = new RandomListElementSelector();
         List<String> items = Arrays.asList("a", "b", "c", "d", "e");
 

@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CipherRequestTest {
 
     @Test
-    void isLengthValid_whenLengthMatchesRowsTimesColumns_returnsTrue() {
+    void given_validInput_when_checkingLengthValidWhenLengthMatchesRowsTimesColumnsReturnsTrue_then_returnsTrue() {
         CipherRequest request = new CipherRequest();
         request.setRows(2);
         request.setColumns(3);
@@ -40,7 +40,7 @@ class CipherRequestTest {
     }
 
     @Test
-    void isLengthValid_whenLengthDoesNotMatch_returnsFalse() {
+    void given_validInput_when_checkingLengthValidWhenLengthDoesNotMatchReturnsFalse_then_returnsFalse() {
         CipherRequest request = new CipherRequest();
         request.setRows(2);
         request.setColumns(3);
@@ -50,7 +50,7 @@ class CipherRequestTest {
     }
 
     @Test
-    void isLengthValid_whenEmpty_andDimensionsZero_returnsTrue() {
+    void given_emptyInput_when_checkingLengthValidWhenEmptyAndDimensionsZeroReturnsTrue_then_returnsTrue() {
         CipherRequest request = new CipherRequest();
         request.setRows(0);
         request.setColumns(0);
@@ -60,7 +60,7 @@ class CipherRequestTest {
     }
 
     @Test
-    void asCipher_createsCorrectCipher() {
+    void given_validInput_when_asCipherCreatesCorrectCipher_then_returnsExpectedValue() {
         CipherRequest request = new CipherRequest();
         request.setName("TestCipher");
         request.setRows(2);

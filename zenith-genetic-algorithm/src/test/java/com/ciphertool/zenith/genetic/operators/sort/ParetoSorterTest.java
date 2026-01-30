@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ParetoSorterTest {
     @Test
-    public void testSortSingleObjective() {
+    public void given_validInput_when_sortSingleObjective_then_returnsExpectedValue() {
         Genome first = new Genome(false, new Fitness[] { new MaximizingFitness(3.0d) }, null);
         Genome second = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d) }, null);
         Genome third = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d) }, null);
@@ -50,7 +50,7 @@ public class ParetoSorterTest {
     }
 
     @Test
-    public void testSortMultiObjectiveBuckets() {
+    public void given_validInput_when_sortMultiObjectiveBuckets_then_returnsTrue() {
         Genome dominated = new Genome(false, new Fitness[] { new MaximizingFitness(0.0d), new MaximizingFitness(0.0d) }, null);
         Genome first = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d), new MaximizingFitness(1.0d) }, null);
         Genome second = new Genome(false, new Fitness[] { new MaximizingFitness(1.0d), new MaximizingFitness(2.0d) }, null);

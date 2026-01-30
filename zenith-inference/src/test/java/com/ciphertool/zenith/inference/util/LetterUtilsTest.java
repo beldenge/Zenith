@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LetterUtilsTest {
     @Test
-    public void testCharToOrdinal() {
+    public void given_validInput_when_charToOrdinal_then_returnsExpectedValue() {
         assertEquals(0, LetterUtils.charToOrdinal('a'));
         assertEquals(1, LetterUtils.charToOrdinal('b'));
         assertEquals(2, LetterUtils.charToOrdinal('c'));
@@ -57,7 +57,7 @@ public class LetterUtilsTest {
     }
 
     @Test
-    public void testOrdinalToChar() {
+    public void given_validInput_when_ordinalToChar_then_returnsExpectedValue() {
         assertEquals(LetterUtils.ordinalToChar(0), 'a');
         assertEquals(LetterUtils.ordinalToChar(1), 'b');
         assertEquals(LetterUtils.ordinalToChar(2), 'c');
@@ -87,21 +87,21 @@ public class LetterUtilsTest {
     }
 
     @Test
-    public void testOrdinalToCharTooLow() {
+    public void given_validInput_when_ordinalToCharTooLow_then_throwsIllegalArgumentException() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             LetterUtils.ordinalToChar(-1);
         });
     }
 
     @Test
-    public void testOrdinalToCharTooHigh() {
+    public void given_validInput_when_ordinalToCharTooHigh_then_throwsIllegalArgumentException() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             LetterUtils.ordinalToChar(26);
         });
     }
 
     @Test
-    public void testGetRandomCharacter() {
+    public void given_validInput_when_gettingRandomCharacter_then_returnsTrue() {
         char c;
         for (int i = 0; i < 100; i++) {
             c = LetterUtils.getRandomLetter();

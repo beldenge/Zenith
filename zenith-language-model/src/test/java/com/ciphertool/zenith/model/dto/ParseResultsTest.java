@@ -26,11 +26,25 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ParseResultsTest {
     @Test
-    public void testConstructorAndAccessors() {
+    public void given_constructorAndAccessors_when_invoked_then_expected() {
         ParseResults results = new ParseResults(10L, 3L);
 
         assertEquals(10L, results.getTotal());
         assertEquals(3L, results.getUnique());
         assertNotNull(results.getLevelTotals());
+    }
+
+    @Test
+    public void given_levelTotalsCanBeModified_when_invoked_then_expected() {
+        ParseResults results = new ParseResults(100L, 50L);
+
+        results.getLevelTotals().put(1, 25L);
+        results.getLevelTotals().put(2, 15L);
+        results.getLevelTotals().put(3, 10L);
+
+        assertEquals(3, results.getLevelTotals().size());
+        assertEquals(25L, results.getLevelTotals().get(1));
+        assertEquals(15L, results.getLevelTotals().get(2));
+        assertEquals(10L, results.getLevelTotals().get(3));
     }
 }

@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CiphertextUniqueSymbolsEvaluatorTest {
     @Test
-    public void testEvaluateCountsUniqueSymbols() {
+    public void given_validInput_when_evaluatingCountsUniqueSymbols_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 4);
         cipher.setCiphertext(Arrays.asList("A", "B", "A", "C"));
 

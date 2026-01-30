@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WordSegmenterTest {
     @Test
-    public void testScoreEmptyString() throws Exception {
+    public void given_emptyInput_when_scoreEmptyString_then_returnsNotNull() throws Exception {
         WordSegmenter segmenter = buildSegmenter(new WordNGramModel(), new WordNGramModel(), 1000L);
 
         Map.Entry<Double, String[]> result = segmenter.score("");
@@ -42,7 +42,7 @@ public class WordSegmenterTest {
     }
 
     @Test
-    public void testScoreSingleWord() throws Exception {
+    public void given_validInput_when_scoreSingleWord_then_returnsNotNull() throws Exception {
         WordNGramModel unigramModel = new WordNGramModel();
         WordNGram unigram = new WordNGram();
         unigram.setNGram("a");
@@ -61,7 +61,7 @@ public class WordSegmenterTest {
     }
 
     @Test
-    public void testScoreUsesUnseenProbability() throws Exception {
+    public void given_validInput_when_scoreUsesUnseenProbability_then_returnsExpectedValue() throws Exception {
         WordSegmenter segmenter = buildSegmenter(new WordNGramModel(), new WordNGramModel(), 1000L);
 
         Map.Entry<Double, String[]> result = segmenter.score("A");
@@ -72,7 +72,7 @@ public class WordSegmenterTest {
     }
 
     @Test
-    public void testScoreUsesBigramWhenPresent() throws Exception {
+    public void given_validInput_when_scoreUsesBigramWhenPresent_then_returnsExpectedValue() throws Exception {
         WordNGramModel unigramModel = new WordNGramModel();
         WordNGram unigramA = new WordNGram();
         unigramA.setNGram("a");

@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 public class UniformCrossoverOperatorTest {
 
     @Test
-    public void testCrossover() {
+    public void given_validInput_when_crossover_then_returnsNotNull() {
         UniformCrossoverOperator operator = new UniformCrossoverOperator();
 
         // Mock the coin to ensure deterministic behavior
@@ -68,7 +68,7 @@ public class UniformCrossoverOperatorTest {
     }
 
     @Test
-    public void testCrossover_MissingKey() {
+    public void given_missingInput_when_crossoverMissingKey_then_throwsIllegalStateException() {
         UniformCrossoverOperator operator = new UniformCrossoverOperator();
 
         Genome parent1 = new Genome(false, null, null);

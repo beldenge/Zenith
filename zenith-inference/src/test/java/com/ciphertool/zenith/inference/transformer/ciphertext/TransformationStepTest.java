@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TransformationStepTest {
     @Test
-    public void testConstructorAndAccessors() {
+    public void given_validInput_when_constructing_then_returnsNotNull() {
         TransformationStep step = new TransformationStep("Transformer", Collections.singletonMap("key", 1));
 
         assertEquals("Transformer", step.getTransformerName());

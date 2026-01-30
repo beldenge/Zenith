@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LockCharactersCipherTransformerTest {
     @Test
-    public void testTransformLocksRange() {
+    public void given_validInput_when_transformLocksRange_then_matchesExpectations() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractRangeLimitedCipherTransformer.RANGE_START, 1);
         data.put(AbstractRangeLimitedCipherTransformer.RANGE_END, 2);

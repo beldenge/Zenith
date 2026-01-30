@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ConfigurationResolverTest {
     @Test
-    public void testResolveConfigurationCopiesValues() {
+    public void given_validInput_when_resolveConfigurationCopiesValues_then_copiesState() {
         SimulatedAnnealingConfiguration simulatedAnnealingConfiguration = new SimulatedAnnealingConfiguration();
         simulatedAnnealingConfiguration.setSamplerIterations(5);
         simulatedAnnealingConfiguration.setAnnealingTemperatureMin(0.1f);
@@ -89,7 +89,7 @@ public class ConfigurationResolverTest {
     }
 
     @Test
-    public void testResolveSolutionOptimizerMatchesByName() {
+    public void given_validInput_when_resolveSolutionOptimizerMatchesByName_then_returnsSameInstance() {
         ApplicationConfiguration configuration = new ApplicationConfiguration();
         SelectOption selected = new SelectOption();
         selected.setName("Stub");
@@ -103,7 +103,7 @@ public class ConfigurationResolverTest {
     }
 
     @Test
-    public void testResolveSolutionOptimizerUnknownThrows() {
+    public void given_missingInput_when_resolveSolutionOptimizerUnknownThrows_then_throwsIllegalArgumentException() {
         ApplicationConfiguration configuration = new ApplicationConfiguration();
         SelectOption selected = new SelectOption();
         selected.setName("Missing");
@@ -113,7 +113,7 @@ public class ConfigurationResolverTest {
     }
 
     @Test
-    public void testResolvePlaintextEvaluatorUsesFormModel() {
+    public void given_validInput_when_resolvePlaintextEvaluatorUsesFormModel_then_returnsExpectedValue() {
         ApplicationConfiguration configuration = new ApplicationConfiguration();
         FormComponentDto selected = new FormComponentDto();
         selected.setName("Stub");
@@ -131,7 +131,7 @@ public class ConfigurationResolverTest {
     }
 
     @Test
-    public void testResolvePlaintextEvaluatorHandlesNullForm() {
+    public void given_nullInput_when_resolvePlaintextEvaluatorHandlesNullForm_then_returnsNull() {
         ApplicationConfiguration configuration = new ApplicationConfiguration();
         FormComponentDto selected = new FormComponentDto();
         selected.setName("Stub");

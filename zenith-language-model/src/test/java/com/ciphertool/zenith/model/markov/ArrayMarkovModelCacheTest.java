@@ -37,7 +37,7 @@ public class ArrayMarkovModelCacheTest {
     Path tempDir;
 
     @Test
-    public void testWriteAndRead() throws IOException {
+    public void given_writeAndRead_when_invoked_then_expected() throws IOException {
         ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
 
         TreeNGram unigram = new TreeNGram("a");
@@ -70,7 +70,7 @@ public class ArrayMarkovModelCacheTest {
     }
 
     @Test
-    public void testReadInvalidWhenMaxNGramsToKeepChanges() throws IOException {
+    public void given_readInvalidWhenMaxNGramsToKeepChanges_when_invoked_then_expected() throws IOException {
         ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
 
         TreeNGram unigram = new TreeNGram("a");
@@ -82,6 +82,33 @@ public class ArrayMarkovModelCacheTest {
         ArrayMarkovModelCache.write(cachePath, model, 123);
 
         ArrayMarkovModel loaded = ArrayMarkovModelCache.readIfValid(cachePath, 5, 124);
+
+        assertNull(loaded);
+    }
+
+    @Test
+    public void given_readReturnsNullWhenFileDoesNotExist_when_invoked_then_expected() throws IOException {
+        Path nonExistentPath = tempDir.resolve("does-not-exist.bin");
+
+        ArrayMarkovModel loaded = ArrayMarkovModelCache.readIfValid(nonExistentPath, 5, 100);
+
+        assertNull(loaded);
+    }
+
+    @Test
+    public void given_readInvalidWhenOrderChanges_when_invoked_then_expected() throws IOException {
+        ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
+
+        TreeNGram unigram = new TreeNGram("a");
+        unigram.setCount(1);
+        unigram.setLogProbability(Math.log(0.1d));
+        model.addNode(unigram);
+
+        Path cachePath = tempDir.resolve("zenith-model-order.bin");
+        ArrayMarkovModelCache.write(cachePath, model, 100);
+
+        // Request a different order
+        ArrayMarkovModel loaded = ArrayMarkovModelCache.readIfValid(cachePath, 6, 100);
 
         assertNull(loaded);
     }

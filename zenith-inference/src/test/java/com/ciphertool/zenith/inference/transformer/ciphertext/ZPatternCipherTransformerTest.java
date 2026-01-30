@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ZPatternCipherTransformerTest {
     @Test
-    public void testTransform_NotDivisibleBy4() {
+    public void given_validInput_when_transformNotDivisibleBy4_then_returnsTrue() {
         ZPatternCipherTransformer cipherTransformer = new ZPatternCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 6, 7);
@@ -45,7 +45,7 @@ public class ZPatternCipherTransformerTest {
     }
 
     @Test
-    public void testTransform_RowsNotDivisibleBy2() {
+    public void given_validInput_when_transformRowsNotDivisibleBy2_then_returnsTrue() {
         ZPatternCipherTransformer cipherTransformer = new ZPatternCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 7, 6);
@@ -62,7 +62,7 @@ public class ZPatternCipherTransformerTest {
     }
 
     @Test
-    public void testTransform_evenColumns() {
+    public void given_validInput_when_transformEvenColumns_then_returnsExpectedValue() {
         ZPatternCipherTransformer cipherTransformer = new ZPatternCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 8, 6);
@@ -177,7 +177,7 @@ public class ZPatternCipherTransformerTest {
     }
 
     @Test
-    public void testTransform_oddColumns() {
+    public void given_validInput_when_transformOddColumns_then_returnsExpectedValue() {
         ZPatternCipherTransformer cipherTransformer = new ZPatternCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 16, 3);

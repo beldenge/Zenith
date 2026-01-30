@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ArrayMarkovModelTest {
     @Test
-    public void testComputeArrayIndex() {
+    public void given_computeArrayIndex_when_invoked_then_expected() {
         ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
 
         assertEquals(0, model.computeArrayIndex("aaaaa"));
@@ -36,7 +36,7 @@ public class ArrayMarkovModelTest {
     }
 
     @Test
-    public void testAddNodeAndFindExact() {
+    public void given_addNodeAndFindExact_when_invoked_then_expected() {
         ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
 
         TreeNGram ngram = new TreeNGram("abcde");
@@ -50,7 +50,7 @@ public class ArrayMarkovModelTest {
     }
 
     @Test
-    public void testAddDuplicateNodeThrows() {
+    public void given_addDuplicateNodeThrows_when_invoked_then_expected() {
         ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
 
         TreeNGram ngram = new TreeNGram("abcde");
@@ -65,7 +65,7 @@ public class ArrayMarkovModelTest {
     }
 
     @Test
-    public void testGetTotalNGramCount() {
+    public void given_getTotalNGramCount_when_invoked_then_expected() {
         ArrayMarkovModel model = new ArrayMarkovModel(1, 0.01f);
 
         TreeNGram a = new TreeNGram("a");
@@ -78,5 +78,31 @@ public class ArrayMarkovModelTest {
 
         assertEquals(0, model.getMapSize());
         assertEquals(5L, model.getTotalNGramCount());
+    }
+
+    @Test
+    public void given_getFirstOrderNodesIsUnmodifiable_when_invoked_then_expected() {
+        ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
+
+        TreeNGram a = new TreeNGram("a");
+        a.setCount(1L);
+        model.addNode(a);
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> model.getFirstOrderNodes().add(new TreeNGram("b")));
+    }
+
+    @Test
+    public void given_unknownLetterNGramLogProbability_when_invoked_then_expected() {
+        ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
+
+        assertEquals(0.01f, model.getUnknownLetterNGramProbability(), 0.0001f);
+        assertEquals((float) Math.log(0.01f), model.getUnknownLetterNGramLogProbability(), 0.0001f);
+    }
+
+    @Test
+    public void given_getOrder_when_invoked_then_expected() {
+        ArrayMarkovModel model = new ArrayMarkovModel(5, 0.01f);
+        assertEquals(5, model.getOrder());
     }
 }

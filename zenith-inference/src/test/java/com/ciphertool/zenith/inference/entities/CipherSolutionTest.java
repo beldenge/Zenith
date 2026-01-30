@@ -29,12 +29,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CipherSolutionTest {
     @Test
-    public void testConstructorRejectsNullCipher() {
+    public void given_nullInput_when_constructing_then_throwsIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> new CipherSolution(null, 1));
     }
 
     @Test
-    public void testLogProbabilitiesAndReplace() {
+    public void given_validInput_when_logProbabilitiesAndReplace_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 3);
         cipher.setCiphertext(Arrays.asList("A", "B", "C"));
 
@@ -53,7 +53,7 @@ public class CipherSolutionTest {
     }
 
     @Test
-    public void testMappingsPutAndReplace() {
+    public void given_validInput_when_mappingsPutAndReplace_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 1);
         cipher.setCiphertext(Arrays.asList("A"));
 
@@ -73,7 +73,7 @@ public class CipherSolutionTest {
     }
 
     @Test
-    public void testEvaluateKnownSolution() {
+    public void given_knownSolution_when_evaluatingKnownSolution_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 2);
         cipher.setCiphertext(Arrays.asList("A", "B"));
         cipher.putKnownSolutionMapping("A", "x");
@@ -87,7 +87,7 @@ public class CipherSolutionTest {
     }
 
     @Test
-    public void testAsSingleLineString() {
+    public void given_validInput_when_asSingleLineString_then_returnsExpectedValue() {
         Cipher cipher = new Cipher("test", 1, 3);
         cipher.setCiphertext(Arrays.asList("A", "B", "A"));
 
@@ -99,7 +99,7 @@ public class CipherSolutionTest {
     }
 
     @Test
-    public void testAsSingleLineStringRequiresCipher() {
+    public void given_validInput_when_asSingleLineStringRequiresCipher_then_throwsIllegalStateException() {
         Cipher cipher = new Cipher("test", 1, 1);
         cipher.setCiphertext(Arrays.asList("A"));
 
@@ -110,7 +110,7 @@ public class CipherSolutionTest {
     }
 
     @Test
-    public void testCloneCopiesState() {
+    public void given_validInput_when_cloningCopiesState_then_copiesState() {
         Cipher cipher = new Cipher("test", 1, 2);
         cipher.setCiphertext(Arrays.asList("A", "B"));
 

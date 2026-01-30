@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class FormComponentDtoTest {
     @Test
-    public void testGettersAndSetters() {
+    public void given_validInput_when_gettingTersAndSetters_then_returnsNotNull() {
         FormComponentDto dto = new FormComponentDto();
         FormlyForm form = new FormlyForm();
 
@@ -48,7 +48,7 @@ public class FormComponentDtoTest {
     }
 
     @Test
-    public void testFormlyFormDefaults() {
+    public void given_validInput_when_formlyFormDefaults_then_returnsNotNull() {
         FormlyForm form = new FormlyForm();
 
         assertNotNull(form.getFields());

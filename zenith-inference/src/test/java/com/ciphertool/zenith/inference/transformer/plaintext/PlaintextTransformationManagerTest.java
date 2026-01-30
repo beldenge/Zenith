@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PlaintextTransformationManagerTest {
     @Test
-    public void testTransformUnknownTransformerThrows() throws Exception {
+    public void given_missingInput_when_transformUnknownTransformerThrows_then_throwsIllegalArgumentException() throws Exception {
         PlaintextTransformationManager manager = new PlaintextTransformationManager();
         setField(manager, "plaintextTransformers", List.of(new NamedPlaintextTransformer("First")));
         manager.init();
@@ -43,7 +43,7 @@ public class PlaintextTransformationManagerTest {
     }
 
     @Test
-    public void testTransformAppliesInOrderLowercasesFirst() throws Exception {
+    public void given_validInput_when_transformAppliesInOrderLowercasesFirst_then_returnsExpectedValue() throws Exception {
         PlaintextTransformationManager manager = new PlaintextTransformationManager();
         setField(manager, "plaintextTransformers", List.of(new NamedPlaintextTransformer("First"), new NamedPlaintextTransformer("Second")));
         manager.init();

@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 public class SinglePointCrossoverOperatorTest {
 
     @Test
-    public void testCrossover() {
+    public void given_validInput_when_crossover_then_returnsNotNull() {
         SinglePointCrossoverOperator operator = new SinglePointCrossoverOperator();
 
         Genome parent1 = new Genome(false, null, null);
@@ -69,7 +69,7 @@ public class SinglePointCrossoverOperatorTest {
     }
 
     @Test
-    public void testCrossover_MissingKey() {
+    public void given_missingInput_when_crossoverMissingKey_then_throwsIllegalStateException() {
         SinglePointCrossoverOperator operator = new SinglePointCrossoverOperator();
 
         Genome parent1 = new Genome(false, null, null);
@@ -102,7 +102,7 @@ public class SinglePointCrossoverOperatorTest {
     }
 
     @Test
-    public void testCrossover_ParentSwap() {
+    public void given_validInput_when_crossoverParentSwap_then_returnsNotNull() {
         SinglePointCrossoverOperator operator = new SinglePointCrossoverOperator();
 
         Genome parent1 = new Genome(false, null, null);
@@ -149,7 +149,7 @@ public class SinglePointCrossoverOperatorTest {
     }
 
     @Test
-    public void testCrossover_AllGenesFromMom() {
+    public void given_validInput_when_crossoverAllGenesFromMom_then_returnsNotNull() {
         SinglePointCrossoverOperator operator = new SinglePointCrossoverOperator();
 
         Genome parent1 = new Genome(false, null, null);

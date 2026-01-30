@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WordNGramTest {
     @Test
-    public void testAccessors() {
+    public void given_validInput_when_accessors_then_returnsExpectedValue() {
         WordNGram ngram = new WordNGram();
         ngram.setOrder(2);
         ngram.setNGram("hello");

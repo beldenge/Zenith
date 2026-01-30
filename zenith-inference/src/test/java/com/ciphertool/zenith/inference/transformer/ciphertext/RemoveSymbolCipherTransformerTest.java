@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RemoveSymbolCipherTransformerTest {
     @Test
-    public void testTransform() {
+    public void given_validInput_when_transform_then_returnsExpectedValue() {
         RemoveSymbolCipherTransformer cipherTransformer = new RemoveSymbolCipherTransformer(Collections.singletonMap(RemoveSymbolCipherTransformer.SYMBOL, "T"));
 
         Cipher cipher = new Cipher("tomato", 7, 6);

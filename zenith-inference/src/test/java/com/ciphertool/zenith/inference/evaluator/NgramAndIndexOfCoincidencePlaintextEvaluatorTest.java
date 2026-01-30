@@ -255,7 +255,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
     }
 
     @Test
-    public void testEvaluate() {
+    public void given_validInput_when_evaluating_then_matchesExpectations() {
         NGramAndIndexOfCoincidencePlaintextEvaluator .evaluate(null, zodiac408, actualSolution, actualSolution.asSingleLineString(), null);
         log.info("fitness1: " + actualSolution.getLogProbability());
         log.info("solution1: " + actualSolution);
@@ -270,7 +270,7 @@ public class NgramAndIndexOfCoincidencePlaintextEvaluatorTest extends FitnessEva
     }
 
     @Test
-    public void testPerf() {
+    public void given_validInput_when_perf_then_matchesExpectations() {
         long start = System.currentTimeMillis();
         long evaluations = 10000;
 

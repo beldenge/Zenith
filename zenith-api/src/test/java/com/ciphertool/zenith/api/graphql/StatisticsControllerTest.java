@@ -75,7 +75,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void uniqueSymbols_returnsEvaluatorResult() {
+    void given_validInput_when_uniqueSymbolsReturnsEvaluatorResult_then_returnsExpectedValue() {
         when(uniqueSymbolsEvaluator.evaluate(any(Cipher.class))).thenReturn(6);
 
         DoubleResponse result = controller.uniqueSymbols(cipherRequest);
@@ -85,7 +85,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void multiplicity_returnsEvaluatorResult() {
+    void given_validInput_when_multiplicityReturnsEvaluatorResult_then_returnsExpectedValue() {
         when(multiplicityEvaluator.evaluate(any(Cipher.class))).thenReturn(1.5f);
 
         DoubleResponse result = controller.multiplicity(cipherRequest);
@@ -95,7 +95,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void entropy_returnsEvaluatorResult() {
+    void given_validInput_when_entropyReturnsEvaluatorResult_then_returnsExpectedValue() {
         when(entropyEvaluator.evaluate(any(Cipher.class))).thenReturn(2.58f);
 
         DoubleResponse result = controller.entropy(cipherRequest);
@@ -105,7 +105,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void indexOfCoincidence_returnsEvaluatorResult() {
+    void given_validInput_when_indexOfCoincidenceReturnsEvaluatorResult_then_returnsExpectedValue() {
         when(indexOfCoincidenceEvaluator.evaluate(any(Cipher.class))).thenReturn(0.067f);
 
         DoubleResponse result = controller.indexOfCoincidence(cipherRequest);
@@ -115,7 +115,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void bigramRepeats_returnsEvaluatorResult() {
+    void given_validInput_when_bigramRepeatsReturnsEvaluatorResult_then_returnsExpectedValue() {
         when(bigramEvaluator.evaluate(any(Cipher.class))).thenReturn(5);
 
         IntResponse result = controller.bigramRepeats(cipherRequest);
@@ -125,7 +125,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void cycleScore_returnsEvaluatorResult() {
+    void given_validInput_when_cycleScoreReturnsEvaluatorResult_then_returnsExpectedValue() {
         when(cycleCountEvaluator.evaluate(any(Cipher.class))).thenReturn(3);
 
         IntResponse result = controller.cycleScore(cipherRequest);
@@ -135,7 +135,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void nGramStatistics_returnsAllThreeNGramCounts() {
+    void given_validInput_when_nGramStatisticsReturnsAllThreeNgramCounts_then_returnsExpectedValue() {
         Map<String, Integer> firstNGrams = new LinkedHashMap<>();
         firstNGrams.put("A", 2);
         firstNGrams.put("B", 1);
@@ -161,7 +161,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void nGramStatistics_withNonZeroStatsPage_calculatesCorrectOffset() {
+    void given_validInput_when_nGramStatisticsWithNonZeroStatsPageCalculatesCorrectOffset_then_matchesExpectations() {
         Map<String, Integer> emptyMap = new LinkedHashMap<>();
 
         when(ciphertextNgramEvaluator.evaluate(any(Cipher.class), eq(4))).thenReturn(emptyMap);
@@ -176,35 +176,35 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void valueSchemaMapping_forDoubleResponse_returnsValue() {
+    void given_validInput_when_valueSchemaMappingForDoubleResponseReturnsValue_then_returnsExpectedValue() {
         DoubleResponse response = new DoubleResponse(3.14);
 
         assertEquals(3.14, controller.value(response));
     }
 
     @Test
-    void valueSchemaMapping_forIntResponse_returnsValue() {
+    void given_validInput_when_valueSchemaMappingForIntResponseReturnsValue_then_returnsExpectedValue() {
         IntResponse response = new IntResponse(42);
 
         assertEquals(42, controller.value(response));
     }
 
     @Test
-    void ngramSchemaMapping_returnsNgram() {
+    void given_validInput_when_ngramSchemaMappingReturnsNgram_then_returnsExpectedValue() {
         NGramCount count = new NGramCount("ABC", 5);
 
         assertEquals("ABC", controller.ngram(count));
     }
 
     @Test
-    void countSchemaMapping_returnsCount() {
+    void given_validInput_when_countSchemaMappingReturnsCount_then_returnsExpectedValue() {
         NGramCount count = new NGramCount("ABC", 5);
 
         assertEquals(5, controller.count(count));
     }
 
     @Test
-    void firstNGramCountsSchemaMapping_returnsList() {
+    void given_validInput_when_firstNgramCountsSchemaMappingReturnsList_then_returnsExpectedValue() {
         List<NGramCount> counts = Arrays.asList(new NGramCount("A", 1));
         NGramStatistics stats = new NGramStatistics(counts, List.of(), List.of());
 
@@ -212,7 +212,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void secondNGramCountsSchemaMapping_returnsList() {
+    void given_validInput_when_secondNgramCountsSchemaMappingReturnsList_then_returnsExpectedValue() {
         List<NGramCount> counts = Arrays.asList(new NGramCount("AB", 1));
         NGramStatistics stats = new NGramStatistics(List.of(), counts, List.of());
 
@@ -220,7 +220,7 @@ class StatisticsControllerTest {
     }
 
     @Test
-    void thirdNGramCountsSchemaMapping_returnsList() {
+    void given_validInput_when_thirdNgramCountsSchemaMappingReturnsList_then_returnsExpectedValue() {
         List<NGramCount> counts = Arrays.asList(new NGramCount("ABC", 1));
         NGramStatistics stats = new NGramStatistics(List.of(), List.of(), counts);
 

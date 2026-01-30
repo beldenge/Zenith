@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
 
 public class PointMutationOperatorTest {
     @Test
-    public void testMutateChromosomes_ReplacesGenesWhenDifferent() {
+    public void given_validInput_when_mutateChromosomesReplacesGenesWhenDifferent_then_replacesItem() {
         GeneDao geneDao = mock(GeneDao.class);
         PointMutationOperator operator = new PointMutationOperator();
         setGeneDao(operator, geneDao);
@@ -63,7 +63,7 @@ public class PointMutationOperatorTest {
     }
 
     @Test
-    public void testMutateChromosomes_DoesNotReplaceWhenSameGene() {
+    public void given_validInput_when_mutateChromosomesDoesNotReplaceWhenSameGene_then_returnsFalse() {
         GeneDao geneDao = mock(GeneDao.class);
         PointMutationOperator operator = new PointMutationOperator();
         setGeneDao(operator, geneDao);

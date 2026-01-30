@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OneTimePadPlaintextTransformerTest {
     @Test
-    public void testTransform() {
+    public void given_validInput_when_transform_then_returnsExpectedValue() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractVigenerePlaintextTransformer.KEY, "xmckl");
 
@@ -40,7 +40,7 @@ public class OneTimePadPlaintextTransformerTest {
     }
 
     @Test
-    public void testTransform_smallKey() {
+    public void given_validInput_when_transformSmallKey_then_returnsExpectedValue() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractVigenerePlaintextTransformer.KEY, "xmckl");
 

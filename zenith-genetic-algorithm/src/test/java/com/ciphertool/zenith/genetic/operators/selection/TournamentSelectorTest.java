@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 
 public class TournamentSelectorTest {
     @Test
-    public void testGetNextIndexEmptyReturnsMinusOne() {
+    public void given_emptyInput_when_gettingNextIndexEmptyReturnsMinusOne_then_returnsExpectedValue() {
         RandomSelector randomSelector = mock(RandomSelector.class);
         TournamentSelector selector = new TournamentSelector(randomSelector);
 
@@ -46,7 +46,7 @@ public class TournamentSelectorTest {
     }
 
     @Test
-    public void testGetNextIndexSelectsBestWhenAccuracyIsCertain() {
+    public void given_validInput_when_gettingNextIndexSelectsBestWhenAccuracyIsCertain_then_returnsExpectedValue() {
         RandomSelector randomSelector = mock(RandomSelector.class);
         TournamentSelector selector = new TournamentSelector(randomSelector);
 

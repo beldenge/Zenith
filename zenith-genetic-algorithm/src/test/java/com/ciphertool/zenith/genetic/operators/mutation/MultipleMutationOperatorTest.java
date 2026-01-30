@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 
 public class MultipleMutationOperatorTest {
     @Test
-    public void testMutateChromosomes_ReplacesGeneWhenDifferent() {
+    public void given_validInput_when_mutateChromosomesReplacesGeneWhenDifferent_then_replacesItem() {
         GeneDao geneDao = mock(GeneDao.class);
         MultipleMutationOperator operator = new MultipleMutationOperator();
         setGeneDao(operator, geneDao);
@@ -64,7 +64,7 @@ public class MultipleMutationOperatorTest {
     }
 
     @Test
-    public void testMutateChromosomes_DoesNotReplaceWhenSameGene() {
+    public void given_validInput_when_mutateChromosomesDoesNotReplaceWhenSameGene_then_returnsFalse() {
         GeneDao geneDao = mock(GeneDao.class);
         MultipleMutationOperator operator = new MultipleMutationOperator();
         setGeneDao(operator, geneDao);

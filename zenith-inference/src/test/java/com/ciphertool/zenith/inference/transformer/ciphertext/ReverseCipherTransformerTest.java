@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReverseCipherTransformerTest {
     @Test
-    public void testTransform() {
+    public void given_validInput_when_transform_then_returnsExpectedValue() {
         ReverseCipherTransformer cipherTransformer = new ReverseCipherTransformer(new HashMap<>());
 
         Cipher cipher = new Cipher("tomato", 7, 6);

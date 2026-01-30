@@ -64,7 +64,7 @@ class SolutionControllerTest {
     }
 
     @Test
-    void solveSolution_withBlankRequestId_generatesUuid() throws Exception {
+    void given_validInput_when_solveSolutionWithBlankRequestIdGeneratesUuid_then_returnsFalse() throws Exception {
         SolutionRequest request = createBasicRequest();
         request.setRequestId("");
 
@@ -79,7 +79,7 @@ class SolutionControllerTest {
     }
 
     @Test
-    void solveSolution_withNullRequestId_generatesUuid() throws Exception {
+    void given_nullInput_when_solveSolutionWithNullRequestIdGeneratesUuid_then_returnsFalse() throws Exception {
         SolutionRequest request = createBasicRequest();
         request.setRequestId(null);
 
@@ -92,7 +92,7 @@ class SolutionControllerTest {
     }
 
     @Test
-    void solveSolution_withProvidedRequestId_usesProvidedId() throws Exception {
+    void given_validInput_when_solveSolutionWithProvidedRequestIdUsesProvidedId_then_returnsExpectedValue() throws Exception {
         SolutionRequest request = createBasicRequest();
         request.setRequestId("my-custom-id");
 
@@ -102,7 +102,7 @@ class SolutionControllerTest {
     }
 
     @Test
-    void solutionUpdates_returnsFlux() {
+    void given_validInput_when_solutionUpdatesReturnsFlux_then_returnsNotNull() {
         String requestId = "test-request-id";
 
         Flux<SolutionUpdate> flux = controller.solutionUpdates(requestId);
@@ -111,7 +111,7 @@ class SolutionControllerTest {
     }
 
     @Test
-    void getCallback_returnsCallbackThatEmitsEpochComplete() {
+    void given_validInput_when_gettingCallbackReturnsCallbackThatEmitsEpochComplete_then_returnsNotNull() {
         SolutionRequest request = createBasicRequest();
         request.setRequestId("callback-test-id");
         request.setEpochs(5);
@@ -136,7 +136,7 @@ class SolutionControllerTest {
     }
 
     @Test
-    void getCallback_withNullSolution_doesNotIncludeSolutionData() {
+    void given_nullInput_when_gettingCallbackWithNullSolutionDoesNotIncludeSolutionData_then_returnsNull() {
         SolutionRequest request = createBasicRequest();
         request.setRequestId("null-solution-test");
         request.setEpochs(3);

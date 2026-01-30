@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FourSquarePlaintextTransformerTest {
     @Test
-    public void testTransform() {
+    public void given_validInput_when_transform_then_returnsExpectedValue() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractFourSquarePlaintextTransformer.KEY_TOP_LEFT, "byfireacdghklmnopqstuvwxz");
         data.put(AbstractFourSquarePlaintextTransformer.KEY_TOP_RIGHT, "bygunacdefhiklmopqrstvwxz");

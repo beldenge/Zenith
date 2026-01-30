@@ -69,7 +69,7 @@ class CipherControllerTest {
     }
 
     @Test
-    void ciphers_returnsCiphersFromDao() {
+    void given_validInput_when_ciphersReturnsCiphersFromDao_then_returnsExpectedValue() {
         List<Cipher> expectedCiphers = Arrays.asList(testCipher);
         when(cipherDao.findAll()).thenReturn(expectedCiphers);
 
@@ -80,7 +80,7 @@ class CipherControllerTest {
     }
 
     @Test
-    void transformCipher_transformsCipherWithSteps() {
+    void given_validInput_when_transformCipherTransformsCipherWithSteps_then_returnsExpectedValue() {
         CipherRequest cipherRequest = new CipherRequest();
         cipherRequest.setName("TestCipher");
         cipherRequest.setRows(2);
@@ -104,27 +104,27 @@ class CipherControllerTest {
     }
 
     @Test
-    void name_returnsCipherName() {
+    void given_validInput_when_nameReturnsCipherName_then_returnsExpectedValue() {
         assertEquals("TestCipher", controller.name(testCipher));
     }
 
     @Test
-    void rows_returnsCipherRows() {
+    void given_validInput_when_rowsReturnsCipherRows_then_returnsExpectedValue() {
         assertEquals(2, controller.rows(testCipher));
     }
 
     @Test
-    void columns_returnsCipherColumns() {
+    void given_validInput_when_columnsReturnsCipherColumns_then_returnsExpectedValue() {
         assertEquals(3, controller.columns(testCipher));
     }
 
     @Test
-    void readOnly_returnsCipherReadOnly() {
+    void given_validInput_when_readOnlyReturnsCipherReadOnly_then_returnsFalse() {
         assertFalse(controller.readOnly(testCipher));
     }
 
     @Test
-    void ciphertext_returnsCiphertextAsStringList() {
+    void given_validInput_when_ciphertextReturnsCiphertextAsStringList_then_returnsExpectedValue() {
         List<String> result = controller.ciphertext(testCipher);
 
         assertEquals(6, result.size());
@@ -133,7 +133,7 @@ class CipherControllerTest {
     }
 
     @Test
-    void knownSolutionKey_returnsKnownSolutionKey() {
+    void given_knownSolution_when_knownSolutionKeyReturnsKnownSolutionKey_then_returnsExpectedValue() {
         Map<String, String> key = new HashMap<>();
         key.put("A", "X");
         testCipher.setKnownSolutionKey(key);

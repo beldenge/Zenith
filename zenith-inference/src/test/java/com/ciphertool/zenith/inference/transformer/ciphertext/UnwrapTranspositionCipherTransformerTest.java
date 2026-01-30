@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UnwrapTranspositionCipherTransformerTest {
     @Test
-    public void testTransposeOnce() {
+    public void given_validInput_when_transposeOnce_then_returnsExpectedValue() {
         UnwrapTranspositionCipherTransformer cipherTransformer = new UnwrapTranspositionCipherTransformer();
         cipherTransformer.transpositionKeyString = "TOMATO";
         cipherTransformer.init();
@@ -130,7 +130,7 @@ public class UnwrapTranspositionCipherTransformerTest {
     }
 
     @Test
-    public void testTransposeTwice() {
+    public void given_validInput_when_transposeTwice_then_returnsExpectedValue() {
         UnwrapTranspositionCipherTransformer cipherTransformer = new UnwrapTranspositionCipherTransformer();
         cipherTransformer.transpositionKeyString = "TOMATO";
         cipherTransformer.init();

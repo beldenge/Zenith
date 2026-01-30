@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 
 public class TruncationSelectorTest {
     @Test
-    public void testGetNextIndexEmptyListReturnsMinusOne() {
+    public void given_emptyInput_when_gettingNextIndexEmptyListReturnsMinusOne_then_returnsExpectedValue() {
         RandomSelector randomSelector = mock(RandomSelector.class);
         TruncationSelector selector = new TruncationSelector(randomSelector);
 
@@ -45,7 +45,7 @@ public class TruncationSelectorTest {
     }
 
     @Test
-    public void testGetNextIndexDelegatesToRandomSelector() {
+    public void given_validInput_when_gettingNextIndexDelegatesToRandomSelector_then_returnsExpectedValue() {
         RandomSelector randomSelector = mock(RandomSelector.class);
         TruncationSelector selector = new TruncationSelector(randomSelector);
 

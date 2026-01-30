@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PeriodCipherTransformerTest {
     @Test
-    public void testTransform() {
+    public void given_validInput_when_transform_then_returnsExpectedValue() {
         PeriodCipherTransformer cipherTransformer = new PeriodCipherTransformer(Collections.singletonMap(AbstractPeriodCipherTransformer.LENGTH, 5));
 
         Cipher cipher = new Cipher("tomato", 7, 6);

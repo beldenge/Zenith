@@ -44,7 +44,7 @@ import static org.mockito.Mockito.*;
 
 public class StandardGeneticAlgorithmTest {
     @Test
-    public void testFinish() {
+    public void given_validInput_when_finish_then_returnsTrue() {
         LocalDateTime beforeFinish = LocalDateTime.now();
 
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
@@ -58,7 +58,7 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
-    public void testProceedWithNextGeneration() {
+    public void given_validInput_when_proceedWithNextGeneration_then_returnsExpectedValue() {
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         int initialPopulationSize = 100;
@@ -138,7 +138,7 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void testCrossover() {
+    public void given_validInput_when_crossover_then_returnsExpectedValue() {
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         int initialPopulationSize = 50;
@@ -190,7 +190,7 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"rawtypes"})
     @Test
-    public void testCrossover_SmallPopulation() {
+    public void given_validInput_when_crossoverSmallPopulation_then_returnsExpectedValue() {
         StandardGeneticAlgorithm standardGeneticAlgorithm = new StandardGeneticAlgorithm();
 
         StandardPopulation population = new StandardPopulation();
@@ -224,7 +224,7 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void testMutate() {
+    public void given_validInput_when_mutate_then_matchesExpectations() {
         int initialPopulationSize = 100;
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
@@ -264,7 +264,7 @@ public class StandardGeneticAlgorithmTest {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
-    public void testMutate_SmallPopulation() {
+    public void given_validInput_when_mutateSmallPopulation_then_matchesExpectations() {
         int initialPopulationSize = 100;
 
         StandardPopulation populationMock = mock(StandardPopulation.class);
@@ -303,7 +303,7 @@ public class StandardGeneticAlgorithmTest {
     }
 
     @Test
-    public void testSpawnInitialPopulation() {
+    public void given_validInput_when_spawnInitialPopulation_then_matchesExpectations() {
         StandardPopulation populationMock = mock(StandardPopulation.class);
         int populationSize = 100;
 

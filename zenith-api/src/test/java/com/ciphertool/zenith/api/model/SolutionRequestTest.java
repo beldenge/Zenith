@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SolutionRequestTest {
 
     @Test
-    void isLengthValid_whenLengthMatchesRowsTimesColumns_returnsTrue() {
+    void given_validInput_when_checkingLengthValidWhenLengthMatchesRowsTimesColumnsReturnsTrue_then_returnsTrue() {
         SolutionRequest request = new SolutionRequest();
         request.setRows(2);
         request.setColumns(3);
@@ -41,7 +41,7 @@ class SolutionRequestTest {
     }
 
     @Test
-    void isLengthValid_whenLengthDoesNotMatch_returnsFalse() {
+    void given_validInput_when_checkingLengthValidWhenLengthDoesNotMatchReturnsFalse_then_returnsFalse() {
         SolutionRequest request = new SolutionRequest();
         request.setRows(2);
         request.setColumns(3);
@@ -51,7 +51,7 @@ class SolutionRequestTest {
     }
 
     @Test
-    void isAnyOptimizerConfigured_whenSimulatedAnnealingConfigured_returnsTrue() {
+    void given_validInput_when_checkingAnyOptimizerConfiguredWhenSimulatedAnnealingConfiguredReturnsTrue_then_returnsTrue() {
         SolutionRequest request = new SolutionRequest();
         request.setSimulatedAnnealingConfiguration(new SimulatedAnnealingConfiguration());
 
@@ -59,7 +59,7 @@ class SolutionRequestTest {
     }
 
     @Test
-    void isAnyOptimizerConfigured_whenGeneticAlgorithmConfigured_returnsTrue() {
+    void given_validInput_when_checkingAnyOptimizerConfiguredWhenGeneticAlgorithmConfiguredReturnsTrue_then_returnsTrue() {
         SolutionRequest request = new SolutionRequest();
         request.setGeneticAlgorithmConfiguration(new GeneticAlgorithmConfiguration());
 
@@ -67,14 +67,14 @@ class SolutionRequestTest {
     }
 
     @Test
-    void isAnyOptimizerConfigured_whenNeitherConfigured_returnsFalse() {
+    void given_validInput_when_checkingAnyOptimizerConfiguredWhenNeitherConfiguredReturnsFalse_then_returnsFalse() {
         SolutionRequest request = new SolutionRequest();
 
         assertFalse(request.isAnyOptimizerConfigured());
     }
 
     @Test
-    void isOnlyOneOptimizerConfigured_whenOnlySimulatedAnnealing_returnsTrue() {
+    void given_validInput_when_checkingOnlyOneOptimizerConfiguredWhenOnlySimulatedAnnealingReturnsTrue_then_returnsTrue() {
         SolutionRequest request = new SolutionRequest();
         request.setSimulatedAnnealingConfiguration(new SimulatedAnnealingConfiguration());
 
@@ -82,7 +82,7 @@ class SolutionRequestTest {
     }
 
     @Test
-    void isOnlyOneOptimizerConfigured_whenOnlyGeneticAlgorithm_returnsTrue() {
+    void given_validInput_when_checkingOnlyOneOptimizerConfiguredWhenOnlyGeneticAlgorithmReturnsTrue_then_returnsTrue() {
         SolutionRequest request = new SolutionRequest();
         request.setGeneticAlgorithmConfiguration(new GeneticAlgorithmConfiguration());
 
@@ -90,7 +90,7 @@ class SolutionRequestTest {
     }
 
     @Test
-    void isOnlyOneOptimizerConfigured_whenBothConfigured_returnsFalse() {
+    void given_validInput_when_checkingOnlyOneOptimizerConfiguredWhenBothConfiguredReturnsFalse_then_returnsFalse() {
         SolutionRequest request = new SolutionRequest();
         request.setSimulatedAnnealingConfiguration(new SimulatedAnnealingConfiguration());
         request.setGeneticAlgorithmConfiguration(new GeneticAlgorithmConfiguration());
@@ -99,7 +99,7 @@ class SolutionRequestTest {
     }
 
     @Test
-    void isOnlyOneOptimizerConfigured_whenNeitherConfigured_returnsFalse() {
+    void given_validInput_when_checkingOnlyOneOptimizerConfiguredWhenNeitherConfiguredReturnsFalse_then_returnsFalse() {
         SolutionRequest request = new SolutionRequest();
 
         assertFalse(request.isOnlyOneOptimizerConfigured());

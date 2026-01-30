@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 public class FitnessTest {
     @Test
-    public void testMaximizingFitnessCompare() {
+    public void given_validInput_when_maximizingFitnessCompare_then_comparesAsExpected() {
         MaximizingFitness higher = new MaximizingFitness(2.0d);
         MaximizingFitness lower = new MaximizingFitness(1.0d);
 
@@ -36,7 +36,7 @@ public class FitnessTest {
     }
 
     @Test
-    public void testMaximizingFitnessGuardRail() {
+    public void given_validInput_when_maximizingFitnessGuardRail_then_returnsExpectedValue() {
         MaximizingFitness first = new MaximizingFitness(11.0d, 10.0d);
         MaximizingFitness second = new MaximizingFitness(12.0d, 10.0d);
 
@@ -45,7 +45,7 @@ public class FitnessTest {
     }
 
     @Test
-    public void testMinimizingFitnessCompare() {
+    public void given_validInput_when_minimizingFitnessCompare_then_comparesAsExpected() {
         MinimizingFitness lower = new MinimizingFitness(1.0d);
         MinimizingFitness higher = new MinimizingFitness(2.0d);
 
@@ -55,7 +55,7 @@ public class FitnessTest {
     }
 
     @Test
-    public void testMinimizingFitnessGuardRail() {
+    public void given_validInput_when_minimizingFitnessGuardRail_then_returnsExpectedValue() {
         MinimizingFitness first = new MinimizingFitness(0.1d, 0.5d);
         MinimizingFitness second = new MinimizingFitness(0.2d, 0.5d);
 
@@ -64,7 +64,7 @@ public class FitnessTest {
     }
 
     @Test
-    public void testProximityFitnessCompare() {
+    public void given_validInput_when_proximityFitnessCompare_then_comparesAsExpected() {
         ProximityFitness closer = new ProximityFitness(10.0d, 9.0d);
         ProximityFitness farther = new ProximityFitness(10.0d, 12.0d);
 
@@ -74,7 +74,7 @@ public class FitnessTest {
     }
 
     @Test
-    public void testProximityFitnessGuardRail() {
+    public void given_validInput_when_proximityFitnessGuardRail_then_returnsExpectedValue() {
         ProximityFitness first = new ProximityFitness(10.0d, 9.9d, 0.5d);
         ProximityFitness second = new ProximityFitness(10.0d, 10.1d, 0.5d);
 
@@ -83,7 +83,7 @@ public class FitnessTest {
     }
 
     @Test
-    public void testFitnessClone() {
+    public void given_validInput_when_fitnessClone_then_copiesState() {
         MaximizingFitness max = new MaximizingFitness(1.0d, 5.0d);
         MinimizingFitness min = new MinimizingFitness(2.0d, 3.0d);
         ProximityFitness prox = new ProximityFitness(10.0d, 9.0d, 0.5d);

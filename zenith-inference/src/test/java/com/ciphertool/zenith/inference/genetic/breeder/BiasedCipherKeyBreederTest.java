@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 
 public class BiasedCipherKeyBreederTest {
     @Test
-    public void testBreedUsesBiasedBucket() {
+    public void given_validInput_when_breedUsesBiasedBucket_then_returnsTrue() {
         BiasedCipherKeyBreeder breeder = new BiasedCipherKeyBreeder();
         ArrayMarkovModel markovModel = new ArrayMarkovModel(1, 1f);
         TreeNGram node = new TreeNGram("a");

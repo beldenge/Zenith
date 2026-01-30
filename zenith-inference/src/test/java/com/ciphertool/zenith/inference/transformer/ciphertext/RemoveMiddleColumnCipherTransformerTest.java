@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RemoveMiddleColumnCipherTransformerTest {
     @Test
-    public void testTransform_EvenColumns() {
+    public void given_validInput_when_transformEvenColumns_then_returnsTrue() {
         RemoveMiddleColumnCipherTransformer cipherTransformer = new RemoveMiddleColumnCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 6, 6);
@@ -45,7 +45,7 @@ public class RemoveMiddleColumnCipherTransformerTest {
     }
 
     @Test
-    public void testTransform() {
+    public void given_validInput_when_transform_then_returnsExpectedValue() {
         RemoveMiddleColumnCipherTransformer cipherTransformer = new RemoveMiddleColumnCipherTransformer();
 
         Cipher cipher = new Cipher("tomato", 6, 7);

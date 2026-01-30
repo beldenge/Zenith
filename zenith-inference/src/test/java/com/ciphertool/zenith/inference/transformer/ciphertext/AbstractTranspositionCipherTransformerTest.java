@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AbstractTranspositionCipherTransformerTest {
     @Test
-    public void testNullKeyDefaultsToNoOp() {
+    public void given_nullInput_when_nullKeyDefaultsToNoOp_then_returnsNull() {
         TestTranspositionTransformer transformer = new TestTranspositionTransformer(new HashMap<>());
 
         Cipher cipher = buildCipher(2, 2, "a", "b", "c", "d");
@@ -44,7 +44,7 @@ public class AbstractTranspositionCipherTransformerTest {
     }
 
     @Test
-    public void testGetIndicesForTranspositionKey() {
+    public void given_validInput_when_gettingIndicesForTranspositionKey_then_returnsExpectedValue() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractTranspositionCipherTransformer.KEY, "bca");
 
@@ -54,7 +54,7 @@ public class AbstractTranspositionCipherTransformerTest {
     }
 
     @Test
-    public void testTransformRejectsKeyLengthOutOfRange() {
+    public void given_validInput_when_transformRejectsKeyLengthOutOfRange_then_throwsIllegalArgumentException() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractTranspositionCipherTransformer.KEY, "abcd");
 

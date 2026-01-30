@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GraphQLConfigurationTest {
 
     @Test
-    void runtimeWiringConfigurer_returnsNonNull() {
+    void given_nullInput_when_runtimeWiringConfigurerReturnsNonNull_then_returnsNotNull() {
         GraphQLConfiguration configuration = new GraphQLConfiguration();
 
         RuntimeWiringConfigurer configurer = configuration.runtimeWiringConfigurer();

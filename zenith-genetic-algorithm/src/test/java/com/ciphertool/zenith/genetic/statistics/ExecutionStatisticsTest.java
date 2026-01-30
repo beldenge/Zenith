@@ -34,7 +34,7 @@ import static org.mockito.Mockito.mock;
 
 public class ExecutionStatisticsTest {
     @Test
-    public void testConstructor() {
+    public void given_validInput_when_constructing_then_returnsSameInstance() {
         LocalDateTime startDateToSet = LocalDateTime.now();
         GeneticAlgorithmStrategy strategy = createGeneticAlgorithmStrategy();
 
@@ -49,7 +49,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetStartDate() {
+    public void given_validInput_when_settingStartDate_then_returnsSameInstance() {
         LocalDateTime startDateToSet = LocalDateTime.now();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setStartDateTime(startDateToSet);
@@ -58,7 +58,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetEndDate() {
+    public void given_validInput_when_settingEndDate_then_returnsSameInstance() {
         LocalDateTime endDateToSet = LocalDateTime.now();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setEndDateTime(endDateToSet);
@@ -67,7 +67,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetPopulationSize() {
+    public void given_validInput_when_settingPopulationSize_then_returnsSameInstance() {
         Integer populationSizeToSet = 1000;
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setPopulationSize(populationSizeToSet);
@@ -76,7 +76,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetMutationRate() {
+    public void given_validInput_when_settingMutationRate_then_returnsSameInstance() {
         Double mutationRateToSet = 0.05;
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setMutationRate(mutationRateToSet);
@@ -85,7 +85,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetCrossoverOperator() {
+    public void given_validInput_when_settingCrossoverOperator_then_returnsSameInstance() {
         String crossoverOperatorToSet = mock(CrossoverOperator.class).getClass().getSimpleName();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setCrossoverOperator(crossoverOperatorToSet);
@@ -94,7 +94,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetFitnessEvaluator() {
+    public void given_validInput_when_settingFitnessEvaluator_then_returnsSameInstance() {
         String fitnessEvaluatorToSet = mock(FitnessEvaluator.class).getClass().getSimpleName();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setFitnessEvaluator(fitnessEvaluatorToSet);
@@ -103,7 +103,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testSetMutationOperator() {
+    public void given_validInput_when_settingMutationOperator_then_returnsSameInstance() {
         String mutationOperatorToSet = mock(MutationOperator.class).getClass().getSimpleName();
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.setMutationOperator(mutationOperatorToSet);
@@ -112,7 +112,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testGenerationStatisticsListUnmodifiable() {
+    public void given_validInput_when_generationStatisticsListUnmodifiable_then_throwsUnsupportedOperationException() {
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         executionStatistics.addGenerationStatistics(new GenerationStatistics());
         executionStatistics.addGenerationStatistics(new GenerationStatistics());
@@ -126,13 +126,13 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void getNullGenerationStatisticsList() {
+    public void given_nullInput_when_gettingNullGenerationStatisticsList_then_returnsNotNull() {
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         assertNotNull(executionStatistics.getGenerationStatisticsList());
     }
 
     @Test
-    public void addGenerationStatistics() {
+    public void given_validInput_when_addingGenerationStatistics_then_returnsSameInstance() {
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         assertEquals(0, executionStatistics.getGenerationStatisticsList().size());
 
@@ -150,7 +150,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void removeGenerationStatistics() {
+    public void given_validInput_when_removingGenerationStatistics_then_returnsSameInstance() {
         ExecutionStatistics executionStatistics = new ExecutionStatistics();
         assertEquals(0, executionStatistics.getGenerationStatisticsList().size());
 
@@ -171,7 +171,7 @@ public class ExecutionStatisticsTest {
     }
 
     @Test
-    public void testEquals() {
+    public void given_validInput_when_equals_then_comparesAsExpected() {
         LocalDateTime baseStartDate = LocalDateTime.now();
         GeneticAlgorithmStrategy baseStrategy = createGeneticAlgorithmStrategy();
 

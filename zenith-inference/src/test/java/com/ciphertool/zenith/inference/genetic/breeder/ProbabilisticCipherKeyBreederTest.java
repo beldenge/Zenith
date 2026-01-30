@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
 
 public class ProbabilisticCipherKeyBreederTest {
     @Test
-    public void testBreedUsesDistinctCipherKeys() {
+    public void given_validInput_when_breedUsesDistinctCipherKeys_then_returnsTrue() {
         ProbabilisticCipherKeyBreeder breeder = new ProbabilisticCipherKeyBreeder();
         GeneDao geneDao = mock(GeneDao.class);
         ReflectionTestUtils.setField(breeder, "geneDao", geneDao);

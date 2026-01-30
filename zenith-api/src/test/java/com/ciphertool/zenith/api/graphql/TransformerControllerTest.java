@@ -51,21 +51,21 @@ class TransformerControllerTest {
     private TransformerController controller;
 
     @Test
-    void ciphertextTransformers_returnsInjectedTransformers() {
+    void given_validInput_when_ciphertextTransformersReturnsInjectedTransformers_then_returnsSameInstance() {
         List<CipherTransformer> result = controller.ciphertextTransformers();
 
         assertSame(cipherTransformers, result);
     }
 
     @Test
-    void plaintextTransformers_returnsInjectedTransformers() {
+    void given_validInput_when_plaintextTransformersReturnsInjectedTransformers_then_returnsSameInstance() {
         List<PlaintextTransformer> result = controller.plaintextTransformers();
 
         assertSame(plaintextTransformers, result);
     }
 
     @Test
-    void modelSchemaMapping_returnsFormModel() {
+    void given_validInput_when_modelSchemaMappingReturnsFormModel_then_returnsExpectedValue() {
         FormlyForm form = mock(FormlyForm.class);
         Map<String, Object> model = new HashMap<>();
         model.put("key", "value");
@@ -77,7 +77,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void fieldsSchemaMapping_returnsFormFields() {
+    void given_validInput_when_fieldsSchemaMappingReturnsFormFields_then_returnsExpectedValue() {
         FormlyForm form = mock(FormlyForm.class);
         List<FormlyFormField> fields = Arrays.asList(mock(FormlyFormField.class));
         when(form.getFields()).thenReturn(fields);
@@ -88,7 +88,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void keySchemaMapping_returnsFieldKey() {
+    void given_validInput_when_keySchemaMappingReturnsFieldKey_then_returnsExpectedValue() {
         FormlyFormField field = mock(FormlyFormField.class);
         when(field.getKey()).thenReturn("testKey");
 
@@ -96,7 +96,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void typeSchemaMapping_forField_returnsFieldType() {
+    void given_validInput_when_typeSchemaMappingForFieldReturnsFieldType_then_returnsExpectedValue() {
         FormlyFormField field = mock(FormlyFormField.class);
         when(field.getType()).thenReturn("input");
 
@@ -104,7 +104,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void propsSchemaMapping_returnsFieldProps() {
+    void given_validInput_when_propsSchemaMappingReturnsFieldProps_then_returnsSameInstance() {
         FormlyFormField field = mock(FormlyFormField.class);
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(field.getProps()).thenReturn(props);
@@ -113,7 +113,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void defaultValueSchemaMapping_returnsFieldDefaultValue() {
+    void given_validInput_when_defaultValueSchemaMappingReturnsFieldDefaultValue_then_returnsExpectedValue() {
         FormlyFormField field = mock(FormlyFormField.class);
         when(field.getDefaultValue()).thenReturn("default");
 
@@ -121,7 +121,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void labelSchemaMapping_returnsPropsLabel() {
+    void given_validInput_when_labelSchemaMappingReturnsPropsLabel_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getLabel()).thenReturn("Label Text");
 
@@ -129,7 +129,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void placeholderSchemaMapping_returnsPropsPlaceholder() {
+    void given_validInput_when_placeholderSchemaMappingReturnsPropsPlaceholder_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getPlaceholder()).thenReturn("Enter value...");
 
@@ -137,7 +137,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void requiredSchemaMapping_returnsPropsRequired() {
+    void given_validInput_when_requiredSchemaMappingReturnsPropsRequired_then_returnsTrue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.isRequired()).thenReturn(true);
 
@@ -145,7 +145,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void typeSchemaMapping_forProps_returnsPropsType() {
+    void given_validInput_when_typeSchemaMappingForPropsReturnsPropsType_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getType()).thenReturn("number");
 
@@ -153,7 +153,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void rowsSchemaMapping_returnsPropsRows() {
+    void given_validInput_when_rowsSchemaMappingReturnsPropsRows_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getRows()).thenReturn(5);
 
@@ -161,7 +161,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void colsSchemaMapping_returnsPropsCols() {
+    void given_validInput_when_colsSchemaMappingReturnsPropsCols_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getCols()).thenReturn(10);
 
@@ -169,7 +169,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void maxSchemaMapping_returnsPropsMax() {
+    void given_validInput_when_maxSchemaMappingReturnsPropsMax_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getMax()).thenReturn(100.0);
 
@@ -177,7 +177,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void minSchemaMapping_returnsPropsMin() {
+    void given_validInput_when_minSchemaMappingReturnsPropsMin_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getMin()).thenReturn(0.0);
 
@@ -185,7 +185,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void minLengthSchemaMapping_returnsPropsMinLength() {
+    void given_validInput_when_minLengthSchemaMappingReturnsPropsMinLength_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getMinLength()).thenReturn(1);
 
@@ -193,7 +193,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void maxLengthSchemaMapping_returnsPropsMaxLength() {
+    void given_validInput_when_maxLengthSchemaMappingReturnsPropsMaxLength_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getMaxLength()).thenReturn(255);
 
@@ -201,7 +201,7 @@ class TransformerControllerTest {
     }
 
     @Test
-    void patternSchemaMapping_returnsPropsPattern() {
+    void given_validInput_when_patternSchemaMappingReturnsPropsPattern_then_returnsExpectedValue() {
         FormlyFieldProps props = mock(FormlyFieldProps.class);
         when(props.getPattern()).thenReturn("[A-Z]+");
 

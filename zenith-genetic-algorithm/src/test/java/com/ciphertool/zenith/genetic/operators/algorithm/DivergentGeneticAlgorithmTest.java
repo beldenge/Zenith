@@ -39,7 +39,7 @@ public class DivergentGeneticAlgorithmTest {
     }
 
     @Test
-    public void testProceedWithNextGeneration() {
+    public void given_validInput_when_proceedWithNextGeneration_then_matchesExpectations() {
         ExecutionStatistics executionStatistics = mock(ExecutionStatistics.class);
         
         List<Parents> parentsList = new ArrayList<>();
@@ -70,7 +70,7 @@ public class DivergentGeneticAlgorithmTest {
     }
 
     @Test
-    public void testCrossover() {
+    public void given_validInput_when_crossover_then_returnsExpectedValue() {
         List<Parents> parentsList = new ArrayList<>();
         parentsList.add(new Parents(mock(Genome.class), mock(Genome.class)));
         parentsList.add(new Parents(mock(Genome.class), mock(Genome.class)));
@@ -92,7 +92,7 @@ public class DivergentGeneticAlgorithmTest {
     }
 
     @Test
-    public void testCrossover_Failure() {
+    public void given_validInput_when_crossoverFailure_then_throwsIllegalStateException() {
         List<Parents> parentsList = new ArrayList<>();
         parentsList.add(new Parents(mock(Genome.class), mock(Genome.class)));
 

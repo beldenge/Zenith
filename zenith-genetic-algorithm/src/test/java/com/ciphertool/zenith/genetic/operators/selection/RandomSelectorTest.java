@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 
 public class RandomSelectorTest {
     @Test
-    public void testGetNextIndexEmptyReturnsMinusOne() {
+    public void given_emptyInput_when_gettingNextIndexEmptyReturnsMinusOne_then_returnsExpectedValue() {
         RandomSelector selector = new RandomSelector();
 
         int index = selector.getNextIndex(Collections.emptyList(), mock(GeneticAlgorithmStrategy.class));
@@ -41,7 +41,7 @@ public class RandomSelectorTest {
     }
 
     @Test
-    public void testGetNextIndexSingleElementAlwaysZero() {
+    public void given_validInput_when_gettingNextIndexSingleElementAlwaysZero_then_returnsExpectedValue() {
         RandomSelector selector = new RandomSelector();
 
         Genome genome = new Genome(false, new com.ciphertool.zenith.genetic.fitness.Fitness[] { new MaximizingFitness(1.0d) }, null);

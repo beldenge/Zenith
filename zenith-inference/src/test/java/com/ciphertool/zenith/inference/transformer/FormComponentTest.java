@@ -26,14 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FormComponentTest {
     @Test
-    public void testGetNameStripsSuffix() {
+    public void given_validInput_when_gettingNameStripsSuffix_then_returnsExpectedValue() {
         FormComponent component = new ExampleCipherTransformer();
 
         assertEquals("Example", component.getName());
     }
 
     @Test
-    public void testGetDisplayNameSplitsCamelCase() {
+    public void given_validInput_when_gettingDisplayNameSplitsCamelCase_then_returnsExpectedValue() {
         FormComponent component = new ZPatternCipherTransformer();
 
         assertEquals("Z Pattern", component.getDisplayName());

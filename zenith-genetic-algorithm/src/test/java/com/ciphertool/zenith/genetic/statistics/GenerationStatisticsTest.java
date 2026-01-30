@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GenerationStatisticsTest {
     @Test
-    public void testConstructor() {
+    public void given_validInput_when_constructing_then_returnsExpectedValue() {
         int generationToSet = 1;
 
         GenerationStatistics generationStatistics = new GenerationStatistics(generationToSet);
@@ -34,7 +34,7 @@ public class GenerationStatisticsTest {
     }
 
     @Test
-    public void testSetGeneration() {
+    public void given_validInput_when_settingGeneration_then_returnsExpectedValue() {
         int generationToSet = 1;
         GenerationStatistics generationStatistics = new GenerationStatistics();
         generationStatistics.setGeneration(generationToSet);
@@ -43,7 +43,7 @@ public class GenerationStatisticsTest {
     }
 
     @Test
-    public void testSetBestFitness() {
+    public void given_validInput_when_settingBestFitness_then_returnsExpectedValue() {
         Double bestFitnessToSet = 99.9d;
         GenerationStatistics generationStatistics = new GenerationStatistics();
         generationStatistics.setBestFitness(bestFitnessToSet);
@@ -52,7 +52,7 @@ public class GenerationStatisticsTest {
     }
 
     @Test
-    public void testSetAverageFitness() {
+    public void given_validInput_when_settingAverageFitness_then_returnsExpectedValue() {
         Double averageFitnessToSet = 49.9d;
         GenerationStatistics generationStatistics = new GenerationStatistics();
         generationStatistics.setAverageFitness(averageFitnessToSet);
@@ -61,7 +61,7 @@ public class GenerationStatisticsTest {
     }
 
     @Test
-    public void testSetNumberOfMutations() {
+    public void given_validInput_when_settingNumberOfMutations_then_returnsExpectedValue() {
         int numberOfMutationsToSet = 5;
         GenerationStatistics generationStatistics = new GenerationStatistics();
         generationStatistics.setNumberOfMutations(numberOfMutationsToSet);
@@ -70,7 +70,7 @@ public class GenerationStatisticsTest {
     }
 
     @Test
-    public void testSetNumberOfCrossovers() {
+    public void given_validInput_when_settingNumberOfCrossovers_then_returnsExpectedValue() {
         int numberOfCrossoversToSet = 10;
         GenerationStatistics generationStatistics = new GenerationStatistics();
         generationStatistics.setNumberOfCrossovers(numberOfCrossoversToSet);

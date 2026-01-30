@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TreeNGramTest {
     @Test
-    public void testAddOrIncrementChildAsync_AddsThenIncrements() {
+    public void given_addorincrementchildasyncAddsThenIncrements_when_invoked_then_expected() {
         TreeNGram root = new TreeNGram("a");
 
         assertTrue(root.addOrIncrementChildAsync("ab", 2));
@@ -37,7 +37,7 @@ public class TreeNGramTest {
     }
 
     @Test
-    public void testAddExistingNodeAsync_ReplacesExistingLeaf() {
+    public void given_addexistingnodeasyncReplacesExistingLeaf_when_invoked_then_expected() {
         TreeNGram root = new TreeNGram("a");
         TreeNGram existing = new TreeNGram("ab");
         existing.setCount(1L);
@@ -66,7 +66,7 @@ public class TreeNGramTest {
     }
 
     @Test
-    public void testAddExistingNodeAsync_CreatesIntermediateNode() {
+    public void given_addexistingnodeasyncCreatesIntermediateNode_when_invoked_then_expected() {
         TreeNGram root = new TreeNGram("a");
         TreeNGram incoming = new TreeNGram("abc");
 
@@ -77,9 +77,55 @@ public class TreeNGramTest {
     }
 
     @Test
-    public void testPutChildRejectsInvalidCharacter() {
+    public void given_putChildRejectsInvalidCharacter_when_invoked_then_expected() {
         TreeNGram root = new TreeNGram("a");
 
         assertThrows(IllegalArgumentException.class, () -> root.putChild('!', new TreeNGram("a!")));
+    }
+
+    @Test
+    public void given_increment_when_invoked_then_expected() {
+        TreeNGram node = new TreeNGram("abc");
+        assertEquals(0L, node.getCount());
+
+        node.increment();
+        assertEquals(1L, node.getCount());
+
+        node.increment();
+        assertEquals(2L, node.getCount());
+    }
+
+    @Test
+    public void given_containsChildAndGetChild_when_invoked_then_expected() {
+        TreeNGram root = new TreeNGram("a");
+
+        assertFalse(root.containsChild('b'));
+        assertNull(root.getChild('b'));
+
+        root.putChild('b', new TreeNGram("ab"));
+
+        assertTrue(root.containsChild('b'));
+        assertNotNull(root.getChild('b'));
+        assertEquals("ab", root.getChild('b').getCumulativeString());
+    }
+
+    @Test
+    public void given_putChildAllowsSpaceAndPeriod_when_invoked_then_expected() {
+        TreeNGram root = new TreeNGram("a");
+
+        assertDoesNotThrow(() -> root.putChild(' ', new TreeNGram("a ")));
+        assertDoesNotThrow(() -> root.putChild('.', new TreeNGram("a.")));
+
+        assertTrue(root.containsChild(' '));
+        assertTrue(root.containsChild('.'));
+    }
+
+    @Test
+    public void given_constructorSetsOrder_when_invoked_then_expected() {
+        TreeNGram unigram = new TreeNGram("a");
+        assertEquals(1, unigram.getOrder());
+
+        TreeNGram trigram = new TreeNGram("abc");
+        assertEquals(3, trigram.getOrder());
     }
 }

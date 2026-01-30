@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumberToWordsConverterTest {
     @Test
-    public void testConvert_ZeroAndSmallNumbers() {
+    public void given_validInput_when_convertZeroAndSmallNumbers_then_returnsExpectedValue() {
         assertEquals("zero", NumberToWordsConverter.convert(0));
         assertEquals("five", NumberToWordsConverter.convert(5));
         assertEquals("nineteen", NumberToWordsConverter.convert(19));
@@ -34,20 +34,20 @@ public class NumberToWordsConverterTest {
     }
 
     @Test
-    public void testConvert_Hundreds() {
+    public void given_validInput_when_convertHundreds_then_returnsExpectedValue() {
         assertEquals("one hundred five", NumberToWordsConverter.convert(105));
         assertEquals("five hundred sixty nine", NumberToWordsConverter.convert(569));
     }
 
     @Test
-    public void testConvert_ThousandsAndMillions() {
+    public void given_validInput_when_convertThousandsAndMillions_then_returnsExpectedValue() {
         assertEquals("one thousand", NumberToWordsConverter.convert(1000));
         assertEquals("one thousand five", NumberToWordsConverter.convert(1005));
         assertEquals("two million three thousand four", NumberToWordsConverter.convert(2003004));
     }
 
     @Test
-    public void testConvert_NegativeNumbers() {
+    public void given_validInput_when_convertNegativeNumbers_then_returnsExpectedValue() {
         assertEquals("negative forty two", NumberToWordsConverter.convert(-42));
     }
 }

@@ -26,58 +26,58 @@ import static org.junit.jupiter.api.Assertions.*;
 class OperatingSystemTest {
 
     @Test
-    void isLinux_forLinux_returnsTrue() {
+    void given_validInput_when_checkingLinuxForLinuxReturnsTrue_then_returnsTrue() {
         assertTrue(OperatingSystem.LINUX.isLinux());
     }
 
     @Test
-    void isLinux_forSolaris_returnsTrue() {
+    void given_validInput_when_checkingLinuxForSolarisReturnsTrue_then_returnsTrue() {
         // SOLARIS is treated as Linux-compatible
         assertTrue(OperatingSystem.SOLARIS.isLinux());
     }
 
     @Test
-    void isLinux_forMacOS_returnsFalse() {
+    void given_validInput_when_checkingLinuxForMacOsReturnsFalse_then_returnsFalse() {
         assertFalse(OperatingSystem.MACOS.isLinux());
     }
 
     @Test
-    void isLinux_forWindows_returnsFalse() {
+    void given_validInput_when_checkingLinuxForWindowsReturnsFalse_then_returnsFalse() {
         assertFalse(OperatingSystem.WINDOWS.isLinux());
     }
 
     @Test
-    void isLinux_forUnknown_returnsFalse() {
+    void given_missingInput_when_checkingLinuxForUnknownReturnsFalse_then_returnsFalse() {
         assertFalse(OperatingSystem.UNKNOWN.isLinux());
     }
 
     @Test
-    void isMac_forMacOS_returnsTrue() {
+    void given_validInput_when_checkingMacForMacOsReturnsTrue_then_returnsTrue() {
         assertTrue(OperatingSystem.MACOS.isMac());
     }
 
     @Test
-    void isMac_forLinux_returnsFalse() {
+    void given_validInput_when_checkingMacForLinuxReturnsFalse_then_returnsFalse() {
         assertFalse(OperatingSystem.LINUX.isMac());
     }
 
     @Test
-    void isMac_forWindows_returnsFalse() {
+    void given_validInput_when_checkingMacForWindowsReturnsFalse_then_returnsFalse() {
         assertFalse(OperatingSystem.WINDOWS.isMac());
     }
 
     @Test
-    void isWindows_forWindows_returnsTrue() {
+    void given_validInput_when_checkingWindowsForWindowsReturnsTrue_then_returnsTrue() {
         assertTrue(OperatingSystem.WINDOWS.isWindows());
     }
 
     @Test
-    void isWindows_forLinux_returnsFalse() {
+    void given_validInput_when_checkingWindowsForLinuxReturnsFalse_then_returnsFalse() {
         assertFalse(OperatingSystem.LINUX.isWindows());
     }
 
     @Test
-    void isWindows_forMacOS_returnsFalse() {
+    void given_validInput_when_checkingWindowsForMacOsReturnsFalse_then_returnsFalse() {
         assertFalse(OperatingSystem.MACOS.isWindows());
     }
 }

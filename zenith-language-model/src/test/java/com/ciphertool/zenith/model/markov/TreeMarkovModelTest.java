@@ -23,14 +23,11 @@ import com.ciphertool.zenith.model.entities.TreeNGram;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.TaskExecutor;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TreeMarkovModelTest {
     @Test
-    public void testAddLetterTransitionFindExactAndLongest() {
+    public void given_addLetterTransitionFindExactAndLongest_when_invoked_then_expected() {
         TreeMarkovModel model = new TreeMarkovModel(3);
 
         assertTrue(model.addLetterTransition("abc"));
@@ -49,7 +46,7 @@ public class TreeMarkovModelTest {
     }
 
     @Test
-    public void testAddNodeRootAndUpdates() {
+    public void given_addNodeRootAndUpdates_when_invoked_then_expected() {
         TreeMarkovModel model = new TreeMarkovModel(2);
 
         TreeNGram root = new TreeNGram("");
@@ -94,7 +91,7 @@ public class TreeMarkovModelTest {
     }
 
     @Test
-    public void testNormalizeAndSize() {
+    public void given_normalizeAndSize_when_invoked_then_expected() {
         TreeMarkovModel model = new TreeMarkovModel(2);
 
         model.addLetterTransition("ab");
@@ -114,5 +111,48 @@ public class TreeMarkovModelTest {
         assertEquals(Math.log(0.5d), ac.getLogProbability(), 0.00001d);
 
         assertEquals(4L, model.size());
+    }
+
+    @Test
+    public void given_findexactReturnsNullWhenNotFound_when_invoked_then_expected() {
+        TreeMarkovModel model = new TreeMarkovModel(3);
+        model.addLetterTransition("abc");
+
+        assertNull(model.findExact("xyz"));
+        assertNull(model.findExact("abz"));
+    }
+
+    @Test
+    public void given_findlongestReturnsNullWhenNoMatch_when_invoked_then_expected() {
+        TreeMarkovModel model = new TreeMarkovModel(3);
+        model.addLetterTransition("abc");
+
+        // 'x' doesn't exist as a first character
+        assertNull(model.findLongest("xyz"));
+    }
+
+    @Test
+    public void given_toString_when_invoked_then_expected() {
+        TreeMarkovModel model = new TreeMarkovModel(2);
+        model.addLetterTransition("ab");
+
+        String result = model.toString();
+
+        assertTrue(result.contains("->a"));
+        assertTrue(result.contains("->b"));
+    }
+
+    @Test
+    public void given_unknownLetterNGramProbability_when_invoked_then_expected() {
+        TreeMarkovModel model = new TreeMarkovModel(3);
+
+        assertNull(model.getUnknownLetterNGramProbability());
+        assertNull(model.getUnknownLetterNGramLogProbability());
+
+        model.setUnknownLetterNGramProbability(0.001d);
+        model.setUnknownLetterNGramLogProbability(Math.log(0.001d));
+
+        assertEquals(0.001d, model.getUnknownLetterNGramProbability(), 0.00001d);
+        assertEquals(Math.log(0.001d), model.getUnknownLetterNGramLogProbability(), 0.00001d);
     }
 }

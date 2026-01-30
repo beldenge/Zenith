@@ -41,7 +41,7 @@ class FitnessFunctionControllerTest {
     private FitnessFunctionController controller;
 
     @Test
-    void fitnessFunctions_returnsInjectedEvaluators() {
+    void given_validInput_when_fitnessFunctionsReturnsInjectedEvaluators_then_returnsSameInstance() {
         List<PlaintextEvaluator> result = controller.fitnessFunctions();
 
         assertSame(plaintextEvaluators, result);

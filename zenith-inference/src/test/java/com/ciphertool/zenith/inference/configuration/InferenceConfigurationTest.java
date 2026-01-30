@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class InferenceConfigurationTest {
     @Test
-    public void testPlaintextTransformationStepsMatchesByName() {
+    public void given_validInput_when_plaintextTransformationStepsMatchesByName_then_returnsExpectedValue() {
         InferenceConfiguration configuration = new InferenceConfiguration();
 
         ApplicationConfiguration appConfig = buildAppConfig("cipher", "Stub", Map.of("key", "value"));
@@ -49,7 +49,7 @@ public class InferenceConfigurationTest {
     }
 
     @Test
-    public void testPlaintextTransformationStepsUnknownThrows() {
+    public void given_missingInput_when_plaintextTransformationStepsUnknownThrows_then_throwsIllegalArgumentException() {
         InferenceConfiguration configuration = new InferenceConfiguration();
 
         ApplicationConfiguration appConfig = buildAppConfig("cipher", "Missing", Map.of());

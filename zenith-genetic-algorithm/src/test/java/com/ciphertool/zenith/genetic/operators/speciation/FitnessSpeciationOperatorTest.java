@@ -24,7 +24,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_EvenSplit() {
+    public void given_validInput_when_divergeEvenSplit_then_returnsExpectedValue() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         StandardPopulation population = new StandardPopulation();
@@ -43,7 +43,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_UnevenSplit() {
+    public void given_validInput_when_divergeUnevenSplit_then_returnsExpectedValue() {
         when(strategy.getSpeciationFactor()).thenReturn(3);
 
         StandardPopulation population = new StandardPopulation();
@@ -64,7 +64,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_SpeciationFactorEqualsPopulationSize() {
+    public void given_validInput_when_divergeSpeciationFactorEqualsPopulationSize_then_comparesAsExpected() {
         when(strategy.getSpeciationFactor()).thenReturn(5);
 
         StandardPopulation population = new StandardPopulation();
@@ -84,7 +84,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_ZeroSpeciationFactor() {
+    public void given_validInput_when_divergeZeroSpeciationFactor_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(0);
 
         StandardPopulation population = new StandardPopulation();
@@ -96,7 +96,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_NegativeSpeciationFactor() {
+    public void given_validInput_when_divergeNegativeSpeciationFactor_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(-1);
 
         StandardPopulation population = new StandardPopulation();
@@ -108,7 +108,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_EmptyPopulation() {
+    public void given_emptyInput_when_divergeEmptyPopulation_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         StandardPopulation population = new StandardPopulation();
@@ -117,7 +117,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_SpeciationFactorGreaterThanPopulationSize() {
+    public void given_validInput_when_divergeSpeciationFactorGreaterThanPopulationSize_then_throwsIllegalArgumentException() {
         when(strategy.getSpeciationFactor()).thenReturn(10);
 
         StandardPopulation population = new StandardPopulation();
@@ -131,7 +131,7 @@ public class FitnessSpeciationOperatorTest {
     }
 
     @Test
-    public void testDiverge_PreservesAllIndividuals() {
+    public void given_validInput_when_divergePreservesAllIndividuals_then_returnsExpectedValue() {
         when(strategy.getSpeciationFactor()).thenReturn(2);
 
         StandardPopulation population = new StandardPopulation();

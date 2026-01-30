@@ -42,7 +42,7 @@ public class CipherKeyChromosomeTest {
     }
 
     @Test
-    public void testPutGeneSetsChromosomeAndMarksEvaluationNeeded() {
+    public void given_validInput_when_putGeneSetsChromosomeAndMarksEvaluationNeeded_then_returnsTrue() {
         Genome genome = new Genome(false, null, null);
         CipherKeyChromosome chromosome = new CipherKeyChromosome(genome, buildCipher("test"), 1);
         CipherKeyGene gene = new CipherKeyGene(null, "a");
@@ -54,7 +54,7 @@ public class CipherKeyChromosomeTest {
     }
 
     @Test
-    public void testPutGeneRejectsNullOrDuplicate() {
+    public void given_nullInput_when_putGeneRejectsNullOrDuplicate_then_throwsIllegalArgumentException() {
         CipherKeyChromosome chromosome = new CipherKeyChromosome(null, buildCipher("test"), 1);
 
         assertThrows(IllegalArgumentException.class, () -> chromosome.putGene("x", null));
@@ -64,7 +64,7 @@ public class CipherKeyChromosomeTest {
     }
 
     @Test
-    public void testReplaceGeneValidatesInputsAndMarksEvaluationNeeded() {
+    public void given_validInput_when_replacingGeneValidatesInputsAndMarksEvaluationNeeded_then_matchesExpectations() {
         Genome genome = new Genome(false, null, null);
         CipherKeyChromosome chromosome = new CipherKeyChromosome(genome, buildCipher("test"), 1);
 
@@ -79,7 +79,7 @@ public class CipherKeyChromosomeTest {
     }
 
     @Test
-    public void testReplaceGeneRejectsNullAndMissingKey() {
+    public void given_nullInput_when_replacingGeneRejectsNullAndMissingKey_then_throwsIllegalArgumentException() {
         CipherKeyChromosome chromosome = new CipherKeyChromosome(null, buildCipher("test"), 1);
 
         assertThrows(IllegalArgumentException.class, () -> chromosome.replaceGene("x", new CipherKeyGene(null, "a")));
@@ -87,13 +87,13 @@ public class CipherKeyChromosomeTest {
     }
 
     @Test
-    public void testRemoveGeneRejectsMissingKey() {
+    public void given_missingInput_when_removingGeneRejectsMissingKey_then_throwsIllegalArgumentException() {
         CipherKeyChromosome chromosome = new CipherKeyChromosome(null, buildCipher("test"), 1);
         assertThrows(IllegalArgumentException.class, () -> chromosome.removeGene("x"));
     }
 
     @Test
-    public void testCloneCopiesGenes() {
+    public void given_validInput_when_cloningCopiesGenes_then_copiesState() {
         CipherKeyChromosome chromosome = new CipherKeyChromosome(null, buildCipher("test"), 2);
         CipherKeyGene gene = new CipherKeyGene(null, "a");
         chromosome.putGene("x", gene);
@@ -106,7 +106,7 @@ public class CipherKeyChromosomeTest {
     }
 
     @Test
-    public void testEqualsAndHashCodeIncludeCipher() {
+    public void given_validInput_when_equalsAndHashCodeIncludeCipher_then_comparesAsExpected() {
         CipherKeyChromosome left = new CipherKeyChromosome(null, buildCipher("left"), 1);
         left.putGene("x", new CipherKeyGene(null, "a"));
 

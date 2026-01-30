@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AbstractRangeLimitedCipherTransformerTest {
     @Test
-    public void testConstructorRejectsInvalidRange() {
+    public void given_invalidInput_when_constructing_then_throwsIllegalArgumentException() {
         Map<String, Object> data = new HashMap<>();
         data.put(AbstractRangeLimitedCipherTransformer.RANGE_START, 5);
         data.put(AbstractRangeLimitedCipherTransformer.RANGE_END, 2);
@@ -41,7 +41,7 @@ public class AbstractRangeLimitedCipherTransformerTest {
     }
 
     @Test
-    public void testFormAndRowBasedLabels() {
+    public void given_validInput_when_formAndRowBasedLabels_then_returnsExpectedValue() {
         TestRangeTransformer transformer = new TestRangeTransformer(new HashMap<>());
 
         FormlyForm form = transformer.getForm();

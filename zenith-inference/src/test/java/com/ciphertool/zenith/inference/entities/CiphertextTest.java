@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CiphertextTest {
     @Test
-    public void testConstructors() {
+    public void given_validInput_when_constructing_then_returnsExpectedValue() {
         Ciphertext ciphertext = new Ciphertext("A");
         assertEquals("A", ciphertext.getValue());
         assertFalse(ciphertext.isLocked());
@@ -39,7 +39,7 @@ public class CiphertextTest {
     }
 
     @Test
-    public void testCloneCopiesState() {
+    public void given_validInput_when_cloningCopiesState_then_copiesState() {
         Ciphertext original = new Ciphertext("C", true);
         Ciphertext clone = original.clone();
 

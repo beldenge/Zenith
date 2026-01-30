@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class BinaryRouletteNodeTest {
     @Test
-    public void testConstructorAndAccessors() {
+    public void given_validInput_when_constructing_then_returnsNull() {
         BinaryRouletteNode node = new BinaryRouletteNode(7, 0.42d);
 
         assertEquals(7, node.getIndex());

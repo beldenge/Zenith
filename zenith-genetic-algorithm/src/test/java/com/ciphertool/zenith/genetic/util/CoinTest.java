@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CoinTest {
     @Test
-    public void testFlipUsesMagicNumber() {
+    public void given_validInput_when_flipUsesMagicNumber_then_matchesExpectations() {
         Coin coin = new Coin();
 
         assertTrue(coin.flip(0.0d));

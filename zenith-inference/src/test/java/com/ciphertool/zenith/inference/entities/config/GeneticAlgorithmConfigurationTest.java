@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GeneticAlgorithmConfigurationTest {
     @Test
-    public void testPopulationSizeEqualToLatticeDimensions() {
+    public void given_validInput_when_populationSizeEqualToLatticeDimensions_then_matchesExpectations() {
         GeneticAlgorithmConfiguration configuration = new GeneticAlgorithmConfiguration();
         configuration.setPopulationName(LatticePopulation.class.getSimpleName());
         configuration.setPopulationSize(6);
@@ -41,7 +41,7 @@ public class GeneticAlgorithmConfigurationTest {
     }
 
     @Test
-    public void testPopulationSizeEqualToLatticeDimensionsMissingValues() {
+    public void given_missingInput_when_populationSizeEqualToLatticeDimensionsMissingValues_then_returnsFalse() {
         GeneticAlgorithmConfiguration configuration = new GeneticAlgorithmConfiguration();
         configuration.setPopulationName(LatticePopulation.class.getSimpleName());
         configuration.setPopulationSize(6);
@@ -50,7 +50,7 @@ public class GeneticAlgorithmConfigurationTest {
     }
 
     @Test
-    public void testPopulationSizeEqualToLatticeDimensionsNonLattice() {
+    public void given_validInput_when_populationSizeEqualToLatticeDimensionsNonLattice_then_returnsTrue() {
         GeneticAlgorithmConfiguration configuration = new GeneticAlgorithmConfiguration();
         configuration.setPopulationName("StandardPopulation");
 
@@ -58,7 +58,7 @@ public class GeneticAlgorithmConfigurationTest {
     }
 
     @Test
-    public void testElitismLessThanPopulationSize() {
+    public void given_validInput_when_elitismLessThanPopulationSize_then_matchesExpectations() {
         GeneticAlgorithmConfiguration configuration = new GeneticAlgorithmConfiguration();
         configuration.setPopulationSize(10);
 
@@ -72,7 +72,7 @@ public class GeneticAlgorithmConfigurationTest {
     }
 
     @Test
-    public void testTournamentSizeLessThanPopulationSize() {
+    public void given_validInput_when_tournamentSizeLessThanPopulationSize_then_matchesExpectations() {
         GeneticAlgorithmConfiguration configuration = new GeneticAlgorithmConfiguration();
         configuration.setPopulationSize(10);
 

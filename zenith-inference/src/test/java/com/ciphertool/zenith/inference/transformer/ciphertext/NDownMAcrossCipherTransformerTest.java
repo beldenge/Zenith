@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NDownMAcrossCipherTransformerTest {
     @Test
-    public void testTransformSingleRowNoRange() {
+    public void given_missingDependency_when_transformSingleRowNoRange_then_returnsExpectedValue() {
         Map<String, Object> data = new HashMap<>();
         data.put(NDownMAcrossCipherTransformer.DOWN, 0);
         data.put(NDownMAcrossCipherTransformer.ACROSS, 1);

@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class RouletteSamplerTest {
     @Test
-    public void testReIndexRejectsNullAndEmpty() {
+    public void given_nullInput_when_reIndexRejectsNullAndEmpty_then_returnsExpectedValue() {
         RouletteSampler<SampleProbability> sampler = new RouletteSampler<>();
 
         assertEquals(-1d, sampler.reIndex(null), 0.0001d);
@@ -38,7 +38,7 @@ public class RouletteSamplerTest {
     }
 
     @Test
-    public void testReIndexRequiresSortedInput() {
+    public void given_validInput_when_reIndexRequiresSortedInput_then_throwsIllegalStateException() {
         RouletteSampler<SampleProbability> sampler = new RouletteSampler<>();
 
         SampleProbability higher = new SampleProbability("b", 0.7d);
@@ -50,7 +50,7 @@ public class RouletteSamplerTest {
     }
 
     @Test
-    public void testReIndexAndSampling() {
+    public void given_validInput_when_reIndexAndSampling_then_returnsExpectedValue() {
         TestSampler sampler = new TestSampler();
 
         List<SampleProbability> sorted = Arrays.asList(

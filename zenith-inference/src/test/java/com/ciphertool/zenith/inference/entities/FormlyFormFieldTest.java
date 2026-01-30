@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FormlyFormFieldTest {
     @Test
-    public void testGettersAndSetters() {
+    public void given_validInput_when_gettingTersAndSetters_then_returnsTrue() {
         FormlyFormField field = new FormlyFormField();
         FormlyFieldProps props = new FormlyFieldProps();
 
@@ -69,7 +69,7 @@ public class FormlyFormFieldTest {
     }
 
     @Test
-    public void testFieldProps() {
+    public void given_validInput_when_fieldProps_then_returnsExpectedValue() {
         FormlyFieldProps props = new FormlyFieldProps();
 
         props.setLabel("label");
