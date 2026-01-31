@@ -48,7 +48,12 @@ public class MultipleMutationOperator implements MutationOperator {
             /*
              * Choose a random number of mutations constrained by the configurable max and the total number of genes
              */
-            numMutations = ThreadLocalRandom.current().nextInt(Math.min(maxMutations, chromosome.getGenes().size())) + 1;
+            int maxPossibleMutations = Math.min(maxMutations, chromosome.getGenes().size());
+            if (maxPossibleMutations <= 0) {
+                // Nothing to mutate (no genes or mutations disabled), so skip to avoid nextInt(0).
+                continue;
+            }
+            numMutations = ThreadLocalRandom.current().nextInt(maxPossibleMutations) + 1;
 
             List<Object> availableKeys = new ArrayList<>(chromosome.getGenes().keySet());
             Map<Object, Gene> originalGenes = new HashMap<>(numMutations);

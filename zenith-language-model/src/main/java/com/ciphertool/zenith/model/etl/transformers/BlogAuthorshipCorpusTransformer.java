@@ -89,8 +89,8 @@ public class BlogAuthorshipCorpusTransformer extends CorpusTransformer {
                         .collect(Collectors.toList());
 
                 for (String post : posts) {
-                    post.replaceAll("urlLink", "");
-                    String sentence = post.replaceAll("\\s+", " ");
+                    String cleanedPost = post.replaceAll("urlLink", "");
+                    String sentence = cleanedPost.replaceAll("\\s+", " ");
                     sentenceLength = sentence.split("\\s+").length;
 
                     if (sentenceLength > 1) {

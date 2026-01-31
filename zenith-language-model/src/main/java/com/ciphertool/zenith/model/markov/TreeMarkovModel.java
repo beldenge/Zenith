@@ -182,7 +182,10 @@ public class TreeMarkovModel {
 
         for (Map.Entry<Character, TreeNGram> entry : transitions.entrySet()) {
             if (entry.getValue() != null) {
-                appendTransitions(parent + entry.getKey(), entry.getKey(), entry.getValue(), sb);
+                // Bug fix: The new parent path should be built from the current path (parent + symbol),
+                // not parent + the child's key. Otherwise the path would incorrectly show the child's
+                // key repeated (e.g., "[b] ->b" instead of "[a] ->b" for ngram "ab").
+                appendTransitions(parent + symbol, entry.getKey(), entry.getValue(), sb);
             }
         }
     }

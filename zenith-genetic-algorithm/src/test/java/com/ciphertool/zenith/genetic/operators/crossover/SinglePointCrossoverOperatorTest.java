@@ -15,6 +15,45 @@ import static org.mockito.Mockito.*;
 public class SinglePointCrossoverOperatorTest {
 
     @Test
+    public void given_evaluatedParents_when_crossover_then_childAlwaysNeedsEvaluation() {
+        // BUG FIX TEST: Verifies that children always need evaluation regardless of parent state.
+        // Previously, children could inherit evaluationNeeded=false from evaluated parents,
+        // causing them to skip fitness evaluation entirely.
+        SinglePointCrossoverOperator operator = new SinglePointCrossoverOperator();
+
+        // Parent with evaluationNeeded=false (already evaluated)
+        Genome parent1 = new Genome(false, null, null);
+        Genome parent2 = new Genome(false, null, null);
+
+        Chromosome chromosome1 = mock(Chromosome.class);
+        Chromosome chromosome2 = mock(Chromosome.class);
+
+        Map<Object, Gene> genes1 = new LinkedHashMap<>();
+        genes1.put("key1", mock(Gene.class));
+
+        Map<Object, Gene> genes2 = new LinkedHashMap<>();
+        genes2.put("key1", mock(Gene.class));
+
+        when(chromosome1.getGenes()).thenReturn(genes1);
+        when(chromosome2.getGenes()).thenReturn(genes2);
+
+        Chromosome clonedChromosome = mock(Chromosome.class);
+        when(chromosome1.clone()).thenReturn(clonedChromosome);
+
+        parent1.addChromosome(chromosome1);
+        parent2.addChromosome(chromosome2);
+
+        java.util.Random mockedRandom = mock(java.util.Random.class);
+        when(mockedRandom.nextInt(anyInt())).thenReturn(0);
+
+        Genome child = operator.crossover(parent1, parent2, 0.0, mockedRandom);
+
+        // Child must always need evaluation since it's a new individual
+        assertTrue(child.isEvaluationNeeded(),
+                "Child genome should always need evaluation after crossover, regardless of parent state");
+    }
+
+    @Test
     public void given_validInput_when_crossover_then_returnsNotNull() {
         SinglePointCrossoverOperator operator = new SinglePointCrossoverOperator();
 

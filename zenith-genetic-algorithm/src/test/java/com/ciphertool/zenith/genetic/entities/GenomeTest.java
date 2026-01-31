@@ -97,6 +97,15 @@ public class GenomeTest {
         assertEquals(0, second.compareTo(first));
     }
 
+    @Test
+    public void given_validInput_when_comparingToMultiObjectiveEqual_then_returnsZero() {
+        Genome first = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d), new MaximizingFitness(2.0d) }, new StubPopulation(1.0d));
+        Genome second = new Genome(false, new Fitness[] { new MaximizingFitness(2.0d), new MaximizingFitness(2.0d) }, new StubPopulation(1.0d));
+
+        assertEquals(0, first.compareTo(second));
+        assertEquals(0, second.compareTo(first));
+    }
+
     private static class StubPopulation implements Population {
         private final Double totalProbability;
 

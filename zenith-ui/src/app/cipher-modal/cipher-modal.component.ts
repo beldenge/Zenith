@@ -103,9 +103,10 @@ export class CipherModalComponent implements OnInit {
     const name = this.newCipherForm.get('name').value;
     const rawCiphertext = this.newCipherForm.get('ciphertext').value;
     const dimensions = this.determineDimensions(rawCiphertext);
-    // Remove newlines from blockify pipe
-    const ciphertext = rawCiphertext.replace(WHITESPACE_REGEX, ' ');
-    const request = new CipherRequest(name, dimensions.rows, dimensions.columns, ciphertext);
+    // BUG FIX: CipherRequest and Cipher constructors expect ciphertext as string[],
+    // but this was passing a plain string. Split by whitespace to create the array.
+    const ciphertextArray = rawCiphertext.trim().split(WHITESPACE_REGEX);
+    const request = new CipherRequest(name, dimensions.rows, dimensions.columns, ciphertextArray);
 
     if (this.mode === 'CREATE') {
       this.create(request);

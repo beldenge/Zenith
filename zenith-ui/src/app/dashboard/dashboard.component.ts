@@ -132,9 +132,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const plaintextTransformers = [];
 
       this.appliedPlaintextTransformers().forEach((transformer) => {
-        plaintextTransformers.push(new TransformationStep(transformer.name, transformer.form.model));
+        // BUG FIX: transformer.form can be null for transformers without configuration options.
+        // Previously this would cause a runtime error when accessing transformer.form.model.
+        plaintextTransformers.push(new TransformationStep(
+          transformer.name,
+          transformer.form ? transformer.form.model : null
+        ));
 
-        allValid = allValid && transformer.form.form.valid;
+        // Only check form validity if the transformer has a form
+        allValid = allValid && (!transformer.form || transformer.form.form.valid);
       });
 
       if (allValid) {

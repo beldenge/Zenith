@@ -26,6 +26,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.*;
 
@@ -69,10 +70,14 @@ public class Cipher {
     }
 
     public void setCiphertext(List<String> ciphertext) {
-        this.ciphertext = ciphertext;
+        this.ciphertext = (ciphertext == null) ? new ArrayList<>() : ciphertext;
+        this.ciphertextCharacters.clear();
+        this.cipherSymbolIndicesMap.clear();
 
-        for (String next : ciphertext) {
-            ciphertextCharacters.add(new Ciphertext(next));
+        if (CollectionUtils.isNotEmpty(ciphertext)) {
+            for (String next : ciphertext) {
+                ciphertextCharacters.add(new Ciphertext(next));
+            }
         }
     }
 

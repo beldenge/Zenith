@@ -42,7 +42,11 @@ public class SinglePointCrossoverOperator implements CrossoverOperator {
         Genome dadGenome = coin.flip(coinFlip) ? firstGenome : secondGenome;
         Genome momGenome = (dadGenome == firstGenome) ? secondGenome : firstGenome;
 
-        Genome childGenome = new Genome(dadGenome.isEvaluationNeeded(), dadGenome.getFitnesses(), dadGenome.getPopulation());
+        // BUG FIX: Always set evaluationNeeded to true for children. A child created by crossover
+        // has potentially different genes than either parent and must be evaluated. Previously,
+        // inheriting the parent's state could cause children to skip fitness evaluation entirely
+        // if the parent was already evaluated.
+        Genome childGenome = new Genome(true, dadGenome.getFitnesses(), dadGenome.getPopulation());
 
         for (int i = 0; i < dadGenome.getChromosomes().size(); i ++) {
             Chromosome<Object> dad = dadGenome.getChromosomes().get(i);

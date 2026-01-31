@@ -41,10 +41,18 @@ public class WordNGramModel {
     }
 
     public double getLogProbability(String word) {
-        return this.wordNGramMap.get(word).getLogProbability();
+        WordNGram ngram = this.wordNGramMap.get(word);
+        if (ngram == null) {
+            throw new IllegalArgumentException("Word not found in model: '" + word + "'. Call contains() first to check if word exists.");
+        }
+        return ngram.getLogProbability();
     }
 
     public long getCount(String word) {
-        return this.wordNGramMap.get(word).getCount();
+        WordNGram ngram = this.wordNGramMap.get(word);
+        if (ngram == null) {
+            throw new IllegalArgumentException("Word not found in model: '" + word + "'. Call contains() first to check if word exists.");
+        }
+        return ngram.getCount();
     }
 }

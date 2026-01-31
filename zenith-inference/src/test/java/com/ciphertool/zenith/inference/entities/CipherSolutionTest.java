@@ -129,4 +129,23 @@ public class CipherSolutionTest {
         assertEquals(solution.getLogProbability(), clone.getLogProbability(), 0.000001f);
         assertNotSame(solution.getScores()[0], clone.getScores()[0]);
     }
+
+    @Test
+    public void given_nullScores_when_cloning_then_doesNotThrowNullPointerException() {
+        // This tests the fix for the bug where clone() would throw NullPointerException
+        // if scores was null (i.e., the solution hasn't been evaluated yet)
+        Cipher cipher = new Cipher("test", 1, 2);
+        cipher.setCiphertext(Arrays.asList("A", "B"));
+
+        CipherSolution solution = new CipherSolution(cipher, 2);
+        solution.putMapping("A", 'x');
+        solution.putMapping("B", 'y');
+        // Intentionally NOT setting scores - this is the bug scenario
+
+        CipherSolution clone = solution.clone();
+
+        assertNotSame(solution, clone);
+        assertEquals(solution.getMappings(), clone.getMappings());
+        assertNull(clone.getScores());
+    }
 }

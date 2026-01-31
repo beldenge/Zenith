@@ -3,6 +3,7 @@ package com.ciphertool.zenith.genetic.operators.crossover;
 import com.ciphertool.zenith.genetic.entities.Chromosome;
 import com.ciphertool.zenith.genetic.entities.Gene;
 import com.ciphertool.zenith.genetic.entities.Genome;
+import com.ciphertool.zenith.genetic.mocks.MockChromosome;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.junit.jupiter.api.Test;
 
@@ -100,5 +101,114 @@ public class UniformCrossoverOperatorTest {
         org.springframework.test.util.ReflectionTestUtils.setField(operator, "coin", mockedCoin);
 
         assertThrows(IllegalStateException.class, () -> operator.crossover(parent1, parent2));
+    }
+
+    @Test
+    public void given_evaluatedParents_when_crossover_then_childAlwaysNeedsEvaluation() {
+        // BUG FIX TEST: Verifies that children always need evaluation regardless of parent state.
+        // Previously, children could inherit evaluationNeeded=false from evaluated parents,
+        // causing them to skip fitness evaluation entirely.
+        UniformCrossoverOperator operator = new UniformCrossoverOperator();
+
+        Coin mockedCoin = mock(Coin.class);
+        when(mockedCoin.flip()).thenReturn(false); // keep parent1's genes
+        org.springframework.test.util.ReflectionTestUtils.setField(operator, "coin", mockedCoin);
+
+        // Parent with evaluationNeeded=false (already evaluated)
+        Genome parent1 = new Genome(false, null, null);
+        Genome parent2 = new Genome(false, null, null);
+
+        MockChromosome chromosome1 = new MockChromosome();
+        chromosome1.putGene("k1", new SimpleGene("A"));
+
+        MockChromosome chromosome2 = new MockChromosome();
+        chromosome2.putGene("k1", new SimpleGene("B"));
+
+        parent1.addChromosome(chromosome1);
+        parent2.addChromosome(chromosome2);
+
+        Genome child = operator.crossover(parent1, parent2);
+
+        // Child must always need evaluation since it's a new individual
+        assertTrue(child.isEvaluationNeeded(),
+                "Child genome should always need evaluation after crossover, regardless of parent state");
+    }
+
+    @Test
+    public void given_mutableChromosome_when_crossoverReplacesGenes_then_doesNotThrowConcurrentModification() {
+        UniformCrossoverOperator operator = new UniformCrossoverOperator();
+
+        Coin mockedCoin = mock(Coin.class);
+        when(mockedCoin.flip()).thenReturn(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(operator, "coin", mockedCoin);
+
+        Genome parent1 = new Genome(false, null, null);
+        Genome parent2 = new Genome(false, null, null);
+
+        MockChromosome chromosome1 = new MockChromosome();
+        chromosome1.putGene("k1", new SimpleGene("A"));
+        chromosome1.putGene("k2", new SimpleGene("B"));
+
+        MockChromosome chromosome2 = new MockChromosome();
+        chromosome2.putGene("k1", new SimpleGene("C"));
+        chromosome2.putGene("k2", new SimpleGene("D"));
+
+        parent1.addChromosome(chromosome1);
+        parent2.addChromosome(chromosome2);
+
+        Genome child = assertDoesNotThrow(() -> operator.crossover(parent1, parent2));
+
+        assertNotNull(child);
+        assertEquals(1, child.getChromosomes().size());
+
+        MockChromosome childChromosome = (MockChromosome) child.getChromosomes().get(0);
+        assertEquals("C", childChromosome.getGenes().get("k1").getValue());
+        assertEquals("D", childChromosome.getGenes().get("k2").getValue());
+    }
+
+    private static class SimpleGene implements Gene {
+        private final String value;
+        private Chromosome chromosome;
+
+        private SimpleGene(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public Gene clone() {
+            return new SimpleGene(value);
+        }
+
+        @Override
+        public void setChromosome(Chromosome chromosome) {
+            this.chromosome = chromosome;
+        }
+
+        @Override
+        public Chromosome getChromosome() {
+            return chromosome;
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            SimpleGene other = (SimpleGene) obj;
+            return value.equals(other.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
     }
 }

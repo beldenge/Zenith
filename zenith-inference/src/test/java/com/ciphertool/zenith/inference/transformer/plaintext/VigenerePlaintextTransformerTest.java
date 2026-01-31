@@ -51,4 +51,35 @@ public class VigenerePlaintextTransformerTest {
 
         assertEquals("emufphzlrfaxyusdjkzldkrnshgnfivjyqtquxqbqvyuvlltrevjyqtmkyrdmfd", transformed);
     }
+
+    @Test
+    public void given_bothTransformers_when_bothAreUsed_then_eachWorksIndependently() {
+        // This test verifies the bug fix for the static vigenereSquare field.
+        // When the field was static, creating both transformers would cause
+        // the second one to overwrite the first one's vigenere square, corrupting
+        // the encryption/decryption results. Now each instance has its own square.
+        Map<String, Object> data = new HashMap<>();
+        data.put(AbstractVigenerePlaintextTransformer.KEY, "lemon");
+
+        // Create the wrap (encrypt) transformer
+        VigenerePlaintextTransformer wrapTransformer = new VigenerePlaintextTransformer(data);
+
+        // Create the unwrap (decrypt) transformer - this would corrupt the static field before the fix
+        UnwrapVigenerePlaintextTransformer unwrapTransformer = new UnwrapVigenerePlaintextTransformer(data);
+
+        // Now verify BOTH transformers still work correctly
+        String originalPlaintext = "attackatdawn";
+
+        // Encrypt with the wrap transformer
+        String encrypted = wrapTransformer.transform(originalPlaintext);
+        assertEquals("lxfopvefrnhr", encrypted);
+
+        // Decrypt with the unwrap transformer
+        String decrypted = unwrapTransformer.transform(encrypted);
+        assertEquals(originalPlaintext, decrypted);
+
+        // Also verify the wrap transformer STILL works (it would fail if the static field was corrupted)
+        String encryptedAgain = wrapTransformer.transform(originalPlaintext);
+        assertEquals("lxfopvefrnhr", encryptedAgain);
+    }
 }

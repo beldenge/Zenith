@@ -68,6 +68,29 @@ public class TournamentSelectorTest {
         assertEquals(1, index);
     }
 
+    @Test
+    public void given_validInput_when_accuracyNeverSelects_then_returnsLeastFit() {
+        RandomSelector randomSelector = mock(RandomSelector.class);
+        TournamentSelector selector = new TournamentSelector(randomSelector);
+
+        Genome weakest = genomeWithFitness(1.0d);
+        Genome middle = genomeWithFitness(3.0d);
+        Genome strongest = genomeWithFitness(5.0d);
+
+        List<Genome> individuals = Arrays.asList(weakest, strongest, middle);
+
+        GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .tournamentSelectorAccuracy(-1.0d)
+                .tournamentSize(3)
+                .build();
+
+        when(randomSelector.getNextIndex(individuals, strategy)).thenReturn(0, 1, 2);
+
+        int index = selector.getNextIndex(individuals, strategy);
+
+        assertEquals(0, index);
+    }
+
     private Genome genomeWithFitness(double value) {
         return new Genome(false, new com.ciphertool.zenith.genetic.fitness.Fitness[] { new MaximizingFitness(value) }, null);
     }

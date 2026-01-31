@@ -88,7 +88,12 @@ public abstract class CorpusTransformer {
                     tasks.addAll(parseFiles(inputExt, entry));
                 } else {
                     filename = entry.toString();
-                    String ext = filename.substring(filename.lastIndexOf('.'));
+                    int dotIndex = filename.lastIndexOf('.');
+                    if (dotIndex < 0) {
+                        log.info("Skipping file with no extension: {}", filename);
+                        continue;
+                    }
+                    String ext = filename.substring(dotIndex);
 
                     if (!ext.equals(inputExt)) {
                         log.info("Skipping file with unexpected file extension: {}", filename);

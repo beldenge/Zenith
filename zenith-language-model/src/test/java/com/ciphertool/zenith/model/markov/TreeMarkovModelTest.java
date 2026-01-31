@@ -131,6 +131,11 @@ public class TreeMarkovModelTest {
         assertNull(model.findLongest("xyz"));
     }
 
+    /**
+     * Verifies that toString() correctly displays the parent path for each node.
+     * Bug fix: Previously the parent path was incorrectly built using the child's key
+     * instead of the current symbol, causing output like "[b] ->b" instead of "[a] ->b".
+     */
     @Test
     public void given_toString_when_invoked_then_expected() {
         TreeMarkovModel model = new TreeMarkovModel(2);
@@ -138,8 +143,12 @@ public class TreeMarkovModelTest {
 
         String result = model.toString();
 
-        assertTrue(result.contains("->a"));
-        assertTrue(result.contains("->b"));
+        // The root 'a' should show empty parent: "[] ->a"
+        assertTrue(result.contains("[] ->a"));
+        // The child 'b' under 'a' should show parent 'a': "[a] ->b"
+        assertTrue(result.contains("[a] ->b"));
+        // Should NOT have incorrect path like "[b] ->b" (the old buggy behavior)
+        assertFalse(result.contains("[b] ->b"));
     }
 
     @Test

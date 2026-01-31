@@ -21,13 +21,13 @@
   <div class="col-xl-12 mb-4">
     <div class="form-group row">
       <div class="col-sm-12 mx-auto">
-        <mat-expansion-panel (opened)="onExpand()" (closed)="onCollapse()">
+        <mat-expansion-panel #panel (opened)="onExpand()" (closed)="onCollapse()">
           <mat-expansion-panel-header>
             <mat-panel-title>
-              <h6 class="text-primary mb-0 font-weight-bold">{{headerText}}</h6>
+              <h6 class="text-primary mb-0 font-weight-bold">{{panel.expanded ? headerTextOpened : headerTextClosed}}</h6>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (shown) {
+          @if (panel.expanded) {
             @for (nextDataSourcePage of ngramsDataSources; track nextDataSourcePage; let i = $index) {
               <div class="row">
                 @for (nextDataSource of nextDataSourcePage; track nextDataSource; let j = $index) {

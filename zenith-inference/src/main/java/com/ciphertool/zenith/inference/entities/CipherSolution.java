@@ -165,11 +165,15 @@ public class CipherSolution implements Comparable<CipherSolution>, Cloneable {
         // We need to set these values last to maintain whether evaluation is needed on the clone
         copySolution.setProbability(this.probability);
 
-        Fitness[] newScores = new Fitness[this.scores.length];
-        for (int i = 0; i < this.scores.length; i ++) {
-            newScores[i] = this.scores[i].clone();
+        // Must null-check scores before cloning to avoid NullPointerException
+        // when cloning a solution that hasn't been evaluated yet
+        if (this.scores != null) {
+            Fitness[] newScores = new Fitness[this.scores.length];
+            for (int i = 0; i < this.scores.length; i ++) {
+                newScores[i] = this.scores[i].clone();
+            }
+            copySolution.setScores(newScores);
         }
-        copySolution.setScores(newScores);
 
         return copySolution;
     }

@@ -157,4 +157,28 @@ public class CiphertextCycleCountEvaluatorTest {
         // Score = 4^2 = 16
         assertEquals(16, score);
     }
+
+    @Test
+    public void given_dynamicallyCreatedStrings_when_evaluating_then_handlesStringComparisonCorrectly() {
+        // This test verifies the bug fix for String comparison using == instead of .equals()
+        // By creating Strings dynamically (not interned), we ensure the fix is working.
+        // String literals are interned by the JVM, so == would work by accident.
+        Cipher cipher = new Cipher("test", 1, 8);
+        // Create Strings dynamically to avoid String interning
+        cipher.setCiphertext(Arrays.asList(
+                new String(new char[]{'A'}),
+                new String(new char[]{'B'}),
+                new String(new char[]{'A'}),
+                new String(new char[]{'B'}),
+                new String(new char[]{'A'}),
+                new String(new char[]{'B'}),
+                new String(new char[]{'A'}),
+                new String(new char[]{'B'})
+        ));
+
+        int score = evaluator.evaluate(cipher);
+
+        // Same expected result as the alternating cycle test
+        assertEquals(49, score);
+    }
 }

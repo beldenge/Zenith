@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,5 +53,41 @@ public class WordNGramModelTest {
         Map<String, WordNGram> map = model.getWordNGramMap();
 
         assertThrows(UnsupportedOperationException.class, () -> map.put("test", new WordNGram()));
+    }
+
+    /**
+     * Verifies that getLogProbability throws IllegalArgumentException (not NullPointerException)
+     * when the word is not in the model. This protects callers from silent failures.
+     */
+    @Test
+    public void given_wordNotInModel_when_getLogProbability_then_throwsIllegalArgumentException() {
+        WordNGramModel model = new WordNGramModel();
+
+        assertFalse(model.contains("missing"));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> model.getLogProbability("missing")
+        );
+        assertTrue(exception.getMessage().contains("missing"));
+        assertTrue(exception.getMessage().contains("contains()"));
+    }
+
+    /**
+     * Verifies that getCount throws IllegalArgumentException (not NullPointerException)
+     * when the word is not in the model. This protects callers from silent failures.
+     */
+    @Test
+    public void given_wordNotInModel_when_getCount_then_throwsIllegalArgumentException() {
+        WordNGramModel model = new WordNGramModel();
+
+        assertFalse(model.contains("missing"));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> model.getCount("missing")
+        );
+        assertTrue(exception.getMessage().contains("missing"));
+        assertTrue(exception.getMessage().contains("contains()"));
     }
 }

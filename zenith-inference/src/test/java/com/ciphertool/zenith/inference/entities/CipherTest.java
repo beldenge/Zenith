@@ -223,6 +223,21 @@ public class CipherTest {
     }
 
     @Test
+    public void given_existingCiphertext_when_settingCiphertextAgain_then_overwritesCharactersAndClearsIndices() {
+        Cipher cipher = new Cipher("test", 1, 3);
+        cipher.setCiphertext(Arrays.asList("A", "B", "A"));
+        assertEquals(3, cipher.getCiphertextCharacters().size());
+        assertArrayEquals(new int[] { 0, 2 }, cipher.getCipherSymbolIndicesMap().get("A"));
+
+        cipher.setCiphertext(Arrays.asList("C"));
+
+        assertEquals(1, cipher.getCiphertextCharacters().size());
+        assertEquals("C", cipher.getCiphertextCharacters().get(0).getValue());
+        assertArrayEquals(new int[] { 0 }, cipher.getCipherSymbolIndicesMap().get("C"));
+        assertNull(cipher.getCipherSymbolIndicesMap().get("A"));
+    }
+
+    @Test
     public void given_validInput_when_cloningCopiesState_then_copiesState() {
         Cipher cipher = new Cipher("clone", 2, 2, true);
         cipher.addCiphertextCharacter(new Ciphertext("X", true));

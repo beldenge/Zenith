@@ -62,8 +62,10 @@ export class ManageCiphersComponent {
       this.ciphersDataSource = new MatTableDataSource(this.ciphers());
       this.ciphersDataSource.sort = this.sort;
       this.ciphersDataSource.paginator = this.paginator;
+      // BUG FIX: The filter is lowercased in applyFilter() but name was not lowercased here,
+      // causing case-sensitive mismatches (e.g., searching "z340" wouldn't find "Z340").
       this.ciphersDataSource.filterPredicate = (data: Cipher, filter: string) => {
-        return data.name.indexOf(filter) > -1;
+        return data.name.toLowerCase().indexOf(filter) > -1;
       };
     });
   }

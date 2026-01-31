@@ -99,7 +99,7 @@ public class CiphertextCycleCountEvaluator {
         List<CyclePair> uniqueCyclePairs = new ArrayList<>((uniqueCiphertextCharacters.size() * (uniqueCiphertextCharacters.size() - 1)) / 2);
         for (String first : uniqueCiphertextCharacters) {
             for (String second : uniqueCiphertextCharacters) {
-                if (first == second) {
+                if (first.equals(second)) {
                     continue;
                 }
 

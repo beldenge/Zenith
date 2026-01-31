@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class MultipleMutationOperatorTest {
@@ -86,6 +87,29 @@ public class MultipleMutationOperatorTest {
         assertFalse(mutated);
         assertEquals("A", chromosome.getGenes().get("k1").getValue());
         verify(geneDao).findRandomGene(any(Chromosome.class));
+    }
+
+    @Test
+    public void given_zeroMaxMutations_when_mutateChromosomes_then_skipsMutation() {
+        GeneDao geneDao = mock(GeneDao.class);
+        MultipleMutationOperator operator = new MultipleMutationOperator();
+        setGeneDao(operator, geneDao);
+
+        MockChromosome chromosome = new MockChromosome();
+        chromosome.putGene("k1", new SimpleGene("A"));
+
+        Genome genome = new Genome(false, null, null);
+        genome.addChromosome(chromosome);
+
+        GeneticAlgorithmStrategy strategy = GeneticAlgorithmStrategy.builder()
+                .maxMutationsPerIndividual(0)
+                .build();
+
+        boolean mutated = operator.mutateChromosomes(genome, strategy);
+
+        assertFalse(mutated);
+        assertEquals("A", chromosome.getGenes().get("k1").getValue());
+        verifyNoInteractions(geneDao);
     }
 
     private void setGeneDao(MultipleMutationOperator operator, GeneDao geneDao) {

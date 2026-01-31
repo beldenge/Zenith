@@ -34,8 +34,6 @@ export class CipherNgramStatsComponent {
   ngramsDataSources: MatTableDataSource<any>[][] = [];
   headerTextOpened = 'Hide ngram statistics';
   headerTextClosed = 'Show ngram statistics';
-  headerText = this.headerTextClosed;
-  shown = false;
 
   @ViewChild(MatExpansionPanel, { static: true }) matExpansionPanelElement: MatExpansionPanel;
 
@@ -44,21 +42,22 @@ export class CipherNgramStatsComponent {
     effect(() => {
       if (!!this.selectedCipher()) {
         this.matExpansionPanelElement.close();
+        // BUG FIX: Clear cached ngram data when cipher changes.
+        // Previously, old cipher's data would be shown briefly when expanding
+        // the panel for a new cipher, since ngramsDataSources was not reset.
+        this.ngramsDataSources = [];
       }
     });
   }
 
   onCollapse() {
-    this.shown = false;
-    this.headerText = this.headerTextClosed;
+    // No-op: expansion panel state drives the UI directly in the template.
   }
 
   onExpand(): void {
-    this.shown = true;
-    this.headerText = this.headerTextOpened;
-
+    // BUG FIX: Avoid mutating view-bound state during MatExpansionPanel change detection.
     if (!this.ngramsDataSources?.length) {
-      this.onMore();
+      setTimeout(() => this.onMore(), 0);
     }
   }
 

@@ -25,7 +25,7 @@ import com.ciphertool.zenith.genetic.entities.Genome;
 import com.ciphertool.zenith.genetic.util.Coin;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import java.util.ArrayList;
 
 @Component
 public class UniformCrossoverOperator implements CrossoverOperator {
@@ -33,7 +33,11 @@ public class UniformCrossoverOperator implements CrossoverOperator {
 
     @Override
     public Genome crossover(Genome firstGenome, Genome secondGenome) {
-        Genome childGenome = new Genome(firstGenome.isEvaluationNeeded(), firstGenome.getFitnesses(), firstGenome.getPopulation());
+        // BUG FIX: Always set evaluationNeeded to true for children. A child created by crossover
+        // has potentially different genes than either parent and must be evaluated. Previously,
+        // inheriting the parent's state could cause children to skip fitness evaluation entirely
+        // if the parent was already evaluated.
+        Genome childGenome = new Genome(true, firstGenome.getFitnesses(), firstGenome.getPopulation());
 
         for (int i = 0; i < firstGenome.getChromosomes().size(); i ++) {
             Chromosome<Object> childChromosome = (Chromosome<Object>) firstGenome.getChromosomes().get(i).clone();
@@ -42,17 +46,18 @@ public class UniformCrossoverOperator implements CrossoverOperator {
 
             Gene next;
 
-            for (Map.Entry<Object, Gene> entry : childChromosome.getGenes().entrySet()) {
+            // Iterate over a snapshot of keys because replaceGene mutates the backing map.
+            for (Object key : new ArrayList<>(childChromosome.getGenes().keySet())) {
                 if (coin.flip()) {
-                    next = parentB.getGenes().get(entry.getKey());
+                    next = parentB.getGenes().get(key);
 
                     if (next == null) {
-                        throw new IllegalStateException("Expected second parent to have a Gene with key " + entry.getKey()
+                        throw new IllegalStateException("Expected second parent to have a Gene with key " + key
                                 + ", but no such key was found.  Cannot continue.");
                     }
 
-                    if (!entry.getValue().equals(next)) {
-                        childChromosome.replaceGene(entry.getKey(), next.clone());
+                    if (!childChromosome.getGenes().get(key).equals(next)) {
+                        childChromosome.replaceGene(key, next.clone());
                     }
                 }
                 // Else, keep the gene from parentA (already cloned). Future optimization: clone genes individually instead of cloning the entire chromosome upfront to save ~33% cloning overhead.

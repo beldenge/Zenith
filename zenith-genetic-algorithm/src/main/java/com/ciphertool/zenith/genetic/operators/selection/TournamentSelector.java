@@ -94,8 +94,8 @@ public class TournamentSelector implements Selector {
             }
         }
 
-        // return the least fit individual since it won the tournament
-        return indexedCompetitors.get(indexedCompetitors.size() - 1).getIndex();
+        // No selection occurred, so return the least-fit competitor (first after sorting).
+        return sortedIndexedCompetitors.get(0).getIndex();
     }
 
     @AllArgsConstructor

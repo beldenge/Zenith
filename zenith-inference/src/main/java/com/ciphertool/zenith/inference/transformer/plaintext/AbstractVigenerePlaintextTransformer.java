@@ -41,8 +41,12 @@ public abstract class AbstractVigenerePlaintextTransformer implements PlaintextT
 
     protected static String defaultVigenereSquare = "";
 
+    // BUG FIX: Changed from static to instance field. When static, both VigenerePlaintextTransformer
+    // and UnwrapVigenerePlaintextTransformer would write different values to this shared array,
+    // corrupting each other's vigenere square. Each subclass populates this differently
+    // (one for encryption, one for decryption), so each instance needs its own copy.
     // Since we are using only ASCII letters as array indices, we're guaranteed to stay within 256
-    protected static char[][] vigenereSquare = new char[256][256];
+    protected char[][] vigenereSquare = new char[256][256];
 
     private static char[] letters = LanguageConstants.LOWERCASE_LETTERS;
 

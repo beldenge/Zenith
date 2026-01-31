@@ -125,6 +125,11 @@ public class Genome implements Comparable<Genome>, Probability {
            }
         }
 
+        // If every objective is equal, this genome is neither better nor worse.
+        if (equivalent == fitnesses.length) {
+            return 0;
+        }
+
         if (dominating > 0 && (dominating + equivalent) == fitnesses.length) {
             return 1;
         } else if (dominating > 0) {
