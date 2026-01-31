@@ -20,9 +20,9 @@
 package com.ciphertool.zenith.inference.entities;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 @Getter
 @Setter

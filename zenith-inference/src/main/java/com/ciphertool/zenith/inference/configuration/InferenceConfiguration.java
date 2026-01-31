@@ -24,9 +24,9 @@ import com.ciphertool.zenith.inference.entities.Cipher;
 import com.ciphertool.zenith.inference.entities.FormComponentDto;
 import com.ciphertool.zenith.inference.entities.config.ApplicationConfiguration;
 import com.ciphertool.zenith.inference.entities.config.CipherConfiguration;
+import com.ciphertool.zenith.inference.transformer.FormComponent;
 import com.ciphertool.zenith.inference.transformer.ciphertext.CiphertextTransformationManager;
 import com.ciphertool.zenith.inference.transformer.ciphertext.TransformationStep;
-import com.ciphertool.zenith.inference.transformer.FormComponent;
 import com.ciphertool.zenith.inference.transformer.plaintext.PlaintextTransformer;
 import com.ciphertool.zenith.model.dao.LetterNGramDao;
 import com.ciphertool.zenith.model.dao.WordNGramDao;
@@ -35,7 +35,6 @@ import com.ciphertool.zenith.model.entities.WordNGram;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModel;
 import com.ciphertool.zenith.model.markov.ArrayMarkovModelCache;
 import com.ciphertool.zenith.model.markov.WordNGramModel;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -52,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -63,6 +62,8 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -163,7 +164,7 @@ public class InferenceConfiguration {
                 applicationConfiguration = OBJECT_MAPPER.readValue(file, ApplicationConfiguration.class);
                 validateInputWithInjectedValidator(applicationConfiguration);
                 return applicationConfiguration;
-            } catch (IOException e) {
+            } catch (JacksonException e) {
                 log.error("Unable to read application configuration from file: {}.", file.getPath(), e);
                 throw new IllegalStateException(e);
             }

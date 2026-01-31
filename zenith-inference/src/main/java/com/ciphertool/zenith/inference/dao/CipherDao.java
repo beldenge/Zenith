@@ -20,7 +20,6 @@
 package com.ciphertool.zenith.inference.dao;
 
 import com.ciphertool.zenith.inference.entities.Cipher;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -33,6 +32,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +86,7 @@ public class CipherDao {
                     Cipher cipher = OBJECT_MAPPER.readValue(file, Cipher.class);
                     validateInputWithInjectedValidator(cipher);
                     ciphers.add(cipher);
-                } catch (IOException e) {
+                } catch (JacksonException e) {
                     log.error("Unable to read cipher from file: {}.", file.getPath(), e);
                     throw new IllegalStateException(e);
                 }

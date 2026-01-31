@@ -54,7 +54,7 @@ public class RestServicePlaintextEvaluator implements PlaintextEvaluator {
     public RestServicePlaintextEvaluator(RestTemplate restTemplate, Map<String, Object> data) {
         this.restTemplate = restTemplate;
         this.restServiceUrl = (String) data.get(REST_SERVICE_URL);
-        this.evaluationRestServiceEndpoint = UriComponentsBuilder.fromHttpUrl(restServiceUrl).build().encode().toUri();
+        this.evaluationRestServiceEndpoint = UriComponentsBuilder.fromUriString(restServiceUrl).build().encode().toUri();
     }
 
     @Override
