@@ -1,11 +1,8 @@
-use std::fmt::Debug;
 use zenith_transformer::{load_file, GPT, Tokenizer};
 use anyhow::{Result};
-use candle_core::{Device, Tensor, DType};
-use candle_nn::{AdamW, Optimizer, ParamsAdamW, VarBuilder, VarMap};
+use candle_core::{Device, Tensor};
+use candle_nn::{VarMap};
 use clap::Parser;
-use rand::prelude::*;
-use std::time::Instant;
 use std::collections::HashMap;
 use candle_nn::loss::cross_entropy;
 use candle_nn::ops::softmax;
@@ -36,7 +33,6 @@ fn main() -> Result<()> {
     let steps_per_epoch = 1000;
     let batch_size: usize = 32;
     let block_size: usize = 256;
-    let iterations = 5000;
     let learning_rate = 3e-4;
     let layers = 6;
     let num_heads = 6;
@@ -52,7 +48,7 @@ fn main() -> Result<()> {
     for epoch in 1..=epochs {
         let samples: Vec<String> = load_file()?;
         let all_encoded = tokenizer.encode(&samples);
-        let n1 = (0.9 * samples.len() as f64) as usize;
+        let n1 = (0.9 * all_encoded.len() as f64) as usize;
         let training_set = all_encoded[0..n1].to_vec();
         let val_set = all_encoded[n1..all_encoded.len()].to_vec();
         let mut data_sets: HashMap<String, &Vec<usize>> = HashMap::new();
@@ -62,7 +58,7 @@ fn main() -> Result<()> {
         println!("Data len: {}", all_encoded.len());
 
         for step in 1..=steps_per_epoch {
-            if step % eval_interval == 0 || step == iterations {
+            if step == 1 || step % eval_interval == 0 || step == steps_per_epoch {
                 let losses = estimate_loss(
                     block_size,
                     batch_size,
@@ -121,7 +117,7 @@ fn get_batch(data_set: &Vec<usize>, block_size: usize, batch_size: usize, device
 }
 
 fn generate_samples(gpt: &GPT, tokenizer: &Tokenizer, block_size: usize, temperature: f64, prompt: &str, device: &Device) -> Result<String> {
-    let mut ids = tokenizer.encode(&[prompt.to_string()]);
+    let ids = tokenizer.encode(&[prompt.to_string()]);
     let mut next_sample = prompt.to_string();
     let mut inputs_tensor = Tensor::from_vec(
         ids.iter().map(|&i| i as u32).collect::<Vec<_>>(),

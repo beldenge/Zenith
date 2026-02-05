@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
-use candle_core::{DType, Device, IndexOp, Module, Tensor, D};
-use candle_nn::{AdamW, Dropout, Init, Optimizer, ParamsAdamW, VarMap, embedding, layer_norm, linear, ops, Embedding, LayerNorm, LayerNormConfig, Linear, VarBuilder};
+use candle_core::{DType, Device, Module, Tensor, D};
+use candle_nn::{AdamW, Dropout, Init, Optimizer, ParamsAdamW, VarMap, Embedding, Linear, VarBuilder};
 use polars::prelude::*;
 use deunicode::deunicode;
 use rand::Rng;
@@ -10,7 +10,7 @@ use anyhow::Result;
 
 pub const DOC_SEPARATOR: char = '|';
 
-pub fn load_file() -> anyhow::Result<Vec<String>> {
+pub fn load_file() -> Result<Vec<String>> {
     let data_dir = "D:/dev/Zenith/zenith-transformer/data/openwebtext-full/plain_text";
 
     let filenames: Vec<_> = fs::read_dir(data_dir)?
