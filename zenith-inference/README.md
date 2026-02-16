@@ -7,11 +7,11 @@ The core inference engine for solving homophonic substitution ciphers. Uses lang
 ## Quick Start
 
 1. Download and install Java 25 or later: [Amazon Corretto](https://aws.amazon.com/corretto/)
-2. Download `zenith-inference-2026.2-exec.jar`
+2. Download `zenith-inference-2026.2.1-SNAPSHOT-exec.jar`
 3. Run:
    ```bash
    java -XX:+UseParallelGC -XX:ParallelGCThreads=2 -Xms2G -Xmx2G -XX:MaxMetaspaceSize=512M \
-        -jar zenith-inference-2026.2-exec.jar
+        -jar zenith-inference-2026.2.1-SNAPSHOT-exec.jar
    ```
 
 **Note:** Use the `-exec.jar` file, not the plain `.jar`. This module serves as both a standalone application and a library dependency.
