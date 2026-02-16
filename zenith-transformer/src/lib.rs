@@ -1,12 +1,17 @@
+use anyhow::Result;
+use candle_core::backprop::GradStore;
+use candle_core::{D, DType, Device, Module, Tensor};
+use candle_nn::ops::softmax;
+use candle_nn::{
+    AdamW, Dropout, Embedding, Init, Linear, Optimizer, ParamsAdamW, VarBuilder, VarMap,
+};
+use deunicode::deunicode;
+use polars::prelude::*;
+use rand::Rng;
+use rand::distr::Distribution;
+use rand::distr::weighted::WeightedIndex;
 use std::collections::HashMap;
 use std::fs;
-use candle_core::{DType, Device, Module, Tensor, D};
-use candle_nn::{AdamW, Dropout, Init, Optimizer, ParamsAdamW, VarMap, Embedding, Linear, VarBuilder};
-use polars::prelude::*;
-use deunicode::deunicode;
-use rand::Rng;
-use candle_core::backprop::GradStore;
-use anyhow::Result;
 
 pub const DOC_SEPARATOR: char = '|';
 
@@ -50,7 +55,7 @@ fn scrub_text(text: &str) -> String {
         .replace("\n", " ")
         .replace("\"", " ")
         .chars()
-        .filter(|&c| c.is_alphanumeric() || c.is_whitespace() || c == '.' || c == '!' || c == '?')
+        .filter(|&c| c.is_alphabetic())
         .collect();
 
     filtered.split_whitespace()
@@ -61,7 +66,7 @@ fn scrub_text(text: &str) -> String {
 
 fn create_causal_mask(batch_size: usize, seq_len: usize, device: &Device) -> candle_core::Result<Tensor> {
     // Lower triangular ones (1 where position can attend, 0 where it cannot)
-    let mut tril = Tensor::tril2(seq_len, DType::U8, device)?;  // (T, T)
+    let mut tril = Tensor::tril2(seq_len, DType::U8, device)?; // (T, T)
     tril = tril.broadcast_as((batch_size, seq_len, seq_len))?; // (B, T, T)
 
     // Invert: future positions become 0 → we'll fill them with -inf
@@ -172,7 +177,7 @@ impl AttentionHead {
             att = att.add(m)?;
         }
 
-        att = candle_nn::ops::softmax(&att, candle_core::D::Minus1)?;
+        att = softmax(&att, D::Minus1)?;
         att = self.dropout.forward(&att, train)?;
         let y = att.matmul(&v)?; // (B, T, C)
 
@@ -200,7 +205,7 @@ impl MultiHeadAttention {
         Ok(Self {
             heads: heads?,
             proj,
-            dropout
+            dropout,
         })
     }
 
@@ -216,14 +221,14 @@ impl MultiHeadAttention {
 }
 
 pub struct FeedForward {
-    c_fc:   Linear,   // expand to 4× embed_dim (common choice)
-    c_proj: Linear,   // project back to embed_dim
+    c_fc: Linear,   // expand to 4× embed_dim (common choice)
+    c_proj: Linear, // project back to embed_dim
     dropout: Dropout,
 }
 
 impl FeedForward {
     pub fn new(embed_dim: usize, drop_p: f32, vb: VarBuilder) -> Result<Self> {
-        let inner_dim = embed_dim * 4;  // classic expansion factor
+        let inner_dim = embed_dim * 4; // classic expansion factor
 
         let c_fc = linear_gpt(embed_dim, inner_dim, true, vb.pp("c_fc"))?;
         let c_proj = linear_gpt(inner_dim, embed_dim, true, vb.pp("c_proj"))?;
@@ -233,7 +238,7 @@ impl FeedForward {
         Ok(Self {
             c_fc,
             c_proj,
-            dropout
+            dropout,
         })
     }
 
@@ -271,7 +276,7 @@ impl TransformerBlock {
             ln_1,
             attn,
             ln_2,
-            mlp
+            mlp,
         })
     }
 
@@ -337,7 +342,7 @@ impl GPT {
             dropout,
             blocks,
             ln_f,
-            lm_head
+            lm_head,
         })
     }
 
@@ -372,7 +377,10 @@ pub struct Tokenizer {
 
 impl Tokenizer {
     pub fn from_static() -> Self {
-        let chars: Vec<char> = vec!['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '?', '!', ' ', '|'];
+        let chars: Vec<char> = vec![
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '|',
+        ];
 
         let stoi: HashMap<char, usize> = chars.iter().enumerate().map(|(i, &c)| (c, i)).collect();
         let itos: HashMap<usize, char> = chars.into_iter().enumerate().map(|(i, c)| (i, c)).collect();
@@ -412,4 +420,48 @@ impl Tokenizer {
             .map(|&i| self.itos[&i])
             .collect()
     }
+}
+
+pub fn generate_samples(
+    gpt: &GPT,
+    tokenizer: &Tokenizer,
+    block_size: usize,
+    temperature: f64,
+    prompt: &str,
+    device: &Device,
+) -> Result<String> {
+    let ids = tokenizer.encode(&[prompt.to_string()]);
+    let mut next_sample = prompt.to_string();
+    let mut inputs_tensor = Tensor::from_vec(
+        ids.iter().map(|&i| i as u32).collect::<Vec<_>>(),
+        (1, ids.len()),
+        device,
+    )?;
+
+    for _ in 0..500 {
+        let current_seq_len = inputs_tensor.dims()[1];
+        // Truncate the inputs tensor to the block size
+        inputs_tensor = inputs_tensor.narrow(
+            1,
+            0.max(current_seq_len as i32 - block_size as i32) as usize,
+            current_seq_len.min(block_size),
+        )?;
+
+        // Squeeze needed to convert (B, T, C) -> (B * T, C)
+        let logits = gpt.forward(&inputs_tensor, false)?.squeeze(0)?;
+        let last_logits = logits.narrow(0, logits.dims()[0] - 1, 1)?.squeeze(0)?;
+        let last_logits = (last_logits / temperature)?;
+        let probs = softmax(&last_logits, 0)?;
+        let probs_vec: Vec<f32> = probs.to_vec1()?;
+
+        // Sample from the distribution
+        let dist = WeightedIndex::new(&probs_vec)?;
+        let sampled_idx = dist.sample(&mut rand::rng());
+        next_sample += &tokenizer.decode(&[sampled_idx]);
+
+        let next_token = Tensor::from_vec(vec![sampled_idx as u32], (1, 1), device)?;
+        inputs_tensor = Tensor::cat(&[&inputs_tensor, &next_token], 1)?;
+    }
+
+    Ok(next_sample)
 }

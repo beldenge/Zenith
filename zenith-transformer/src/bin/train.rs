@@ -1,15 +1,12 @@
-use zenith_transformer::{load_file, GPT, Tokenizer};
-use anyhow::{Result};
+use anyhow::Result;
 use candle_core::{Device, Tensor};
-use candle_nn::{VarMap};
-use clap::Parser;
-use std::collections::HashMap;
+use candle_nn::VarMap;
 use candle_nn::loss::cross_entropy;
-use candle_nn::ops::softmax;
-use rand::distr::weighted::WeightedIndex;
-use rand::distr::Distribution;
-use rand::Rng;
+use clap::Parser;
 use log::LevelFilter;
+use rand::Rng;
+use std::collections::HashMap;
+use zenith_transformer::{GPT, Tokenizer, generate_samples, load_file};
 
 #[derive(Parser)]
 struct Args {
@@ -29,7 +26,7 @@ fn main() -> Result<()> {
         .init();
     let device = Device::cuda_if_available(0).unwrap_or(Device::Cpu);
     let tokenizer = Tokenizer::from_static();
-    let epochs = 5;
+    let epochs = 20;
     let steps_per_epoch = 1000;
     let batch_size: usize = 32;
     let block_size: usize = 256;
@@ -43,7 +40,17 @@ fn main() -> Result<()> {
     // let tokenizer = Tokenizer::new(&samples);
     let vocab_size = tokenizer.stoi.len();
     let varmap = VarMap::new();
-    let mut gpt = GPT::new(vocab_size, block_size, embed_dim, num_heads, layers, learning_rate, drop_p, &varmap, &device)?;
+    let mut gpt = GPT::new(
+        vocab_size,
+        block_size,
+        embed_dim,
+        num_heads,
+        layers,
+        learning_rate,
+        drop_p,
+        &varmap,
+        &device,
+    )?;
 
     for epoch in 1..=epochs {
         let samples: Vec<String> = load_file()?;
@@ -116,46 +123,13 @@ fn get_batch(data_set: &Vec<usize>, block_size: usize, batch_size: usize, device
     Ok((inputs_tensor, outputs_tensor))
 }
 
-fn generate_samples(gpt: &GPT, tokenizer: &Tokenizer, block_size: usize, temperature: f64, prompt: &str, device: &Device) -> Result<String> {
-    let ids = tokenizer.encode(&[prompt.to_string()]);
-    let mut next_sample = prompt.to_string();
-    let mut inputs_tensor = Tensor::from_vec(
-        ids.iter().map(|&i| i as u32).collect::<Vec<_>>(),
-        (1, ids.len()),
-        device
-    )?;
-
-    for _ in 0..500 {
-        let current_seq_len = inputs_tensor.dims()[1];
-        // Truncate the inputs tensor to the block size
-        inputs_tensor = inputs_tensor.narrow(1, 0.max(current_seq_len as i32 - block_size as i32) as usize, current_seq_len.min(block_size))?;
-
-        // Squeeze needed to convert (B, T, C) -> (B * T, C)
-        let logits = gpt.forward(&inputs_tensor, false)?.squeeze(0)?;
-        let last_logits = logits.narrow(0, logits.dims()[0] - 1, 1)?.squeeze(0)?;
-        let last_logits = (last_logits / temperature)?;
-        let probs = softmax(&last_logits, 0)?;
-        let probs_vec: Vec<f32> = probs.to_vec1()?;
-
-        // Sample from the distribution
-        let dist = WeightedIndex::new(&probs_vec)?;
-        let sampled_idx = dist.sample(&mut rand::rng());
-        next_sample += &tokenizer.decode(&[sampled_idx]);
-
-        let next_token = Tensor::from_vec(vec![sampled_idx as u32], (1, 1), device)?;
-        inputs_tensor = Tensor::cat(&[&inputs_tensor, &next_token], 1)?;
-    }
-
-    Ok(next_sample)
-}
-
 fn estimate_loss(
     block_size: usize,
     batch_size: usize,
     vocab_size: usize,
     model: &GPT,
     device: &Device,
-    data_sets: &HashMap<String, &Vec<usize>>
+    data_sets: &HashMap<String, &Vec<usize>>,
 ) -> Result<HashMap<String, f32>> {
     let eval_iters = 20;
     let mut out = HashMap::new();
